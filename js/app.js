@@ -39,6 +39,20 @@ function setupMobileMenu() {
   });
 }
 
+function setupFloatingHeader() {
+  const header = document.querySelector(".header-floating");
+  const toggle = header?.querySelector("[data-menu-toggle]");
+
+  if (!header || !toggle) return;
+
+  const syncToggle = () => {
+    toggle.style.display = window.innerWidth <= 920 ? "inline-grid" : "none";
+  };
+
+  syncToggle();
+  window.addEventListener("resize", syncToggle);
+}
+
 function setupRoleTabs() {
   const tabs = document.querySelectorAll("[data-role-tab]");
   const panels = document.querySelectorAll("[data-role-panel]");
@@ -118,6 +132,7 @@ function setupFakeForms() {
 }
 
 setupFocusMode();
+setupFloatingHeader();
 setupMobileMenu();
 setupRoleTabs();
 setupSignupTabs();

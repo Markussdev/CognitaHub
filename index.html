@@ -13,9 +13,9 @@
   <body>
     <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
 
-    <header class="site-header" data-header>
-      <a class="brand brand-clean" href="index.html" aria-label="Cognita Hub início">
-        <span class="brand-orb">
+    <header class="header-floating" data-header>
+      <a class="brand-area" href="index.html" aria-label="Cognita Hub início">
+        <span class="brand-icon">
           <img src="assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
         </span>
         <span class="brand-copy">
@@ -31,7 +31,7 @@
         <span class="sr-only">Abrir menu</span>
       </button>
 
-      <nav class="site-nav" id="site-nav" data-nav>
+      <nav class="nav-pill" id="site-nav" data-nav>
         <a href="#como-funciona">Como funciona</a>
         <a href="#publico">Para alunos</a>
         <a href="#voluntarios">Profissionais</a>
@@ -39,24 +39,24 @@
         <a href="#seguranca">Segurança</a>
       </nav>
 
-      <div class="header-actions">
-        <button class="btn btn-soft" type="button" data-focus-toggle aria-pressed="false">Modo Foco</button>
-        <a class="btn btn-ghost" href="pages/login.html">Entrar</a>
-        <a class="btn btn-primary" href="pages/cadastro.html">Participar</a>
+      <div class="actions-pill">
+        <a class="login-btn" href="pages/login.html">Entrar</a>
+        <a class="join-btn" href="pages/cadastro.html">Participar</a>
       </div>
     </header>
 
     <main id="conteudo">
-      <section class="hero hero-v2">
+      <section class="hero hero-v2 hero-immersive">
         <div class="hero-bg-shape shape-one"></div>
         <div class="hero-bg-shape shape-two"></div>
         <div class="hero-content">
           <p class="eyebrow">Acompanhamento educacional em matemática</p>
-          <h1>Educação adaptada começa com conexão humana.</h1>
+          <h1>Apoio em matemática para crianças com TEA</h1>
           <p class="hero-copy">
-            O Cognita Hub conecta estudantes com TEA, responsáveis e profissionais voluntários em ciclos organizados
-            de 6 meses, com foco inicial em Matemática.
+            O Cognita Hub conecta famílias a tutores voluntários para acompanhar o desenvolvimento matemático de
+            crianças com TEA em ciclos de 6 meses.
           </p>
+          <p class="hero-slogan">Educação adaptada começa com conexão humana.</p>
           <div class="hero-actions">
             <a class="btn btn-primary btn-large" href="pages/cadastro.html">Sou responsável</a>
             <a class="btn btn-light btn-large" href="pages/cadastro.html#profissional">Sou profissional</a>
@@ -70,7 +70,7 @@
 
         <div class="hero-visual" aria-hidden="true">
           <div class="mascot-stage">
-            <img class="hero-mascot" src="assets/sticker.png" alt="" />
+            <img class="hero-mascot" src="assets/mascot-hero-wave.png" alt="" />
             <div class="floating-card card-a">
               <strong>6 meses</strong>
               <span>acompanhamento</span>
@@ -87,7 +87,8 @@
         </div>
       </section>
 
-      <section class="section journey-section" id="como-funciona">
+      <section class="section journey-section journey-redesign" id="como-funciona">
+        <img class="journey-mascot" src="assets/pattern-math.png" alt="" aria-hidden="true" />
         <div class="section-heading">
           <p class="eyebrow">Como funciona</p>
           <h2>Uma jornada simples, humana e previsível.</h2>
@@ -97,7 +98,7 @@
           </p>
         </div>
 
-        <div class="journey-grid">
+        <div class="journey-grid journey-path">
           <article class="journey-card">
             <span class="journey-index">01</span>
             <div class="journey-icon" aria-hidden="true">01</div>
@@ -121,7 +122,7 @@
         </div>
       </section>
 
-      <section class="section audience-v2" id="publico">
+      <section class="section audience-v2 audience-surface" id="publico">
         <div class="audience-copy">
           <p class="eyebrow">Para alunos e responsáveis</p>
           <h2>A plataforma não pressiona. Ela organiza o caminho.</h2>
@@ -190,7 +191,7 @@
         </div>
       </section>
 
-      <section class="section platform-section" id="plataforma">
+      <section class="section platform-section platform-redesign" id="plataforma">
         <div class="section-heading">
           <p class="eyebrow">Plataforma interna</p>
           <h2>Painéis separados para cada rotina do projeto.</h2>
@@ -306,7 +307,7 @@
             <a class="btn btn-light btn-large" href="#seguranca">Saiba mais</a>
           </div>
         </div>
-        <img src="assets/sticker.png" alt="" aria-hidden="true" />
+        <img src="assets/mascot-hero-wave.png" alt="" aria-hidden="true" />
       </section>
     </main>
 
