@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel do Responsável | CognitaHub</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+  </head>
+  <body class="app-body">
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Menu do responsável">
+        <a class="sidebar-logo sidebar-logo-clean" href="../index.html">
+          <img src="../assets/logo-retangular-transparent.png" alt="CognitaHub" />
+        </a>
+        <nav class="sidebar-nav">
+          <a class="active" href="responsavel.html">Início</a>
+          <a href="#acompanhamento">Meu acompanhamento</a>
+          <a href="atividades.html">Atividades</a>
+          <a href="#agenda">Agenda</a>
+          <a href="#progresso">Progresso</a>
+          <a href="#perfil">Perfil</a>
+        </nav>
+        <div class="sidebar-footer">
+          <button class="btn btn-soft" type="button" data-focus-toggle aria-pressed="false">Modo Foco</button>
+        </div>
+      </aside>
+
+      <main class="app-main">
+        <div class="app-topbar">
+          <div>
+            <p class="eyebrow">Responsável e aluno</p>
+            <h1>Olá, João</h1>
+          </div>
+          <a class="btn btn-ghost" href="../index.html">Site público</a>
+        </div>
+
+        <section class="app-hero">
+          <div>
+            <p class="eyebrow">Ciclo em andamento</p>
+            <h2>Seu acompanhamento em matemática está no mês 2 de 6.</h2>
+            <p>
+              Próximo encontro, atividade da semana e observações ficam reunidos para reduzir ruído e manter a rotina
+              previsível.
+            </p>
+          </div>
+          <img src="../assets/sticker.png" alt="" aria-hidden="true" />
+        </section>
+
+        <section class="stats-grid" aria-label="Resumo do acompanhamento">
+          <article class="app-card stat">
+            <span>Próximo encontro</span>
+            <strong>Quinta, 15h</strong>
+          </article>
+          <article class="app-card stat">
+            <span>Profissional</span>
+            <strong>Maria Silva</strong>
+          </article>
+          <article class="app-card stat">
+            <span>Atividade atual</span>
+            <strong>Frações equivalentes</strong>
+          </article>
+          <article class="app-card stat">
+            <span>Presença</span>
+            <strong>4 de 4 sessões</strong>
+          </article>
+        </section>
+
+        <section class="dashboard-grid" id="acompanhamento">
+          <article class="app-card" id="progresso">
+            <h2>Progresso do ciclo</h2>
+            <div class="progress-row">
+              <span class="progress-label">Mês 2 de 6</span>
+              <div class="progress-track" aria-label="33% do ciclo concluído">
+                <div class="progress-fill" style="width: 33%"></div>
+              </div>
+            </div>
+            <ul class="task-list">
+              <li class="list-row">
+                <div>
+                  <strong>Plano de estudo</strong>
+                  <span>Operações, frações e leitura de problemas.</span>
+                </div>
+                <span class="tag blue">Ativo</span>
+              </li>
+              <li class="list-row">
+                <div>
+                  <strong>Atividade da semana</strong>
+                  <span>Reconhecer frações equivalentes com apoio visual.</span>
+                </div>
+                <span class="tag">Semana 4</span>
+              </li>
+              <li class="list-row">
+                <div>
+                  <strong>Observação</strong>
+                  <span>João respondeu melhor a exemplos com objetos do cotidiano.</span>
+                </div>
+                <span class="tag wine">Registro</span>
+              </li>
+            </ul>
+          </article>
+
+          <aside class="app-card" id="agenda">
+            <h2>Agenda</h2>
+            <ul class="task-list">
+              <li class="list-row">
+                <div>
+                  <strong>Quinta-feira</strong>
+                  <span>15h - Encontro online</span>
+                </div>
+              </li>
+              <li class="list-row">
+                <div>
+                  <strong>Sexta-feira</strong>
+                  <span>Enviar atividade concluída</span>
+                </div>
+              </li>
+              <li class="list-row">
+                <div>
+                  <strong>Segunda-feira</strong>
+                  <span>Revisão da semana</span>
+                </div>
+              </li>
+            </ul>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <nav class="bottom-nav" aria-label="Menu inferior">
+      <a class="active" href="responsavel.html">Início</a>
+      <a href="atividades.html">Atividades</a>
+      <a href="#agenda">Agenda</a>
+      <a href="#progresso">Progresso</a>
+      <a href="#perfil">Perfil</a>
+    </nav>
+
+    <script src="../js/app.js"></script>
+  </body>
+</html>

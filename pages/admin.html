@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin | CognitaHub</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+  </head>
+  <body class="app-body">
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Menu administrativo">
+        <a class="sidebar-logo sidebar-logo-clean" href="../index.html">
+          <img src="../assets/logo-retangular-transparent.png" alt="CognitaHub" />
+        </a>
+        <nav class="sidebar-nav">
+          <a class="active" href="admin.html">Visão geral</a>
+          <a href="#alunos">Alunos inscritos</a>
+          <a href="#profissionais">Profissionais</a>
+          <a href="#matches">Conexões</a>
+          <a href="#ciclos">Ciclos</a>
+          <a href="#relatorios">Relatórios</a>
+        </nav>
+        <div class="sidebar-footer">
+          <button class="btn btn-soft" type="button" data-focus-toggle aria-pressed="false">Modo Foco</button>
+        </div>
+      </aside>
+
+      <main class="app-main">
+        <div class="app-topbar">
+          <div>
+            <p class="eyebrow">Equipe CognitaHub</p>
+            <h1>Painel admin</h1>
+          </div>
+          <a class="btn btn-ghost" href="../index.html">Site público</a>
+        </div>
+
+        <section class="app-hero">
+          <div>
+            <p class="eyebrow">Operação do MVP</p>
+            <h2>Validação manual, match seguro e ciclos acompanhados.</h2>
+            <p>
+              O admin centraliza inscrições, análise de voluntários, conexões aluno-profissional e encerramento de ciclo.
+            </p>
+          </div>
+          <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
+        </section>
+
+        <section class="stats-grid" aria-label="Resumo administrativo">
+          <article class="app-card stat">
+            <span>Alunos inscritos</span>
+            <strong>18</strong>
+          </article>
+          <article class="app-card stat">
+            <span>Voluntários pendentes</span>
+            <strong>7</strong>
+          </article>
+          <article class="app-card stat">
+            <span>Ciclos ativos</span>
+            <strong>12</strong>
+          </article>
+          <article class="app-card stat">
+            <span>Matches a fazer</span>
+            <strong>5</strong>
+          </article>
+        </section>
+
+        <section class="dashboard-grid">
+          <article class="app-card" id="profissionais">
+            <h2>Validação de voluntários</h2>
+            <ul class="admin-list">
+              <li class="list-row">
+                <div>
+                  <strong>Ana Martins</strong>
+                  <span>Psicopedagoga - experiência com TEA e reforço de matemática.</span>
+                </div>
+                <span class="tag">Validar</span>
+              </li>
+              <li class="list-row">
+                <div>
+                  <strong>Rafael Nunes</strong>
+                  <span>Licenciatura em matemática - disponibilidade aos sábados.</span>
+                </div>
+                <span class="tag blue">Analisar</span>
+              </li>
+            </ul>
+          </article>
+
+          <aside class="app-card" id="matches">
+            <h2>Conexões sugeridas</h2>
+            <ul class="task-list">
+              <li class="list-row">
+                <div>
+                  <strong>João + Maria</strong>
+                  <span>5º ano, frações, quinta 15h.</span>
+                </div>
+              </li>
+              <li class="list-row">
+                <div>
+                  <strong>Lia + Rafael</strong>
+                  <span>8º ano, equações, sábado 10h.</span>
+                </div>
+              </li>
+              <li class="list-row">
+                <div>
+                  <strong>3 vagas</strong>
+                  <span>Aguardando voluntário compatível.</span>
+                </div>
+              </li>
+            </ul>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <nav class="bottom-nav" aria-label="Menu inferior">
+      <a class="active" href="admin.html">Geral</a>
+      <a href="#alunos">Alunos</a>
+      <a href="#profissionais">Profissionais</a>
+      <a href="#matches">Conexões</a>
+      <a href="#relatorios">Relatórios</a>
+    </nav>
+
+    <script src="../js/app.js"></script>
+  </body>
+</html>

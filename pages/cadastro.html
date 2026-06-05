@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Participar | CognitaHub</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+    <header class="site-header" data-header>
+      <a class="brand brand-clean" href="../index.html" aria-label="Cognita Hub início">
+        <span class="brand-orb">
+          <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
+        </span>
+        <span class="brand-copy">
+          <strong>Cognita Hub</strong>
+          <small>TEA + Matemática</small>
+        </span>
+      </a>
+
+      <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="site-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span class="sr-only">Abrir menu</span>
+      </button>
+
+      <nav class="site-nav" id="site-nav" data-nav>
+        <a href="../index.html#como-funciona">Como funciona</a>
+        <a href="../index.html#publico">Para alunos</a>
+        <a href="../index.html#voluntarios">Profissionais</a>
+        <a href="atividades.html">Atividades</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="btn btn-soft" type="button" data-focus-toggle aria-pressed="false">Modo Foco</button>
+        <a class="btn btn-ghost" href="login.html">Entrar</a>
+      </div>
+    </header>
+
+    <main class="auth-main" id="conteudo">
+      <div class="auth-layout">
+        <section class="auth-intro">
+          <div>
+            <p class="eyebrow">Participar</p>
+            <h1>Cadastro</h1>
+            <p>
+              O primeiro passo é escolher o perfil. Depois a equipe CognitaHub valida as informações e organiza o
+              próximo ciclo.
+            </p>
+          </div>
+          <img src="../assets/sticker.png" alt="" aria-hidden="true" />
+        </section>
+
+        <section class="auth-content">
+          <div class="section-heading align-left">
+            <p class="eyebrow">Escolha seu perfil</p>
+            <h2>Como você deseja participar?</h2>
+          </div>
+
+          <div class="signup-tabs" role="tablist" aria-label="Tipos de cadastro">
+            <button class="signup-tab active" type="button" role="tab" aria-selected="true" data-signup-tab="responsavel">
+              Responsável
+            </button>
+            <button class="signup-tab" id="profissional" type="button" role="tab" aria-selected="false" data-signup-tab="profissional">
+              Profissional
+            </button>
+            <button class="signup-tab" type="button" role="tab" aria-selected="false" data-signup-tab="equipe">Equipe</button>
+          </div>
+
+          <form class="auth-panel signup-panel active" data-signup-panel="responsavel" data-static-form>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="responsavel-nome">Nome do responsável</label>
+                <input id="responsavel-nome" name="responsavel-nome" type="text" />
+              </div>
+              <div class="form-field">
+                <label for="responsavel-email">Email</label>
+                <input id="responsavel-email" name="responsavel-email" type="email" />
+              </div>
+              <div class="form-field">
+                <label for="aluno-nome">Nome do aluno</label>
+                <input id="aluno-nome" name="aluno-nome" type="text" />
+              </div>
+              <div class="form-field">
+                <label for="serie">Série escolar</label>
+                <select id="serie" name="serie">
+                  <option>5º ano</option>
+                  <option>6º ano</option>
+                  <option>7º ano</option>
+                  <option>8º ano</option>
+                  <option>9º ano</option>
+                </select>
+              </div>
+              <div class="form-field full">
+                <label for="dificuldades">Dificuldades em matemática</label>
+                <textarea id="dificuldades" name="dificuldades"></textarea>
+              </div>
+              <div class="form-field full">
+                <label for="preferencias">Preferências de aprendizagem e observações importantes</label>
+                <textarea id="preferencias" name="preferencias"></textarea>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit">Enviar cadastro</button>
+              <a class="btn btn-ghost" href="responsavel.html">Ver painel</a>
+            </div>
+            <p class="fine-print" data-form-feedback>
+              Dados sensíveis devem ser coletados somente quando forem necessários para o acompanhamento.
+            </p>
+          </form>
+
+          <form class="auth-panel signup-panel" data-signup-panel="profissional" data-static-form>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="profissional-nome">Nome</label>
+                <input id="profissional-nome" name="profissional-nome" type="text" />
+              </div>
+              <div class="form-field">
+                <label for="profissional-email">Email</label>
+                <input id="profissional-email" name="profissional-email" type="email" />
+              </div>
+              <div class="form-field">
+                <label for="formacao">Formação</label>
+                <input id="formacao" name="formacao" type="text" />
+              </div>
+              <div class="form-field">
+                <label for="linkedin">LinkedIn</label>
+                <input id="linkedin" name="linkedin" type="url" />
+              </div>
+              <div class="form-field full">
+                <label for="experiencia">Experiência com TEA, matemática ou educação</label>
+                <textarea id="experiencia" name="experiencia"></textarea>
+              </div>
+              <div class="form-field full">
+                <label for="disponibilidade">Disponibilidade semanal</label>
+                <textarea id="disponibilidade" name="disponibilidade"></textarea>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit">Enviar voluntariado</button>
+              <a class="btn btn-ghost" href="profissional.html">Ver painel</a>
+            </div>
+            <p class="fine-print" data-form-feedback>Cadastro enviado fica com status de validação pela equipe.</p>
+          </form>
+
+          <form class="auth-panel signup-panel" data-signup-panel="equipe" data-static-form>
+            <div class="form-grid">
+              <div class="form-field full">
+                <label for="codigo-equipe">Código da equipe</label>
+                <input id="codigo-equipe" name="codigo-equipe" type="text" />
+              </div>
+              <div class="form-field full">
+                <label for="email-equipe">Email institucional</label>
+                <input id="email-equipe" name="email-equipe" type="email" />
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit">Solicitar acesso</button>
+              <a class="btn btn-ghost" href="admin.html">Ver painel admin</a>
+            </div>
+            <p class="fine-print" data-form-feedback>Acesso administrativo deve ser restrito à equipe do projeto.</p>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <script src="../js/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel do Profissional | CognitaHub</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+  </head>
+  <body class="app-body">
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Menu do profissional">
+        <a class="sidebar-logo sidebar-logo-clean" href="../index.html">
+          <img src="../assets/logo-retangular-transparent.png" alt="CognitaHub" />
+        </a>
+        <nav class="sidebar-nav">
+          <a class="active" href="profissional.html">Início</a>
+          <a href="#alunos">Meus alunos</a>
+          <a href="#agenda">Agenda</a>
+          <a href="#planos">Planos</a>
+          <a href="#relatorios">Relatórios</a>
+          <a href="atividades.html">Materiais</a>
+        </nav>
+        <div class="sidebar-footer">
+          <button class="btn btn-soft" type="button" data-focus-toggle aria-pressed="false">Modo Foco</button>
+        </div>
+      </aside>
+
+      <main class="app-main">
+        <div class="app-topbar">
+          <div>
+            <p class="eyebrow">Profissional voluntário</p>
+            <h1>Olá, Maria</h1>
+          </div>
+          <a class="btn btn-ghost" href="../index.html">Site público</a>
+        </div>
+
+        <section class="app-hero">
+          <div>
+            <p class="eyebrow">Ciclo atual</p>
+            <h2>Você acompanha 2 alunos neste ciclo.</h2>
+            <p>
+              A tela prioriza plano, registro de sessão e relatório mensal para manter o acompanhamento consistente.
+            </p>
+          </div>
+          <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
+        </section>
+
+        <section class="stats-grid" aria-label="Resumo profissional">
+          <article class="app-card stat">
+            <span>Alunos ativos</span>
+            <strong>2</strong>
+          </article>
+          <article class="app-card stat">
+            <span>Sessões na semana</span>
+            <strong>3</strong>
+          </article>
+          <article class="app-card stat">
+            <span>Relatórios</span>
+            <strong>1 pendente</strong>
+          </article>
+          <article class="app-card stat">
+            <span>Disponibilidade</span>
+            <strong>4h semanais</strong>
+          </article>
+        </section>
+
+        <section class="dashboard-grid">
+          <article class="app-card" id="alunos">
+            <h2>Meus alunos</h2>
+            <ul class="student-list">
+              <li class="list-row">
+                <div>
+                  <strong>João Pereira</strong>
+                  <span>5º ano - foco em operações básicas e frações.</span>
+                </div>
+                <span class="tag">Mês 2/6</span>
+              </li>
+              <li class="list-row">
+                <div>
+                  <strong>Lia Costa</strong>
+                  <span>8º ano - foco em equações simples e problemas do cotidiano.</span>
+                </div>
+                <span class="tag blue">Mês 1/6</span>
+              </li>
+            </ul>
+          </article>
+
+          <aside class="app-card" id="relatorios">
+            <h2>Registro rápido</h2>
+            <ul class="task-list">
+              <li class="list-row">
+                <div>
+                  <strong>Sessão realizada</strong>
+                  <span>Frações equivalentes com material visual.</span>
+                </div>
+              </li>
+              <li class="list-row">
+                <div>
+                  <strong>Próximo passo</strong>
+                  <span>Aplicar problemas com receitas e medidas.</span>
+                </div>
+              </li>
+              <li class="list-row">
+                <div>
+                  <strong>Relatório mensal</strong>
+                  <span>Enviar até sexta-feira.</span>
+                </div>
+              </li>
+            </ul>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <nav class="bottom-nav" aria-label="Menu inferior">
+      <a class="active" href="profissional.html">Início</a>
+      <a href="#alunos">Alunos</a>
+      <a href="#agenda">Agenda</a>
+      <a href="#relatorios">Relatórios</a>
+      <a href="atividades.html">Materiais</a>
+    </nav>
+
+    <script src="../js/app.js"></script>
+  </body>
+</html>

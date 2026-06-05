@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atividades | CognitaHub</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+    <header class="site-header" data-header>
+      <a class="brand brand-clean" href="../index.html" aria-label="Cognita Hub início">
+        <span class="brand-orb">
+          <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
+        </span>
+        <span class="brand-copy">
+          <strong>Cognita Hub</strong>
+          <small>TEA + Matemática</small>
+        </span>
+      </a>
+
+      <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="site-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span class="sr-only">Abrir menu</span>
+      </button>
+
+      <nav class="site-nav" id="site-nav" data-nav>
+        <a href="../index.html#como-funciona">Como funciona</a>
+        <a href="../index.html#publico">Para alunos</a>
+        <a href="../index.html#plataforma">Plataforma</a>
+        <a href="cadastro.html">Participar</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="btn btn-soft" type="button" data-focus-toggle aria-pressed="false">Modo Foco</button>
+        <a class="btn btn-ghost" href="login.html">Entrar</a>
+      </div>
+    </header>
+
+    <main class="activities-main" id="conteudo">
+      <section class="activities-hero">
+        <div>
+          <p class="eyebrow">Biblioteca inicial</p>
+          <h1>Matemática Cognita</h1>
+          <p>
+            Atividades organizadas por série, objetivo e orientação para o profissional voluntário conduzir o apoio com
+            clareza.
+          </p>
+        </div>
+        <a class="btn btn-primary" href="cadastro.html">Participar</a>
+      </section>
+
+      <div class="grade-tabs" role="tablist" aria-label="Filtrar por série">
+        <button class="grade-tab active" type="button" data-grade="todos">Todos</button>
+        <button class="grade-tab" type="button" data-grade="5">5º ano</button>
+        <button class="grade-tab" type="button" data-grade="6">6º ano</button>
+        <button class="grade-tab" type="button" data-grade="7">7º ano</button>
+        <button class="grade-tab" type="button" data-grade="8">8º ano</button>
+        <button class="grade-tab" type="button" data-grade="9">9º ano</button>
+      </div>
+
+      <section class="activity-grid" aria-label="Atividades de matemática">
+        <article class="activity-card" data-card-grade="5 6">
+          <span class="activity-meta">5º e 6º ano</span>
+          <h2>Operações básicas</h2>
+          <p>Sequência curta para revisar soma, subtração, multiplicação e divisão com exemplos visuais.</p>
+          <footer>
+            <span class="tag">Iniciante</span>
+            <span class="tag blue">Rotina</span>
+          </footer>
+        </article>
+
+        <article class="activity-card" data-card-grade="5 6 7">
+          <span class="activity-meta">5º ao 7º ano</span>
+          <h2>Frações equivalentes</h2>
+          <p>Comparação de partes usando desenhos, medidas simples e problemas do cotidiano.</p>
+          <footer>
+            <span class="tag">Visual</span>
+            <span class="tag wine">Semana 4</span>
+          </footer>
+        </article>
+
+        <article class="activity-card" data-card-grade="7 8">
+          <span class="activity-meta">7º e 8º ano</span>
+          <h2>Porcentagem</h2>
+          <p>Atividade guiada com descontos, gráficos simples e interpretação de valores.</p>
+          <footer>
+            <span class="tag">Intermediário</span>
+            <span class="tag blue">Cotidiano</span>
+          </footer>
+        </article>
+
+        <article class="activity-card" data-card-grade="6 7 8">
+          <span class="activity-meta">6º ao 8º ano</span>
+          <h2>Geometria básica</h2>
+          <p>Reconhecimento de formas, perímetro e área com objetos da casa e da escola.</p>
+          <footer>
+            <span class="tag">Concreto</span>
+            <span class="tag wine">Espacial</span>
+          </footer>
+        </article>
+
+        <article class="activity-card" data-card-grade="8 9">
+          <span class="activity-meta">8º e 9º ano</span>
+          <h2>Equações simples</h2>
+          <p>Introdução ao equilíbrio da igualdade com passos curtos e registro de estratégia.</p>
+          <footer>
+            <span class="tag">Intermediário</span>
+            <span class="tag blue">Álgebra</span>
+          </footer>
+        </article>
+
+        <article class="activity-card" data-card-grade="5 6 7 8 9">
+          <span class="activity-meta">5º ao 9º ano</span>
+          <h2>Problemas do cotidiano</h2>
+          <p>Leitura de enunciados com marcação de dados, pergunta principal e escolha de operação.</p>
+          <footer>
+            <span class="tag">Leitura</span>
+            <span class="tag wine">Apoio</span>
+          </footer>
+        </article>
+      </section>
+    </main>
+
+    <script src="../js/app.js"></script>
+  </body>
+</html>

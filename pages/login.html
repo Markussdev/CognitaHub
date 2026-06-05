@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Entrar | CognitaHub</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+    <header class="site-header" data-header>
+      <a class="brand brand-clean" href="../index.html" aria-label="Cognita Hub início">
+        <span class="brand-orb">
+          <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
+        </span>
+        <span class="brand-copy">
+          <strong>Cognita Hub</strong>
+          <small>TEA + Matemática</small>
+        </span>
+      </a>
+
+      <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="site-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span class="sr-only">Abrir menu</span>
+      </button>
+
+      <nav class="site-nav" id="site-nav" data-nav>
+        <a href="../index.html#como-funciona">Como funciona</a>
+        <a href="../index.html#publico">Para alunos</a>
+        <a href="../index.html#voluntarios">Profissionais</a>
+        <a href="atividades.html">Atividades</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="btn btn-soft" type="button" data-focus-toggle aria-pressed="false">Modo Foco</button>
+        <a class="btn btn-primary" href="cadastro.html">Participar</a>
+      </div>
+    </header>
+
+    <main class="auth-main" id="conteudo">
+      <div class="auth-layout">
+        <section class="auth-intro">
+          <div>
+            <p class="eyebrow">Área interna</p>
+            <h1>Entrar</h1>
+            <p>
+              Acesso para responsáveis, profissionais voluntários e equipe CognitaHub acompanharem ciclos, agenda e
+              evolução.
+            </p>
+          </div>
+          <img src="../assets/sticker.png" alt="" aria-hidden="true" />
+        </section>
+
+        <section class="auth-content" aria-labelledby="login-title">
+          <div class="section-heading align-left">
+            <p class="eyebrow">Bem-vindo de volta</p>
+            <h2 id="login-title">Continue seu acompanhamento.</h2>
+          </div>
+
+          <form class="auth-panel" data-static-form>
+            <div class="form-grid">
+              <div class="form-field full">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" autocomplete="email" placeholder="voce@email.com" />
+              </div>
+              <div class="form-field full">
+                <label for="password">Senha</label>
+                <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Sua senha" />
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit">Entrar</button>
+              <a class="btn btn-ghost" href="cadastro.html">Criar cadastro</a>
+            </div>
+            <p class="fine-print" data-form-feedback>
+              Este layout ainda é estático. A autenticação entra quando a base do produto estiver definida.
+            </p>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <script src="../js/app.js"></script>
+  </body>
+</html>
