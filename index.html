@@ -88,8 +88,7 @@
       </section>
 
       <section class="section journey-section journey-redesign" id="como-funciona">
-        <img class="journey-mascot" src="assets/pattern-math.png" alt="" aria-hidden="true" />
-        <div class="section-heading">
+<div class="section-heading">
           <p class="eyebrow">Como funciona</p>
           <h2>Uma jornada simples, humana e previsível.</h2>
           <p>
@@ -101,59 +100,510 @@
         <div class="journey-grid journey-path">
           <article class="journey-card">
             <span class="journey-index">01</span>
-            <div class="journey-icon" aria-hidden="true">01</div>
+            <div class="journey-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z"></path>
+                <path d="M4 21a8 8 0 0 1 16 0"></path>
+                <path d="M19 8v6"></path>
+                <path d="M16 11h6"></path>
+              </svg>
+            </div>
             <h3>Cadastro</h3>
             <p>O responsável informa série, dificuldades em matemática, horários e necessidades educacionais.</p>
           </article>
 
           <article class="journey-card">
             <span class="journey-index">02</span>
-            <div class="journey-icon" aria-hidden="true">02</div>
+            <div class="journey-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"></path>
+                <path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"></path>
+              </svg>
+            </div>
             <h3>Conexão</h3>
             <p>A equipe Cognita valida profissionais e faz o match manual com segurança e cuidado.</p>
           </article>
 
           <article class="journey-card">
             <span class="journey-index">03</span>
-            <div class="journey-icon" aria-hidden="true">03</div>
+            <div class="journey-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 19V5"></path>
+                <path d="M4 19h16"></path>
+                <path d="M8 16v-4"></path>
+                <path d="M12 16V8"></path>
+                <path d="M16 16v-6"></path>
+              </svg>
+            </div>
             <h3>Acompanhamento</h3>
             <p>O aluno recebe apoio em matemática durante um ciclo com metas, atividades e registros.</p>
           </article>
         </div>
       </section>
 
-      <section class="section audience-v2 audience-surface" id="publico">
-        <div class="audience-copy">
-          <p class="eyebrow">Para alunos e responsáveis</p>
-          <h2>A plataforma não pressiona. Ela organiza o caminho.</h2>
+      <section class="section hub-tools-section" id="plataforma">
+        <span class="section-anchor" id="publico"></span>
+        <div class="section-heading">
+          <p class="eyebrow">Plataforma Cognita</p>
+          <h2>Tudo para acompanhar em um só lugar</h2>
           <p>
-            A experiência do aluno precisa ser simples, previsível e acolhedora. Por isso, o Cognita prioriza poucas
-            ações por tela, linguagem clara e acompanhamento visível.
+            Cadastro, conexão com tutores, rotina de estudos, atividades, relatórios e acompanhamento do ciclo de 6
+            meses reunidos em uma experiência simples e previsível.
           </p>
-          <div class="pill-list">
-            <span>Rotina clara</span>
-            <span>Atividades guiadas</span>
-            <span>Progresso visível</span>
-            <span>Modo foco</span>
-          </div>
         </div>
 
-        <div class="student-panel">
-          <img src="assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
-          <div class="student-message">
-            <strong>Sua próxima sessão está organizada.</strong>
-            <span>Quinta-feira, 15h · Frações equivalentes</span>
-          </div>
-          <div class="student-mini-grid">
-            <div>
-              <strong>Mês 2</strong>
-              <span>de 6</span>
+        <div class="hub-tabs" role="tablist" aria-label="Áreas da plataforma Cognita">
+          <button
+            class="hub-tab active"
+            id="hub-tab-responsaveis"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="hub-panel-responsaveis"
+            data-hub-tab="responsaveis"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 11.5 12 5l8 6.5"></path>
+              <path d="M6.5 10.5V19h11v-8.5"></path>
+              <path d="M9.5 19v-5h5v5"></path>
+            </svg>
+            Para responsáveis
+          </button>
+          <button
+            class="hub-tab"
+            id="hub-tab-tutores"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="hub-panel-tutores"
+            data-hub-tab="tutores"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 5.5h9a3 3 0 0 1 3 3V19H8a3 3 0 0 0-3 3Z"></path>
+              <path d="M17 8.5h2a2 2 0 0 1 2 2V19h-4"></path>
+              <path d="M8 9h5"></path>
+              <path d="M8 12h5"></path>
+            </svg>
+            Para tutores
+          </button>
+          <button
+            class="hub-tab"
+            id="hub-tab-equipe"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="hub-panel-equipe"
+            data-hub-tab="equipe"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 19V9l8-4 8 4v10"></path>
+              <path d="M8 19v-6h8v6"></path>
+              <path d="M10 9h4"></path>
+            </svg>
+            Para equipe
+          </button>
+          <button
+            class="hub-tab"
+            id="hub-tab-instituicoes"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="hub-panel-instituicoes"
+            data-hub-tab="instituicoes"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 4 4 8v8l8 4 8-4V8Z"></path>
+              <path d="M12 12 4.5 8.2"></path>
+              <path d="M12 12v8"></path>
+              <path d="m12 12 7.5-3.8"></path>
+            </svg>
+            Instituições
+          </button>
+        </div>
+
+        <div class="hub-showcase">
+          <article
+            class="hub-panel hub-panel-family active"
+            id="hub-panel-responsaveis"
+            role="tabpanel"
+            aria-labelledby="hub-tab-responsaveis"
+            data-hub-panel="responsaveis"
+          >
+            <div class="hub-panel-copy">
+              <p class="eyebrow">Responsáveis e famílias</p>
+              <h3>Acompanhe o desenvolvimento sem se perder na rotina.</h3>
+              <p>
+                O responsável visualiza o ciclo da criança, próximas sessões, atividades enviadas pelo tutor e registros
+                de progresso em uma experiência clara e acolhedora.
+              </p>
+              <ul class="hub-feature-list">
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+                    </span>
+                    <span class="hf-label">Cadastro da criança</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Registre os dados do aluno, série, dificuldades em matemática, horários disponíveis e necessidades educacionais.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+                    </span>
+                    <span class="hf-label">Próxima sessão organizada</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Veja data, horário e conteúdo da próxima sessão com o tutor em um único lugar.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m9 12 2 2 4-4"/></svg>
+                    </span>
+                    <span class="hf-label">Atividade da semana</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Acompanhe as atividades enviadas pelo tutor para a criança praticar entre as sessões.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                    </span>
+                    <span class="hf-label">Progresso do ciclo</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Visualize em qual mês do ciclo de 6 meses a criança se encontra e seu histórico de presenças.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    </span>
+                    <span class="hf-label">Observações do tutor</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Leia os comentários e orientações do tutor registrados após cada sessão.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                    </span>
+                    <span class="hf-label">Relatório mensal</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Acesse o resumo mensal do acompanhamento com indicadores de progresso e observações.</p></div>
+                </li>
+              </ul>
             </div>
-            <div>
-              <strong>4/4</strong>
-              <span>presenças</span>
+
+            <div class="hub-device" aria-hidden="true">
+              <div class="device-card device-main-card">
+                <span>Próxima sessão</span>
+                <strong>Quinta-feira, 15h</strong>
+                <small>Frações equivalentes</small>
+              </div>
+              <div class="device-grid">
+                <div>
+                  <strong>Mês 2</strong>
+                  <span>de 6</span>
+                </div>
+                <div>
+                  <strong>4/4</strong>
+                  <span>presenças</span>
+                </div>
+              </div>
+              <div class="device-progress">
+                <span class="progress-third"></span>
+              </div>
+              <div class="device-note">
+                <strong>Tutor responsável</strong>
+                <span>Maria Silva</span>
+              </div>
             </div>
-          </div>
+          </article>
+
+          <article
+            class="hub-panel hub-panel-tutor"
+            id="hub-panel-tutores"
+            role="tabpanel"
+            aria-labelledby="hub-tab-tutores"
+            data-hub-panel="tutores"
+            hidden
+          >
+            <div class="hub-panel-copy">
+              <p class="eyebrow">Tutores voluntários</p>
+              <h3>Ferramentas para orientar cada encontro.</h3>
+              <p>
+                O tutor acompanha o perfil educacional da criança, registra sessões, propõe atividades e organiza os
+                próximos passos do acompanhamento.
+              </p>
+              <ul class="hub-feature-list">
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </span>
+                    <span class="hf-label">Perfil educacional da criança</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Acesse o histórico educacional, dificuldades identificadas e perfil do aluno que você acompanha.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </span>
+                    <span class="hf-label">Registro de sessão</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Registre o que foi trabalhado, a evolução percebida e as observações de cada sessão.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5C18 10 19 8.4 19 7a7 7 0 1 0-14 0c0 1.4 1 3 2.5 4.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/></svg>
+                    </span>
+                    <span class="hf-label">Atividades sugeridas</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Envie atividades personalizadas para o aluno praticar ao longo da semana.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8l4 4-4 4"/></svg>
+                    </span>
+                    <span class="hf-label">Próximos passos</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Defina os objetivos, conteúdos e estratégias da próxima sessão com clareza.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                    </span>
+                    <span class="hf-label">Relatório mensal</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Gere o relatório mensal com o resumo do acompanhamento e os indicadores de progresso do aluno.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    </span>
+                    <span class="hf-label">Histórico do acompanhamento</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Consulte sessões passadas, atividades enviadas e a evolução do aluno ao longo de todo o ciclo.</p></div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="hub-device" aria-hidden="true">
+              <div class="session-card">
+                <span>Registro de sessão</span>
+                <strong>Conteúdo trabalhado</strong>
+                <p>Operações básicas e leitura de problemas matemáticos.</p>
+              </div>
+              <div class="session-row">
+                <span>Próximo passo</span>
+                <strong>Revisar multiplicação</strong>
+              </div>
+              <div class="session-row">
+                <span>Status</span>
+                <strong>Relatório pendente</strong>
+              </div>
+            </div>
+          </article>
+
+          <article
+            class="hub-panel hub-panel-team"
+            id="hub-panel-equipe"
+            role="tabpanel"
+            aria-labelledby="hub-tab-equipe"
+            data-hub-panel="equipe"
+            hidden
+          >
+            <div class="hub-panel-copy">
+              <p class="eyebrow">Equipe Cognita</p>
+              <h3>Organização para validar, conectar e acompanhar.</h3>
+              <p>
+                A equipe administra inscrições, valida tutores, cria matches manuais e acompanha os ciclos ativos da
+                plataforma.
+              </p>
+              <ul class="hub-feature-list">
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+                    </span>
+                    <span class="hf-label">Fila de crianças inscritas</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Visualize todas as inscrições de responsáveis aguardando acompanhamento e gerencie a fila.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                    </span>
+                    <span class="hf-label">Validação de tutores</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Analise e aprove os perfis de profissionais voluntários cadastrados antes do match.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    </span>
+                    <span class="hf-label">Match manual</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Conecte alunos e tutores manualmente com base no perfil, disponibilidade e necessidades identificadas.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                    </span>
+                    <span class="hf-label">Ciclos ativos</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Acompanhe todos os ciclos de 6 meses em andamento e identifique pendências ou interrupções.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                    </span>
+                    <span class="hf-label">Relatórios pendentes</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Identifique relatórios mensais em atraso e envie lembretes automáticos aos tutores.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="m23 6-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>
+                    </span>
+                    <span class="hf-label">Indicadores de acompanhamento</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Monitore métricas gerais da plataforma: inscrições, ciclos ativos, atividades enviadas e mais.</p></div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="hub-device hub-device-admin" aria-hidden="true">
+              <div class="admin-stat">
+                <strong>18</strong>
+                <span>crianças inscritas</span>
+              </div>
+              <div class="admin-stat">
+                <strong>7</strong>
+                <span>tutores pendentes</span>
+              </div>
+              <div class="admin-stat wide">
+                <strong>12</strong>
+                <span>ciclos ativos</span>
+              </div>
+            </div>
+          </article>
+
+          <article
+            class="hub-panel hub-panel-network"
+            id="hub-panel-instituicoes"
+            role="tabpanel"
+            aria-labelledby="hub-tab-instituicoes"
+            data-hub-panel="instituicoes"
+            hidden
+          >
+            <div class="hub-panel-copy">
+              <p class="eyebrow">Instituições e redes de apoio</p>
+              <h3>Uma ponte com escolas, famílias e redes de inclusão.</h3>
+              <p>
+                O Cognita pode apoiar parcerias locais, divulgar iniciativas e aproximar famílias de redes educacionais
+                e sociais.
+              </p>
+              <ul class="hub-feature-list">
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="m3 11 19-9-9 19-2-8-8-2z"/></svg>
+                    </span>
+                    <span class="hf-label">Divulgação do projeto</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Compartilhe materiais e informações sobre o Cognita Hub com sua rede de apoio.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </span>
+                    <span class="hf-label">Parcerias locais</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Estabeleça parcerias com escolas e centros de apoio para ampliar o alcance do projeto.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </span>
+                    <span class="hf-label">Encaminhamento de famílias</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Redirecione famílias de alunos com TEA para o cadastro no Cognita de forma simples e segura.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3.3 2 4.7 2 6 2s2.7 0 6-2v-5"/></svg>
+                    </span>
+                    <span class="hf-label">Acompanhamento educacional</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Acompanhe a evolução dos alunos encaminhados pela sua instituição durante o ciclo.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8M15 18h-5M10 6h8v4h-8z"/></svg>
+                    </span>
+                    <span class="hf-label">Notícias e iniciativas</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Divulgue eventos, novidades e iniciativas de inclusão educacional para a sua comunidade.</p></div>
+                </li>
+                <li>
+                  <button class="hub-feature-btn" type="button" aria-expanded="false">
+                    <span class="hf-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </span>
+                    <span class="hf-label">Impacto social</span>
+                    <svg class="hf-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <div class="hf-desc" hidden><p>Acompanhe o impacto do projeto na sua comunidade com dados de alcance e histórias de progresso.</p></div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="hub-device hub-device-network" aria-hidden="true">
+              <div class="network-node main">Cognita</div>
+              <div class="network-node">Famílias</div>
+              <div class="network-node">Tutores</div>
+              <div class="network-node">Escolas</div>
+              <div class="network-node">Instituições</div>
+            </div>
+          </article>
         </div>
       </section>
 
@@ -187,97 +637,6 @@
           <article>
             <span>Mês 6</span>
             <strong>Relatório final</strong>
-          </article>
-        </div>
-      </section>
-
-      <section class="section platform-section platform-redesign" id="plataforma">
-        <div class="section-heading">
-          <p class="eyebrow">Plataforma interna</p>
-          <h2>Painéis separados para cada rotina do projeto.</h2>
-        </div>
-
-        <div class="role-tabs" role="tablist" aria-label="Prévia dos painéis">
-          <button class="role-tab active" type="button" role="tab" aria-selected="true" data-role-tab="responsavel">
-            Responsável
-          </button>
-          <button class="role-tab" type="button" role="tab" aria-selected="false" data-role-tab="profissional">
-            Profissional
-          </button>
-          <button class="role-tab" type="button" role="tab" aria-selected="false" data-role-tab="admin">Admin</button>
-        </div>
-
-        <div class="dashboard-preview">
-          <article class="preview-panel active" data-role-panel="responsavel">
-            <div class="preview-header">
-              <div>
-                <p class="eyebrow">Painel do responsável</p>
-                <h3>Olá, João</h3>
-              </div>
-              <a class="btn btn-ghost" href="pages/responsavel.html">Abrir painel</a>
-            </div>
-            <div class="mini-grid">
-              <div class="mini-card">
-                <span>Próximo encontro</span>
-                <strong>Quinta, 15h</strong>
-              </div>
-              <div class="mini-card">
-                <span>Progresso</span>
-                <strong>Mês 2 de 6</strong>
-              </div>
-              <div class="mini-card">
-                <span>Atividade</span>
-                <strong>Frações equivalentes</strong>
-              </div>
-            </div>
-          </article>
-
-          <article class="preview-panel" data-role-panel="profissional">
-            <div class="preview-header">
-              <div>
-                <p class="eyebrow">Painel do profissional</p>
-                <h3>2 alunos neste ciclo</h3>
-              </div>
-              <a class="btn btn-ghost" href="pages/profissional.html">Abrir painel</a>
-            </div>
-            <div class="mini-grid">
-              <div class="mini-card">
-                <span>Aluno 1</span>
-                <strong>5º ano - operações</strong>
-              </div>
-              <div class="mini-card">
-                <span>Aluno 2</span>
-                <strong>8º ano - equações</strong>
-              </div>
-              <div class="mini-card">
-                <span>Relatórios</span>
-                <strong>3 pendentes</strong>
-              </div>
-            </div>
-          </article>
-
-          <article class="preview-panel" data-role-panel="admin">
-            <div class="preview-header">
-              <div>
-                <p class="eyebrow">Painel administrativo</p>
-                <h3>Fila de validação e matches</h3>
-              </div>
-              <a class="btn btn-ghost" href="pages/admin.html">Abrir painel</a>
-            </div>
-            <div class="mini-grid">
-              <div class="mini-card">
-                <span>Alunos inscritos</span>
-                <strong>18</strong>
-              </div>
-              <div class="mini-card">
-                <span>Voluntários</span>
-                <strong>7 pendentes</strong>
-              </div>
-              <div class="mini-card">
-                <span>Ciclos ativos</span>
-                <strong>12</strong>
-              </div>
-            </div>
           </article>
         </div>
       </section>

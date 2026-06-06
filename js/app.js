@@ -51,6 +51,10 @@ function setupFloatingHeader() {
 
   syncToggle();
   window.addEventListener("resize", syncToggle);
+
+  window.addEventListener("scroll", () => {
+    header.classList.toggle("is-scrolled", window.scrollY > 80);
+  }, { passive: true });
 }
 
 function setupRoleTabs() {
@@ -69,6 +73,31 @@ function setupRoleTabs() {
 
       panels.forEach((panel) => {
         panel.classList.toggle("active", panel.dataset.rolePanel === role);
+      });
+    });
+  });
+}
+
+function setupHubTabs() {
+  const tabs = document.querySelectorAll("[data-hub-tab]");
+  const panels = document.querySelectorAll("[data-hub-panel]");
+
+  if (!tabs.length || !panels.length) return;
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const target = tab.dataset.hubTab;
+
+      tabs.forEach((item) => {
+        const active = item === tab;
+        item.classList.toggle("active", active);
+        item.setAttribute("aria-selected", String(active));
+      });
+
+      panels.forEach((panel) => {
+        const active = panel.dataset.hubPanel === target;
+        panel.classList.toggle("active", active);
+        panel.hidden = !active;
       });
     });
   });
@@ -131,10 +160,32 @@ function setupFakeForms() {
   });
 }
 
+function setupFeatureAccordion() {
+  document.querySelectorAll(".hub-feature-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const desc = btn.nextElementSibling;
+      const isExpanded = btn.getAttribute("aria-expanded") === "true";
+
+      btn.closest(".hub-feature-list").querySelectorAll(".hub-feature-btn").forEach((other) => {
+        if (other !== btn) {
+          other.setAttribute("aria-expanded", "false");
+          const otherDesc = other.nextElementSibling;
+          if (otherDesc) otherDesc.hidden = true;
+        }
+      });
+
+      btn.setAttribute("aria-expanded", String(!isExpanded));
+      if (desc) desc.hidden = isExpanded;
+    });
+  });
+}
+
 setupFocusMode();
 setupFloatingHeader();
 setupMobileMenu();
 setupRoleTabs();
+setupHubTabs();
 setupSignupTabs();
 setupActivityFilter();
 setupFakeForms();
+setupFeatureAccordion();
