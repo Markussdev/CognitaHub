@@ -125,24 +125,24 @@ function setupSignupTabs() {
     tab.addEventListener("click", () => activatePanel(tab.dataset.signupTab));
   });
 
-  if (window.location.hash === "#profissional") {
-    activatePanel("profissional");
+  if (window.location.hash === "#tutor") {
+    activatePanel("tutor");
   }
 }
 
 function setupActivityFilter() {
-  const tabs = document.querySelectorAll("[data-grade]");
-  const cards = document.querySelectorAll("[data-card-grade]");
+  const tabs = document.querySelectorAll("[data-filter]");
+  const cards = document.querySelectorAll("[data-card-filter]");
 
   tabs.forEach((tab) => {
     tab.addEventListener("click", () => {
-      const grade = tab.dataset.grade;
+      const filter = tab.dataset.filter;
 
       tabs.forEach((item) => item.classList.toggle("active", item === tab));
 
       cards.forEach((card) => {
-        const grades = card.dataset.cardGrade.split(" ");
-        card.hidden = grade !== "todos" && !grades.includes(grade);
+        const filters = card.dataset.cardFilter.split(" ");
+        card.hidden = filter !== "todos" && !filters.includes(filter);
       });
     });
   });

@@ -1782,6 +1782,15 @@ h3 {
   line-height: 1.25;
 }
 
+.stat small {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 .safety-section {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -2231,7 +2240,7 @@ h3 {
 }
 
 .stats-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   margin-bottom: 16px;
 }
 

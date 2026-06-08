@@ -1,3 +1,4 @@
+```mermaid
 flowchart TD
     A[Visitante acessa o site] --> B{Qual perfil?}
 
@@ -23,6 +24,4 @@ flowchart TD
     O --> P[Responsável acompanha evolução]
     P --> Q[Equipe monitora relatórios]
     Q --> R[Relatório final do ciclo]
-
-
-    
+```

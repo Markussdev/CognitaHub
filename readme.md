@@ -113,7 +113,7 @@ flowchart TD
 |---|---|
 | Site público | Apresentação do projeto, problema, solução e chamadas para responsáveis e tutores |
 | Responsável | Cadastro da criança, acompanhamento, atividades, informações do tutor e progresso |
-| Tutor voluntário | Perfil profissional, disponibilidade semanal e registro de sessões |
+| Tutor voluntário | Perfil do tutor, disponibilidade semanal e registro de sessões |
 | Administração | Validação de tutores, organização dos matches e controle dos ciclos |
 
 ## Acessibilidade e experiência
@@ -202,7 +202,7 @@ cognita-hub/
 |   |-- atividades.html
 |   |-- cadastro.html
 |   |-- login.html
-|   |-- profissional.html
+|   |-- tutor.html
 |   `-- responsavel.html
 |-- index.html
 `-- readme.md

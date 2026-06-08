@@ -59,13 +59,18 @@
             <button class="login-role active" type="button" role="tab" aria-selected="true" data-signup-tab="responsavel">
               Responsável
             </button>
-            <button class="login-role" id="profissional" type="button" role="tab" aria-selected="false" data-signup-tab="profissional">
+            <button class="login-role" id="tutor" type="button" role="tab" aria-selected="false" data-signup-tab="tutor">
               Tutor voluntário
             </button>
             <button class="login-role" type="button" role="tab" aria-selected="false" data-signup-tab="equipe">
               Equipe
             </button>
           </div>
+
+          <p class="login-helper">
+            Este cadastro não garante início imediato do acompanhamento. A equipe Cognita analisará as informações e
+            entrará em contato quando houver tutor compatível.
+          </p>
 
           <form class="signup-panel active" data-signup-panel="responsavel" data-static-form>
             <div class="form-grid">
@@ -120,22 +125,22 @@
             </div>
             <div class="form-actions">
               <button class="btn btn-primary" type="submit">Enviar cadastro</button>
-              <a class="btn btn-ghost" href="responsavel.html">Ver painel</a>
+              <a class="btn btn-ghost" href="responsavel.html">Ver exemplo do painel</a>
             </div>
             <p class="fine-print" data-form-feedback>
               Dados sensíveis devem ser coletados somente quando necessários para o acompanhamento.
             </p>
           </form>
 
-          <form class="signup-panel" data-signup-panel="profissional" data-static-form>
+          <form class="signup-panel" data-signup-panel="tutor" data-static-form>
             <div class="form-grid">
               <div class="form-field">
-                <label for="profissional-nome">Nome</label>
-                <input id="profissional-nome" name="profissional-nome" type="text" />
+                <label for="tutor-nome">Nome</label>
+                <input id="tutor-nome" name="tutor-nome" type="text" />
               </div>
               <div class="form-field">
-                <label for="profissional-email">Email</label>
-                <input id="profissional-email" name="profissional-email" type="email" />
+                <label for="tutor-email">Email</label>
+                <input id="tutor-email" name="tutor-email" type="email" />
               </div>
               <div class="form-field">
                 <label for="formacao">Formação</label>
@@ -156,7 +161,7 @@
             </div>
             <div class="form-actions">
               <button class="btn btn-primary" type="submit">Enviar voluntariado</button>
-              <a class="btn btn-ghost" href="profissional.html">Ver painel do tutor</a>
+              <a class="btn btn-ghost" href="tutor.html">Ver exemplo do painel do tutor</a>
             </div>
             <p class="fine-print" data-form-feedback>Cadastro enviado fica com status de validação pela equipe.</p>
           </form>
