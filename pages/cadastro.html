@@ -9,9 +9,9 @@
   <body>
     <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
 
-    <header class="site-header" data-header>
-      <a class="brand brand-clean" href="../index.html" aria-label="Cognita Hub início">
-        <span class="brand-orb">
+    <header class="auth-header">
+      <a class="auth-brand" href="../index.html" aria-label="Cognita Hub início">
+        <span class="brand-icon">
           <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
         </span>
         <span class="brand-copy">
@@ -19,58 +19,55 @@
           <small>TEA + Matemática</small>
         </span>
       </a>
-
-      <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="site-nav">
-        <span></span>
-        <span></span>
-        <span></span>
-        <span class="sr-only">Abrir menu</span>
-      </button>
-
-      <nav class="site-nav" id="site-nav" data-nav>
-        <a href="../index.html#como-funciona">Como funciona</a>
-        <a href="../index.html#publico">Para alunos</a>
-        <a href="../index.html#voluntarios">Profissionais</a>
-        <a href="atividades.html">Atividades</a>
-      </nav>
-
-      <div class="header-actions">
-        <button class="btn btn-soft" type="button" data-focus-toggle aria-pressed="false">Modo Foco</button>
-        <a class="btn btn-ghost" href="login.html">Entrar</a>
+      <div class="auth-header-actions">
+        <a class="auth-link-btn" href="../index.html">Voltar ao site</a>
+        <a class="auth-primary-btn" href="login.html">Entrar</a>
       </div>
     </header>
 
-    <main class="auth-main" id="conteudo">
-      <div class="auth-layout">
-        <section class="auth-intro">
+    <main class="login-portal" id="conteudo">
+      <div class="login-card">
+        <div class="login-story">
           <div>
-            <p class="eyebrow">Participar</p>
-            <h1>Cadastro</h1>
-            <p>
-              O primeiro passo é escolher o perfil. Depois a equipe CognitaHub valida as informações e organiza o
-              próximo ciclo.
-            </p>
-          </div>
-          <img src="../assets/sticker.png" alt="" aria-hidden="true" />
-        </section>
-
-        <section class="auth-content">
-          <div class="section-heading align-left">
-            <p class="eyebrow">Escolha seu perfil</p>
-            <h2>Como você deseja participar?</h2>
+            <p class="eyebrow">Junte-se ao Cognita Hub</p>
+            <h1>Comece seu ciclo de acompanhamento.</h1>
+            <p>O primeiro passo é escolher seu perfil. A equipe Cognita valida as informações e organiza o próximo ciclo.</p>
           </div>
 
-          <div class="signup-tabs" role="tablist" aria-label="Tipos de cadastro">
-            <button class="signup-tab active" type="button" role="tab" aria-selected="true" data-signup-tab="responsavel">
+          <div class="login-mascot-wrap">
+            <img src="../assets/sticker.png" alt="" aria-hidden="true" />
+          </div>
+
+          <div class="login-mini-stats">
+            <div>
+              <strong>0 custo</strong>
+              <span>para responsáveis</span>
+            </div>
+            <div>
+              <strong>100%</strong>
+              <span>validado pela equipe</span>
+            </div>
+          </div>
+        </div>
+
+        <section class="login-form-area" aria-labelledby="cadastro-title">
+          <p class="eyebrow">Escolha seu perfil</p>
+          <h2 id="cadastro-title">Como você deseja participar?</h2>
+          <p class="login-helper">Selecione o perfil correto para preencher o formulário de cadastro.</p>
+
+          <div class="login-role-tabs" role="tablist" aria-label="Tipos de cadastro">
+            <button class="login-role active" type="button" role="tab" aria-selected="true" data-signup-tab="responsavel">
               Responsável
             </button>
-            <button class="signup-tab" id="profissional" type="button" role="tab" aria-selected="false" data-signup-tab="profissional">
-              Profissional
+            <button class="login-role" id="profissional" type="button" role="tab" aria-selected="false" data-signup-tab="profissional">
+              Tutor voluntário
             </button>
-            <button class="signup-tab" type="button" role="tab" aria-selected="false" data-signup-tab="equipe">Equipe</button>
+            <button class="login-role" type="button" role="tab" aria-selected="false" data-signup-tab="equipe">
+              Equipe
+            </button>
           </div>
 
-          <form class="auth-panel signup-panel active" data-signup-panel="responsavel" data-static-form>
+          <form class="signup-panel active" data-signup-panel="responsavel" data-static-form>
             <div class="form-grid">
               <div class="form-field">
                 <label for="responsavel-nome">Nome do responsável</label>
@@ -81,39 +78,56 @@
                 <input id="responsavel-email" name="responsavel-email" type="email" />
               </div>
               <div class="form-field">
-                <label for="aluno-nome">Nome do aluno</label>
-                <input id="aluno-nome" name="aluno-nome" type="text" />
+                <label for="crianca-nome">Nome da criança</label>
+                <input id="crianca-nome" name="crianca-nome" type="text" />
               </div>
               <div class="form-field">
-                <label for="serie">Série escolar</label>
-                <select id="serie" name="serie">
-                  <option>5º ano</option>
-                  <option>6º ano</option>
-                  <option>7º ano</option>
-                  <option>8º ano</option>
-                  <option>9º ano</option>
+                <label for="idade-crianca">Idade da criança</label>
+                <select id="idade-crianca" name="idade-crianca">
+                  <option>5 anos</option>
+                  <option>6 anos</option>
+                  <option>7 anos</option>
+                  <option>8 anos</option>
+                  <option>9 anos</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="etapa-escolar">Etapa escolar</label>
+                <select id="etapa-escolar" name="etapa-escolar">
+                  <option>Educação infantil</option>
+                  <option>1º ano do ensino fundamental</option>
+                  <option>2º ano do ensino fundamental</option>
+                  <option>3º ano do ensino fundamental</option>
+                  <option>4º ano do ensino fundamental</option>
                 </select>
               </div>
               <div class="form-field full">
-                <label for="dificuldades">Dificuldades em matemática</label>
+                <label for="dificuldades">Dificuldades observadas em matemática</label>
                 <textarea id="dificuldades" name="dificuldades"></textarea>
+              </div>
+              <div class="form-field full">
+                <label for="acompanhamento">A criança já possui acompanhamento educacional ou terapêutico?</label>
+                <select id="acompanhamento" name="acompanhamento">
+                  <option>Sim</option>
+                  <option>Não</option>
+                  <option>Prefiro informar depois</option>
+                </select>
               </div>
               <div class="form-field full">
                 <label for="preferencias">Preferências de aprendizagem e observações importantes</label>
                 <textarea id="preferencias" name="preferencias"></textarea>
               </div>
             </div>
-
             <div class="form-actions">
               <button class="btn btn-primary" type="submit">Enviar cadastro</button>
               <a class="btn btn-ghost" href="responsavel.html">Ver painel</a>
             </div>
             <p class="fine-print" data-form-feedback>
-              Dados sensíveis devem ser coletados somente quando forem necessários para o acompanhamento.
+              Dados sensíveis devem ser coletados somente quando necessários para o acompanhamento.
             </p>
           </form>
 
-          <form class="auth-panel signup-panel" data-signup-panel="profissional" data-static-form>
+          <form class="signup-panel" data-signup-panel="profissional" data-static-form>
             <div class="form-grid">
               <div class="form-field">
                 <label for="profissional-nome">Nome</label>
@@ -140,15 +154,14 @@
                 <textarea id="disponibilidade" name="disponibilidade"></textarea>
               </div>
             </div>
-
             <div class="form-actions">
               <button class="btn btn-primary" type="submit">Enviar voluntariado</button>
-              <a class="btn btn-ghost" href="profissional.html">Ver painel</a>
+              <a class="btn btn-ghost" href="profissional.html">Ver painel do tutor</a>
             </div>
             <p class="fine-print" data-form-feedback>Cadastro enviado fica com status de validação pela equipe.</p>
           </form>
 
-          <form class="auth-panel signup-panel" data-signup-panel="equipe" data-static-form>
+          <form class="signup-panel" data-signup-panel="equipe" data-static-form>
             <div class="form-grid">
               <div class="form-field full">
                 <label for="codigo-equipe">Código da equipe</label>
@@ -159,7 +172,6 @@
                 <input id="email-equipe" name="email-equipe" type="email" />
               </div>
             </div>
-
             <div class="form-actions">
               <button class="btn btn-primary" type="submit">Solicitar acesso</button>
               <a class="btn btn-ghost" href="admin.html">Ver painel admin</a>

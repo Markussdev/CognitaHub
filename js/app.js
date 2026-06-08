@@ -180,12 +180,25 @@ function setupFeatureAccordion() {
   });
 }
 
+function setupLoginRoleTabs() {
+  const groups = document.querySelectorAll(".login-role-tabs");
+  groups.forEach((group) => {
+    const buttons = group.querySelectorAll(".login-role:not([data-signup-tab])");
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        buttons.forEach((b) => b.classList.toggle("active", b === btn));
+      });
+    });
+  });
+}
+
 setupFocusMode();
 setupFloatingHeader();
 setupMobileMenu();
 setupRoleTabs();
 setupHubTabs();
 setupSignupTabs();
+setupLoginRoleTabs();
 setupActivityFilter();
 setupFakeForms();
 setupFeatureAccordion();
