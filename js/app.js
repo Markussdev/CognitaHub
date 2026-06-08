@@ -103,33 +103,6 @@ function setupHubTabs() {
   });
 }
 
-function setupSignupTabs() {
-  const tabs = document.querySelectorAll("[data-signup-tab]");
-  const panels = document.querySelectorAll("[data-signup-panel]");
-
-  if (!tabs.length) return;
-
-  const activatePanel = (target) => {
-    tabs.forEach((tab) => {
-      const active = tab.dataset.signupTab === target;
-      tab.classList.toggle("active", active);
-      tab.setAttribute("aria-selected", String(active));
-    });
-
-    panels.forEach((panel) => {
-      panel.classList.toggle("active", panel.dataset.signupPanel === target);
-    });
-  };
-
-  tabs.forEach((tab) => {
-    tab.addEventListener("click", () => activatePanel(tab.dataset.signupTab));
-  });
-
-  if (window.location.hash === "#tutor") {
-    activatePanel("tutor");
-  }
-}
-
 function setupActivityFilter() {
   const tabs = document.querySelectorAll("[data-filter]");
   const cards = document.querySelectorAll("[data-card-filter]");
@@ -160,6 +133,31 @@ function setupFakeForms() {
   });
 }
 
+function setupLoginRouting() {
+  const form = document.querySelector("[data-login-form]");
+  const buttons = document.querySelectorAll("[data-login-role]");
+
+  if (!form || !buttons.length) return;
+
+  let selectedRole = "responsavel";
+  const routes = {
+    responsavel: "responsavel.html",
+    tutor: "tutor.html",
+    equipe: "admin.html",
+  };
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      selectedRole = button.dataset.loginRole;
+    });
+  });
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    window.location.href = routes[selectedRole];
+  });
+}
+
 function setupFeatureAccordion() {
   document.querySelectorAll(".hub-feature-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -183,7 +181,7 @@ function setupFeatureAccordion() {
 function setupLoginRoleTabs() {
   const groups = document.querySelectorAll(".login-role-tabs");
   groups.forEach((group) => {
-    const buttons = group.querySelectorAll(".login-role:not([data-signup-tab])");
+    const buttons = group.querySelectorAll(".login-role");
     buttons.forEach((btn) => {
       btn.addEventListener("click", () => {
         buttons.forEach((b) => b.classList.toggle("active", b === btn));
@@ -197,8 +195,8 @@ setupFloatingHeader();
 setupMobileMenu();
 setupRoleTabs();
 setupHubTabs();
-setupSignupTabs();
 setupLoginRoleTabs();
 setupActivityFilter();
+setupLoginRouting();
 setupFakeForms();
 setupFeatureAccordion();

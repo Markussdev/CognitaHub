@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cadastro do Responsável | CognitaHub</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+    <header class="auth-header">
+      <a class="auth-brand" href="../index.html" aria-label="Cognita Hub início">
+        <span class="brand-icon">
+          <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
+        </span>
+        <span class="brand-copy">
+          <strong>Cognita Hub</strong>
+          <small>TEA + Matemática</small>
+        </span>
+      </a>
+      <div class="auth-header-actions">
+        <a class="auth-link-btn" href="cadastro.html">Trocar perfil</a>
+        <a class="auth-primary-btn" href="login.html">Entrar</a>
+      </div>
+    </header>
+
+    <main class="login-portal" id="conteudo">
+      <div class="login-card">
+        <div class="login-story">
+          <div>
+            <p class="eyebrow">Cadastro do responsável</p>
+            <h1>Cadastre a criança para análise.</h1>
+            <p>
+              A equipe Cognita valida as informações, organiza a fila e entra em contato quando houver tutor compatível.
+            </p>
+          </div>
+
+          <div class="login-mascot-wrap">
+            <img src="../assets/sticker.png" alt="" aria-hidden="true" />
+          </div>
+
+          <div class="login-mini-stats">
+            <div>
+              <strong>5 a 9 anos</strong>
+              <span>matemática inicial</span>
+            </div>
+            <div>
+              <strong>0 custo</strong>
+              <span>para responsáveis</span>
+            </div>
+          </div>
+        </div>
+
+        <section class="login-form-area" aria-labelledby="cadastro-responsavel-title">
+          <p class="eyebrow">Responsável</p>
+          <h2 id="cadastro-responsavel-title">Informações para iniciar a análise.</h2>
+          <p class="login-helper">
+            Este cadastro não garante início imediato do acompanhamento. A equipe Cognita analisará as informações e
+            entrará em contato quando houver tutor compatível.
+          </p>
+
+          <form class="signup-panel active" data-static-form>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="responsavel-nome">Nome do responsável</label>
+                <input id="responsavel-nome" name="responsavel-nome" type="text" />
+              </div>
+              <div class="form-field">
+                <label for="responsavel-email">Email</label>
+                <input id="responsavel-email" name="responsavel-email" type="email" />
+              </div>
+              <div class="form-field">
+                <label for="crianca-nome">Nome da criança</label>
+                <input id="crianca-nome" name="crianca-nome" type="text" />
+              </div>
+              <div class="form-field">
+                <label for="idade-crianca">Idade da criança</label>
+                <select id="idade-crianca" name="idade-crianca">
+                  <option>5 anos</option>
+                  <option>6 anos</option>
+                  <option>7 anos</option>
+                  <option>8 anos</option>
+                  <option>9 anos</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="etapa-escolar">Etapa escolar</label>
+                <select id="etapa-escolar" name="etapa-escolar">
+                  <option>Educação infantil</option>
+                  <option>1º ano do ensino fundamental</option>
+                  <option>2º ano do ensino fundamental</option>
+                  <option>3º ano do ensino fundamental</option>
+                  <option>4º ano do ensino fundamental</option>
+                </select>
+              </div>
+              <div class="form-field full">
+                <label for="dificuldades">Dificuldades observadas em matemática</label>
+                <textarea id="dificuldades" name="dificuldades"></textarea>
+              </div>
+              <div class="form-field full">
+                <label for="acompanhamento">A criança já possui acompanhamento educacional ou terapêutico?</label>
+                <select id="acompanhamento" name="acompanhamento">
+                  <option>Sim</option>
+                  <option>Não</option>
+                  <option>Prefiro informar depois</option>
+                </select>
+              </div>
+              <div class="form-field full">
+                <label for="preferencias">Preferências de aprendizagem e observações importantes</label>
+                <textarea id="preferencias" name="preferencias"></textarea>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit">Enviar cadastro</button>
+              <a class="btn btn-ghost" href="responsavel.html">Ver exemplo do painel</a>
+            </div>
+            <p class="fine-print" data-form-feedback>
+              Dados sensíveis devem ser coletados somente quando necessários para o acompanhamento.
+            </p>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <script src="../js/app.js"></script>
+  </body>
+</html>

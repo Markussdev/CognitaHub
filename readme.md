@@ -201,6 +201,8 @@ cognita-hub/
 |   |-- admin.html
 |   |-- atividades.html
 |   |-- cadastro.html
+|   |-- cadastro-responsavel.html
+|   |-- cadastro-tutor.html
 |   |-- login.html
 |   |-- tutor.html
 |   `-- responsavel.html

@@ -30,8 +30,11 @@
         <div class="login-story">
           <div>
             <p class="eyebrow">Junte-se ao Cognita Hub</p>
-            <h1>Comece seu ciclo de acompanhamento.</h1>
-            <p>O primeiro passo é escolher seu perfil. A equipe Cognita valida as informações e organiza o próximo ciclo.</p>
+            <h1>Escolha como participar.</h1>
+            <p>
+              O Cognita organiza cadastros, validações e ciclos de acompanhamento. Escolha o caminho correto para
+              iniciar o fluxo.
+            </p>
           </div>
 
           <div class="login-mascot-wrap">
@@ -40,149 +43,46 @@
 
           <div class="login-mini-stats">
             <div>
-              <strong>0 custo</strong>
-              <span>para responsáveis</span>
+              <strong>3 perfis</strong>
+              <span>responsável, tutor e equipe</span>
             </div>
             <div>
-              <strong>100%</strong>
-              <span>validado pela equipe</span>
+              <strong>1 fluxo</strong>
+              <span>validação antes do ciclo</span>
             </div>
           </div>
         </div>
 
         <section class="login-form-area" aria-labelledby="cadastro-title">
-          <p class="eyebrow">Escolha seu perfil</p>
+          <p class="eyebrow">Cadastro</p>
           <h2 id="cadastro-title">Como você deseja participar?</h2>
-          <p class="login-helper">Selecione o perfil correto para preencher o formulário de cadastro.</p>
-
-          <div class="login-role-tabs" role="tablist" aria-label="Tipos de cadastro">
-            <button class="login-role active" type="button" role="tab" aria-selected="true" data-signup-tab="responsavel">
-              Responsável
-            </button>
-            <button class="login-role" id="tutor" type="button" role="tab" aria-selected="false" data-signup-tab="tutor">
-              Tutor voluntário
-            </button>
-            <button class="login-role" type="button" role="tab" aria-selected="false" data-signup-tab="equipe">
-              Equipe
-            </button>
-          </div>
-
           <p class="login-helper">
-            Este cadastro não garante início imediato do acompanhamento. A equipe Cognita analisará as informações e
-            entrará em contato quando houver tutor compatível.
+            Selecione seu perfil para acessar o formulário certo. O acompanhamento só começa depois da análise da equipe
+            Cognita e da disponibilidade de um tutor compatível.
           </p>
 
-          <form class="signup-panel active" data-signup-panel="responsavel" data-static-form>
-            <div class="form-grid">
-              <div class="form-field">
-                <label for="responsavel-nome">Nome do responsável</label>
-                <input id="responsavel-nome" name="responsavel-nome" type="text" />
-              </div>
-              <div class="form-field">
-                <label for="responsavel-email">Email</label>
-                <input id="responsavel-email" name="responsavel-email" type="email" />
-              </div>
-              <div class="form-field">
-                <label for="crianca-nome">Nome da criança</label>
-                <input id="crianca-nome" name="crianca-nome" type="text" />
-              </div>
-              <div class="form-field">
-                <label for="idade-crianca">Idade da criança</label>
-                <select id="idade-crianca" name="idade-crianca">
-                  <option>5 anos</option>
-                  <option>6 anos</option>
-                  <option>7 anos</option>
-                  <option>8 anos</option>
-                  <option>9 anos</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label for="etapa-escolar">Etapa escolar</label>
-                <select id="etapa-escolar" name="etapa-escolar">
-                  <option>Educação infantil</option>
-                  <option>1º ano do ensino fundamental</option>
-                  <option>2º ano do ensino fundamental</option>
-                  <option>3º ano do ensino fundamental</option>
-                  <option>4º ano do ensino fundamental</option>
-                </select>
-              </div>
-              <div class="form-field full">
-                <label for="dificuldades">Dificuldades observadas em matemática</label>
-                <textarea id="dificuldades" name="dificuldades"></textarea>
-              </div>
-              <div class="form-field full">
-                <label for="acompanhamento">A criança já possui acompanhamento educacional ou terapêutico?</label>
-                <select id="acompanhamento" name="acompanhamento">
-                  <option>Sim</option>
-                  <option>Não</option>
-                  <option>Prefiro informar depois</option>
-                </select>
-              </div>
-              <div class="form-field full">
-                <label for="preferencias">Preferências de aprendizagem e observações importantes</label>
-                <textarea id="preferencias" name="preferencias"></textarea>
-              </div>
-            </div>
-            <div class="form-actions">
-              <button class="btn btn-primary" type="submit">Enviar cadastro</button>
-              <a class="btn btn-ghost" href="responsavel.html">Ver exemplo do painel</a>
-            </div>
-            <p class="fine-print" data-form-feedback>
-              Dados sensíveis devem ser coletados somente quando necessários para o acompanhamento.
-            </p>
-          </form>
+          <div class="route-choice-grid" aria-label="Tipos de cadastro">
+            <article class="route-choice-card">
+              <span>Responsável</span>
+              <h3>Cadastre uma criança</h3>
+              <p>Informe os dados do responsável, da criança e as necessidades educacionais para entrar na fila de análise.</p>
+              <a class="btn btn-primary" href="cadastro-responsavel.html">Sou responsável</a>
+            </article>
 
-          <form class="signup-panel" data-signup-panel="tutor" data-static-form>
-            <div class="form-grid">
-              <div class="form-field">
-                <label for="tutor-nome">Nome</label>
-                <input id="tutor-nome" name="tutor-nome" type="text" />
-              </div>
-              <div class="form-field">
-                <label for="tutor-email">Email</label>
-                <input id="tutor-email" name="tutor-email" type="email" />
-              </div>
-              <div class="form-field">
-                <label for="formacao">Formação</label>
-                <input id="formacao" name="formacao" type="text" />
-              </div>
-              <div class="form-field">
-                <label for="linkedin">LinkedIn</label>
-                <input id="linkedin" name="linkedin" type="url" />
-              </div>
-              <div class="form-field full">
-                <label for="experiencia">Experiência com TEA, matemática ou educação</label>
-                <textarea id="experiencia" name="experiencia"></textarea>
-              </div>
-              <div class="form-field full">
-                <label for="disponibilidade">Disponibilidade semanal</label>
-                <textarea id="disponibilidade" name="disponibilidade"></textarea>
-              </div>
-            </div>
-            <div class="form-actions">
-              <button class="btn btn-primary" type="submit">Enviar voluntariado</button>
-              <a class="btn btn-ghost" href="tutor.html">Ver exemplo do painel do tutor</a>
-            </div>
-            <p class="fine-print" data-form-feedback>Cadastro enviado fica com status de validação pela equipe.</p>
-          </form>
+            <article class="route-choice-card">
+              <span>Tutor voluntário</span>
+              <h3>Ofereça acompanhamento</h3>
+              <p>Cadastre sua formação, experiência e disponibilidade para passar pela validação da equipe Cognita.</p>
+              <a class="btn btn-primary" href="cadastro-tutor.html">Sou tutor voluntário</a>
+            </article>
 
-          <form class="signup-panel" data-signup-panel="equipe" data-static-form>
-            <div class="form-grid">
-              <div class="form-field full">
-                <label for="codigo-equipe">Código da equipe</label>
-                <input id="codigo-equipe" name="codigo-equipe" type="text" />
-              </div>
-              <div class="form-field full">
-                <label for="email-equipe">Email institucional</label>
-                <input id="email-equipe" name="email-equipe" type="email" />
-              </div>
-            </div>
-            <div class="form-actions">
-              <button class="btn btn-primary" type="submit">Solicitar acesso</button>
-              <a class="btn btn-ghost" href="admin.html">Ver painel admin</a>
-            </div>
-            <p class="fine-print" data-form-feedback>Acesso administrativo deve ser restrito à equipe do projeto.</p>
-          </form>
+            <article class="route-choice-card">
+              <span>Equipe</span>
+              <h3>Acesse a operação</h3>
+              <p>Use o login para acompanhar inscrições, validar tutores, criar matches e monitorar ciclos ativos.</p>
+              <a class="btn btn-ghost" href="login.html">Sou da equipe</a>
+            </article>
+          </div>
         </section>
       </div>
     </main>

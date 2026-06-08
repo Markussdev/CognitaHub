@@ -4,9 +4,12 @@
    - Reforçar que é um hub de acompanhamento.
 
 2. Organizar rotas/páginas
+   - Criar mapa oficial em docs/rotas.md
    - Home
    - Cadastro responsável
    - Cadastro tutor
+   - Escolha de cadastro
+   - Login
    - Painel responsável
    - Painel tutor
    - Painel admin

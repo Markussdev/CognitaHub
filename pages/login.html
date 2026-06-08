@@ -56,12 +56,12 @@
           <p class="login-helper">Escolha seu tipo de acesso para entrar na área correta do hub.</p>
 
           <div class="login-role-tabs" role="group" aria-label="Tipo de acesso">
-            <button class="login-role active" type="button">Responsável</button>
-            <button class="login-role" type="button">Tutor voluntário</button>
-            <button class="login-role" type="button">Equipe</button>
+            <button class="login-role active" type="button" data-login-role="responsavel">Responsável</button>
+            <button class="login-role" type="button" data-login-role="tutor">Tutor voluntário</button>
+            <button class="login-role" type="button" data-login-role="equipe">Equipe</button>
           </div>
 
-          <form class="login-form" data-static-form>
+          <form class="login-form" data-login-form>
             <label class="login-field" for="email">
               <span>Email</span>
               <input id="email" name="email" type="email" autocomplete="email" placeholder="voce@email.com" />
@@ -87,7 +87,7 @@
             </p>
 
             <p class="fine-print" data-form-feedback>
-              Este layout ainda é estático. A autenticação entra quando a base do produto estiver definida.
+              Login simulado para navegar pelo protótipo. A autenticação real entra quando a base do produto estiver definida.
             </p>
           </form>
         </section>

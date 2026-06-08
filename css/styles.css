@@ -2683,6 +2683,44 @@ h3 {
   box-shadow: 0 10px 24px rgba(255, 168, 0, 0.24);
 }
 
+.route-choice-grid {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.route-choice-card {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid rgba(20, 17, 98, 0.1);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.route-choice-card span {
+  color: var(--gold-dark);
+  font-size: 0.8rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.route-choice-card h3 {
+  color: var(--navy);
+  font-size: 1.1rem;
+}
+
+.route-choice-card p {
+  color: var(--muted);
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+
+.route-choice-card .btn {
+  justify-self: start;
+  margin-top: 4px;
+}
+
 .login-form {
   display: grid;
   gap: 16px;

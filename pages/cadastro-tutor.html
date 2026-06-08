@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cadastro do Tutor | CognitaHub</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+    <header class="auth-header">
+      <a class="auth-brand" href="../index.html" aria-label="Cognita Hub início">
+        <span class="brand-icon">
+          <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
+        </span>
+        <span class="brand-copy">
+          <strong>Cognita Hub</strong>
+          <small>TEA + Matemática</small>
+        </span>
+      </a>
+      <div class="auth-header-actions">
+        <a class="auth-link-btn" href="cadastro.html">Trocar perfil</a>
+        <a class="auth-primary-btn" href="login.html">Entrar</a>
+      </div>
+    </header>
+
+    <main class="login-portal" id="conteudo">
+      <div class="login-card">
+        <div class="login-story">
+          <div>
+            <p class="eyebrow">Cadastro do tutor</p>
+            <h1>Participe como tutor voluntário.</h1>
+            <p>
+              A equipe Cognita analisa os dados do tutor antes de liberar matches com crianças em acompanhamento.
+            </p>
+          </div>
+
+          <div class="login-mascot-wrap">
+            <img src="../assets/mascot-hero-wave.png" alt="" aria-hidden="true" />
+          </div>
+
+          <div class="login-mini-stats">
+            <div>
+              <strong>1:1</strong>
+              <span>criança e tutor</span>
+            </div>
+            <div>
+              <strong>6 meses</strong>
+              <span>ciclo acompanhado</span>
+            </div>
+          </div>
+        </div>
+
+        <section class="login-form-area" aria-labelledby="cadastro-tutor-title">
+          <p class="eyebrow">Tutor voluntário</p>
+          <h2 id="cadastro-tutor-title">Informações para validação.</h2>
+          <p class="login-helper">
+            O cadastro do tutor fica com status de validação. A equipe Cognita entrará em contato antes de qualquer
+            vínculo com uma criança.
+          </p>
+
+          <form class="signup-panel active" data-static-form>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="tutor-nome">Nome</label>
+                <input id="tutor-nome" name="tutor-nome" type="text" />
+              </div>
+              <div class="form-field">
+                <label for="tutor-email">Email</label>
+                <input id="tutor-email" name="tutor-email" type="email" />
+              </div>
+              <div class="form-field">
+                <label for="formacao">Formação</label>
+                <input id="formacao" name="formacao" type="text" />
+              </div>
+              <div class="form-field">
+                <label for="linkedin">LinkedIn</label>
+                <input id="linkedin" name="linkedin" type="url" />
+              </div>
+              <div class="form-field full">
+                <label for="experiencia">Experiência com TEA, matemática ou educação</label>
+                <textarea id="experiencia" name="experiencia"></textarea>
+              </div>
+              <div class="form-field full">
+                <label for="disponibilidade">Disponibilidade semanal</label>
+                <textarea id="disponibilidade" name="disponibilidade"></textarea>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit">Enviar voluntariado</button>
+              <a class="btn btn-ghost" href="tutor.html">Ver exemplo do painel do tutor</a>
+            </div>
+            <p class="fine-print" data-form-feedback>Cadastro enviado fica com status de validação pela equipe.</p>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <script src="../js/app.js"></script>
+  </body>
+</html>
