@@ -9,9 +9,9 @@
   <body>
     <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
 
-    <header class="site-header" data-header>
-      <a class="brand brand-clean" href="../index.html" aria-label="Cognita Hub início">
-        <span class="brand-orb">
+    <header class="auth-header">
+      <a class="auth-brand" href="../index.html" aria-label="Cognita Hub início">
+        <span class="brand-icon">
           <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
         </span>
         <span class="brand-copy">
@@ -19,63 +19,73 @@
           <small>TEA + Matemática</small>
         </span>
       </a>
-
-      <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="site-nav">
-        <span></span>
-        <span></span>
-        <span></span>
-        <span class="sr-only">Abrir menu</span>
-      </button>
-
-      <nav class="site-nav" id="site-nav" data-nav>
-        <a href="../index.html#como-funciona">Como funciona</a>
-        <a href="../index.html#publico">Para alunos</a>
-        <a href="../index.html#voluntarios">Profissionais</a>
-        <a href="atividades.html">Atividades</a>
-      </nav>
-
-      <div class="header-actions">
-        <button class="btn btn-soft" type="button" data-focus-toggle aria-pressed="false">Modo Foco</button>
-        <a class="btn btn-primary" href="cadastro.html">Participar</a>
+      <div class="auth-header-actions">
+        <a class="auth-link-btn" href="../index.html">Voltar ao site</a>
+        <a class="auth-primary-btn" href="cadastro.html">Participar</a>
       </div>
     </header>
 
-    <main class="auth-main" id="conteudo">
-      <div class="auth-layout">
-        <section class="auth-intro">
+    <main class="login-portal" id="conteudo">
+      <div class="login-card">
+        <div class="login-story">
           <div>
-            <p class="eyebrow">Área interna</p>
-            <h1>Entrar</h1>
-            <p>
-              Acesso para responsáveis, profissionais voluntários e equipe CognitaHub acompanharem ciclos, agenda e
-              evolução.
+            <p class="eyebrow">Portal Cognita</p>
+            <h1>Seu espaço de acompanhamento.</h1>
+            <p>Entre para visualizar sessões, atividades, progresso do ciclo e registros educacionais em um ambiente simples e organizado.</p>
+          </div>
+
+          <div class="login-mascot-wrap">
+            <img src="../assets/mascot-hero-wave.png" alt="" aria-hidden="true" />
+          </div>
+
+          <div class="login-mini-stats">
+            <div>
+              <strong>6 meses</strong>
+              <span>ciclo de apoio</span>
+            </div>
+            <div>
+              <strong>1:1</strong>
+              <span>acompanhamento</span>
+            </div>
+          </div>
+        </div>
+
+        <section class="login-form-area" aria-labelledby="login-title">
+          <p class="eyebrow">Bem-vindo de volta</p>
+          <h2 id="login-title">Continue seu acompanhamento.</h2>
+          <p class="login-helper">Escolha seu tipo de acesso para entrar na área correta do hub.</p>
+
+          <div class="login-role-tabs" role="group" aria-label="Tipo de acesso">
+            <button class="login-role active" type="button">Responsável</button>
+            <button class="login-role" type="button">Tutor voluntário</button>
+            <button class="login-role" type="button">Equipe</button>
+          </div>
+
+          <form class="login-form" data-static-form>
+            <label class="login-field" for="email">
+              <span>Email</span>
+              <input id="email" name="email" type="email" autocomplete="email" placeholder="voce@email.com" />
+            </label>
+
+            <label class="login-field" for="password">
+              <span>Senha</span>
+              <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Sua senha" />
+            </label>
+
+            <div class="login-options">
+              <label>
+                <input type="checkbox" />
+                <span>Lembrar acesso</span>
+              </label>
+              <a href="#">Esqueci minha senha</a>
+            </div>
+
+            <button class="login-submit" type="submit">Entrar no hub</button>
+
+            <p class="login-switch">
+              Ainda não participa? <a href="cadastro.html">Criar cadastro</a>
             </p>
-          </div>
-          <img src="../assets/sticker.png" alt="" aria-hidden="true" />
-        </section>
 
-        <section class="auth-content" aria-labelledby="login-title">
-          <div class="section-heading align-left">
-            <p class="eyebrow">Bem-vindo de volta</p>
-            <h2 id="login-title">Continue seu acompanhamento.</h2>
-          </div>
-
-          <form class="auth-panel" data-static-form>
-            <div class="form-grid">
-              <div class="form-field full">
-                <label for="email">Email</label>
-                <input id="email" name="email" type="email" autocomplete="email" placeholder="voce@email.com" />
-              </div>
-              <div class="form-field full">
-                <label for="password">Senha</label>
-                <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Sua senha" />
-              </div>
-            </div>
-
-            <div class="form-actions">
-              <button class="btn btn-primary" type="submit">Entrar</button>
-              <a class="btn btn-ghost" href="cadastro.html">Criar cadastro</a>
-            </div>
             <p class="fine-print" data-form-feedback>
               Este layout ainda é estático. A autenticação entra quando a base do produto estiver definida.
             </p>

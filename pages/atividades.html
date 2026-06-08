@@ -9,9 +9,9 @@
   <body>
     <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
 
-    <header class="site-header" data-header>
-      <a class="brand brand-clean" href="../index.html" aria-label="Cognita Hub início">
-        <span class="brand-orb">
+    <header class="header-floating" data-header>
+      <a class="brand-area" href="../index.html" aria-label="Cognita Hub início">
+        <span class="brand-icon">
           <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
         </span>
         <span class="brand-copy">
@@ -27,96 +27,96 @@
         <span class="sr-only">Abrir menu</span>
       </button>
 
-      <nav class="site-nav" id="site-nav" data-nav>
+      <nav class="nav-pill" id="site-nav" data-nav>
         <a href="../index.html#como-funciona">Como funciona</a>
-        <a href="../index.html#publico">Para alunos</a>
-        <a href="../index.html#plataforma">Plataforma</a>
-        <a href="cadastro.html">Participar</a>
+        <a href="../index.html#publico">Para famílias</a>
+        <a href="../index.html#voluntarios">Tutores</a>
+        <a href="../index.html#plataforma">Hub</a>
       </nav>
 
-      <div class="header-actions">
-        <button class="btn btn-soft" type="button" data-focus-toggle aria-pressed="false">Modo Foco</button>
-        <a class="btn btn-ghost" href="login.html">Entrar</a>
+      <div class="actions-pill">
+        <a class="login-btn" href="login.html">Entrar</a>
+        <a class="join-btn" href="cadastro.html">Participar</a>
       </div>
     </header>
 
-    <main class="activities-main" id="conteudo">
+    <main class="activities-main activities-float-header" id="conteudo">
       <section class="activities-hero">
         <div>
           <p class="eyebrow">Biblioteca inicial</p>
           <h1>Matemática Cognita</h1>
           <p>
-            Atividades organizadas por série, objetivo e orientação para o profissional voluntário conduzir o apoio com
+            Atividades organizadas por idade, habilidade e orientação para o tutor voluntário conduzir o apoio com
             clareza.
           </p>
         </div>
         <a class="btn btn-primary" href="cadastro.html">Participar</a>
       </section>
 
-      <div class="grade-tabs" role="tablist" aria-label="Filtrar por série">
+      <div class="grade-tabs" role="tablist" aria-label="Filtrar por idade e habilidade">
         <button class="grade-tab active" type="button" data-grade="todos">Todos</button>
-        <button class="grade-tab" type="button" data-grade="5">5º ano</button>
-        <button class="grade-tab" type="button" data-grade="6">6º ano</button>
-        <button class="grade-tab" type="button" data-grade="7">7º ano</button>
-        <button class="grade-tab" type="button" data-grade="8">8º ano</button>
-        <button class="grade-tab" type="button" data-grade="9">9º ano</button>
+        <button class="grade-tab" type="button" data-grade="5-6">5-6 anos</button>
+        <button class="grade-tab" type="button" data-grade="7-8">7-8 anos</button>
+        <button class="grade-tab" type="button" data-grade="9">9 anos</button>
+        <button class="grade-tab" type="button" data-grade="contagem">Contagem</button>
+        <button class="grade-tab" type="button" data-grade="problemas">Problemas simples</button>
       </div>
 
       <section class="activity-grid" aria-label="Atividades de matemática">
-        <article class="activity-card" data-card-grade="5 6">
-          <span class="activity-meta">5º e 6º ano</span>
-          <h2>Operações básicas</h2>
-          <p>Sequência curta para revisar soma, subtração, multiplicação e divisão com exemplos visuais.</p>
+        <article class="activity-card" data-card-grade="5-6 contagem numeros">
+          <span class="activity-meta">5-6 anos</span>
+          <h2>Reconhecendo números</h2>
+          <p>Identificação de números de 1 a 10 com apoio visual, cartões e objetos próximos da rotina.</p>
           <footer>
             <span class="tag">Iniciante</span>
-            <span class="tag blue">Rotina</span>
+            <span class="tag blue">Números</span>
           </footer>
         </article>
 
-        <article class="activity-card" data-card-grade="5 6 7">
-          <span class="activity-meta">5º ao 7º ano</span>
-          <h2>Frações equivalentes</h2>
-          <p>Comparação de partes usando desenhos, medidas simples e problemas do cotidiano.</p>
+        <article class="activity-card" data-card-grade="5-6 7-8 contagem">
+          <span class="activity-meta">5-8 anos</span>
+          <h2>Contando objetos</h2>
+          <p>Atividade com brinquedos, tampinhas ou objetos da casa para contar quantidades pequenas.</p>
           <footer>
             <span class="tag">Visual</span>
-            <span class="tag wine">Semana 4</span>
+            <span class="tag wine">Contagem</span>
           </footer>
         </article>
 
-        <article class="activity-card" data-card-grade="7 8">
-          <span class="activity-meta">7º e 8º ano</span>
-          <h2>Porcentagem</h2>
-          <p>Atividade guiada com descontos, gráficos simples e interpretação de valores.</p>
+        <article class="activity-card" data-card-grade="5-6 7-8 contagem">
+          <span class="activity-meta">5-8 anos</span>
+          <h2>Mais ou menos</h2>
+          <p>Comparação de quantidades usando grupos pequenos para perceber maior, menor e igual.</p>
           <footer>
-            <span class="tag">Intermediário</span>
+            <span class="tag">Concreto</span>
             <span class="tag blue">Cotidiano</span>
           </footer>
         </article>
 
-        <article class="activity-card" data-card-grade="6 7 8">
-          <span class="activity-meta">6º ao 8º ano</span>
-          <h2>Geometria básica</h2>
-          <p>Reconhecimento de formas, perímetro e área com objetos da casa e da escola.</p>
+        <article class="activity-card" data-card-grade="5-6 7-8 9 formas">
+          <span class="activity-meta">5-9 anos</span>
+          <h2>Formas no ambiente</h2>
+          <p>Reconhecimento de círculo, quadrado, triângulo e retângulo em objetos da casa e da escola.</p>
           <footer>
             <span class="tag">Concreto</span>
             <span class="tag wine">Espacial</span>
           </footer>
         </article>
 
-        <article class="activity-card" data-card-grade="8 9">
-          <span class="activity-meta">8º e 9º ano</span>
-          <h2>Equações simples</h2>
-          <p>Introdução ao equilíbrio da igualdade com passos curtos e registro de estratégia.</p>
+        <article class="activity-card" data-card-grade="7-8 9 soma">
+          <span class="activity-meta">7-9 anos</span>
+          <h2>Soma com material concreto</h2>
+          <p>Pequenas somas usando objetos visuais para apoiar a compreensão de juntar quantidades.</p>
           <footer>
-            <span class="tag">Intermediário</span>
-            <span class="tag blue">Álgebra</span>
+            <span class="tag">Visual</span>
+            <span class="tag blue">Soma simples</span>
           </footer>
         </article>
 
-        <article class="activity-card" data-card-grade="5 6 7 8 9">
-          <span class="activity-meta">5º ao 9º ano</span>
+        <article class="activity-card" data-card-grade="7-8 9 problemas">
+          <span class="activity-meta">7-9 anos</span>
           <h2>Problemas do cotidiano</h2>
-          <p>Leitura de enunciados com marcação de dados, pergunta principal e escolha de operação.</p>
+          <p>Situações simples envolvendo lanche, brinquedos, escola e rotina para interpretar perguntas matemáticas.</p>
           <footer>
             <span class="tag">Leitura</span>
             <span class="tag wine">Apoio</span>
