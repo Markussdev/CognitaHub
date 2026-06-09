@@ -1,5 +1,5 @@
 [URGENTE]
-- [X] Decidir: 5 a 9 anos ou 5º ao 9º ano. 
+- [X] Decidir: 5 a 9 anos ou 5º ao 9º ano.
 - Corrigir todos os textos conforme essa decisão.
 - Definir os usuários oficiais do sistema.
 - Criar fluxos em Mermaid no docs/fluxos.md.

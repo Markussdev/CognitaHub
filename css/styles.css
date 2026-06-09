@@ -1773,6 +1773,13 @@ h3 {
   font-weight: 750;
 }
 
+.inline-mock {
+  display: inline;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
 .mini-card strong,
 .stat strong {
   display: block;
@@ -2087,6 +2094,39 @@ h3 {
   resize: vertical;
 }
 
+.option-group {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  background: var(--soft-lavender);
+}
+
+.option-group legend {
+  padding: 0 6px;
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.option-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 10px 6px 0;
+  border: 1px solid rgba(20, 17, 98, 0.08);
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: var(--warm-white);
+  color: var(--ink);
+}
+
+.option-group input {
+  width: auto;
+  min-height: auto;
+  accent-color: var(--navy);
+}
+
 .fine-print {
   color: var(--muted);
   font-size: 0.92rem;
@@ -2342,6 +2382,97 @@ h3 {
   color: var(--navy);
 }
 
+.admin-flow {
+  margin-bottom: 16px;
+}
+
+.admin-flow h2,
+.card-heading-row h2 {
+  margin: 0;
+}
+
+.admin-flow ol {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-flow li {
+  border: 1px solid rgba(20, 17, 98, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  background: var(--soft-lavender);
+  color: var(--navy);
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.admin-sections,
+.profile-summary-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-sections {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+.card-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.profile-summary-grid {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  margin-bottom: 16px;
+}
+
+.profile-summary-card span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 850;
+}
+
+.profile-summary-card strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--navy);
+  font-size: 1.25rem;
+}
+
+.profile-data-list {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+}
+
+.profile-data-list div {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+
+.profile-data-list div:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.profile-data-list dt {
+  color: var(--navy);
+  font-weight: 900;
+}
+
+.profile-data-list dd {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
 .bottom-nav {
   display: none;
 }
@@ -2579,10 +2710,11 @@ h3 {
 }
 
 .login-story h1 {
-  max-width: 10ch;
+  max-width: 12ch;
   color: var(--warm-white);
-  font-size: clamp(2.4rem, 4vw, 4.2rem);
-  line-height: 1;
+  font-size: clamp(2.4rem, 3.5vw, 3.7rem);
+  line-height: 1.04;
+  text-wrap: balance;
 }
 
 .login-story p:not(.eyebrow) {
@@ -2645,10 +2777,11 @@ h3 {
 }
 
 .login-form-area h2 {
-  max-width: 520px;
+  max-width: 620px;
   color: var(--ink);
-  font-size: clamp(2rem, 3.8vw, 4rem);
-  line-height: 0.98;
+  font-size: clamp(2.2rem, 3.2vw, 3.5rem);
+  line-height: 1.02;
+  text-wrap: balance;
 }
 
 .login-helper {
@@ -2685,6 +2818,7 @@ h3 {
 
 .route-choice-grid {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 14px;
   margin-top: 22px;
 }
@@ -2699,7 +2833,7 @@ h3 {
 }
 
 .route-choice-card span {
-  color: var(--gold-dark);
+  color: var(--gold);
   font-size: 0.8rem;
   font-weight: 850;
   text-transform: uppercase;
@@ -2969,7 +3103,8 @@ h3 {
 
   .split-section,
   .auth-layout,
-  .dashboard-grid {
+  .dashboard-grid,
+  .admin-sections {
     grid-template-columns: 1fr;
   }
 

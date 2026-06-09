@@ -121,6 +121,38 @@ function setupActivityFilter() {
   });
 }
 
+function getMockValue(path) {
+  if (!window.cognitaMock) return null;
+
+  return path.split(".").reduce((current, key) => current?.[key], window.cognitaMock);
+}
+
+function setupMockData() {
+  document.querySelectorAll("[data-mock]").forEach((element) => {
+    const value = getMockValue(element.dataset.mock);
+
+    if (value !== null && value !== undefined) {
+      element.textContent = value;
+    }
+  });
+
+  document.querySelectorAll("[data-mock-width]").forEach((element) => {
+    const value = getMockValue(element.dataset.mockWidth);
+
+    if (value) {
+      element.style.width = value;
+    }
+  });
+
+  document.querySelectorAll("[data-mock-aria]").forEach((element) => {
+    const value = getMockValue(element.dataset.mockAria);
+
+    if (value) {
+      element.setAttribute("aria-label", value);
+    }
+  });
+}
+
 function setupFakeForms() {
   document.querySelectorAll("[data-static-form]").forEach((form) => {
     form.addEventListener("submit", (event) => {
@@ -198,5 +230,6 @@ setupHubTabs();
 setupLoginRoleTabs();
 setupActivityFilter();
 setupLoginRouting();
+setupMockData();
 setupFakeForms();
 setupFeatureAccordion();

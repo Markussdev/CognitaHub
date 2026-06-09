@@ -18,7 +18,7 @@
           <a href="atividades.html">Atividades</a>
           <a href="#agenda">Agenda</a>
           <a href="#progresso">Progresso</a>
-          <a href="#perfil">Perfil</a>
+          <a href="perfil-crianca.html">Perfil</a>
         </nav>
         <div class="sidebar-footer">
           <button class="btn btn-soft" type="button" data-focus-toggle aria-pressed="false">Modo Foco</button>
@@ -29,7 +29,7 @@
         <div class="app-topbar">
           <div>
             <p class="eyebrow">Responsável e criança</p>
-            <h1>Olá, João</h1>
+            <h1>Olá, <span data-mock="responsavel.primeiroNome">João</span></h1>
           </div>
           <a class="btn btn-ghost" href="../index.html">Site público</a>
         </div>
@@ -37,7 +37,7 @@
         <section class="app-hero">
           <div>
             <p class="eyebrow">Ciclo em andamento</p>
-            <h2>Seu acompanhamento em matemática está no mês 2 de 6.</h2>
+            <h2>Seu acompanhamento em matemática está no <span data-mock="ciclo.mesAtual">mês 2 de 6</span>.</h2>
             <p>
               Próximo encontro, atividade da semana e observações ficam reunidos para reduzir ruído e manter a rotina
               previsível.
@@ -49,24 +49,27 @@
         <section class="stats-grid" aria-label="Resumo do acompanhamento">
           <article class="app-card stat">
             <span>Próximo encontro</span>
-            <strong>Quinta, 15h</strong>
+            <strong data-mock="sessaoAtual.resumoHorario">Quinta, 15h</strong>
           </article>
           <article class="app-card stat">
             <span>Tutor</span>
-            <strong>Maria Silva</strong>
+            <strong data-mock="tutor.nome">Maria Silva</strong>
           </article>
           <article class="app-card stat">
             <span>Atividade atual</span>
-            <strong>Soma com apoio visual</strong>
+            <strong data-mock="sessaoAtual.tema">Soma com apoio visual</strong>
           </article>
           <article class="app-card stat">
             <span>Status do ciclo</span>
-            <strong>Ativo</strong>
-            <small>Cadastro: validado pela equipe<br />Match: tutor vinculado</small>
+            <strong data-mock="ciclo.status">Ativo</strong>
+            <small>
+              Cadastro: <span data-mock="ciclo.cadastro">validado pela equipe</span><br />
+              Match: <span data-mock="ciclo.match">tutor vinculado</span>
+            </small>
           </article>
           <article class="app-card stat">
             <span>Presença</span>
-            <strong>4 de 4 sessões</strong>
+            <strong data-mock="ciclo.presencas">4 de 4 sessões</strong>
           </article>
         </section>
 
@@ -74,32 +77,32 @@
           <article class="app-card" id="progresso">
             <h2>Progresso do ciclo</h2>
             <div class="progress-row">
-              <span class="progress-label">Mês 2 de 6</span>
-              <div class="progress-track" aria-label="33% do ciclo concluído">
-                <div class="progress-fill" style="width: 33%"></div>
+              <span class="progress-label" data-mock="ciclo.mesAtual">Mês 2 de 6</span>
+              <div class="progress-track" data-mock-aria="ciclo.progressoTexto" aria-label="33% do ciclo concluído">
+                <div class="progress-fill" data-mock-width="ciclo.progressoPercentual" style="width: 33%"></div>
               </div>
             </div>
             <ul class="task-list">
               <li class="list-row">
                 <div>
                   <strong>Plano de acompanhamento</strong>
-                  <span>Contagem, comparação de quantidades e pequenas somas.</span>
+                  <span data-mock="crianca.foco">Contagem, comparação de quantidades e pequenas somas.</span>
                 </div>
                 <span class="tag blue">Ativo</span>
               </li>
               <li class="list-row">
                 <div>
                   <strong>Atividade da semana</strong>
-                  <span>Contar objetos da casa e comparar grupos com mais ou menos itens.</span>
+                  <span data-mock="atividadeSugerida.descricao">Contar objetos da casa e comparar grupos com mais ou menos itens.</span>
                 </div>
-                <span class="tag">Semana 4</span>
+                <span class="tag" data-mock="atividadeSugerida.semana">Semana 4</span>
               </li>
               <li class="list-row">
                 <div>
                   <strong>Observação</strong>
-                  <span>João respondeu melhor a exemplos com objetos do cotidiano.</span>
+                  <span data-mock="observacaoTutor.texto">João respondeu melhor a exemplos com objetos do cotidiano.</span>
                 </div>
-                <span class="tag wine">Registro</span>
+                <span class="tag wine" data-mock="observacaoTutor.tipo">Registro</span>
               </li>
             </ul>
           </article>
@@ -109,8 +112,8 @@
             <ul class="task-list">
               <li class="list-row">
                 <div>
-                  <strong>Quinta-feira</strong>
-                  <span>15h - Encontro online</span>
+                  <strong data-mock="sessaoAtual.dia">Quinta-feira</strong>
+                  <span><span class="inline-mock" data-mock="sessaoAtual.horario">15h</span> - <span class="inline-mock" data-mock="sessaoAtual.formato">Encontro online</span></span>
                 </div>
               </li>
               <li class="list-row">
@@ -136,9 +139,10 @@
       <a href="atividades.html">Atividades</a>
       <a href="#agenda">Agenda</a>
       <a href="#progresso">Progresso</a>
-      <a href="#perfil">Perfil</a>
+      <a href="perfil-crianca.html">Perfil</a>
     </nav>
 
+    <script src="../js/mock-data.js"></script>
     <script src="../js/app.js"></script>
   </body>
 </html>

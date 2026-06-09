@@ -17,6 +17,7 @@ Este documento organiza as páginas do MVP estático do Cognita Hub. Como o proj
 | Rota | Página | Função | Usuário |
 |---|---|---|---|
 | `/pages/responsavel.html` | Painel do responsável | Acompanhar ciclo, tutor, atividade, status e progresso | Responsável |
+| `/pages/perfil-crianca.html` | Perfil pedagógico | Consultar preferências, foco, plano atual, último registro e próximo passo da criança | Responsável, tutor e equipe |
 | `/pages/tutor.html` | Painel do tutor | Ver crianças acompanhadas, sessões, registros e relatórios | Tutor |
 | `/pages/admin.html` | Painel admin | Validar cadastros, criar matches e acompanhar ciclos | Equipe Cognita |
 | `/pages/atividades.html` | Biblioteca de atividades | Consultar atividades por idade e habilidade | Responsável, tutor e equipe |

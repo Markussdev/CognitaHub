@@ -65,7 +65,42 @@
           </article>
         </section>
 
-        <section class="dashboard-grid" id="criancas">
+        <section class="admin-flow app-card" aria-label="Fluxo operacional do MVP">
+          <h2>Fluxo do acompanhamento</h2>
+          <ol>
+            <li>Cadastro recebido</li>
+            <li>Equipe analisa</li>
+            <li>Tutor validado</li>
+            <li>Match criado</li>
+            <li>Ciclo iniciado</li>
+            <li>Sessoes registradas</li>
+            <li>Relatorio mensal gerado</li>
+          </ol>
+        </section>
+
+        <section class="admin-sections" id="criancas">
+          <article class="app-card">
+            <div class="card-heading-row">
+              <h2>Criancas aguardando analise</h2>
+              <span class="tag">3 novas</span>
+            </div>
+            <ul class="admin-list">
+              <li class="list-row">
+                <div>
+                  <strong>Lia Costa</strong>
+                  <span>9 anos, problemas simples do cotidiano e geometria basica.</span>
+                </div>
+                <a class="tag blue" href="perfil-crianca.html">Ver perfil</a>
+              </li>
+              <li class="list-row">
+                <div>
+                  <strong>Pedro Lima</strong>
+                  <span>6 anos, reconhecimento de numeros e contagem com apoio visual.</span>
+                </div>
+                <span class="tag">Analisar</span>
+              </li>
+            </ul>
+          </article>
           <article class="app-card" id="tutores">
             <h2>Validação de tutores</h2>
             <ul class="admin-list">
@@ -92,7 +127,11 @@
               <li class="list-row">
                 <div>
                   <strong>João + Maria</strong>
-                  <span>7 anos, soma com apoio visual, quinta 15h.</span>
+                  <span>
+                    <span class="inline-mock" data-mock="crianca.idade">7 anos</span>,
+                    <span class="inline-mock" data-mock="sessaoAtual.tema">soma com apoio visual</span>,
+                    <span class="inline-mock" data-mock="sessaoAtual.resumoHorario">quinta 15h</span>.
+                  </span>
                 </div>
               </li>
               <li class="list-row">
@@ -109,6 +148,52 @@
               </li>
             </ul>
           </aside>
+
+          <article class="app-card" id="ciclos">
+            <div class="card-heading-row">
+              <h2>Ciclos ativos</h2>
+              <span class="tag wine">12 ativos</span>
+            </div>
+            <ul class="task-list">
+              <li class="list-row">
+                <div>
+                  <strong>Joao Pereira</strong>
+                  <span>Mes 2 de 6 - plano atual: soma com apoio visual.</span>
+                </div>
+                <span class="tag blue">Em dia</span>
+              </li>
+              <li class="list-row">
+                <div>
+                  <strong>Camila Rocha</strong>
+                  <span>Mes 4 de 6 - revisao de dificuldades e consolidacao.</span>
+                </div>
+                <span class="tag">Acompanhar</span>
+              </li>
+            </ul>
+          </article>
+
+          <article class="app-card" id="relatorios">
+            <div class="card-heading-row">
+              <h2>Relatorios pendentes</h2>
+              <span class="tag">4 pendentes</span>
+            </div>
+            <ul class="task-list">
+              <li class="list-row">
+                <div>
+                  <strong>Relatorio mensal - Joao Pereira</strong>
+                  <span>Tutor: Maria Silva. Prazo: sexta-feira.</span>
+                </div>
+                <span class="tag wine">Pendente</span>
+              </li>
+              <li class="list-row">
+                <div>
+                  <strong>Relatorio inicial - Lia Costa</strong>
+                  <span>Aguardando conclusao do match antes do ciclo.</span>
+                </div>
+                <span class="tag blue">Aguardando</span>
+              </li>
+            </ul>
+          </article>
         </section>
       </main>
     </div>
@@ -121,6 +206,8 @@
       <a href="#relatorios">Relatórios</a>
     </nav>
 
+    <script src="../js/mockData.js"></script>
+    <script src="../js/mock-data.js"></script>
     <script src="../js/app.js"></script>
   </body>
 </html>
