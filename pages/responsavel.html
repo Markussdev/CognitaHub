@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Painel do Responsável | CognitaHub</title>
     <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="../css/internal.css" />
   </head>
   <body class="app-body">
     <div class="app-shell">
@@ -23,69 +24,140 @@
         </div>
       </aside>
 
-      <main class="app-main app-main-compact">
-        <div class="app-page-header">
+      <main class="app-main journey-page">
+        <header class="journey-header">
           <div>
             <p class="app-kicker">Responsável e criança</p>
-            <h1 class="app-title">Olá, <span data-mock="responsavel.primeiroNome">Ana</span></h1>
+            <h1 class="app-title">Resumo do João</h1>
             <p class="app-subtitle">
-              Acompanhe o essencial do ciclo sem se perder em abas ou relatórios grandes.
+              Veja o próximo encontro, a atividade da semana e os sinais de evolução do ciclo.
             </p>
           </div>
           <a class="btn btn-ghost" href="../index.html">Site público</a>
-        </div>
+        </header>
 
-        <section class="child-overview-card">
-          <div class="child-overview-copy">
-            <p class="app-kicker">Resumo do ciclo</p>
-            <h2>João está no <span data-mock="ciclo.mesAtual">mês 2 de 6</span>.</h2>
-            <p>
-              O foco atual é soma com apoio visual, usando objetos do cotidiano e atividades curtas.
+        <section class="journey-hero" aria-label="Próximo encontro">
+          <article class="journey-hero-copy">
+            <p class="app-kicker">Próximo encontro</p>
+            <h2 data-mock="sessaoAtual.resumoHorario">Quinta, 15h</h2>
+            <p class="hero-meta">
+              Com <strong data-mock="tutor.nome">Maria Silva</strong> ·
+              <span data-mock="sessaoAtual.formato">Encontro online</span>
             </p>
-            <div class="child-overview-meta">
-              <span>Tutor: <strong data-mock="tutor.nome">Maria Silva</strong></span>
-              <span>Próxima sessão: <strong data-mock="sessaoAtual.resumoHorario">Quinta, 15h</strong></span>
+
+            <div class="journey-actions">
+              <button class="btn btn-primary" type="button">Entrar na sala</button>
+              <button class="btn btn-light" type="button" data-drawer-open="combinados">Ver combinados</button>
             </div>
-          </div>
-          <img src="../assets/sticker.png" alt="" aria-hidden="true" />
+          </article>
+
+          <aside class="child-mini-profile">
+            <span class="cat-badge-wrap">
+              <img src="../assets/sticker.png" alt="" aria-hidden="true" />
+            </span>
+            <span class="child-name" data-mock="crianca.nome">João Pereira</span>
+            <strong data-mock="ciclo.mesAtual">Mês 2 de 6</strong>
+
+            <div class="cycle-steps" data-mock-aria="ciclo.progressoTexto" aria-label="33% do ciclo concluído">
+              <i class="on"></i>
+              <i class="on"></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+            </div>
+
+            <div class="child-focus-mini">
+              <span>Foco atual</span>
+              <strong data-mock="sessaoAtual.tema">Soma com apoio visual</strong>
+            </div>
+          </aside>
         </section>
 
-        <section class="care-grid" aria-label="Acompanhamento da semana">
-          <article class="care-card">
-            <span class="care-label">Próxima sessão</span>
-            <h2 data-mock="sessaoAtual.resumoHorario">Quinta, 15h</h2>
-            <p data-mock="sessaoAtual.formato">Encontro online</p>
-            <a class="btn btn-primary" href="#mensagens">Ver combinados</a>
-          </article>
-
-          <article class="care-card">
-            <span class="care-label">Atividade da semana</span>
-            <h2 data-mock="atividadeSugerida.titulo">Contar objetos da casa</h2>
-            <p data-mock="atividadeSugerida.descricao">
-              Contar objetos da casa e comparar grupos com mais ou menos itens.
-            </p>
-            <a class="btn btn-ghost" href="atividades.html">Ver atividade</a>
-          </article>
-
-          <article class="care-card care-card-wide" id="mensagens">
-            <span class="care-label">Observação do tutor</span>
-            <h2>O que funcionou melhor</h2>
-            <p data-mock="observacaoTutor.texto">
-              João respondeu melhor a exemplos com objetos do cotidiano.
-            </p>
-          </article>
-
-          <article class="care-card progress-care-card" id="progresso">
-            <span class="care-label">Progresso do ciclo</span>
-            <h2 data-mock="ciclo.mesAtual">Mês 2 de 6</h2>
-            <div class="progress-track" data-mock-aria="ciclo.progressoTexto" aria-label="33% do ciclo concluído">
-              <div class="progress-fill" data-mock-width="ciclo.progressoPercentual" style="width: 33%"></div>
+        <section class="journey-board" id="semana" aria-label="Roteiro da semana">
+          <article class="journey-step is-now" data-kind="hoje">
+            <span class="step-index">01</span>
+            <div>
+              <p class="app-kicker">Hoje</p>
+              <h2>Preparar o encontro</h2>
+              <p>
+                O encontro com <span data-mock="tutor.nome">Maria Silva</span> é às 15h. Deixe objetos
+                simples por perto para apoiar a atividade.
+              </p>
             </div>
-            <p>Plano ativo: <span data-mock="crianca.foco">contagem, comparação de quantidades e pequenas somas.</span></p>
+          </article>
+
+          <article class="journey-step" data-kind="atividade">
+            <span class="step-index">02</span>
+            <div>
+              <p class="app-kicker">Atividade da semana</p>
+              <h2 data-mock="atividadeSugerida.titulo">Contar objetos da casa</h2>
+              <p data-mock="atividadeSugerida.descricao">
+                Contar objetos da casa e comparar grupos com mais ou menos itens.
+              </p>
+            </div>
+          </article>
+
+          <article class="journey-step" id="mensagens" data-kind="observacao">
+            <span class="step-index">03</span>
+            <div>
+              <p class="app-kicker">Observação do tutor</p>
+              <h2>O que funcionou melhor</h2>
+              <p data-session-output="notes" data-mock="observacaoTutor.texto">
+                João respondeu melhor a exemplos com objetos do cotidiano.
+              </p>
+            </div>
+          </article>
+
+          <article class="journey-step" id="progresso" data-kind="progresso">
+            <span class="step-index">04</span>
+            <div>
+              <p class="app-kicker">Progresso</p>
+              <h2>Avanço no ciclo</h2>
+              <p>
+                Plano ativo com foco em atividades curtas, visuais e conectadas à rotina.
+                <span data-mock="crianca.foco">Contagem, comparação de quantidades e pequenas somas.</span>
+              </p>
+            </div>
           </article>
         </section>
       </main>
     </div>
+
+    <div class="drawer-backdrop" data-drawer-close hidden></div>
+    <aside class="side-drawer" data-drawer="combinados" aria-hidden="true" aria-label="Combinados da próxima sessão">
+      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+        <header class="drawer-header">
+          <div>
+            <span class="care-label">Combinados</span>
+            <h2 id="drawer-title">Próxima sessão</h2>
+          </div>
+          <button class="drawer-close" type="button" data-drawer-close aria-label="Fechar combinados">×</button>
+        </header>
+
+        <div class="drawer-section">
+          <span class="drawer-meta">Quando</span>
+          <strong data-mock="sessaoAtual.resumoHorario">Quinta, 15h</strong>
+          <p data-mock="sessaoAtual.formato">Encontro online</p>
+        </div>
+
+        <div class="drawer-section">
+          <span class="drawer-meta">Tema</span>
+          <strong data-mock="sessaoAtual.tema">Soma com apoio visual</strong>
+          <p data-session-output="topic" data-mock="sessaoAtual.registro">Soma com objetos e cartões visuais.</p>
+        </div>
+
+        <div class="drawer-section">
+          <span class="drawer-meta">Para fazer em casa</span>
+          <strong data-mock="atividadeSugerida.titulo">Contar objetos da casa</strong>
+          <p data-session-output="nextStep" data-mock="atividadeSugerida.descricao">
+            Contar objetos da casa e comparar grupos com mais ou menos itens.
+          </p>
+        </div>
+
+        <a class="btn btn-primary" href="atividades.html">Ver atividade completa</a>
+      </div>
+    </aside>
 
     <nav class="bottom-nav" aria-label="Menu inferior">
       <a class="active" href="responsavel.html">Resumo</a>

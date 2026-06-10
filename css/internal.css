@@ -1,0 +1,410 @@
+/* ============================================================
+   COGNITA — INTERNAL UI
+   Camada nova das telas internas (responsável, tutor, perfil).
+   Carregada DEPOIS de styles.css: sobrescreve o legado por ordem.
+   Direção: §10 (superfícies sólidas, sombra curta, raio em token)
+            §11 (baixa estimulação, previsibilidade, clareza)
+   Não brigar com styles.css — reaproveita os tokens da marca.
+   ============================================================ */
+
+.app-body {
+  /* tokens locais só desta camada (escopados, não vazam pro resto) */
+  --app-bg: #f1efe9;
+  --surface: var(--warm-white);
+  --surface-muted: #f4f1e9;
+
+  --r-sm: 10px;
+  --r: 16px;
+  --r-lg: 24px;
+  --r-xl: 28px;
+
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+
+  /* §10: sombras curtas e em camadas, nada de blur gigante */
+  --shadow-soft: 0 1px 2px rgba(20, 17, 98, 0.06), 0 4px 14px rgba(20, 17, 98, 0.07);
+  --shadow-medium: 0 2px 6px rgba(20, 17, 98, 0.06), 0 14px 30px rgba(20, 17, 98, 0.1);
+}
+
+/* ---------- Fundo plano e calmo (§10 body chapado / §11 baixa estimulação) ---------- */
+.app-body {
+  background: var(--app-bg);
+}
+
+/* ---------- Casca / sidebar (mantém a navy, tira a tradução translúcida) ---------- */
+.app-body .app-main {
+  width: min(1180px, calc(100% - 48px));
+  min-height: calc(100vh - 48px);
+  margin: 24px auto;
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: clamp(24px, 4vw, 44px);
+  /* §10: superfície sólida, sem translucidez nem backdrop blur */
+  background: var(--surface);
+  box-shadow: var(--shadow-medium);
+  backdrop-filter: none;
+}
+
+/* kicker/label: refinado — leve, espaçado, vinho discreto (§10 peso válido) */
+.app-body .app-kicker,
+.app-body .care-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--wine);
+  opacity: 0.82;
+}
+
+.app-body .app-page-header {
+  margin-bottom: var(--sp-8);
+}
+
+.app-body .app-title {
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+/* ---------- Card interno genérico reutilizável ---------- */
+.internal-card {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--sp-6);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.internal-card h2 {
+  margin: 0;
+  color: var(--navy);
+  font-size: clamp(1.3rem, 2vw, 1.7rem);
+  line-height: 1.12;
+}
+
+/* ============================================================
+   RESPONSÁVEL — jornada de acompanhamento (não dashboard)
+   Sem container branco gigante: o conteúdo respira sobre o fundo.
+   Herói = próximo encontro. Semana = timeline vertical de passos.
+   ============================================================ */
+
+/* Remove a "caixa" branca do .app-main só nesta página */
+.app-main.journey-page {
+  width: min(1120px, calc(100% - 48px));
+  min-height: 0;
+  margin: 24px auto;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* header solto na página: sem caixa branca, menos container (Opção A) */
+.journey-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-6);
+  margin-bottom: var(--sp-8);
+  padding: var(--sp-2) var(--sp-1) 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.journey-header .btn {
+  flex: 0 0 auto;
+}
+
+/* ---------- Herói: próximo encontro + mini-perfil ---------- */
+.journey-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: var(--sp-6);
+  align-items: stretch;
+  margin-bottom: var(--sp-8);
+}
+
+.journey-hero-copy {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: var(--r-xl);
+  padding: clamp(32px, 5vw, 56px);
+  background: linear-gradient(135deg, var(--navy) 0%, var(--wine) 100%);
+  color: var(--warm-white);
+  box-shadow: var(--shadow-medium);
+}
+
+/* anel de órbita: forma curva da marca, tira a cara de bloco chapado */
+.journey-hero-copy::before {
+  position: absolute;
+  right: -80px;
+  bottom: -110px;
+  width: 320px;
+  height: 320px;
+  border: 1px solid rgba(255, 255, 252, 0.14);
+  border-radius: 50%;
+  content: "";
+}
+
+/* constelação dourada: 3 pontos como uma "trilha" sutil no canto */
+.journey-hero-copy::after {
+  position: absolute;
+  right: 42px;
+  bottom: 44px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--gold);
+  box-shadow:
+    -70px -32px 0 rgba(255, 168, 0, 0.22),
+    -130px 18px 0 rgba(255, 168, 0, 0.14);
+  content: "";
+}
+
+.journey-hero-copy > * {
+  position: relative;
+  z-index: 1;
+}
+
+.journey-hero-copy .app-kicker {
+  color: var(--gold);
+  opacity: 1;
+}
+
+.journey-hero-copy h2 {
+  margin: var(--sp-2) 0 0;
+  color: var(--warm-white);
+  font-size: clamp(2.6rem, 6vw, 5.2rem);
+  font-weight: 800;
+  line-height: 0.94;
+  letter-spacing: -0.04em;
+}
+
+.journey-hero-copy .hero-meta {
+  margin: var(--sp-4) 0 0;
+  color: rgba(255, 255, 252, 0.8);
+  font-size: 1.08rem;
+}
+
+.journey-hero-copy .hero-meta strong {
+  color: var(--warm-white);
+}
+
+.journey-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-top: var(--sp-8);
+}
+
+/* mini-perfil da criança = card lateral menor (contexto, não herói) */
+.child-mini-profile {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: var(--sp-6);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 168, 0, 0.14), transparent 36%),
+    var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+/* mascote num "selo": halo dourado dá intenção, tira o ar de recorte colado */
+.cat-badge-wrap {
+  display: inline-grid;
+  place-items: center;
+  width: 104px;
+  height: 104px;
+  margin-bottom: var(--sp-4);
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 244, 216, 0.9), transparent 70%);
+}
+
+.child-mini-profile img {
+  width: 84px;
+  margin: 0;
+  /* §10: sombra leve e tingida da marca, nunca preto pesado */
+  filter: drop-shadow(0 8px 16px rgba(20, 17, 98, 0.18));
+}
+
+.child-mini-profile .child-name {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.child-mini-profile strong {
+  display: block;
+  margin-top: var(--sp-1);
+  color: var(--navy);
+  font-size: 1.55rem;
+  line-height: 1.05;
+}
+
+.cycle-steps {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin-top: var(--sp-6);
+}
+
+.cycle-steps i {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.cycle-steps i.on {
+  background: var(--gold);
+}
+
+/* micro-info de foco no mini-perfil: dá função sem virar stat-card */
+.child-focus-mini {
+  margin-top: var(--sp-4);
+  border-radius: var(--r);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface-muted);
+}
+
+.child-focus-mini span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.child-focus-mini strong {
+  display: block;
+  margin-top: var(--sp-1);
+  color: var(--navy);
+  font-size: 1rem;
+}
+
+/* ---------- Trilha da semana (não "lista de cards") ---------- */
+.journey-board {
+  position: relative;
+  display: grid;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-8);
+}
+
+/* fio da jornada: dourado no início, esmaecendo até o navy — sugere percurso */
+.journey-board::before {
+  position: absolute;
+  top: 36px;
+  bottom: 36px;
+  left: 46px;
+  width: 3px;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    var(--gold),
+    rgba(255, 168, 0, 0.35),
+    rgba(20, 17, 98, 0.16)
+  );
+  content: "";
+}
+
+.journey-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: var(--sp-4);
+  align-items: start;
+  border: 1px solid rgba(20, 17, 98, 0.08);
+  border-left: 4px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--sp-6);
+  /* §10: superfície sólida — recorte limpo sobre o fundo bege */
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+/* acento por TIPO, não fundo aleatório: a cor passa a ter significado */
+.journey-step[data-kind="hoje"] {
+  border-left-color: var(--gold);
+}
+.journey-step[data-kind="atividade"] {
+  border-left-color: #5d9b92;
+}
+.journey-step[data-kind="observacao"] {
+  border-left-color: var(--wine);
+}
+.journey-step[data-kind="progresso"] {
+  border-left-color: var(--navy);
+}
+
+/* número da estação ecoa a cor do tipo (coesão sutil) */
+.journey-step[data-kind="atividade"] .step-index {
+  color: #5d9b92;
+}
+.journey-step[data-kind="observacao"] .step-index {
+  color: var(--wine);
+}
+.journey-step[data-kind="progresso"] .step-index {
+  color: var(--navy);
+}
+
+/* marcador da trilha: anel branco que "fura" o fio, como uma estação */
+.step-index {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 4px solid var(--surface);
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--navy);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+/* só o passo "hoje" recebe o dourado (§10: acento com significado) */
+.journey-step:first-child .step-index {
+  background: var(--gold);
+  color: var(--ink);
+  box-shadow: 0 6px 16px rgba(255, 168, 0, 0.25);
+}
+
+.journey-step h2 {
+  margin: 0;
+  color: var(--navy);
+  font-size: clamp(1.35rem, 2.2vw, 2rem);
+  line-height: 1.1;
+}
+
+.journey-step .app-kicker {
+  margin: 0 0 var(--sp-1);
+}
+
+.journey-step p:not(.app-kicker) {
+  max-width: 70ch;
+  margin: var(--sp-2) 0 0;
+  color: var(--muted);
+  font-weight: 600;
+  line-height: 1.65;
+}
+
+@media (max-width: 980px) {
+  .journey-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .journey-header {
+    flex-direction: column;
+  }
+}

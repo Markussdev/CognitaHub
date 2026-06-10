@@ -446,6 +446,47 @@ function setupSidebarNav() {
   }, { passive: true });
 }
 
+function setupSideDrawers() {
+  const drawers = document.querySelectorAll("[data-drawer]");
+  const backdrop = document.querySelector(".drawer-backdrop");
+  if (!drawers.length || !backdrop) return;
+
+  const closeDrawers = () => {
+    drawers.forEach((drawer) => {
+      drawer.classList.remove("is-open");
+      drawer.setAttribute("aria-hidden", "true");
+    });
+
+    backdrop.hidden = true;
+    document.body.classList.remove("drawer-open");
+  };
+
+  document.querySelectorAll("[data-drawer-open]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const target = document.querySelector(`[data-drawer="${button.dataset.drawerOpen}"]`);
+      if (!target) return;
+
+      drawers.forEach((drawer) => {
+        const active = drawer === target;
+        drawer.classList.toggle("is-open", active);
+        drawer.setAttribute("aria-hidden", String(!active));
+      });
+
+      backdrop.hidden = false;
+      document.body.classList.add("drawer-open");
+      target.querySelector("[data-drawer-close]")?.focus();
+    });
+  });
+
+  document.querySelectorAll("[data-drawer-close]").forEach((button) => {
+    button.addEventListener("click", closeDrawers);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeDrawers();
+  });
+}
+
 setupFocusMode();
 setupFloatingHeader();
 setupMobileMenu();
@@ -461,3 +502,4 @@ setupMoodOptions();
 setupFakeForms();
 setupFeatureAccordion();
 setupSidebarNav();
+setupSideDrawers();
