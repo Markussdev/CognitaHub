@@ -6,7 +6,9 @@ function setFocusMode(enabled) {
   document.body.classList.toggle("focus-mode", enabled);
   document.querySelectorAll("[data-focus-toggle]").forEach((button) => {
     button.setAttribute("aria-pressed", String(enabled));
-    button.textContent = enabled ? "Modo Foco ativo" : "Modo Foco";
+    // se houver um label dedicado, não sobrescreve a estrutura interna (ex: bolinha do toggle)
+    const label = button.querySelector("[data-focus-label]") || button;
+    label.textContent = enabled ? "Modo Foco ativo" : "Modo Foco";
   });
   localStorage.setItem(storageKey, enabled ? "1" : "0");
 }

@@ -13,14 +13,63 @@
         <a class="sidebar-logo sidebar-logo-clean" href="../index.html">
           <img src="../assets/logo-retangular-transparent.png" alt="CognitaHub" />
         </a>
+
+        <div class="sidebar-context">
+          <span class="sidebar-role">Responsável</span>
+          <strong>Acompanhando João</strong>
+          <small>
+            <span data-mock="ciclo.mesAtual">Ciclo 2 de 6</span> · Tutor
+            <span data-mock="tutor.primeiroNome">Maria</span>
+          </small>
+        </div>
+
+        <p class="nav-label">Painel</p>
+
         <nav class="sidebar-nav">
-          <a class="active" href="responsavel.html">Resumo</a>
-          <a href="atividades.html">Atividades</a>
-          <a href="#progresso">Progresso</a>
-          <a href="#mensagens">Mensagens</a>
+          <a class="active" href="responsavel.html">
+            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="9" rx="1.5" />
+              <rect x="14" y="3" width="7" height="5" rx="1.5" />
+              <rect x="14" y="12" width="7" height="9" rx="1.5" />
+              <rect x="3" y="16" width="7" height="5" rx="1.5" />
+            </svg>
+            <span>Resumo</span>
+          </a>
+          <a href="atividades.html">
+            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M9 11l3 3L22 4" />
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+            </svg>
+            <span>Atividades</span>
+          </a>
+          <a href="#progresso">
+            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M4 19V5" />
+              <path d="M4 15l4-4 4 3 7-7" />
+            </svg>
+            <span>Progresso</span>
+          </a>
+          <a href="#mensagens">
+            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            <span>Mensagens</span>
+          </a>
         </nav>
+
         <div class="sidebar-footer">
-          <button class="btn btn-soft" type="button" data-focus-toggle aria-pressed="false">Modo Foco</button>
+          <div class="account">
+            <div class="account-avatar">J</div>
+            <div class="account-info">
+              <strong data-mock="crianca.nome">João Pereira</strong>
+              <span>Criança acompanhada</span>
+            </div>
+          </div>
+
+          <button class="focus-toggle" type="button" data-focus-toggle aria-pressed="false">
+            <span data-focus-label>Modo Foco</span>
+            <i class="focus-dot" aria-hidden="true"></i>
+          </button>
         </div>
       </aside>
 
@@ -33,7 +82,10 @@
               Veja o próximo encontro, a atividade da semana e os sinais de evolução do ciclo.
             </p>
           </div>
-          <a class="btn btn-ghost" href="../index.html">Site público</a>
+          <a class="back-site-link" href="../index.html">
+            <span aria-hidden="true">←</span>
+            Site Cognita
+          </a>
         </header>
 
         <section class="journey-hero" aria-label="Próximo encontro">

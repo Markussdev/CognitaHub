@@ -121,6 +121,29 @@
   flex: 0 0 auto;
 }
 
+/* volta ao site: ação terciária — link elegante, não botão (o logo da sidebar também leva pra lá) */
+.back-site-link {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--navy);
+  font-size: 0.92rem;
+  font-weight: 800;
+  opacity: 0.78;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.back-site-link:hover {
+  opacity: 1;
+  transform: translateX(-2px);
+}
+
+.back-site-link span {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
 /* ---------- Herói: próximo encontro + mini-perfil ---------- */
 .journey-hero {
   display: grid;
@@ -406,5 +429,225 @@
 
   .journey-header {
     flex-direction: column;
+  }
+}
+
+/* ============================================================
+   SIDEBAR — acabamento (escopado p/ desktop; ≤1080px a styles.css
+   já esconde a sidebar e usa bottom-nav). Não vazar pro mobile.
+   ============================================================ */
+@media (min-width: 1081px) {
+  .app-shell {
+    grid-template-columns: 248px minmax(0, 1fr);
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 18px;
+    background:
+      radial-gradient(circle at 18% 0%, rgba(255, 168, 0, 0.1), transparent 28%),
+      linear-gradient(180deg, #17136f 0%, #100d4f 100%);
+    border-right: 1px solid rgba(255, 255, 252, 0.1);
+  }
+
+  /* logo sem moldura: não competir com o card "Acompanhando João" abaixo */
+  .sidebar-logo-clean {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: auto;
+    margin-bottom: 22px;
+    border: 0;
+    padding: 8px 4px;
+    background: none;
+  }
+
+  .sidebar-logo-clean img {
+    width: 138px;
+    max-height: 48px;
+    object-fit: contain;
+    object-position: left center;
+    /* quebra-galho até existir um wordmark claro: clareia sobre o navy */
+    filter: brightness(1.6);
+  }
+
+  /* contexto do usuário (quem está sendo acompanhado) */
+  .sidebar-context {
+    margin-bottom: 22px;
+    border: 1px solid rgba(255, 255, 252, 0.12);
+    border-radius: var(--r-lg);
+    padding: 14px;
+    background: linear-gradient(135deg, rgba(255, 255, 252, 0.1), rgba(255, 255, 252, 0.04));
+  }
+
+  .sidebar-role {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--gold);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .sidebar-context strong {
+    display: block;
+    color: var(--warm-white);
+    font-size: 1rem;
+    line-height: 1.15;
+  }
+
+  .sidebar-context small {
+    display: block;
+    margin-top: 5px;
+    color: rgba(255, 255, 252, 0.62);
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  .nav-label {
+    margin: 0 0 8px;
+    padding: 0 14px;
+    color: rgba(255, 255, 252, 0.45);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .sidebar-nav {
+    display: grid;
+    gap: 6px;
+  }
+
+  /* link = ícone + texto, alvo grande (§11) */
+  .sidebar-nav a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    border-radius: var(--r-sm);
+    padding: 0 14px;
+    color: rgba(255, 255, 252, 0.72);
+    font-size: 0.94rem;
+    font-weight: 700;
+    transition: background 150ms ease, color 150ms ease;
+  }
+
+  .sidebar-nav a:hover {
+    background: rgba(255, 255, 252, 0.08);
+    color: var(--warm-white);
+  }
+
+  .sidebar-nav a.active {
+    background: rgba(255, 255, 252, 0.12);
+    color: var(--warm-white);
+    box-shadow: inset 3px 0 0 var(--gold);
+  }
+
+  .nav-ico {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+    opacity: 0.85;
+  }
+
+  .sidebar-nav a.active .nav-ico {
+    color: var(--gold);
+    opacity: 1;
+  }
+
+  /* footer = conta/contexto + modo foco como toggle discreto */
+  .sidebar-footer {
+    display: grid;
+    gap: 12px;
+    margin-top: auto;
+    border-top: 1px solid rgba(255, 255, 252, 0.14);
+    padding-top: 16px;
+  }
+
+  .account {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* conta = identidade discreta (recua diante do card de contexto do topo) */
+  .account-avatar {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: var(--r-sm);
+    border: 1px solid rgba(255, 255, 252, 0.16);
+    background: rgba(255, 168, 0, 0.16);
+    color: var(--gold);
+    font-size: 0.9rem;
+    font-weight: 800;
+  }
+
+  .account-info strong {
+    display: block;
+    color: rgba(255, 255, 252, 0.92);
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .account-info span {
+    display: block;
+    margin-top: 2px;
+    color: rgba(255, 255, 252, 0.55);
+    font-size: 0.78rem;
+  }
+
+  .focus-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid rgba(255, 255, 252, 0.16);
+    border-radius: var(--r-sm);
+    padding: 0 14px;
+    background: transparent;
+    color: rgba(255, 255, 252, 0.82);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .focus-dot {
+    position: relative;
+    width: 34px;
+    height: 20px;
+    border-radius: 999px;
+    background: rgba(255, 255, 252, 0.18);
+    transition: background 150ms ease;
+  }
+
+  .focus-dot::after {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--warm-white);
+    transition: left 150ms ease, background 150ms ease;
+    content: "";
+  }
+
+  .focus-toggle[aria-pressed="true"] .focus-dot {
+    background: var(--gold);
+  }
+
+  .focus-toggle[aria-pressed="true"] .focus-dot::after {
+    left: 17px;
+    background: var(--ink);
   }
 }
