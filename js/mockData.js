@@ -1,7 +1,7 @@
 const mockUsers = [
   {
     id: "user_guardian_joao",
-    name: "Joao Almeida",
+    name: "João Almeida",
     email: "joao@email.com",
     role: "guardian",
     phone: "(91) 99999-0000",
@@ -32,7 +32,7 @@ const mockChildren = [
   {
     id: "child_joao",
     guardianId: "user_guardian_joao",
-    name: "Joao Pereira",
+    name: "João Pereira",
     age: 7,
     schoolYear: "2o ano",
     hasFormalDiagnosis: "not_informed",
@@ -57,7 +57,7 @@ const mockChildren = [
     status: "waiting",
     currentMonth: 1,
     tutorName: "Aguardando tutor",
-    mainGoal: "Problemas simples do cotidiano e geometria basica",
+    mainGoal: "Problemas simples do cotidiano e geometria básica",
     preferredFormats: ["concreto", "jogos"],
     interests: "desenhos, blocos e desafios curtos",
     avoidances: "atividades muito abstratas sem exemplo",
@@ -88,7 +88,7 @@ const mockTutorApplications = [
     name: "Ana Martins",
     formation: "Psicopedagogia",
     linkedin: "linkedin.com/in/anamartins",
-    experience: "Experiencia com TEA e reforco de matematica.",
+    experience: "Experiência com TEA e reforço de matemática.",
     weeklyAvailability: "Terca e quinta, tarde",
     status: "pending",
     reviewedBy: null,
@@ -127,7 +127,7 @@ const mockMatches = [
     id: "match_joao_maria",
     childId: "child_joao",
     tutorId: "user_tutor_maria",
-    childName: "Joao Pereira",
+    childName: "João Pereira",
     tutorName: "Maria Silva",
     reason: "Horario compativel, foco em soma simples e experiencia pedagogica.",
     compatibility: {
@@ -217,6 +217,19 @@ const mockReports = [
   },
 ];
 
+const mockConsents = [
+  {
+    id: "consent_joao",
+    guardianId: "user_guardian_joao",
+    childId: "child_joao",
+    dataUseAccepted: true,
+    contactAccepted: true,
+    imageUseAccepted: false,
+    termsVersion: "mvp-2026-06",
+    acceptedAt: "2026-06-01",
+  },
+];
+
 const mockAdminNotes = [
   {
     id: "note_001",
@@ -240,17 +253,18 @@ window.cognitaData = {
   activities: mockActivities,
   progressLogs: mockProgressLogs,
   reports: mockReports,
+  consents: mockConsents,
   adminNotes: mockAdminNotes,
 };
 
 window.cognitaMock = window.cognitaMock || {
   responsavel: {
-    nome: "Joao Almeida",
-    primeiroNome: "Joao",
+    nome: "João Almeida",
+    primeiroNome: "João",
     email: "joao@email.com",
   },
   crianca: {
-    nome: "Joao Pereira",
+    nome: "João Pereira",
     idade: "7 anos",
     etapaEscolar: "2o ano do ensino fundamental",
     foco: "Contagem, comparacao de quantidades e pequenas somas.",
@@ -263,8 +277,8 @@ window.cognitaMock = window.cognitaMock || {
   },
   ciclo: {
     status: "Ativo",
-    mesAtual: "Mes 2 de 6",
-    progressoTexto: "33% do ciclo concluido",
+    mesAtual: "Mês 2 de 6",
+    progressoTexto: "33% do ciclo concluído",
     progressoPercentual: "33%",
     cadastro: "Validado pela equipe",
     match: "Tutor vinculado",
@@ -284,7 +298,7 @@ window.cognitaMock = window.cognitaMock || {
     semana: "Semana 4",
   },
   observacaoTutor: {
-    texto: "Joao respondeu melhor a exemplos com objetos do cotidiano.",
+    texto: "João respondeu melhor a exemplos com objetos do cotidiano.",
     tipo: "Registro",
   },
 };

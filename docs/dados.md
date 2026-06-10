@@ -1,11 +1,11 @@
 # Dados Simulados
 
-O MVP estático usa `js/mock-data.js` para centralizar exemplos de responsável, criança, tutor, ciclo, sessão semanal, atividade sugerida e status do acompanhamento.
+O MVP estático usa `js/mockData.js` para centralizar exemplos de responsável, criança, tutor, ciclo, sessão semanal, atividade sugerida e status do acompanhamento.
 
 ## Arquivo principal
 
 ```text
-js/mock-data.js
+js/mockData.js
 ```
 
 Os dados ficam disponíveis em:

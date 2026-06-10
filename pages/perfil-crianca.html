@@ -8,13 +8,13 @@
   </head>
   <body class="app-body">
     <div class="app-shell">
-      <aside class="sidebar" aria-label="Menu do perfil pedagogico">
+      <aside class="sidebar" aria-label="Menu do perfil pedagógico">
         <a class="sidebar-logo sidebar-logo-clean" href="../index.html">
           <img src="../assets/logo-retangular-transparent.png" alt="CognitaHub" />
         </a>
         <nav class="sidebar-nav">
           <a href="responsavel.html">Painel</a>
-          <a class="active" href="perfil-crianca.html">Perfil da crianca</a>
+          <a class="active" href="perfil-crianca.html">Perfil da criança</a>
           <a href="atividades.html">Atividades</a>
           <a href="tutor.html">Tutor</a>
           <a href="admin.html">Admin</a>
@@ -27,24 +27,24 @@
       <main class="app-main">
         <div class="app-topbar">
           <div>
-            <p class="eyebrow">Perfil pedagogico inicial</p>
-            <h1 data-mock="crianca.nome">Joao Pereira</h1>
+            <p class="eyebrow">Perfil pedagógico inicial</p>
+            <h1 data-mock="crianca.nome">João Pereira</h1>
           </div>
           <a class="btn btn-ghost" href="responsavel.html">Voltar ao painel</a>
         </div>
 
         <section class="app-hero profile-hero">
           <div>
-            <p class="eyebrow">Base para personalizacao</p>
-            <h2>Um resumo claro para orientar tutor, familia e equipe.</h2>
+            <p class="eyebrow">Base para personalização</p>
+            <h2>Um resumo claro para orientar tutor, família e equipe.</h2>
             <p>
-              Esta tela conecta cadastro, perfil pedagogico, plano atual, ultimo registro e proximo passo do ciclo.
+              Esta tela conecta cadastro, perfil pedagógico, plano atual, último registro e próximo passo do ciclo.
             </p>
           </div>
           <img src="../assets/sticker.png" alt="" aria-hidden="true" />
         </section>
 
-        <section class="profile-summary-grid" aria-label="Resumo do perfil da crianca">
+        <section class="profile-summary-grid" aria-label="Resumo do perfil da criança">
           <article class="app-card profile-summary-card">
             <span>Idade</span>
             <strong data-mock="crianca.idade">7 anos</strong>
@@ -73,19 +73,19 @@
               </div>
               <div>
                 <dt>Evitar</dt>
-                <dd>Textos longos e muitas instrucoes ao mesmo tempo.</dd>
+                <dd>Textos longos e muitas instruções ao mesmo tempo.</dd>
               </div>
               <div>
                 <dt>Plano atual</dt>
-                <dd data-mock="sessaoAtual.tema">Soma com apoio visual</dd>
+                <dd data-session-output="topic" data-mock="sessaoAtual.tema">Soma com apoio visual</dd>
               </div>
               <div>
-                <dt>Ultimo registro</dt>
-                <dd data-mock="observacaoTutor.texto">Respondeu melhor com exemplos da rotina.</dd>
+                <dt>Último registro</dt>
+                <dd data-session-output="notes" data-mock="observacaoTutor.texto">Respondeu melhor com exemplos da rotina.</dd>
               </div>
               <div>
-                <dt>Proximo passo</dt>
-                <dd>Comparar quantidades com objetos da casa.</dd>
+                <dt>Próximo passo</dt>
+                <dd data-session-output="nextStep">Comparar quantidades com objetos da casa.</dd>
               </div>
             </dl>
           </article>
@@ -110,9 +110,9 @@
               <li class="list-row">
                 <div>
                   <strong>Registro</strong>
-                  <span>Observar engajamento, dificuldade e proximo passo.</span>
+                  <span>Observar engajamento, dificuldade e próximo passo.</span>
                 </div>
-                <span class="tag wine">Sessao</span>
+                <span class="tag wine">Sessão</span>
               </li>
             </ul>
           </aside>

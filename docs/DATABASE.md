@@ -16,6 +16,7 @@ activities
 progressLogs
 reports
 adminNotes
+consents
 ```
 
 ## users/{userId}
@@ -53,6 +54,22 @@ Guarda os dados basicos de acesso e identificacao dos usuarios do sistema.
 ```
 
 Representa a crianca cadastrada pelo responsavel e sua situacao dentro do fluxo do hub.
+
+## consents/{consentId}
+
+```js
+{
+  guardianId,
+  childId,
+  dataUseAccepted,
+  contactAccepted,
+  imageUseAccepted,
+  termsVersion,
+  acceptedAt
+}
+```
+
+Registra o consentimento do responsavel para uso de dados, contato e imagem da crianca quando aplicavel.
 
 ## learningProfiles/{profileId}
 

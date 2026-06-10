@@ -1,4 +1,6 @@
 const storageKey = "cognitahub-focus-mode";
+const sessionStorageKey = "cognitahub-latest-session";
+const childSignupStorageKey = "cognitahub-child-signup";
 
 function setFocusMode(enabled) {
   document.body.classList.toggle("focus-mode", enabled);
@@ -153,6 +155,167 @@ function setupMockData() {
   });
 }
 
+function getLatestSession() {
+  const fallback = {
+    topic: getMockValue("sessaoAtual.registro") || "Soma com objetos e cartoes visuais.",
+    engagement: "4",
+    difficulty: "2",
+    result: "Avancou com apoio",
+    notes: getMockValue("observacaoTutor.texto") || "Respondeu melhor com objetos do cotidiano.",
+    nextStep: getMockValue("atividadeSugerida.descricao") || "Comparar quantidades com objetos da casa.",
+  };
+
+  try {
+    return {
+      ...fallback,
+      ...JSON.parse(localStorage.getItem(sessionStorageKey) || "{}"),
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+function syncLatestSession() {
+  const session = getLatestSession();
+
+  document.querySelectorAll("[data-session-output]").forEach((element) => {
+    const value = session[element.dataset.sessionOutput];
+
+    if (value !== null && value !== undefined && value !== "") {
+      element.textContent = value;
+    }
+  });
+}
+
+function setupSessionForm() {
+  const form = document.querySelector("[data-session-form]");
+  if (!form) {
+    syncLatestSession();
+    return;
+  }
+
+  const saved = getLatestSession();
+  Object.entries(saved).forEach(([name, value]) => {
+    const field = form.elements[name];
+    if (field && value) field.value = value;
+  });
+
+  syncLatestSession();
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(form);
+    const session = {
+      childId: "child_joao",
+      cycleId: "cycle_joao_maria",
+      topic: formData.get("topic"),
+      engagement: formData.get("engagement"),
+      difficulty: formData.get("difficulty"),
+      result: formData.get("result"),
+      notes: formData.get("notes"),
+      nextStep: formData.get("nextStep"),
+      savedAt: new Date().toISOString(),
+    };
+
+    localStorage.setItem(sessionStorageKey, JSON.stringify(session));
+    syncLatestSession();
+
+    const feedback = form.querySelector("[data-session-feedback]");
+    if (feedback) {
+      feedback.textContent = "Registro salvo. O painel do responsavel e o perfil da crianca ja refletem esta sessao.";
+    }
+  });
+}
+
+function getSavedChildSignup() {
+  const fallback = {
+    child: {
+      name: "Lia Costa",
+      age: "9 anos",
+      status: "waiting_review",
+    },
+    learningProfile: {
+      mathDifficulties: "problemas simples do cotidiano e geometria basica.",
+      preferredFormats: ["objetos-concretos", "jogos"],
+      attentionSpan: "5 a 10 minutos",
+      motivators: "desenhos, blocos e desafios curtos",
+      difficultContent: ["comparar-quantidades", "formas-geometricas"],
+    },
+  };
+
+  try {
+    return {
+      ...fallback,
+      ...JSON.parse(localStorage.getItem(childSignupStorageKey) || "{}"),
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+function syncChildSignup() {
+  const signup = getSavedChildSignup();
+  const values = {
+    name: signup.child?.name,
+    age: signup.child?.age,
+    mathDifficulties: signup.learningProfile?.mathDifficulties,
+    attentionSpan: signup.learningProfile?.attentionSpan,
+    motivators: signup.learningProfile?.motivators,
+  };
+
+  document.querySelectorAll("[data-child-signup-output]").forEach((element) => {
+    const value = values[element.dataset.childSignupOutput];
+    if (value) element.textContent = value;
+  });
+}
+
+function setupChildSignupForm() {
+  const form = document.querySelector("[data-child-signup-form]");
+
+  if (!form) {
+    syncChildSignup();
+    return;
+  }
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(form);
+    const childName = formData.get("crianca-nome") || "Crianca em analise";
+    const childAge = formData.get("idade-crianca") || "Idade nao informada";
+
+    const signup = {
+      child: {
+        id: `child_${String(childName).toLowerCase().replace(/\W+/g, "_")}`,
+        guardianName: formData.get("responsavel-nome"),
+        guardianEmail: formData.get("responsavel-email"),
+        name: childName,
+        age: childAge,
+        schoolYear: formData.get("etapa-escolar"),
+        status: "waiting_review",
+        createdAt: new Date().toISOString(),
+      },
+      learningProfile: {
+        mathDifficulties: formData.get("dificuldades"),
+        preferredFormats: formData.getAll("aprende-melhor"),
+        attentionSpan: formData.get("tempo-concentracao"),
+        motivators: formData.get("motivadores"),
+        avoidances: formData.get("dificultadores"),
+        difficultContent: formData.getAll("conteudos-dificeis"),
+        supportContext: formData.get("acompanhamento"),
+      },
+    };
+
+    localStorage.setItem(childSignupStorageKey, JSON.stringify(signup));
+
+    const feedback = form.querySelector("[data-form-feedback]");
+    if (feedback) {
+      feedback.textContent = "Cadastro salvo no mock. O painel admin ja pode analisar esta crianca.";
+    }
+  });
+}
+
 function setupFakeForms() {
   document.querySelectorAll("[data-static-form]").forEach((form) => {
     form.addEventListener("submit", (event) => {
@@ -231,5 +394,7 @@ setupLoginRoleTabs();
 setupActivityFilter();
 setupLoginRouting();
 setupMockData();
+setupSessionForm();
+setupChildSignupForm();
 setupFakeForms();
 setupFeatureAccordion();

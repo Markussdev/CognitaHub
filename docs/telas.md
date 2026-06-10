@@ -16,7 +16,7 @@
    - Biblioteca de atividades
 
 3. Criar dados simulados
-   - Criar js/mock-data.js
+   - Criar js/mockData.js
    - Criar docs/dados.md
    - criança cadastrada
    - responsável

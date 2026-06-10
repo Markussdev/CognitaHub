@@ -73,31 +73,38 @@
             <li>Tutor validado</li>
             <li>Match criado</li>
             <li>Ciclo iniciado</li>
-            <li>Sessoes registradas</li>
-            <li>Relatorio mensal gerado</li>
+            <li>Sessões registradas</li>
+            <li>Relatório mensal gerado</li>
           </ol>
         </section>
 
         <section class="admin-sections" id="criancas">
           <article class="app-card">
             <div class="card-heading-row">
-              <h2>Criancas aguardando analise</h2>
+              <h2>Crianças aguardando análise</h2>
               <span class="tag">3 novas</span>
             </div>
             <ul class="admin-list">
               <li class="list-row">
                 <div>
-                  <strong>Lia Costa</strong>
-                  <span>9 anos, problemas simples do cotidiano e geometria basica.</span>
+                  <strong data-child-signup-output="name">Lia Costa</strong>
+                  <span>
+                    <span data-child-signup-output="age">9 anos</span>,
+                    <span data-child-signup-output="mathDifficulties">problemas simples do cotidiano e geometria básica.</span>
+                  </span>
                 </div>
-                <a class="tag blue" href="perfil-crianca.html">Ver perfil</a>
+                <div class="row-actions">
+                  <a class="tag blue" href="perfil-crianca.html">Ver perfil</a>
+                  <button class="tag action-tag" type="button">Aprovar</button>
+                  <a class="tag wine" href="#matches">Buscar tutor</a>
+                </div>
               </li>
               <li class="list-row">
                 <div>
                   <strong>Pedro Lima</strong>
-                  <span>6 anos, reconhecimento de numeros e contagem com apoio visual.</span>
+                  <span>6 anos, reconhecimento de números e contagem com apoio visual.</span>
                 </div>
-                <span class="tag">Analisar</span>
+                <button class="tag action-tag" type="button">Analisar criança</button>
               </li>
             </ul>
           </article>
@@ -109,14 +116,14 @@
                   <strong>Ana Martins</strong>
                   <span>Psicopedagoga - experiência com TEA e reforço de matemática.</span>
                 </div>
-                <span class="tag">Validar</span>
+                <button class="tag action-tag" type="button">Aprovar tutor</button>
               </li>
               <li class="list-row">
                 <div>
                   <strong>Rafael Nunes</strong>
                   <span>Licenciatura em matemática - disponibilidade aos sábados.</span>
                 </div>
-                <span class="tag blue">Analisar</span>
+                <button class="tag action-tag blue" type="button">Aprovar tutor</button>
               </li>
             </ul>
           </article>
@@ -133,18 +140,21 @@
                     <span class="inline-mock" data-mock="sessaoAtual.resumoHorario">quinta 15h</span>.
                   </span>
                 </div>
+                <button class="tag action-tag" type="button">Criar match</button>
               </li>
               <li class="list-row">
                 <div>
                   <strong>Lia + Rafael</strong>
-                  <span>9 anos, problemas simples do cotidiano, sábado 10h.</span>
+                  <span>Motivo: horário compatível + foco em problemas simples.</span>
                 </div>
+                <button class="tag action-tag" type="button">Criar match</button>
               </li>
               <li class="list-row">
                 <div>
                   <strong>3 vagas</strong>
-              <span>Aguardando tutor compatível.</span>
+                  <span>Aguardando tutor compatível.</span>
                 </div>
+                <button class="tag action-tag" type="button">Criar match</button>
               </li>
             </ul>
           </aside>
@@ -157,40 +167,40 @@
             <ul class="task-list">
               <li class="list-row">
                 <div>
-                  <strong>Joao Pereira</strong>
-                  <span>Mes 2 de 6 - plano atual: soma com apoio visual.</span>
+                  <strong>João Pereira</strong>
+                  <span>Mês 2 de 6 - plano atual: soma com apoio visual.</span>
                 </div>
-                <span class="tag blue">Em dia</span>
+                <button class="tag action-tag blue" type="button">Iniciar ciclo</button>
               </li>
               <li class="list-row">
                 <div>
                   <strong>Camila Rocha</strong>
-                  <span>Mes 4 de 6 - revisao de dificuldades e consolidacao.</span>
+                  <span>Mês 4 de 6 - revisão de dificuldades e consolidação.</span>
                 </div>
-                <span class="tag">Acompanhar</span>
+                <button class="tag action-tag" type="button">Iniciar ciclo</button>
               </li>
             </ul>
           </article>
 
           <article class="app-card" id="relatorios">
             <div class="card-heading-row">
-              <h2>Relatorios pendentes</h2>
+              <h2>Relatórios pendentes</h2>
               <span class="tag">4 pendentes</span>
             </div>
             <ul class="task-list">
               <li class="list-row">
                 <div>
-                  <strong>Relatorio mensal - Joao Pereira</strong>
+                  <strong>Relatório mensal - João Pereira</strong>
                   <span>Tutor: Maria Silva. Prazo: sexta-feira.</span>
                 </div>
-                <span class="tag wine">Pendente</span>
+                <button class="tag action-tag wine" type="button">Ver relatório</button>
               </li>
               <li class="list-row">
                 <div>
-                  <strong>Relatorio inicial - Lia Costa</strong>
-                  <span>Aguardando conclusao do match antes do ciclo.</span>
+                  <strong>Relatório inicial - Lia Costa</strong>
+                  <span>Aguardando conclusão do match antes do ciclo.</span>
                 </div>
-                <span class="tag blue">Aguardando</span>
+                <button class="tag action-tag blue" type="button">Ver relatório</button>
               </li>
             </ul>
           </article>
@@ -207,7 +217,6 @@
     </nav>
 
     <script src="../js/mockData.js"></script>
-    <script src="../js/mock-data.js"></script>
     <script src="../js/app.js"></script>
   </body>
 </html>
