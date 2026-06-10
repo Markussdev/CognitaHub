@@ -196,12 +196,9 @@ function setupSessionForm() {
     return;
   }
 
-  const saved = getLatestSession();
-  Object.entries(saved).forEach(([name, value]) => {
-    const field = form.elements[name];
-    if (field && value) field.value = value;
-  });
-
+  // §12: o formulário de registro começa vazio (não pré-preenchido).
+  // O card "última sessão salva" abaixo continua refletindo o último
+  // registro via syncLatestSession() — a fonte é o localStorage, não o form.
   syncLatestSession();
 
   form.addEventListener("submit", (event) => {

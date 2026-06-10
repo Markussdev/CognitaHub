@@ -651,3 +651,330 @@
     background: var(--ink);
   }
 }
+
+/* ============================================================
+   TUTOR — mesa de trabalho (foco na criança + registro)
+   Mesmo idioma da responsável: conteúdo solto sobre o fundo,
+   cards brancos sólidos. Seletor de crianças = ferramenta de tutor.
+   ============================================================ */
+
+/* tira a caixa branca gigante: o conteúdo respira sobre o bege (§10) */
+.app-main.work-page {
+  width: min(1120px, calc(100% - 48px));
+  min-height: 0;
+  margin: 24px auto;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* tutor chega rápido ao registro: herói mais baixo que no responsável */
+.work-page .journey-hero {
+  margin-bottom: var(--sp-6);
+}
+
+.work-page .journey-hero-copy {
+  padding: clamp(24px, 3.2vw, 38px) clamp(28px, 4vw, 48px);
+}
+
+.work-page .journey-hero-copy h2 {
+  font-size: clamp(2.2rem, 4.6vw, 3.6rem);
+}
+
+/* rótulo de seção: dá contexto ao bloco de chips (não fica solto) */
+.section-label {
+  margin: 0 0 var(--sp-3);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* seletor de crianças: o tutor alterna entre casos (data-hub-tab) */
+.child-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-6);
+}
+
+.child-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0 18px;
+  background: var(--surface);
+  color: var(--navy);
+  font-size: 0.95rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-soft);
+  cursor: pointer;
+  transition: border-color 150ms ease, transform 150ms ease;
+}
+
+.child-chip:hover {
+  transform: translateY(-1px);
+}
+
+/* criança ativa = acento dourado com significado (§10) */
+.child-chip.active {
+  border-color: var(--gold);
+  box-shadow: inset 0 0 0 1px var(--gold), var(--shadow-soft);
+}
+
+/* corpo em duas colunas: caso em foco | registro */
+.work-page .work-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: var(--sp-6);
+  margin-bottom: var(--sp-8);
+  align-items: start;
+}
+
+/* coluna esquerda guarda um painel por criança (só um visível) */
+.case-column {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.work-page .focus-card,
+.work-page .action-card {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--sp-6);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.work-page .child-focus-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-4);
+}
+
+.work-page .child-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--r);
+  background: var(--soft-gold);
+  color: var(--navy);
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.work-page .child-focus-header h2 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 1.4rem;
+  line-height: 1.1;
+}
+
+.work-page .child-meta {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.work-page .focus-label {
+  margin: 0 0 var(--sp-2);
+  color: var(--wine);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.82;
+}
+
+.work-page .focus-list {
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-4);
+  padding: 0;
+  list-style: none;
+}
+
+.work-page .focus-list li {
+  position: relative;
+  padding: 10px 14px 10px 38px;
+  border-radius: var(--r);
+  background: var(--surface-muted);
+  color: var(--navy);
+  font-weight: 600;
+}
+
+.work-page .focus-list li::before {
+  position: absolute;
+  left: 14px;
+  color: #5d9b92;
+  font-weight: 800;
+  content: "✓";
+}
+
+.work-page .case-insight-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+  margin: 0 0 var(--sp-4);
+}
+
+.work-page .case-insight-grid > div {
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface);
+}
+
+.work-page .case-insight-grid span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.work-page .case-insight-grid strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--navy);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.work-page .action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+
+/* ---------- Registrar sessão = ferramenta, começa vazia (§12) ---------- */
+.work-page .action-card h2 {
+  margin: 0 0 var(--sp-4);
+  color: var(--navy);
+  font-size: clamp(1.3rem, 2vw, 1.6rem);
+}
+
+.work-page .quick-form-grid {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.work-page .quick-form-grid label {
+  display: grid;
+  gap: 6px;
+  color: var(--navy);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.work-page .quick-form-grid select,
+.work-page .quick-form-grid textarea {
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 500;
+}
+
+.work-page .quick-form-grid select:focus-visible,
+.work-page .quick-form-grid textarea:focus-visible,
+.work-page .mood-option:focus-visible,
+.child-chip:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.work-page .quick-form-grid textarea {
+  min-height: 64px;
+  resize: vertical;
+}
+
+/* engajamento e dificuldade ainda colapsados aqui — escala única provisória */
+.work-page .mood-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-2);
+}
+
+.work-page .mood-option {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--navy);
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.work-page .mood-option:hover {
+  border-color: var(--gold);
+}
+
+.work-page .mood-option.active {
+  border-color: var(--gold);
+  background: var(--soft-gold);
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+
+.work-page .fine-print {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+/* ---------- Última sessão salva ---------- */
+.work-page .latest-session-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--sp-6);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.work-page .latest-session-card .eyebrow {
+  margin: 0;
+  color: var(--wine);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.82;
+}
+
+.work-page .latest-session-card h2 {
+  margin: 4px 0;
+  color: var(--navy);
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+.work-page .latest-session-card p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+@media (max-width: 980px) {
+  .work-page .work-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .work-page .case-insight-grid {
+    grid-template-columns: 1fr;
+  }
+}
