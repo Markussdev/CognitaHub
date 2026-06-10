@@ -13,11 +13,10 @@
           <img src="../assets/logo-retangular-transparent.png" alt="CognitaHub" />
         </a>
         <nav class="sidebar-nav">
-          <a class="active" href="tutor.html">Meu acompanhamento</a>
-          <a href="#registrar-sessao">Registrar sessão</a>
-          <a href="perfil-crianca.html">Perfil da criança</a>
-          <a href="atividades.html">Atividades</a>
-          <a href="#relatorios">Relatórios</a>
+          <a class="active" href="tutor.html">Hoje</a>
+          <a href="#criancas">Crianças</a>
+          <a href="#registro">Registrar sessão</a>
+          <a href="atividades.html">Recursos</a>
         </nav>
         <div class="sidebar-footer">
           <button class="btn btn-soft" type="button" data-focus-toggle aria-pressed="false">Modo Foco</button>
@@ -25,134 +24,111 @@
       </aside>
 
       <main class="app-main">
-        <div class="app-topbar">
+        <div class="app-topbar-v2">
           <div>
-            <p class="eyebrow">Tutor voluntário</p>
-            <h1>Olá, <span data-mock="tutor.primeiroNome">Maria</span></h1>
+            <p class="app-kicker">Tutor voluntário</p>
+            <h1 class="app-title">Bom dia, <span data-mock="tutor.primeiroNome">Maria</span></h1>
+            <p class="app-subtitle">
+              Veja o foco da criança, registre a sessão e escolha a próxima atividade sem se perder.
+            </p>
           </div>
           <a class="btn btn-ghost" href="../index.html">Site público</a>
         </div>
 
-        <section class="app-card cycle-summary" aria-label="Resumo do ciclo atual">
+        <section class="role-hero">
           <div>
-            <p class="eyebrow">Ciclo atual</p>
-            <strong>2 crianças acompanhadas · 3 sessões na semana · 1 relatório pendente</strong>
+            <p class="app-kicker">Hoje no Cognita</p>
+            <h2>Seu foco é acompanhar João em contagem e soma simples.</h2>
+            <p>O painel mostra apenas o essencial para preparar, registrar e continuar o ciclo.</p>
           </div>
-          <span class="tag blue">4h semanais</span>
+          <img src="../assets/sticker.png" alt="" aria-hidden="true" />
         </section>
 
-        <section class="dashboard-grid">
-          <article class="app-card tutor-focus-card" id="criancas">
-            <div class="card-heading-row">
-              <h2>Meu acompanhamento</h2>
-              <span class="tag" data-mock="ciclo.mesAtual">Mês 2 de 6</span>
+        <section class="work-grid">
+          <article class="focus-card" id="criancas">
+            <div class="child-focus-header">
+              <div class="child-avatar">J</div>
+              <div>
+                <h2 data-mock="crianca.nome">João Pereira</h2>
+                <p class="child-meta">
+                  <span data-mock="crianca.idade">7 anos</span> ·
+                  <span data-mock="ciclo.mesAtual">Mês 2 de 6</span> · visual + concreto
+                </p>
+              </div>
             </div>
 
-            <article class="child-case-card">
-              <div class="child-case-main">
-                <div>
-                  <p class="eyebrow">Caso em foco</p>
-                  <h3 data-mock="crianca.nome">João Pereira</h3>
-                  <p>
-                    <span data-mock="crianca.idade">7 anos</span> · mês 2 de 6 · foco:
-                    <span data-mock="sessaoAtual.tema">soma com apoio visual</span>
-                  </p>
-                </div>
-                <span class="tag">Visual + concreto</span>
-              </div>
-
-              <div class="case-actions" aria-label="Ações principais">
-                <a class="btn btn-ghost" href="perfil-crianca.html">Ver perfil pedagógico</a>
-                <a class="btn btn-primary" href="#registrar-sessao">Registrar sessão</a>
-                <a class="btn btn-soft" href="atividades.html">Enviar atividade</a>
-              </div>
-
-              <div class="case-insight-grid">
-                <div>
-                  <span>Último registro</span>
-                  <strong data-session-output="notes" data-mock="observacaoTutor.texto">
-                    Respondeu melhor com objetos do cotidiano.
-                  </strong>
-                </div>
-                <div>
-                  <span>Próximo passo</span>
-                  <strong data-session-output="nextStep" data-mock="atividadeSugerida.descricao">
-                    Comparar quantidades com objetos da casa.
-                  </strong>
-                </div>
-              </div>
-            </article>
-
-            <h3 class="section-subtitle">Atividades recomendadas</h3>
-            <ul class="recommendation-list">
+            <ul class="focus-list">
+              <li>Contagem e comparação de quantidades</li>
               <li>Soma com apoio visual</li>
-              <li>Contar objetos da casa</li>
-              <li>Mais ou menos</li>
+              <li>Atividades curtas com objetos do cotidiano</li>
             </ul>
 
-            <article class="child-case-card compact">
-              <div class="child-case-main">
-                <div>
-                  <h3>Lia Costa</h3>
-                  <p>9 anos · mês 1 de 6 · foco: problemas simples e comparação de quantidades</p>
-                </div>
-                <span class="tag blue">Novo ciclo</span>
+            <div class="case-insight-grid">
+              <div>
+                <span>Último registro</span>
+                <strong data-session-output="notes" data-mock="observacaoTutor.texto">
+                  Respondeu melhor com objetos do cotidiano.
+                </strong>
               </div>
-              <div class="case-actions">
-                <a class="btn btn-ghost" href="perfil-crianca.html">Perfil</a>
-                <a class="btn btn-soft" href="atividades.html">Atividade</a>
+              <div>
+                <span>Próximo passo</span>
+                <strong data-session-output="nextStep" data-mock="atividadeSugerida.descricao">
+                  Comparar quantidades com objetos da casa.
+                </strong>
               </div>
-            </article>
+            </div>
+
+            <div class="action-row">
+              <a class="btn btn-primary" href="perfil-crianca.html">Ver perfil pedagógico</a>
+              <a class="btn btn-ghost" href="atividades.html">Ver atividades</a>
+              <a class="btn btn-soft" href="#registro">Registrar sessão</a>
+            </div>
           </article>
 
-          <aside class="app-card session-panel" id="registrar-sessao">
-            <h2>Registrar sessão</h2>
-            <form class="session-form" data-session-form>
-              <div class="form-field">
-                <label for="session-topic">Conteúdo trabalhado</label>
-                <input id="session-topic" name="topic" type="text" value="Soma com objetos e cartões visuais" />
-              </div>
-              <div class="range-grid">
-                <div class="form-field">
-                  <label for="session-engagement">Engajamento</label>
-                  <select id="session-engagement" name="engagement">
-                    <option value="5">5 - Muito engajada</option>
-                    <option value="4" selected>4 - Engajada</option>
-                    <option value="3">3 - Oscilou</option>
-                    <option value="2">2 - Baixo</option>
-                    <option value="1">1 - Muito baixo</option>
-                  </select>
-                </div>
-                <div class="form-field">
-                  <label for="session-difficulty">Dificuldade</label>
-                  <select id="session-difficulty" name="difficulty">
-                    <option value="1">1 - Muito fácil</option>
-                    <option value="2" selected>2 - Com apoio</option>
-                    <option value="3">3 - Média</option>
-                    <option value="4">4 - Alta</option>
-                    <option value="5">5 - Muito alta</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-field">
-                <label for="session-result">Resultado</label>
-                <select id="session-result" name="result">
-                  <option value="improved" selected>Avançou com apoio</option>
-                  <option value="stable">Manteve o nível</option>
-                  <option value="needs_support">Precisa retomar</option>
+          <aside class="action-card" id="registro">
+            <h2>Registrar sessão rápida</h2>
+            <form class="quick-form-grid" data-session-form>
+              <label>
+                Conteúdo trabalhado
+                <select name="topic">
+                  <option>Contagem e quantidades</option>
+                  <option selected>Soma com apoio visual</option>
+                  <option>Comparação de números</option>
                 </select>
-              </div>
-              <div class="form-field">
-                <label for="session-notes">Observação</label>
-                <textarea id="session-notes" name="notes">Respondeu melhor com objetos do cotidiano.</textarea>
-              </div>
-              <div class="form-field">
-                <label for="session-next-step">Próximo passo</label>
-                <textarea id="session-next-step" name="nextStep">Comparar quantidades com objetos da casa.</textarea>
-              </div>
+              </label>
+
+              <label>
+                Como foi a sessão?
+                <div class="mood-row" data-mood-group>
+                  <button class="mood-option" type="button" data-mood-value="needs_support" data-engagement="2" data-difficulty="4">
+                    Difícil
+                  </button>
+                  <button class="mood-option" type="button" data-mood-value="stable" data-engagement="3" data-difficulty="3">
+                    Boa
+                  </button>
+                  <button class="mood-option active" type="button" data-mood-value="improved" data-engagement="5" data-difficulty="2">
+                    Ótima
+                  </button>
+                </div>
+              </label>
+
+              <input type="hidden" name="result" value="improved" />
+              <input type="hidden" name="engagement" value="5" />
+              <input type="hidden" name="difficulty" value="2" />
+
+              <label>
+                Observação
+                <textarea name="notes" placeholder="Ex: respondeu melhor com objetos do cotidiano.">Respondeu melhor com objetos do cotidiano.</textarea>
+              </label>
+
+              <label>
+                Próximo passo
+                <textarea name="nextStep">Comparar quantidades com objetos da casa.</textarea>
+              </label>
+
               <button class="btn btn-primary" type="submit">Salvar registro</button>
               <p class="fine-print" data-session-feedback>
-                O registro atualiza o último acompanhamento do tutor e a visão do responsável neste mock.
+                O responsável verá este registro como evolução da semana.
               </p>
             </form>
           </aside>
@@ -173,10 +149,10 @@
     </div>
 
     <nav class="bottom-nav" aria-label="Menu inferior">
-      <a class="active" href="tutor.html">Acompanhamento</a>
-      <a href="#registrar-sessao">Registrar</a>
-      <a href="perfil-crianca.html">Perfil</a>
-      <a href="atividades.html">Atividades</a>
+      <a class="active" href="tutor.html">Hoje</a>
+      <a href="#criancas">Crianças</a>
+      <a href="#registro">Registro</a>
+      <a href="atividades.html">Recursos</a>
       <a href="#relatorios">Relatórios</a>
     </nav>
 

@@ -13,12 +13,10 @@
           <img src="../assets/logo-retangular-transparent.png" alt="CognitaHub" />
         </a>
         <nav class="sidebar-nav">
-          <a class="active" href="responsavel.html">Início</a>
-          <a href="#acompanhamento">Meu acompanhamento</a>
+          <a class="active" href="responsavel.html">Resumo</a>
           <a href="atividades.html">Atividades</a>
-          <a href="#agenda">Agenda</a>
           <a href="#progresso">Progresso</a>
-          <a href="perfil-crianca.html">Perfil</a>
+          <a href="#mensagens">Mensagens</a>
         </nav>
         <div class="sidebar-footer">
           <button class="btn btn-soft" type="button" data-focus-toggle aria-pressed="false">Modo Foco</button>
@@ -26,21 +24,21 @@
       </aside>
 
       <main class="app-main">
-        <div class="app-topbar">
+        <div class="app-topbar-v2">
           <div>
-            <p class="eyebrow">Responsável e criança</p>
-            <h1>Olá, <span data-mock="responsavel.primeiroNome">João</span></h1>
+            <p class="app-kicker">Responsável e criança</p>
+            <h1 class="app-title">Olá, <span data-mock="responsavel.primeiroNome">João</span></h1>
+            <p class="app-subtitle">Acompanhe o que aconteceu, o que fazer em casa e como o ciclo está evoluindo.</p>
           </div>
           <a class="btn btn-ghost" href="../index.html">Site público</a>
         </div>
 
-        <section class="app-hero">
+        <section class="role-hero">
           <div>
-            <p class="eyebrow">Ciclo em andamento</p>
-            <h2>Seu acompanhamento em matemática está no <span data-mock="ciclo.mesAtual">mês 2 de 6</span>.</h2>
+            <p class="app-kicker">Resumo da criança</p>
+            <h2>João está no <span data-mock="ciclo.mesAtual">mês 2 de 6</span> com foco em soma visual.</h2>
             <p>
-              Próximo encontro, atividade da semana e observações ficam reunidos para reduzir ruído e manter a rotina
-              previsível.
+              Última sessão, atividade da semana e observação do tutor aparecem juntos para orientar a rotina.
             </p>
           </div>
           <img src="../assets/sticker.png" alt="" aria-hidden="true" />
@@ -107,25 +105,25 @@
             </ul>
           </article>
 
-          <aside class="app-card" id="agenda">
-            <h2>Agenda</h2>
+          <aside class="app-card" id="mensagens">
+            <h2>Mensagens e próximos combinados</h2>
             <ul class="task-list">
               <li class="list-row">
                 <div>
-                  <strong data-mock="sessaoAtual.dia">Quinta-feira</strong>
+                  <strong>Próximo encontro</strong>
                   <span><span class="inline-mock" data-mock="sessaoAtual.horario">15h</span> - <span class="inline-mock" data-mock="sessaoAtual.formato">Encontro online</span></span>
                 </div>
               </li>
               <li class="list-row">
                 <div>
-                  <strong>Sexta-feira</strong>
-                  <span>Enviar atividade concluída</span>
+                  <strong>Atividade da semana</strong>
+                  <span>Contar objetos da casa e comparar grupos com mais ou menos itens.</span>
                 </div>
               </li>
               <li class="list-row">
                 <div>
-                  <strong>Segunda-feira</strong>
-                  <span>Revisão da semana</span>
+                  <strong>Mensagem do tutor</strong>
+                  <span data-session-output="notes" data-mock="observacaoTutor.texto">João respondeu melhor a exemplos com objetos do cotidiano.</span>
                 </div>
               </li>
             </ul>
@@ -135,11 +133,10 @@
     </div>
 
     <nav class="bottom-nav" aria-label="Menu inferior">
-      <a class="active" href="responsavel.html">Início</a>
+      <a class="active" href="responsavel.html">Resumo</a>
       <a href="atividades.html">Atividades</a>
-      <a href="#agenda">Agenda</a>
       <a href="#progresso">Progresso</a>
-      <a href="perfil-crianca.html">Perfil</a>
+      <a href="#mensagens">Mensagens</a>
     </nav>
 
     <script src="../js/mockData.js"></script>

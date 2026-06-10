@@ -2291,6 +2291,7 @@ h3 {
 
 .app-card {
   border: 1px solid rgba(20, 17, 98, 0.09);
+  border-radius: var(--radius);
   padding: 22px;
   background: rgba(255, 255, 255, 0.88);
   box-shadow: 0 16px 44px rgba(20, 17, 98, 0.06);
@@ -3696,5 +3697,352 @@ h3 {
 
   .login-story {
     padding: 26px 20px;
+  }
+}
+
+/* ========== APP V2 EXPERIENCE ========== */
+
+.app-body {
+  min-height: 100vh;
+  background:
+    linear-gradient(135deg, rgba(20, 17, 98, 0.08), rgba(255, 168, 0, 0.06)),
+    url("../assets/background.png") center / cover fixed no-repeat;
+}
+
+.app-main {
+  position: relative;
+  isolation: isolate;
+}
+
+.app-main::before {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255, 168, 0, 0.16), transparent 28%),
+    radial-gradient(circle at 90% 18%, rgba(84, 0, 66, 0.14), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 252, 0.82), rgba(244, 242, 255, 0.92));
+  content: "";
+}
+
+.app-main::after {
+  position: fixed;
+  inset: 24px;
+  z-index: -1;
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  border-radius: 38px;
+  background: rgba(255, 255, 252, 0.52);
+  backdrop-filter: blur(18px);
+  content: "";
+  pointer-events: none;
+}
+
+.app-topbar-v2 {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.app-kicker {
+  margin: 0;
+  color: var(--wine);
+  font-size: 0.78rem;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.role-hero .app-kicker {
+  color: var(--gold);
+}
+
+.app-title {
+  max-width: none;
+  margin: 4px 0 0;
+  color: var(--navy);
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1.02;
+}
+
+.app-subtitle {
+  max-width: 680px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.role-hero {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 22px;
+  align-items: center;
+  margin-bottom: 18px;
+  border: 1px solid rgba(20, 17, 98, 0.12);
+  border-radius: 30px;
+  padding: 24px;
+  background:
+    linear-gradient(135deg, rgba(20, 17, 98, 0.96), rgba(84, 0, 66, 0.86)),
+    url("../assets/background.png") center / cover;
+  color: var(--warm-white);
+  box-shadow: 0 22px 70px rgba(20, 17, 98, 0.18);
+}
+
+.role-hero::before {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 78% 18%, rgba(255, 168, 0, 0.24), transparent 24%),
+    linear-gradient(90deg, rgba(20, 17, 98, 0.84), rgba(20, 17, 98, 0.42));
+  content: "";
+}
+
+.role-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.role-hero h2 {
+  max-width: 720px;
+  margin: 0;
+  color: var(--warm-white);
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  line-height: 1.06;
+}
+
+.role-hero p:not(.app-kicker) {
+  max-width: 680px;
+  margin: 10px 0 0;
+  color: rgba(255, 255, 252, 0.78);
+}
+
+.role-hero img {
+  width: min(128px, 18vw);
+  filter: drop-shadow(0 20px 32px rgba(0, 0, 0, 0.22));
+}
+
+.work-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.focus-card,
+.action-card {
+  border: 1px solid rgba(20, 17, 98, 0.1);
+  border-radius: 26px;
+  background: rgba(255, 255, 252, 0.9);
+  box-shadow: 0 18px 54px rgba(20, 17, 98, 0.08);
+}
+
+.focus-card {
+  position: relative;
+  overflow: hidden;
+  padding: 24px;
+}
+
+.focus-card::after {
+  position: absolute;
+  right: -70px;
+  bottom: -90px;
+  width: 220px;
+  height: 220px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 168, 0, 0.18), transparent 66%);
+  content: "";
+  pointer-events: none;
+}
+
+.child-focus-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.child-avatar {
+  display: grid;
+  width: 68px;
+  height: 68px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 22px;
+  background: var(--soft-gold);
+  color: var(--navy);
+  font-size: 1.8rem;
+  font-weight: 950;
+}
+
+.child-focus-header h2 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 1.5rem;
+}
+
+.child-meta {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-weight: 750;
+}
+
+.focus-list {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 10px;
+  margin: 18px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.focus-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: rgba(244, 242, 255, 0.72);
+  color: var(--navy);
+  font-weight: 850;
+}
+
+.focus-list li::before {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--ink);
+  content: "✓";
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+
+.action-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.action-card {
+  padding: 22px;
+}
+
+.action-card h2 {
+  margin-bottom: 14px;
+  color: var(--navy);
+  font-size: 1.28rem;
+}
+
+.quick-form-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.quick-form-grid label {
+  display: grid;
+  gap: 6px;
+  color: var(--navy);
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.quick-form-grid select,
+.quick-form-grid textarea {
+  width: 100%;
+  border: 1px solid rgba(20, 17, 98, 0.16);
+  border-radius: 18px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 252, 0.9);
+  color: var(--ink);
+}
+
+.quick-form-grid textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.mood-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.mood-option {
+  border: 1px solid rgba(20, 17, 98, 0.12);
+  border-radius: 16px;
+  padding: 10px;
+  background: var(--warm-white);
+  color: var(--navy);
+  font-weight: 850;
+}
+
+.mood-option.active {
+  border-color: rgba(255, 168, 0, 0.7);
+  background: var(--soft-gold);
+}
+
+.app-card {
+  background: rgba(255, 255, 252, 0.88);
+  backdrop-filter: blur(12px);
+}
+
+.list-row {
+  border-radius: var(--radius-sm);
+  background: rgba(244, 242, 255, 0.56);
+}
+
+.admin-sections {
+  margin-bottom: 18px;
+}
+
+.app-main > .app-card,
+.app-main > aside.app-card,
+.app-main > article.app-card {
+  margin-bottom: 18px;
+}
+
+@media (max-width: 1080px) {
+  .work-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bottom-nav {
+    grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .app-main::after {
+    inset: 10px;
+    border-radius: 24px;
+  }
+
+  .app-topbar-v2,
+  .role-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .role-hero img {
+    width: 108px;
+  }
+
+  .bottom-nav {
+    grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  }
+
+  .mood-row {
+    grid-template-columns: 1fr;
   }
 }

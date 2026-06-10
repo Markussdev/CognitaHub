@@ -13,10 +13,8 @@
           <img src="../assets/logo-retangular-transparent.png" alt="CognitaHub" />
         </a>
         <nav class="sidebar-nav">
-          <a class="active" href="admin.html">Visão geral</a>
-          <a href="#criancas">Crianças inscritas</a>
-          <a href="#tutores">Tutores</a>
-          <a href="#matches">Conexões</a>
+          <a class="active" href="#triagem">Triagem</a>
+          <a href="#matches">Matches</a>
           <a href="#ciclos">Ciclos</a>
           <a href="#relatorios">Relatórios</a>
         </nav>
@@ -26,21 +24,24 @@
       </aside>
 
       <main class="app-main">
-        <div class="app-topbar">
+        <div class="app-topbar-v2">
           <div>
-            <p class="eyebrow">Equipe CognitaHub</p>
-            <h1>Painel admin</h1>
+            <p class="app-kicker">Equipe CognitaHub</p>
+            <h1 class="app-title">Triagem e decisões</h1>
+            <p class="app-subtitle">
+              Analise cadastros, valide tutores e crie matches com clareza antes de iniciar cada ciclo.
+            </p>
           </div>
           <a class="btn btn-ghost" href="../index.html">Site público</a>
         </div>
 
 
-        <section class="app-hero">
+        <section class="role-hero">
           <div>
-            <p class="eyebrow">Operação do MVP</p>
-            <h2>Validação manual, match seguro e ciclos acompanhados.</h2>
+            <p class="app-kicker">Fila do MVP</p>
+            <h2>O que precisa ser analisado antes de virar acompanhamento.</h2>
             <p>
-              O admin centraliza inscrições, análise de tutores voluntários, conexões criança-tutor e encerramento de ciclo.
+              A equipe decide quem entra, qual tutor combina e quando o ciclo está pronto para começar.
             </p>
           </div>
           <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
@@ -48,38 +49,25 @@
 
         <section class="stats-grid" aria-label="Resumo administrativo">
           <article class="app-card stat">
-            <span>Crianças inscritas</span>
+            <span>Aguardam análise</span>
             <strong>18</strong>
           </article>
           <article class="app-card stat">
-            <span>Tutores pendentes</span>
+            <span>Tutores a validar</span>
             <strong>7</strong>
           </article>
           <article class="app-card stat">
-            <span>Ciclos ativos</span>
-            <strong>12</strong>
-          </article>
-          <article class="app-card stat">
-            <span>Matches a fazer</span>
+            <span>Matches sugeridos</span>
             <strong>5</strong>
           </article>
+          <article class="app-card stat">
+            <span>Relatórios a liberar</span>
+            <strong>4</strong>
+          </article>
         </section>
 
-        <section class="admin-flow app-card" aria-label="Fluxo operacional do MVP">
-          <h2>Fluxo do acompanhamento</h2>
-          <ol>
-            <li>Cadastro recebido</li>
-            <li>Equipe analisa</li>
-            <li>Tutor validado</li>
-            <li>Match criado</li>
-            <li>Ciclo iniciado</li>
-            <li>Sessões registradas</li>
-            <li>Relatório mensal gerado</li>
-          </ol>
-        </section>
-
-        <section class="admin-sections" id="criancas">
-          <article class="app-card">
+        <section class="admin-sections" id="triagem">
+          <article class="app-card" id="criancas">
             <div class="card-heading-row">
               <h2>Crianças aguardando análise</h2>
               <span class="tag">3 novas</span>
@@ -127,92 +115,91 @@
               </li>
             </ul>
           </article>
-
-          <aside class="app-card" id="matches">
-            <h2>Conexões sugeridas</h2>
-            <ul class="task-list">
-              <li class="list-row">
-                <div>
-                  <strong>João + Maria</strong>
-                  <span>
-                    <span class="inline-mock" data-mock="crianca.idade">7 anos</span>,
-                    <span class="inline-mock" data-mock="sessaoAtual.tema">soma com apoio visual</span>,
-                    <span class="inline-mock" data-mock="sessaoAtual.resumoHorario">quinta 15h</span>.
-                  </span>
-                </div>
-                <button class="tag action-tag" type="button">Criar match</button>
-              </li>
-              <li class="list-row">
-                <div>
-                  <strong>Lia + Rafael</strong>
-                  <span>Motivo: horário compatível + foco em problemas simples.</span>
-                </div>
-                <button class="tag action-tag" type="button">Criar match</button>
-              </li>
-              <li class="list-row">
-                <div>
-                  <strong>3 vagas</strong>
-                  <span>Aguardando tutor compatível.</span>
-                </div>
-                <button class="tag action-tag" type="button">Criar match</button>
-              </li>
-            </ul>
-          </aside>
-
-          <article class="app-card" id="ciclos">
-            <div class="card-heading-row">
-              <h2>Ciclos ativos</h2>
-              <span class="tag wine">12 ativos</span>
-            </div>
-            <ul class="task-list">
-              <li class="list-row">
-                <div>
-                  <strong>João Pereira</strong>
-                  <span>Mês 2 de 6 - plano atual: soma com apoio visual.</span>
-                </div>
-                <button class="tag action-tag blue" type="button">Iniciar ciclo</button>
-              </li>
-              <li class="list-row">
-                <div>
-                  <strong>Camila Rocha</strong>
-                  <span>Mês 4 de 6 - revisão de dificuldades e consolidação.</span>
-                </div>
-                <button class="tag action-tag" type="button">Iniciar ciclo</button>
-              </li>
-            </ul>
-          </article>
-
-          <article class="app-card" id="relatorios">
-            <div class="card-heading-row">
-              <h2>Relatórios pendentes</h2>
-              <span class="tag">4 pendentes</span>
-            </div>
-            <ul class="task-list">
-              <li class="list-row">
-                <div>
-                  <strong>Relatório mensal - João Pereira</strong>
-                  <span>Tutor: Maria Silva. Prazo: sexta-feira.</span>
-                </div>
-                <button class="tag action-tag wine" type="button">Ver relatório</button>
-              </li>
-              <li class="list-row">
-                <div>
-                  <strong>Relatório inicial - Lia Costa</strong>
-                  <span>Aguardando conclusão do match antes do ciclo.</span>
-                </div>
-                <button class="tag action-tag blue" type="button">Ver relatório</button>
-              </li>
-            </ul>
-          </article>
         </section>
+
+        <aside class="app-card" id="matches">
+          <h2>Matches sugeridos</h2>
+          <ul class="task-list">
+            <li class="list-row">
+              <div>
+                <strong>João + Maria</strong>
+                <span>
+                  <span class="inline-mock" data-mock="crianca.idade">7 anos</span>,
+                  <span class="inline-mock" data-mock="sessaoAtual.tema">soma com apoio visual</span>,
+                  <span class="inline-mock" data-mock="sessaoAtual.resumoHorario">quinta 15h</span>.
+                </span>
+              </div>
+              <button class="tag action-tag" type="button">Criar match</button>
+            </li>
+            <li class="list-row">
+              <div>
+                <strong>Lia + Rafael</strong>
+                <span>Motivo: horário compatível + foco em problemas simples.</span>
+              </div>
+              <button class="tag action-tag" type="button">Criar match</button>
+            </li>
+            <li class="list-row">
+              <div>
+                <strong>3 vagas</strong>
+                <span>Aguardando tutor compatível.</span>
+              </div>
+              <button class="tag action-tag" type="button">Criar match</button>
+            </li>
+          </ul>
+        </aside>
+
+        <article class="app-card" id="ciclos">
+          <div class="card-heading-row">
+            <h2>Ciclos ativos</h2>
+            <span class="tag wine">12 ativos</span>
+          </div>
+          <ul class="task-list">
+            <li class="list-row">
+              <div>
+                <strong>João Pereira</strong>
+                <span>Mês 2 de 6 - plano atual: soma com apoio visual.</span>
+              </div>
+              <button class="tag action-tag blue" type="button">Ver ciclo</button>
+            </li>
+            <li class="list-row">
+              <div>
+                <strong>Camila Rocha</strong>
+                <span>Mês 4 de 6 - revisão de dificuldades e consolidação.</span>
+              </div>
+              <button class="tag action-tag" type="button">Ver ciclo</button>
+            </li>
+          </ul>
+        </article>
+
+        <article class="app-card" id="relatorios">
+          <div class="card-heading-row">
+            <h2>Relatórios pendentes</h2>
+            <span class="tag">4 pendentes</span>
+          </div>
+          <ul class="task-list">
+            <li class="list-row">
+              <div>
+                <strong>Relatório mensal - João Pereira</strong>
+                <span>Tutor: Maria Silva. Prazo: sexta-feira.</span>
+              </div>
+              <button class="tag action-tag wine" type="button">Ver relatório</button>
+            </li>
+            <li class="list-row">
+              <div>
+                <strong>Relatório inicial - Lia Costa</strong>
+                <span>Aguardando conclusão do match antes do ciclo.</span>
+              </div>
+              <button class="tag action-tag blue" type="button">Ver relatório</button>
+            </li>
+          </ul>
+        </article>
       </main>
     </div>
 
     <nav class="bottom-nav" aria-label="Menu inferior">
-      <a class="active" href="admin.html">Geral</a>
-      <a href="#criancas">Crianças</a>
-      <a href="#tutores">Tutores</a>
-      <a href="#matches">Conexões</a>
+      <a class="active" href="#triagem">Triagem</a>
+      <a href="#matches">Matches</a>
+      <a href="#ciclos">Ciclos</a>
       <a href="#relatorios">Relatórios</a>
     </nav>
 

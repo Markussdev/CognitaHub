@@ -228,6 +228,26 @@ function setupSessionForm() {
   });
 }
 
+function setupMoodOptions() {
+  document.querySelectorAll("[data-mood-group]").forEach((group) => {
+    const form = group.closest("form");
+
+    group.querySelectorAll("[data-mood-value]").forEach((button) => {
+      button.addEventListener("click", () => {
+        group.querySelectorAll("[data-mood-value]").forEach((item) => {
+          item.classList.toggle("active", item === button);
+        });
+
+        if (!form) return;
+
+        if (form.elements.result) form.elements.result.value = button.dataset.moodValue;
+        if (form.elements.engagement) form.elements.engagement.value = button.dataset.engagement;
+        if (form.elements.difficulty) form.elements.difficulty.value = button.dataset.difficulty;
+      });
+    });
+  });
+}
+
 function getSavedChildSignup() {
   const fallback = {
     child: {
@@ -396,5 +416,6 @@ setupLoginRouting();
 setupMockData();
 setupSessionForm();
 setupChildSignupForm();
+setupMoodOptions();
 setupFakeForms();
 setupFeatureAccordion();
