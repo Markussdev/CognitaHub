@@ -978,3 +978,248 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   ADMIN — central operacional do MVP
+   Funil de decisão: Triagem -> Matches -> Ciclos -> Relatórios.
+   ============================================================ */
+
+.app-main.admin-page {
+  width: min(1240px, calc(100% - 48px));
+  min-height: 0;
+  margin: 24px auto;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.admin-page .journey-header {
+  margin-bottom: var(--sp-6);
+}
+
+.admin-filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-6);
+}
+
+.admin-filter {
+  display: flex;
+  min-height: 76px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  border: 1px solid rgba(20, 17, 98, 0.08);
+  border-radius: var(--r);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+
+.admin-filter:hover {
+  transform: translateY(-1px);
+}
+
+.admin-filter:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.admin-filter span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.admin-filter strong {
+  display: block;
+  color: var(--navy);
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.admin-filter.active {
+  border-color: rgba(255, 168, 0, 0.58);
+  box-shadow: inset 4px 0 0 var(--gold), var(--shadow-soft);
+}
+
+.admin-pipeline {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(240px, 1fr));
+  gap: var(--sp-4);
+  align-items: start;
+}
+
+.pipeline-col {
+  position: relative;
+  overflow: hidden;
+  min-height: 560px;
+  border: 1px solid rgba(20, 17, 98, 0.08);
+  border-radius: var(--r-lg);
+  padding: calc(var(--sp-4) + 4px) var(--sp-4) var(--sp-4);
+  background: #f7f4ee;
+  box-shadow: var(--shadow-soft);
+  scroll-margin-top: 24px;
+}
+
+.pipeline-col::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 4px;
+  background: var(--gold);
+  content: "";
+}
+
+.pipeline-col:nth-child(2)::before {
+  background: #2e8b82;
+}
+
+.pipeline-col:nth-child(3)::before {
+  background: var(--navy);
+}
+
+.pipeline-col:nth-child(4)::before {
+  background: var(--wine);
+}
+
+.pipeline-col > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+
+.pipeline-col h2 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 1.05rem;
+  line-height: 1.2;
+}
+
+.pipeline-col > header span {
+  display: grid;
+  min-width: 32px;
+  height: 26px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--soft-gold);
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.pipeline-card {
+  display: flex;
+  min-height: 204px;
+  flex-direction: column;
+  border: 1px solid rgba(20, 17, 98, 0.08);
+  border-radius: var(--r);
+  padding: var(--sp-4);
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(20, 17, 98, 0.04), 0 6px 16px rgba(20, 17, 98, 0.05);
+}
+
+.pipeline-card + .pipeline-card {
+  margin-top: var(--sp-3);
+}
+
+.pipeline-card h3 {
+  margin: 2px 0 0;
+  color: var(--navy);
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.pipeline-card p:not(.app-kicker) {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.pipeline-tags,
+.match-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.pipeline-tags span,
+.match-chips span {
+  border-radius: 999px;
+  padding: 4px 9px;
+  background: var(--surface-muted);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.match-chips {
+  margin-bottom: 12px;
+}
+
+.match-chips .ok {
+  background: rgba(46, 139, 130, 0.12);
+  color: #2e8b82;
+}
+
+.admin-page .row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+.btn-sm {
+  min-height: 34px;
+  padding: 0 13px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.admin-page .cycle-steps {
+  margin-top: var(--sp-4);
+}
+
+#tutores-validar {
+  scroll-margin-top: 24px;
+}
+
+@media (max-width: 1180px) {
+  .admin-filters,
+  .admin-pipeline {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .app-main.admin-page {
+    width: min(100% - 28px, 1240px);
+    margin: 14px auto 92px;
+  }
+
+  .admin-filters,
+  .admin-pipeline {
+    grid-template-columns: 1fr;
+  }
+
+  .pipeline-col {
+    min-height: 0;
+  }
+}

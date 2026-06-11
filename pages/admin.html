@@ -4,7 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin | CognitaHub</title>
+    <link rel="icon" type="image/png" href="../assets/logo-icon-transparent.png" />
     <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="../css/internal.css" />
   </head>
   <body class="app-body">
     <div class="app-shell">
@@ -12,187 +14,299 @@
         <a class="sidebar-logo sidebar-logo-clean" href="../index.html">
           <img src="../assets/logo-retangular-transparent.png" alt="CognitaHub" />
         </a>
+
+        <div class="sidebar-context">
+          <span class="sidebar-role">Equipe Cognita</span>
+          <strong>Operação do MVP</strong>
+          <small>Triagem, matches e ciclos</small>
+        </div>
+
+        <p class="nav-label">Painel</p>
+
         <nav class="sidebar-nav">
-          <a class="active" href="#triagem">Triagem</a>
-          <a href="#matches">Matches</a>
-          <a href="#ciclos">Ciclos</a>
-          <a href="#relatorios">Relatórios</a>
+          <a class="active" href="#triagem">
+            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M9 11l3 3L22 4" />
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+            </svg>
+            <span>Triagem</span>
+          </a>
+          <a href="#matches">
+            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M16 3h5v5" />
+              <path d="M4 20L21 3" />
+              <path d="M21 16v5h-5" />
+              <path d="M15 15l6 6" />
+              <path d="M4 4l5 5" />
+            </svg>
+            <span>Matches</span>
+          </a>
+          <a href="#ciclos">
+            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M4 19V5" />
+              <path d="M4 15l4-4 4 3 7-7" />
+            </svg>
+            <span>Ciclos</span>
+          </a>
+          <a href="#relatorios">
+            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <path d="M14 2v6h6" />
+              <path d="M8 13h8" />
+              <path d="M8 17h5" />
+            </svg>
+            <span>Relatórios</span>
+          </a>
         </nav>
+
         <div class="sidebar-footer">
-          <button class="btn btn-soft" type="button" data-focus-toggle aria-pressed="false">Modo Foco</button>
+          <div class="account">
+            <div class="account-avatar">14</div>
+            <div class="account-info">
+              <strong>Pendências</strong>
+              <span>14 itens para decisão</span>
+            </div>
+          </div>
+
+          <button class="focus-toggle" type="button" data-focus-toggle aria-pressed="false">
+            <span data-focus-label>Modo Foco</span>
+            <i class="focus-dot" aria-hidden="true"></i>
+          </button>
         </div>
       </aside>
 
-      <main class="app-main">
-        <div class="app-topbar-v2">
+      <main class="app-main admin-page">
+        <header class="journey-header">
           <div>
-            <p class="app-kicker">Equipe CognitaHub</p>
+            <p class="app-kicker">Equipe Cognita</p>
             <h1 class="app-title">Triagem e decisões</h1>
             <p class="app-subtitle">
-              Analise cadastros, valide tutores e crie matches com clareza antes de iniciar cada ciclo.
+              Analise cadastros, valide tutores e acompanhe o funil do MVP.
             </p>
           </div>
-          <a class="btn btn-ghost" href="../index.html">Site público</a>
-        </div>
+          <a class="back-site-link" href="../index.html">
+            <span aria-hidden="true">←</span>
+            Site Cognita
+          </a>
+        </header>
 
-
-        <section class="role-hero">
-          <div>
-            <p class="app-kicker">Fila do MVP</p>
-            <h2>O que precisa ser analisado antes de virar acompanhamento.</h2>
-            <p>
-              A equipe decide quem entra, qual tutor combina e quando o ciclo está pronto para começar.
-            </p>
-          </div>
-          <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
-        </section>
-
-        <section class="stats-grid" aria-label="Resumo administrativo">
-          <article class="app-card stat">
+        <section class="admin-filters" aria-label="Filtros do funil">
+          <button class="admin-filter active" type="button" data-admin-filter="triagem" aria-pressed="true">
             <span>Aguardam análise</span>
             <strong>18</strong>
-          </article>
-          <article class="app-card stat">
+          </button>
+          <button class="admin-filter" type="button" data-admin-filter="triagem" data-admin-focus="tutores-validar" aria-pressed="false">
             <span>Tutores a validar</span>
             <strong>7</strong>
-          </article>
-          <article class="app-card stat">
+          </button>
+          <button class="admin-filter" type="button" data-admin-filter="matches" aria-pressed="false">
             <span>Matches sugeridos</span>
             <strong>5</strong>
-          </article>
-          <article class="app-card stat">
+          </button>
+          <button class="admin-filter" type="button" data-admin-filter="relatorios" aria-pressed="false">
             <span>Relatórios a liberar</span>
             <strong>4</strong>
-          </article>
+          </button>
         </section>
 
-        <section class="admin-sections" id="triagem">
-          <article class="app-card" id="criancas">
-            <div class="card-heading-row">
-              <h2>Crianças aguardando análise</h2>
-              <span class="tag">3 novas</span>
-            </div>
-            <ul class="admin-list">
-              <li class="list-row">
-                <div>
-                  <strong data-child-signup-output="name">Lia Costa</strong>
-                  <span>
-                    <span data-child-signup-output="age">9 anos</span>,
-                    <span data-child-signup-output="mathDifficulties">problemas simples do cotidiano e geometria básica.</span>
-                  </span>
-                </div>
-                <div class="row-actions">
-                  <a class="tag blue" href="perfil-crianca.html">Ver perfil</a>
-                  <button class="tag action-tag" type="button">Aprovar</button>
-                  <a class="tag wine" href="#matches">Buscar tutor</a>
-                </div>
-              </li>
-              <li class="list-row">
-                <div>
-                  <strong>Pedro Lima</strong>
-                  <span>6 anos, reconhecimento de números e contagem com apoio visual.</span>
-                </div>
-                <button class="tag action-tag" type="button">Analisar criança</button>
-              </li>
-            </ul>
+        <section class="admin-pipeline" aria-label="Funil de acompanhamento">
+          <article class="pipeline-col" id="triagem">
+            <header>
+              <h2>Triagem</h2>
+              <span>18</span>
+            </header>
+
+            <article class="pipeline-card">
+              <p class="app-kicker">Criança</p>
+              <h3 data-child-signup-output="name">Lia Costa</h3>
+              <p>
+                <span data-child-signup-output="age">9 anos</span> ·
+                <span data-child-signup-output="mathDifficulties">problemas simples do cotidiano e geometria básica</span>
+              </p>
+
+              <div class="pipeline-tags" aria-label="Estado do cadastro">
+                <span>aguarda análise</span>
+                <span>perfil inicial</span>
+              </div>
+
+              <div class="row-actions">
+                <button class="btn btn-primary btn-sm" type="button">Analisar</button>
+                <a class="btn btn-ghost btn-sm" href="perfil-crianca.html">Ver perfil</a>
+              </div>
+            </article>
+
+            <article class="pipeline-card" id="tutores-validar">
+              <p class="app-kicker">Tutor</p>
+              <h3>Ana Martins</h3>
+              <p>Psicopedagogia · experiência com TEA e reforço de matemática</p>
+
+              <div class="pipeline-tags" aria-label="Estado da inscrição">
+                <span>documentos enviados</span>
+                <span>aguarda validação</span>
+              </div>
+
+              <div class="row-actions">
+                <button class="btn btn-primary btn-sm" type="button">Aprovar tutor</button>
+                <button class="btn btn-ghost btn-sm" type="button">Revisar</button>
+              </div>
+            </article>
+
+            <article class="pipeline-card">
+              <p class="app-kicker">Criança</p>
+              <h3>Pedro Lima</h3>
+              <p>6 anos · reconhecimento de números e contagem com apoio visual</p>
+
+              <div class="pipeline-tags" aria-label="Estado do cadastro">
+                <span>novo cadastro</span>
+                <span>consentimento registrado</span>
+              </div>
+
+              <div class="row-actions">
+                <button class="btn btn-primary btn-sm" type="button">Analisar</button>
+                <button class="btn btn-ghost btn-sm" type="button">Detalhes</button>
+              </div>
+            </article>
           </article>
-          <article class="app-card" id="tutores">
-            <h2>Validação de tutores</h2>
-            <ul class="admin-list">
-              <li class="list-row">
-                <div>
-                  <strong>Ana Martins</strong>
-                  <span>Psicopedagoga - experiência com TEA e reforço de matemática.</span>
-                </div>
-                <button class="tag action-tag" type="button">Aprovar tutor</button>
-              </li>
-              <li class="list-row">
-                <div>
-                  <strong>Rafael Nunes</strong>
-                  <span>Licenciatura em matemática - disponibilidade aos sábados.</span>
-                </div>
-                <button class="tag action-tag blue" type="button">Aprovar tutor</button>
-              </li>
-            </ul>
+
+          <article class="pipeline-col" id="matches">
+            <header>
+              <h2>Matches</h2>
+              <span>5</span>
+            </header>
+
+            <article class="pipeline-card">
+              <p class="app-kicker">Match sugerido</p>
+              <h3>João + Maria</h3>
+              <p>Soma com apoio visual · quinta, 15h</p>
+
+              <div class="match-chips" aria-label="Compatibilidade do match">
+                <span class="ok">horário ✓</span>
+                <span class="ok">foco ✓</span>
+                <span class="ok">experiência ✓</span>
+              </div>
+
+              <div class="row-actions">
+                <button class="btn btn-primary btn-sm" type="button">Criar match</button>
+                <button class="btn btn-ghost btn-sm" type="button">Detalhes</button>
+              </div>
+            </article>
+
+            <article class="pipeline-card">
+              <p class="app-kicker">Match sugerido</p>
+              <h3>Lia + Rafael</h3>
+              <p>Problemas simples do cotidiano · sábado, manhã</p>
+
+              <div class="match-chips" aria-label="Compatibilidade do match">
+                <span class="ok">horário ✓</span>
+                <span class="ok">foco ✓</span>
+                <span>experiência a revisar</span>
+              </div>
+
+              <div class="row-actions">
+                <button class="btn btn-primary btn-sm" type="button">Criar match</button>
+                <button class="btn btn-ghost btn-sm" type="button">Detalhes</button>
+              </div>
+            </article>
+
+            <article class="pipeline-card">
+              <p class="app-kicker">Fila sem tutor</p>
+              <h3>3 vagas</h3>
+              <p>Aguardando tutor compatível por horário e foco pedagógico</p>
+
+              <div class="pipeline-tags" aria-label="Estado da fila">
+                <span>sem match</span>
+                <span>prioridade média</span>
+              </div>
+
+              <div class="row-actions">
+                <button class="btn btn-ghost btn-sm" type="button">Buscar tutor</button>
+              </div>
+            </article>
+          </article>
+
+          <article class="pipeline-col" id="ciclos">
+            <header>
+              <h2>Ciclos</h2>
+              <span>12</span>
+            </header>
+
+            <article class="pipeline-card">
+              <p class="app-kicker">Ciclo ativo</p>
+              <h3>João Pereira</h3>
+              <p>Mês 2 de 6 · Tutor Maria · soma com apoio visual</p>
+
+              <div class="cycle-steps" aria-label="Mês 2 de 6">
+                <i class="on"></i>
+                <i class="on"></i>
+                <i></i>
+                <i></i>
+                <i></i>
+                <i></i>
+              </div>
+
+              <div class="row-actions">
+                <button class="btn btn-ghost btn-sm" type="button">Ver ciclo</button>
+              </div>
+            </article>
+
+            <article class="pipeline-card">
+              <p class="app-kicker">Ciclo ativo</p>
+              <h3>Camila Rocha</h3>
+              <p>Mês 4 de 6 · revisão de dificuldades e consolidação</p>
+
+              <div class="cycle-steps" aria-label="Mês 4 de 6">
+                <i class="on"></i>
+                <i class="on"></i>
+                <i class="on"></i>
+                <i class="on"></i>
+                <i></i>
+                <i></i>
+              </div>
+
+              <div class="row-actions">
+                <button class="btn btn-ghost btn-sm" type="button">Ver ciclo</button>
+              </div>
+            </article>
+          </article>
+
+          <article class="pipeline-col" id="relatorios">
+            <header>
+              <h2>Relatórios</h2>
+              <span>4</span>
+            </header>
+
+            <article class="pipeline-card">
+              <p class="app-kicker">Relatório mensal</p>
+              <h3>João Pereira</h3>
+              <p>Registro pendente de liberação para a família</p>
+
+              <div class="pipeline-tags" aria-label="Estado do relatório">
+                <span>mês 1</span>
+                <span>revisado pelo tutor</span>
+              </div>
+
+              <div class="row-actions">
+                <button class="btn btn-primary btn-sm" type="button">Liberar</button>
+                <button class="btn btn-ghost btn-sm" type="button">Revisar</button>
+              </div>
+            </article>
+
+            <article class="pipeline-card">
+              <p class="app-kicker">Relatório inicial</p>
+              <h3>Lia Costa</h3>
+              <p>Aguardando conclusão do match antes do início do ciclo</p>
+
+              <div class="pipeline-tags" aria-label="Estado do relatório">
+                <span>pré-ciclo</span>
+                <span>bloqueado por match</span>
+              </div>
+
+              <div class="row-actions">
+                <button class="btn btn-ghost btn-sm" type="button">Revisar</button>
+              </div>
+            </article>
           </article>
         </section>
-
-        <aside class="app-card" id="matches">
-          <h2>Matches sugeridos</h2>
-          <ul class="task-list">
-            <li class="list-row">
-              <div>
-                <strong>João + Maria</strong>
-                <span>
-                  <span class="inline-mock" data-mock="crianca.idade">7 anos</span>,
-                  <span class="inline-mock" data-mock="sessaoAtual.tema">soma com apoio visual</span>,
-                  <span class="inline-mock" data-mock="sessaoAtual.resumoHorario">quinta 15h</span>.
-                </span>
-              </div>
-              <button class="tag action-tag" type="button">Criar match</button>
-            </li>
-            <li class="list-row">
-              <div>
-                <strong>Lia + Rafael</strong>
-                <span>Motivo: horário compatível + foco em problemas simples.</span>
-              </div>
-              <button class="tag action-tag" type="button">Criar match</button>
-            </li>
-            <li class="list-row">
-              <div>
-                <strong>3 vagas</strong>
-                <span>Aguardando tutor compatível.</span>
-              </div>
-              <button class="tag action-tag" type="button">Criar match</button>
-            </li>
-          </ul>
-        </aside>
-
-        <article class="app-card" id="ciclos">
-          <div class="card-heading-row">
-            <h2>Ciclos ativos</h2>
-            <span class="tag wine">12 ativos</span>
-          </div>
-          <ul class="task-list">
-            <li class="list-row">
-              <div>
-                <strong>João Pereira</strong>
-                <span>Mês 2 de 6 - plano atual: soma com apoio visual.</span>
-              </div>
-              <button class="tag action-tag blue" type="button">Ver ciclo</button>
-            </li>
-            <li class="list-row">
-              <div>
-                <strong>Camila Rocha</strong>
-                <span>Mês 4 de 6 - revisão de dificuldades e consolidação.</span>
-              </div>
-              <button class="tag action-tag" type="button">Ver ciclo</button>
-            </li>
-          </ul>
-        </article>
-
-        <article class="app-card" id="relatorios">
-          <div class="card-heading-row">
-            <h2>Relatórios pendentes</h2>
-            <span class="tag">4 pendentes</span>
-          </div>
-          <ul class="task-list">
-            <li class="list-row">
-              <div>
-                <strong>Relatório mensal - João Pereira</strong>
-                <span>Tutor: Maria Silva. Prazo: sexta-feira.</span>
-              </div>
-              <button class="tag action-tag wine" type="button">Ver relatório</button>
-            </li>
-            <li class="list-row">
-              <div>
-                <strong>Relatório inicial - Lia Costa</strong>
-                <span>Aguardando conclusão do match antes do ciclo.</span>
-              </div>
-              <button class="tag action-tag blue" type="button">Ver relatório</button>
-            </li>
-          </ul>
-        </article>
       </main>
     </div>
 

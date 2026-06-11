@@ -407,6 +407,7 @@ function setupLoginRoleTabs() {
 function setupSidebarNav() {
   const navs = document.querySelectorAll(".sidebar-nav, .bottom-nav");
   if (!navs.length) return;
+  if (document.querySelector(".admin-page")) return;
 
   const allLinks = [...navs].flatMap((nav) => [...nav.querySelectorAll("a[href^='#']")]);
   if (!allLinks.length) return;
@@ -443,6 +444,57 @@ function setupSidebarNav() {
     });
     if (!anyVisible) setActive(null);
   }, { passive: true });
+}
+
+function setupAdminFilters() {
+  const filters = document.querySelectorAll("[data-admin-filter]");
+  const navs = document.querySelectorAll(".sidebar-nav, .bottom-nav");
+  const navLinks = [...navs].flatMap((nav) => [...nav.querySelectorAll("a[href^='#']")]);
+
+  if (!filters.length && !navLinks.length) return;
+
+  const stageFromTarget = (targetId) => {
+    const target = document.getElementById(targetId);
+    return target?.closest(".pipeline-col")?.id || targetId || "triagem";
+  };
+
+  const setAdminActive = (stage, activeFilter) => {
+    const defaultFilter =
+      activeFilter ||
+      [...filters].find((filter) => filter.dataset.adminFilter === stage && !filter.dataset.adminFocus) ||
+      [...filters].find((filter) => filter.dataset.adminFilter === stage);
+
+    navLinks.forEach((link) => {
+      link.classList.toggle("active", link.getAttribute("href") === `#${stage}`);
+    });
+
+    filters.forEach((filter) => {
+      const active = filter === defaultFilter;
+      filter.classList.toggle("active", active);
+      filter.setAttribute("aria-pressed", String(active));
+    });
+  };
+
+  filters.forEach((filter) => {
+    filter.addEventListener("click", () => {
+      const targetId = filter.dataset.adminFocus || filter.dataset.adminFilter;
+      const target = document.getElementById(targetId);
+      const stage = stageFromTarget(targetId);
+
+      setAdminActive(stage, filter);
+      target?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+
+  navLinks.forEach((link) => {
+    link.addEventListener("click", () => {
+      const stage = link.getAttribute("href").slice(1);
+      setAdminActive(stage);
+    });
+  });
+
+  const initialStage = window.location.hash ? stageFromTarget(window.location.hash.slice(1)) : "triagem";
+  setAdminActive(initialStage);
 }
 
 function setupSideDrawers() {
@@ -501,4 +553,5 @@ setupMoodOptions();
 setupFakeForms();
 setupFeatureAccordion();
 setupSidebarNav();
+setupAdminFilters();
 setupSideDrawers();
