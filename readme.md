@@ -129,17 +129,14 @@ O projeto considera princípios de acessibilidade cognitiva importantes para cri
 
 ## Tecnologias
 
-O protótipo inicial está sendo desenvolvido com tecnologias web básicas:
-
 | Camada | Tecnologia |
 |---|---|
 | Estrutura | HTML5 |
 | Estilo | CSS3 |
-| Interação | JavaScript |
+| Interação | JavaScript (ES Modules) |
+| Servidor de desenvolvimento | Vite |
+| Backend | Supabase (Auth + Postgres) |
 | Assets | Identidade visual própria e imagens do projeto |
-| Arquitetura inicial | Páginas estáticas |
-
-Futuramente, o projeto pode evoluir com autenticação de usuários, banco de dados, painel administrativo funcional, armazenamento de registros, sistema real de acompanhamento, uso de IA adaptativa e integração com serviços externos.
 
 ## Status do projeto
 
@@ -147,20 +144,22 @@ Futuramente, o projeto pode evoluir com autenticação de usuários, banco de da
 |---|---|
 | Identidade visual | Concluída |
 | Página inicial | Em refinamento |
-| Telas de cadastro | Em desenvolvimento |
-| Dashboard do responsável | Protótipo inicial |
-| Dashboard do tutor | Protótipo inicial |
-| Painel administrativo | Planejado |
-| Banco de dados | Planejado |
-| Autenticação | Planejada |
+| Autenticação (login por papel) | Em implementação |
+| Cadastro de tutor | Em implementação (grava no Supabase) |
+| Cadastro de responsável | Em implementação (grava no Supabase) |
+| Dashboard do responsável | Protótipo (dados simulados) |
+| Dashboard do tutor | Protótipo (dados simulados) |
+| Painel administrativo | Protótipo (dados simulados) |
+| Banco de dados | Em implementação (Supabase) |
 
 ## Próximos passos
 
-* [ ] Finalizar telas de cadastro.
-* [ ] Criar fluxo simulado de responsável e tutor.
-* [ ] Melhorar dashboards.
-* [ ] Planejar o modelo de banco de dados.
-* [ ] Implementar autenticação futuramente.
+* [ ] Painel admin listando cadastros pendentes reais (triagem).
+* [ ] Aprovação de criança e tutor pelo admin.
+* [ ] Registro de sessões do tutor no banco.
+* [ ] Painel do responsável lendo status real do ciclo.
+* [ ] Biblioteca de atividades vinda do Supabase.
+* [ ] Match e ciclo de acompanhamento ativos.
 * [ ] Validar o projeto com professores, responsáveis e instituições.
 
 <details>
@@ -214,21 +213,28 @@ cognita-hub/
 
 ## Como executar localmente
 
-Clone o repositório:
+Clone o repositório e entre na pasta:
 
 ```bash
 git clone https://github.com/markussdev/CognitaHub.git
-```
-
-Entre na pasta do projeto:
-
-```bash
 cd CognitaHub
 ```
 
-Abra o arquivo `index.html` no navegador.
+Crie um arquivo `.env` na raiz com as credenciais do Supabase:
 
-Também é possível usar a extensão **Live Server** no VS Code para executar o projeto com recarregamento automático.
+```env
+VITE_SUPABASE_URL=https://SEU-PROJETO.supabase.co
+VITE_SUPABASE_ANON_KEY=SUA-CHAVE-PUBLICAVEL
+```
+
+Instale as dependências e suba o servidor de desenvolvimento:
+
+```bash
+npm install
+npm run dev
+```
+
+O Vite abre o site em `http://localhost:5173`.
 
 ## Aviso importante
 

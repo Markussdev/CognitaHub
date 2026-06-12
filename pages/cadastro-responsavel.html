@@ -61,29 +61,38 @@
             entrará em contato quando houver tutor compatível.
           </p>
 
-          <form class="signup-panel active" data-child-signup-form>
+          <form class="signup-panel active" data-guardian-form>
             <div class="form-grid">
               <div class="form-field">
                 <label for="responsavel-nome">Nome do responsável</label>
-                <input id="responsavel-nome" name="responsavel-nome" type="text" />
+                <input id="responsavel-nome" name="responsavel-nome" type="text" autocomplete="name" required />
               </div>
               <div class="form-field">
                 <label for="responsavel-email">Email</label>
-                <input id="responsavel-email" name="responsavel-email" type="email" />
+                <input id="responsavel-email" name="responsavel-email" type="email" autocomplete="email" required />
+              </div>
+              <div class="form-field">
+                <label for="responsavel-telefone">Telefone</label>
+                <input id="responsavel-telefone" name="responsavel-telefone" type="tel" autocomplete="tel" />
+              </div>
+              <div class="form-field">
+                <label for="responsavel-senha">Senha de acesso</label>
+                <input
+                  id="responsavel-senha"
+                  name="responsavel-senha"
+                  type="password"
+                  autocomplete="new-password"
+                  minlength="6"
+                  required
+                />
               </div>
               <div class="form-field">
                 <label for="crianca-nome">Nome da criança</label>
-                <input id="crianca-nome" name="crianca-nome" type="text" />
+                <input id="crianca-nome" name="crianca-nome" type="text" required />
               </div>
               <div class="form-field">
-                <label for="idade-crianca">Idade da criança</label>
-                <select id="idade-crianca" name="idade-crianca">
-                  <option>5 anos</option>
-                  <option>6 anos</option>
-                  <option>7 anos</option>
-                  <option>8 anos</option>
-                  <option>9 anos</option>
-                </select>
+                <label for="crianca-nascimento">Data de nascimento da criança</label>
+                <input id="crianca-nascimento" name="crianca-nascimento" type="date" required />
               </div>
               <div class="form-field">
                 <label for="etapa-escolar">Etapa escolar</label>
@@ -143,20 +152,31 @@
                 <label><input type="checkbox" name="conteudos-dificeis" value="subtrair" /> Subtrair</label>
                 <label><input type="checkbox" name="conteudos-dificeis" value="formas-geometricas" /> Formas geométricas</label>
               </fieldset>
+              <fieldset class="form-field full option-group">
+                <legend>Consentimento (LGPD)</legend>
+                <label>
+                  <input type="checkbox" name="consentimento-dados" required />
+                  Autorizo o uso dos dados informados para análise do cadastro e acompanhamento pedagógico da criança.
+                </label>
+                <label>
+                  <input type="checkbox" name="consentimento-contato" />
+                  Aceito receber contato da equipe Cognita por email ou telefone sobre o acompanhamento.
+                </label>
+              </fieldset>
             </div>
             <div class="form-actions">
               <button class="btn btn-primary" type="submit">Enviar cadastro</button>
-              <a class="btn btn-ghost" href="responsavel.html">Ver exemplo do painel</a>
-              <a class="btn btn-ghost" href="perfil-crianca.html">Ver perfil pedagógico</a>
             </div>
-            <p class="fine-print" data-form-feedback>
-              Dados sensíveis devem ser coletados somente quando necessários para o acompanhamento.
+            <p class="fine-print" data-guardian-error aria-live="polite"></p>
+            <p class="fine-print" data-guardian-success aria-live="polite"></p>
+            <p class="fine-print">
+              Dados sensíveis são coletados somente quando necessários para o acompanhamento.
             </p>
           </form>
         </section>
       </div>
     </main>
 
-    <script src="../js/app.js"></script>
+    <script type="module" src="/js/pages/cadastro-responsavel.js"></script>
   </body>
 </html>

@@ -61,19 +61,27 @@
             vínculo com uma criança.
           </p>
 
-          <form class="signup-panel active" data-static-form>
+          <form class="signup-panel active" data-tutor-form>
             <div class="form-grid">
               <div class="form-field">
                 <label for="tutor-nome">Nome</label>
-                <input id="tutor-nome" name="tutor-nome" type="text" />
+                <input id="tutor-nome" name="name" type="text" required />
               </div>
               <div class="form-field">
                 <label for="tutor-email">Email</label>
-                <input id="tutor-email" name="tutor-email" type="email" />
+                <input id="tutor-email" name="email" type="email" required />
+              </div>
+              <div class="form-field">
+                <label for="tutor-phone">Telefone</label>
+                <input id="tutor-phone" name="phone" type="tel" />
+              </div>
+              <div class="form-field">
+                <label for="tutor-password">Senha</label>
+                <input id="tutor-password" name="password" type="password" autocomplete="new-password" required />
               </div>
               <div class="form-field">
                 <label for="formacao">Formação</label>
-                <input id="formacao" name="formacao" type="text" />
+                <input id="formacao" name="formation" type="text" required />
               </div>
               <div class="form-field">
                 <label for="linkedin">LinkedIn</label>
@@ -81,23 +89,24 @@
               </div>
               <div class="form-field full">
                 <label for="experiencia">Experiência com TEA, matemática ou educação</label>
-                <textarea id="experiencia" name="experiencia"></textarea>
+                <textarea id="experiencia" name="experience"></textarea>
               </div>
               <div class="form-field full">
-                <label for="disponibilidade">Disponibilidade semanal</label>
-                <textarea id="disponibilidade" name="disponibilidade"></textarea>
+                <label for="motivacao">Por que voce quer ser tutor?</label>
+                <textarea id="motivacao" name="motivation"></textarea>
               </div>
             </div>
             <div class="form-actions">
               <button class="btn btn-primary" type="submit">Enviar voluntariado</button>
               <a class="btn btn-ghost" href="tutor.html">Ver exemplo do painel do tutor</a>
             </div>
-            <p class="fine-print" data-form-feedback>Cadastro enviado fica com status de validação pela equipe.</p>
+            <p class="fine-print" data-tutor-error aria-live="polite"></p>
+            <p class="fine-print" data-tutor-success aria-live="polite"></p>
           </form>
         </section>
       </div>
     </main>
 
-    <script src="../js/app.js"></script>
+    <script type="module" src="/js/pages/cadastro-tutor.js"></script>
   </body>
 </html>

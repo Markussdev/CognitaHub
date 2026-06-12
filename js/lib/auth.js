@@ -6,6 +6,32 @@ const HOME_BY_ROLE = {
   admin: '/pages/admin.html',
 }
 
+export async function signUp({ email, password, name, phone, role }) {
+  if (!['guardian', 'tutor'].includes(role)) {
+    return { error: new Error('Tipo de cadastro invalido') }
+  }
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        name,
+        phone,
+        role,
+      },
+    },
+  })
+
+  if (error || !data?.user) {
+    return {
+      error: error ?? new Error('Nao foi possivel criar o usuario'),
+    }
+  }
+
+  return { user: data.user, session: data.session }
+}
+
 export async function signIn(email, password) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,

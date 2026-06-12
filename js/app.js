@@ -289,89 +289,6 @@ function syncChildSignup() {
   });
 }
 
-function setupChildSignupForm() {
-  const form = document.querySelector("[data-child-signup-form]");
-
-  if (!form) {
-    syncChildSignup();
-    return;
-  }
-
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const formData = new FormData(form);
-    const childName = formData.get("crianca-nome") || "Crianca em analise";
-    const childAge = formData.get("idade-crianca") || "Idade nao informada";
-
-    const signup = {
-      child: {
-        id: `child_${String(childName).toLowerCase().replace(/\W+/g, "_")}`,
-        guardianName: formData.get("responsavel-nome"),
-        guardianEmail: formData.get("responsavel-email"),
-        name: childName,
-        age: childAge,
-        schoolYear: formData.get("etapa-escolar"),
-        status: "waiting_review",
-        createdAt: new Date().toISOString(),
-      },
-      learningProfile: {
-        mathDifficulties: formData.get("dificuldades"),
-        preferredFormats: formData.getAll("aprende-melhor"),
-        attentionSpan: formData.get("tempo-concentracao"),
-        motivators: formData.get("motivadores"),
-        avoidances: formData.get("dificultadores"),
-        difficultContent: formData.getAll("conteudos-dificeis"),
-        supportContext: formData.get("acompanhamento"),
-      },
-    };
-
-    localStorage.setItem(childSignupStorageKey, JSON.stringify(signup));
-
-    const feedback = form.querySelector("[data-form-feedback]");
-    if (feedback) {
-      feedback.textContent = "Cadastro salvo no mock. O painel admin ja pode analisar esta crianca.";
-    }
-  });
-}
-
-function setupFakeForms() {
-  document.querySelectorAll("[data-static-form]").forEach((form) => {
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const feedback = form.querySelector("[data-form-feedback]");
-      if (feedback) {
-        feedback.textContent = "Layout pronto. A integração do envio entra na próxima etapa.";
-      }
-    });
-  });
-}
-
-function setupLoginRouting() {
-  const form = document.querySelector("[data-login-form]");
-  const buttons = document.querySelectorAll("[data-login-role]");
-
-  if (!form || !buttons.length) return;
-
-  let selectedRole = "responsavel";
-  const routes = {
-    responsavel: "responsavel.html",
-    tutor: "tutor.html",
-    equipe: "admin.html",
-  };
-
-  buttons.forEach((button) => {
-    button.addEventListener("click", () => {
-      selectedRole = button.dataset.loginRole;
-    });
-  });
-
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    window.location.href = routes[selectedRole];
-  });
-}
-
 function setupFeatureAccordion() {
   document.querySelectorAll(".hub-feature-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -388,18 +305,6 @@ function setupFeatureAccordion() {
 
       btn.setAttribute("aria-expanded", String(!isExpanded));
       if (desc) desc.hidden = isExpanded;
-    });
-  });
-}
-
-function setupLoginRoleTabs() {
-  const groups = document.querySelectorAll(".login-role-tabs");
-  groups.forEach((group) => {
-    const buttons = group.querySelectorAll(".login-role");
-    buttons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        buttons.forEach((b) => b.classList.toggle("active", b === btn));
-      });
     });
   });
 }
@@ -543,14 +448,11 @@ setupFloatingHeader();
 setupMobileMenu();
 setupRoleTabs();
 setupHubTabs();
-setupLoginRoleTabs();
 setupActivityFilter();
-setupLoginRouting();
 setupMockData();
 setupSessionForm();
-setupChildSignupForm();
+syncChildSignup();
 setupMoodOptions();
-setupFakeForms();
 setupFeatureAccordion();
 setupSidebarNav();
 setupAdminFilters();
