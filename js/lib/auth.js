@@ -12,8 +12,10 @@ export async function signIn(email, password) {
     password,
   })
 
-  if (error) {
-    return { error }
+  if (error || !data?.user) {
+    return {
+      error: error ?? new Error('Usuario nao autenticado'),
+    }
   }
 
   const { data: profile, error: profileError } = await supabase

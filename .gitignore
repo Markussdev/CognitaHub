@@ -1,7 +1,7 @@
-﻿CLAUDE.md
 CLAUDE.md
 .claude/
 claude.md
 .env
 node_modules
 dist
+js/test/

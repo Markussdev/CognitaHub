@@ -65,12 +65,20 @@
           <form class="login-form" data-login-form>
             <label class="login-field" for="email">
               <span>Email</span>
-              <input id="email" name="email" type="email" autocomplete="email" placeholder="voce@email.com" />
+              <input id="email" name="email" data-login-email type="email" autocomplete="email" placeholder="voce@email.com" required />
             </label>
 
             <label class="login-field" for="password">
               <span>Senha</span>
-              <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Sua senha" />
+              <input
+                id="password"
+                name="password"
+                data-login-password
+                type="password"
+                autocomplete="current-password"
+                placeholder="Sua senha"
+                required
+              />
             </label>
 
             <div class="login-options">
@@ -87,14 +95,12 @@
               Ainda não participa? <a href="cadastro.html">Criar cadastro</a>
             </p>
 
-            <p class="fine-print" data-form-feedback>
-              Login simulado para navegar pelo protótipo. A autenticação real entra quando a base do produto estiver definida.
-            </p>
+            <p class="fine-print" data-login-error aria-live="polite"></p>
           </form>
         </section>
       </div>
     </main>
 
-    <script src="../js/app.js"></script>
+    <script type="module" src="/js/pages/login.js"></script>
   </body>
 </html>
