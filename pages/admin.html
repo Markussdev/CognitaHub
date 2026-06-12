@@ -16,20 +16,21 @@
         </a>
 
         <div class="sidebar-context">
-          <span class="sidebar-role">Equipe Cognita</span>
-          <strong>Operação do MVP</strong>
-          <small>Triagem, matches e ciclos</small>
+          <span class="context-eyebrow">Admin</span>
+          <strong>Operação</strong>
+          <small>14 pendências hoje</small>
         </div>
 
-        <p class="nav-label">Painel</p>
+        <p class="nav-label">Menu</p>
 
-        <nav class="sidebar-nav">
+        <nav class="sidebar-nav" aria-label="Operação">
           <a class="active" href="#triagem">
             <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path d="M9 11l3 3L22 4" />
               <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
             </svg>
             <span>Triagem</span>
+            <span class="nav-badge">18</span>
           </a>
           <a href="#matches">
             <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -39,7 +40,7 @@
               <path d="M15 15l6 6" />
               <path d="M4 4l5 5" />
             </svg>
-            <span>Matches</span>
+            <span>Pareamentos</span>
           </a>
           <a href="#ciclos">
             <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -59,12 +60,49 @@
           </a>
         </nav>
 
+        <p class="nav-label">Gestão</p>
+
+        <nav class="sidebar-nav" aria-label="Gestão">
+          <a href="perfil-crianca.html">
+            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+              <line x1="9" y1="9" x2="9.01" y2="9" />
+              <line x1="15" y1="9" x2="15.01" y2="9" />
+            </svg>
+            <span>Crianças</span>
+          </a>
+          <a href="#tutores-validar">
+            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            <span>Tutores</span>
+          </a>
+          <a href="atividades.html">
+            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+            </svg>
+            <span>Atividades</span>
+          </a>
+          <a class="nav-exit" href="../index.html">
+            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M19 12H5" />
+              <path d="M12 19l-7-7 7-7" />
+            </svg>
+            <span>Site Cognita</span>
+          </a>
+        </nav>
+
         <div class="sidebar-footer">
           <div class="account">
-            <div class="account-avatar">14</div>
+            <div class="account-avatar">EC</div>
             <div class="account-info">
-              <strong>Pendências</strong>
-              <span>14 itens para decisão</span>
+              <strong>Equipe Cognita</strong>
+              <span>admin@cognitahub.org</span>
             </div>
           </div>
 
@@ -94,18 +132,22 @@
           <button class="admin-filter active" type="button" data-admin-filter="triagem" aria-pressed="true">
             <span>Aguardam análise</span>
             <strong>18</strong>
+            <small class="filter-meta">+3 desde segunda</small>
           </button>
           <button class="admin-filter" type="button" data-admin-filter="triagem" data-admin-focus="tutores-validar" aria-pressed="false">
             <span>Tutores a validar</span>
             <strong>7</strong>
+            <small class="filter-meta">2 novos esta semana</small>
           </button>
           <button class="admin-filter" type="button" data-admin-filter="matches" aria-pressed="false">
-            <span>Matches sugeridos</span>
+            <span>Pareamentos sugeridos</span>
             <strong>5</strong>
+            <small class="filter-meta">3 prontos pra decisão</small>
           </button>
           <button class="admin-filter" type="button" data-admin-filter="relatorios" aria-pressed="false">
             <span>Relatórios a liberar</span>
             <strong>4</strong>
+            <small class="filter-meta">famílias aguardando</small>
           </button>
         </section>
 
@@ -117,8 +159,13 @@
             </header>
 
             <article class="pipeline-card">
-              <p class="app-kicker">Criança</p>
-              <h3 data-child-signup-output="name">Lia Costa</h3>
+              <div class="card-id">
+                <span class="card-avatar" aria-hidden="true">LC</span>
+                <div>
+                  <p class="app-kicker">Criança</p>
+                  <h3 data-child-signup-output="name">Lia Costa</h3>
+                </div>
+              </div>
               <p>
                 <span data-child-signup-output="age">9 anos</span> ·
                 <span data-child-signup-output="mathDifficulties">problemas simples do cotidiano e geometria básica</span>
@@ -136,8 +183,13 @@
             </article>
 
             <article class="pipeline-card" id="tutores-validar">
-              <p class="app-kicker">Tutor</p>
-              <h3>Ana Martins</h3>
+              <div class="card-id">
+                <span class="card-avatar blue" aria-hidden="true">AM</span>
+                <div>
+                  <p class="app-kicker">Tutor</p>
+                  <h3>Ana Martins</h3>
+                </div>
+              </div>
               <p>Psicopedagogia · experiência com TEA e reforço de matemática</p>
 
               <div class="pipeline-tags" aria-label="Estado da inscrição">
@@ -152,8 +204,13 @@
             </article>
 
             <article class="pipeline-card">
-              <p class="app-kicker">Criança</p>
-              <h3>Pedro Lima</h3>
+              <div class="card-id">
+                <span class="card-avatar" aria-hidden="true">PL</span>
+                <div>
+                  <p class="app-kicker">Criança</p>
+                  <h3>Pedro Lima</h3>
+                </div>
+              </div>
               <p>6 anos · reconhecimento de números e contagem com apoio visual</p>
 
               <div class="pipeline-tags" aria-label="Estado do cadastro">
@@ -170,40 +227,50 @@
 
           <article class="pipeline-col" id="matches">
             <header>
-              <h2>Matches</h2>
+              <h2>Pareamentos</h2>
               <span>5</span>
             </header>
 
             <article class="pipeline-card">
-              <p class="app-kicker">Match sugerido</p>
-              <h3>João + Maria</h3>
+              <div class="card-id">
+                <span class="card-avatar wine" aria-hidden="true">J·M</span>
+                <div>
+                  <p class="app-kicker">Pareamento sugerido</p>
+                  <h3>João + Maria</h3>
+                </div>
+              </div>
               <p>Soma com apoio visual · quinta, 15h</p>
 
-              <div class="match-chips" aria-label="Compatibilidade do match">
+              <div class="match-chips" aria-label="Compatibilidade do pareamento">
                 <span class="ok">horário ✓</span>
                 <span class="ok">foco ✓</span>
                 <span class="ok">experiência ✓</span>
               </div>
 
               <div class="row-actions">
-                <button class="btn btn-primary btn-sm" type="button">Criar match</button>
+                <button class="btn btn-primary btn-sm" type="button">Criar pareamento</button>
                 <button class="btn btn-ghost btn-sm" type="button">Detalhes</button>
               </div>
             </article>
 
             <article class="pipeline-card">
-              <p class="app-kicker">Match sugerido</p>
-              <h3>Lia + Rafael</h3>
+              <div class="card-id">
+                <span class="card-avatar wine" aria-hidden="true">L·R</span>
+                <div>
+                  <p class="app-kicker">Pareamento sugerido</p>
+                  <h3>Lia + Rafael</h3>
+                </div>
+              </div>
               <p>Problemas simples do cotidiano · sábado, manhã</p>
 
-              <div class="match-chips" aria-label="Compatibilidade do match">
+              <div class="match-chips" aria-label="Compatibilidade do pareamento">
                 <span class="ok">horário ✓</span>
                 <span class="ok">foco ✓</span>
                 <span>experiência a revisar</span>
               </div>
 
               <div class="row-actions">
-                <button class="btn btn-primary btn-sm" type="button">Criar match</button>
+                <button class="btn btn-primary btn-sm" type="button">Criar pareamento</button>
                 <button class="btn btn-ghost btn-sm" type="button">Detalhes</button>
               </div>
             </article>
@@ -214,7 +281,7 @@
               <p>Aguardando tutor compatível por horário e foco pedagógico</p>
 
               <div class="pipeline-tags" aria-label="Estado da fila">
-                <span>sem match</span>
+                <span>sem pareamento</span>
                 <span>prioridade média</span>
               </div>
 
@@ -231,8 +298,13 @@
             </header>
 
             <article class="pipeline-card">
-              <p class="app-kicker">Ciclo ativo</p>
-              <h3>João Pereira</h3>
+              <div class="card-id">
+                <span class="card-avatar" aria-hidden="true">JP</span>
+                <div>
+                  <p class="app-kicker">Ciclo ativo</p>
+                  <h3>João Pereira</h3>
+                </div>
+              </div>
               <p>Mês 2 de 6 · Tutor Maria · soma com apoio visual</p>
 
               <div class="cycle-steps" aria-label="Mês 2 de 6">
@@ -250,8 +322,13 @@
             </article>
 
             <article class="pipeline-card">
-              <p class="app-kicker">Ciclo ativo</p>
-              <h3>Camila Rocha</h3>
+              <div class="card-id">
+                <span class="card-avatar" aria-hidden="true">CR</span>
+                <div>
+                  <p class="app-kicker">Ciclo ativo</p>
+                  <h3>Camila Rocha</h3>
+                </div>
+              </div>
               <p>Mês 4 de 6 · revisão de dificuldades e consolidação</p>
 
               <div class="cycle-steps" aria-label="Mês 4 de 6">
@@ -276,8 +353,13 @@
             </header>
 
             <article class="pipeline-card">
-              <p class="app-kicker">Relatório mensal</p>
-              <h3>João Pereira</h3>
+              <div class="card-id">
+                <span class="card-avatar" aria-hidden="true">JP</span>
+                <div>
+                  <p class="app-kicker">Relatório mensal</p>
+                  <h3>João Pereira</h3>
+                </div>
+              </div>
               <p>Registro pendente de liberação para a família</p>
 
               <div class="pipeline-tags" aria-label="Estado do relatório">
@@ -292,13 +374,18 @@
             </article>
 
             <article class="pipeline-card">
-              <p class="app-kicker">Relatório inicial</p>
-              <h3>Lia Costa</h3>
-              <p>Aguardando conclusão do match antes do início do ciclo</p>
+              <div class="card-id">
+                <span class="card-avatar" aria-hidden="true">LC</span>
+                <div>
+                  <p class="app-kicker">Relatório inicial</p>
+                  <h3>Lia Costa</h3>
+                </div>
+              </div>
+              <p>Aguardando conclusão do pareamento antes do início do ciclo</p>
 
               <div class="pipeline-tags" aria-label="Estado do relatório">
                 <span>pré-ciclo</span>
-                <span>bloqueado por match</span>
+                <span>bloqueado por pareamento</span>
               </div>
 
               <div class="row-actions">
@@ -312,7 +399,7 @@
 
     <nav class="bottom-nav" aria-label="Menu inferior">
       <a class="active" href="#triagem">Triagem</a>
-      <a href="#matches">Matches</a>
+      <a href="#matches">Pareamentos</a>
       <a href="#ciclos">Ciclos</a>
       <a href="#relatorios">Relatórios</a>
     </nav>

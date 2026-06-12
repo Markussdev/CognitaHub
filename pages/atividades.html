@@ -3,129 +3,782 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Atividades | CognitaHub</title>
+    <title>Biblioteca de Roteiros | CognitaHub</title>
     <link rel="icon" type="image/png" href="../assets/logo-icon-transparent.png" />
     <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="../css/internal.css" />
   </head>
-  <body>
-    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+  <body class="app-body">
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Menu de recursos">
+        <a class="sidebar-logo sidebar-logo-clean" href="../index.html">
+          <img src="../assets/logo-retangular-transparent.png" alt="CognitaHub" />
+        </a>
 
-    <header class="header-floating" data-header>
-      <a class="brand-area" href="../index.html" aria-label="Cognita Hub início">
-        <span class="brand-icon">
-          <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
-        </span>
-        <span class="brand-copy">
-          <strong>Cognita Hub</strong>
-          <small>TEA + Matemática</small>
-        </span>
-      </a>
-
-      <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="site-nav">
-        <span></span>
-        <span></span>
-        <span></span>
-        <span class="sr-only">Abrir menu</span>
-      </button>
-
-      <nav class="nav-pill" id="site-nav" data-nav>
-        <a href="../index.html#como-funciona">Como funciona</a>
-        <a href="../index.html#publico">Para famílias</a>
-        <a href="../index.html#voluntarios">Tutores</a>
-        <a href="../index.html#plataforma">Hub</a>
-      </nav>
-
-      <div class="actions-pill">
-        <a class="login-btn" href="login.html">Entrar</a>
-        <a class="join-btn" href="cadastro.html">Participar</a>
-      </div>
-    </header>
-
-    <main class="activities-main activities-float-header" id="conteudo">
-      <section class="activities-hero">
-        <div>
-          <p class="eyebrow">Biblioteca inicial</p>
-          <h1>Matemática Cognita</h1>
-          <p>
-            Atividades organizadas por idade, habilidade e orientação para o tutor voluntário conduzir o apoio com
-            clareza.
-          </p>
+        <div class="sidebar-context">
+          <span class="sidebar-role">Recursos Cognita</span>
+          <strong>Roteiros para condução</strong>
+          <small>9 disponíveis</small>
         </div>
-        <a class="btn btn-primary" href="cadastro.html">Participar</a>
-      </section>
 
-      <div class="grade-tabs" role="tablist" aria-label="Filtrar por idade e habilidade">
-        <button class="grade-tab active" type="button" data-filter="todos">Todos</button>
-        <button class="grade-tab" type="button" data-filter="5-6">5-6 anos</button>
-        <button class="grade-tab" type="button" data-filter="7-8">7-8 anos</button>
-        <button class="grade-tab" type="button" data-filter="9">9 anos</button>
-        <button class="grade-tab" type="button" data-filter="contagem">Contagem</button>
-        <button class="grade-tab" type="button" data-filter="problemas">Problemas simples</button>
+        <p class="nav-label">Painel</p>
+
+        <nav class="sidebar-nav">
+          <a href="tutor.html">
+            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M3 11l9-8 9 8" />
+              <path d="M5 10v10h14V10" />
+            </svg>
+            <span>Hoje</span>
+          </a>
+          <a href="tutor.html#criancas">
+            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="9" cy="8" r="3" />
+              <path d="M3 20c0-3 2.5-5 6-5s6 2 6 5" />
+              <path d="M16 6a3 3 0 0 1 0 6" />
+              <path d="M18.5 20c0-2-.7-3.6-2-4.7" />
+            </svg>
+            <span>Crianças</span>
+          </a>
+          <a href="tutor.html#registro">
+            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+            </svg>
+            <span>Registrar sessão</span>
+          </a>
+          <a class="active" href="atividades.html">
+            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z" />
+              <path d="M19 17H6a2 2 0 0 0-2 2" />
+            </svg>
+            <span>Recursos</span>
+          </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="account">
+            <div class="account-avatar">J</div>
+            <div class="account-info">
+              <strong data-mock="crianca.nome">João Pereira</strong>
+              <span>Próxima sessão às 15h</span>
+            </div>
+          </div>
+
+          <button class="focus-toggle" type="button" data-focus-toggle aria-pressed="false">
+            <span data-focus-label>Modo Foco</span>
+            <i class="focus-dot" aria-hidden="true"></i>
+          </button>
+        </div>
+      </aside>
+
+      <main class="app-main library-page" id="conteudo">
+        <header class="journey-header">
+          <div>
+            <p class="app-kicker">Recursos pedagógicos</p>
+            <h1 class="app-title">Biblioteca de roteiros</h1>
+            <p class="app-subtitle">
+              Roteiros guiados para tutores e responsáveis conduzirem o apoio matemático com
+              previsibilidade, adaptação e baixa estimulação.
+            </p>
+          </div>
+          <div class="library-header-actions" aria-label="Ações da biblioteca">
+            <a class="btn btn-ghost btn-sm" href="tutor.html">
+              <span aria-hidden="true">←</span>
+              Voltar ao painel
+            </a>
+            <a class="back-site-link" href="../index.html">Site Cognita</a>
+          </div>
+        </header>
+
+        <div class="library-note">
+          <span class="library-note-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z" />
+              <path d="M19 17H6a2 2 0 0 0-2 2" />
+            </svg>
+          </span>
+          <div>
+            <strong>Biblioteca inicial</strong>
+            <p>9 roteiros demonstrativos · novos roteiros entram conforme os ciclos de acompanhamento.</p>
+          </div>
+        </div>
+
+        <section class="script-structure-card" aria-labelledby="estrutura-roteiros">
+          <div>
+            <p class="app-kicker">Estrutura previsível</p>
+            <h2 id="estrutura-roteiros">Cada roteiro segue a mesma condução.</h2>
+          </div>
+          <ul>
+            <li>Objetivo</li>
+            <li>Antes de começar</li>
+            <li>Passo a passo</li>
+            <li>Se ficar difícil</li>
+            <li>Se ficar fácil</li>
+            <li>Sinal observável</li>
+          </ul>
+        </section>
+
+        <div class="library-filters" aria-label="Filtrar roteiros por idade e habilidade">
+          <button class="filter-chip active" type="button" data-filter="todos">Todos</button>
+          <button class="filter-chip" type="button" data-filter="5-6">5–6 anos</button>
+          <button class="filter-chip" type="button" data-filter="7-8">7–8 anos</button>
+          <button class="filter-chip" type="button" data-filter="9">9 anos</button>
+          <button class="filter-chip" type="button" data-filter="contagem">Contagem</button>
+          <button class="filter-chip" type="button" data-filter="formas">Formas</button>
+          <button class="filter-chip" type="button" data-filter="soma">Soma</button>
+          <button class="filter-chip" type="button" data-filter="problemas">Problemas simples</button>
+        </div>
+
+        <section class="library-grid" aria-label="Roteiros de apoio matemático">
+          <article class="script-card" data-card-filter="5-6 contagem">
+            <div class="script-meta">
+              <span>5–6 anos</span>
+              <span>15 min</span>
+            </div>
+            <h2>Reconhecendo números</h2>
+            <p>Roteiro para reconhecer os números de 1 a 5 com cartões e objetos da rotina.</p>
+            <div class="script-tags">
+              <span>Visual</span>
+              <span>Iniciante</span>
+            </div>
+            <div class="script-includes">
+              <span>Roteiro inclui:</span>
+              <p>Objetivo · Passos · Adaptação</p>
+            </div>
+            <div class="card-action">
+              <button class="btn btn-primary btn-sm" type="button" data-drawer-open="roteiro-numeros">
+                Ver roteiro
+              </button>
+            </div>
+          </article>
+
+          <article class="script-card" data-card-filter="5-6 contagem">
+            <div class="script-meta">
+              <span>5–6 anos</span>
+              <span>15 min</span>
+            </div>
+            <h2>Contando objetos da casa</h2>
+            <p>Roteiro para contar pequenas quantidades usando objetos reais da rotina.</p>
+            <div class="script-tags">
+              <span>Concreto</span>
+              <span>Baixa estimulação</span>
+            </div>
+            <div class="script-includes">
+              <span>Roteiro inclui:</span>
+              <p>Objetivo · Passos · Adaptação</p>
+            </div>
+            <div class="card-action">
+              <button class="btn btn-primary btn-sm" type="button" data-drawer-open="roteiro-contar">
+                Ver roteiro
+              </button>
+            </div>
+          </article>
+
+          <article class="script-card" data-card-filter="5-6 comparacao">
+            <div class="script-meta">
+              <span>5–6 anos</span>
+              <span>10 min</span>
+            </div>
+            <h2>Mais ou menos</h2>
+            <p>Roteiro para perceber qual grupo tem mais usando dois conjuntos de objetos.</p>
+            <div class="script-tags">
+              <span>Concreto</span>
+              <span>Comparação</span>
+            </div>
+            <div class="script-includes">
+              <span>Roteiro inclui:</span>
+              <p>Objetivo · Passos · Adaptação</p>
+            </div>
+            <div class="card-action">
+              <button class="btn btn-primary btn-sm" type="button" data-drawer-open="roteiro-comparar">
+                Ver roteiro
+              </button>
+            </div>
+          </article>
+
+          <article class="script-card" data-card-filter="7-8 formas">
+            <div class="script-meta">
+              <span>7–8 anos</span>
+              <span>15 min</span>
+            </div>
+            <h2>Formas pela casa</h2>
+            <p>Roteiro para reconhecer círculo, quadrado e triângulo em objetos reais.</p>
+            <div class="script-tags">
+              <span>Concreto</span>
+              <span>Espacial</span>
+            </div>
+            <div class="script-includes">
+              <span>Roteiro inclui:</span>
+              <p>Objetivo · Passos · Adaptação</p>
+            </div>
+            <div class="card-action">
+              <button class="btn btn-primary btn-sm" type="button" data-drawer-open="roteiro-formas">
+                Ver roteiro
+              </button>
+            </div>
+          </article>
+
+          <article class="script-card" data-card-filter="7-8 sequencia">
+            <div class="script-meta">
+              <span>7–8 anos</span>
+              <span>10 min</span>
+            </div>
+            <h2>Sequência com cores suaves</h2>
+            <p>Roteiro para continuar um padrão simples de duas cores e antecipar o próximo passo.</p>
+            <div class="script-tags">
+              <span>Visual</span>
+              <span>Padrões</span>
+            </div>
+            <div class="script-includes">
+              <span>Roteiro inclui:</span>
+              <p>Objetivo · Passos · Adaptação</p>
+            </div>
+            <div class="card-action">
+              <button class="btn btn-primary btn-sm" type="button" data-drawer-open="roteiro-sequencia">
+                Ver roteiro
+              </button>
+            </div>
+          </article>
+
+          <article class="script-card" data-card-filter="7-8 soma">
+            <div class="script-meta">
+              <span>7–8 anos</span>
+              <span>15 min</span>
+            </div>
+            <h2>Juntando quantidades</h2>
+            <p>Roteiro para entender a soma como juntar dois grupos de objetos.</p>
+            <div class="script-tags">
+              <span>Concreto</span>
+              <span>Soma simples</span>
+            </div>
+            <div class="script-includes">
+              <span>Roteiro inclui:</span>
+              <p>Objetivo · Passos · Adaptação</p>
+            </div>
+            <div class="card-action">
+              <button class="btn btn-primary btn-sm" type="button" data-drawer-open="roteiro-soma">
+                Ver roteiro
+              </button>
+            </div>
+          </article>
+
+          <article class="script-card" data-card-filter="9 problemas">
+            <div class="script-meta">
+              <span>9 anos</span>
+              <span>20 min</span>
+            </div>
+            <h2>Problemas simples do cotidiano</h2>
+            <p>Roteiro para interpretar perguntas matemáticas dentro de situações reais da rotina.</p>
+            <div class="script-tags">
+              <span>Leitura</span>
+              <span>Cotidiano</span>
+            </div>
+            <div class="script-includes">
+              <span>Roteiro inclui:</span>
+              <p>Objetivo · Passos · Adaptação</p>
+            </div>
+            <div class="card-action">
+              <button class="btn btn-primary btn-sm" type="button" data-drawer-open="roteiro-problemas">
+                Ver roteiro
+              </button>
+            </div>
+          </article>
+
+          <article class="script-card" data-card-filter="9 medidas">
+            <div class="script-meta">
+              <span>9 anos</span>
+              <span>15 min</span>
+            </div>
+            <h2>Medindo com objetos</h2>
+            <p>Roteiro para comparar tamanhos usando uma unidade de medida não convencional.</p>
+            <div class="script-tags">
+              <span>Concreto</span>
+              <span>Medidas</span>
+            </div>
+            <div class="script-includes">
+              <span>Roteiro inclui:</span>
+              <p>Objetivo · Passos · Adaptação</p>
+            </div>
+            <div class="card-action">
+              <button class="btn btn-primary btn-sm" type="button" data-drawer-open="roteiro-medir">
+                Ver roteiro
+              </button>
+            </div>
+          </article>
+
+          <article class="script-card" data-card-filter="9 problemas soma">
+            <div class="script-meta">
+              <span>9 anos</span>
+              <span>20 min</span>
+            </div>
+            <h2>Organizando uma pequena compra</h2>
+            <p>Roteiro para somar valores pequenos numa compra simulada com itens da casa.</p>
+            <div class="script-tags">
+              <span>Cotidiano</span>
+              <span>Soma simples</span>
+            </div>
+            <div class="script-includes">
+              <span>Roteiro inclui:</span>
+              <p>Objetivo · Passos · Adaptação</p>
+            </div>
+            <div class="card-action">
+              <button class="btn btn-primary btn-sm" type="button" data-drawer-open="roteiro-compra">
+                Ver roteiro
+              </button>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <nav class="bottom-nav" aria-label="Menu inferior">
+      <a href="tutor.html">Hoje</a>
+      <a href="tutor.html#criancas">Crianças</a>
+      <a href="tutor.html#registro">Registro</a>
+      <a class="active" href="atividades.html">Recursos</a>
+    </nav>
+
+    <div class="drawer-backdrop" data-drawer-close hidden></div>
+
+    <!-- Roteiro 1 · Reconhecendo números -->
+    <aside class="side-drawer script-drawer" data-drawer="roteiro-numeros" aria-hidden="true">
+      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-roteiro-numeros">
+        <header class="drawer-header">
+          <div>
+            <p class="app-kicker">Roteiro guiado · 15 min</p>
+            <h2 id="titulo-roteiro-numeros">Reconhecendo números</h2>
+          </div>
+          <button class="drawer-close" type="button" data-drawer-close aria-label="Fechar roteiro">×</button>
+        </header>
+
+        <section class="script-block">
+          <h3>Objetivo</h3>
+          <p>Reconhecer os números de 1 a 5 com apoio visual.</p>
+        </section>
+
+        <section class="script-block">
+          <h3>Antes de começar</h3>
+          <ul>
+            <li>Prepare cartões com os números de 1 a 5 (papel comum serve)</li>
+            <li>Escolha um lugar com pouca distração</li>
+          </ul>
+        </section>
+
+        <section class="script-block">
+          <h3>Passo a passo</h3>
+          <ol class="script-steps">
+            <li>Mostre o cartão do 1 e fale "um", apontando.</li>
+            <li>Peça para a criança repetir.</li>
+            <li>Coloque 1 objeto ao lado do cartão.</li>
+            <li>Repita com o 2 e o 3, sempre com os objetos.</li>
+            <li>Termine revendo os três cartões juntos.</li>
+          </ol>
+        </section>
+
+        <section class="script-block script-adapt">
+          <h3>Se ficar difícil</h3>
+          <p>Fique só nos números 1 e 2 hoje. Repetir está ótimo.</p>
+          <h3>Se ficar fácil</h3>
+          <p>Embaralhe os cartões e peça para apontar o número que você falar.</p>
+        </section>
+
+        <section class="script-block script-signal">
+          <h3>Como saber se funcionou</h3>
+          <p>A criança aponta o número certo quando você fala, mesmo com ajuda.</p>
+        </section>
       </div>
+    </aside>
 
-      <section class="activity-grid" aria-label="Atividades de matemática">
-        <article class="activity-card" data-card-filter="5-6 contagem numeros">
-          <span class="activity-meta">5-6 anos</span>
-          <h2>Reconhecendo números</h2>
-          <p>Identificação de números de 1 a 10 com apoio visual, cartões e objetos próximos da rotina.</p>
-          <footer>
-            <span class="tag">Iniciante</span>
-            <span class="tag blue">Números</span>
-          </footer>
-        </article>
+    <!-- Roteiro 2 · Contando objetos da casa -->
+    <aside class="side-drawer script-drawer" data-drawer="roteiro-contar" aria-hidden="true">
+      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-roteiro-contar">
+        <header class="drawer-header">
+          <div>
+            <p class="app-kicker">Roteiro guiado · 15 min</p>
+            <h2 id="titulo-roteiro-contar">Contando objetos da casa</h2>
+          </div>
+          <button class="drawer-close" type="button" data-drawer-close aria-label="Fechar roteiro">×</button>
+        </header>
 
-        <article class="activity-card" data-card-filter="5-6 7-8 contagem">
-          <span class="activity-meta">5-8 anos</span>
-          <h2>Contando objetos</h2>
-          <p>Atividade com brinquedos, tampinhas ou objetos da casa para contar quantidades pequenas.</p>
-          <footer>
-            <span class="tag">Visual</span>
-            <span class="tag wine">Contagem</span>
-          </footer>
-        </article>
+        <section class="script-block">
+          <h3>Objetivo</h3>
+          <p>Contar até 10 com apoio de objetos reais.</p>
+        </section>
 
-        <article class="activity-card" data-card-filter="5-6 7-8 contagem">
-          <span class="activity-meta">5-8 anos</span>
-          <h2>Mais ou menos</h2>
-          <p>Comparação de quantidades usando grupos pequenos para perceber maior, menor e igual.</p>
-          <footer>
-            <span class="tag">Concreto</span>
-            <span class="tag blue">Cotidiano</span>
-          </footer>
-        </article>
+        <section class="script-block">
+          <h3>Antes de começar</h3>
+          <ul>
+            <li>Separe 10 tampinhas ou brinquedos pequenos</li>
+            <li>Escolha um lugar com pouca distração</li>
+          </ul>
+        </section>
 
-        <article class="activity-card" data-card-filter="5-6 7-8 9 formas">
-          <span class="activity-meta">5-9 anos</span>
-          <h2>Formas no ambiente</h2>
-          <p>Reconhecimento de círculo, quadrado, triângulo e retângulo em objetos da casa e da escola.</p>
-          <footer>
-            <span class="tag">Concreto</span>
-            <span class="tag wine">Espacial</span>
-          </footer>
-        </article>
+        <section class="script-block">
+          <h3>Passo a passo</h3>
+          <ol class="script-steps">
+            <li>Coloque 3 objetos na mesa e conte junto, apontando.</li>
+            <li>Peça: "agora você conta".</li>
+            <li>Acrescente 1 objeto e pergunte quantos ficaram.</li>
+            <li>Repita aumentando devagar, até 10.</li>
+          </ol>
+        </section>
 
-        <article class="activity-card" data-card-filter="7-8 9 soma">
-          <span class="activity-meta">7-9 anos</span>
-          <h2>Soma com material concreto</h2>
-          <p>Pequenas somas usando objetos visuais para apoiar a compreensão de juntar quantidades.</p>
-          <footer>
-            <span class="tag">Visual</span>
-            <span class="tag blue">Soma simples</span>
-          </footer>
-        </article>
+        <section class="script-block script-adapt">
+          <h3>Se ficar difícil</h3>
+          <p>Volte para 3 objetos e conte junto mais uma vez. Tudo bem repetir.</p>
+          <h3>Se ficar fácil</h3>
+          <p>Separe dois grupos e pergunte qual tem mais.</p>
+        </section>
 
-        <article class="activity-card" data-card-filter="7-8 9 problemas">
-          <span class="activity-meta">7-9 anos</span>
-          <h2>Problemas do cotidiano</h2>
-          <p>Situações simples envolvendo lanche, brinquedos, escola e rotina para interpretar perguntas matemáticas.</p>
-          <footer>
-            <span class="tag">Leitura</span>
-            <span class="tag wine">Apoio</span>
-          </footer>
-        </article>
-      </section>
-    </main>
+        <section class="script-block script-signal">
+          <h3>Como saber se funcionou</h3>
+          <p>A criança aponta os objetos enquanto conta, mesmo com ajuda.</p>
+        </section>
+      </div>
+    </aside>
 
+    <!-- Roteiro 3 · Mais ou menos -->
+    <aside class="side-drawer script-drawer" data-drawer="roteiro-comparar" aria-hidden="true">
+      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-roteiro-comparar">
+        <header class="drawer-header">
+          <div>
+            <p class="app-kicker">Roteiro guiado · 10 min</p>
+            <h2 id="titulo-roteiro-comparar">Mais ou menos</h2>
+          </div>
+          <button class="drawer-close" type="button" data-drawer-close aria-label="Fechar roteiro">×</button>
+        </header>
+
+        <section class="script-block">
+          <h3>Objetivo</h3>
+          <p>Perceber qual grupo tem mais.</p>
+        </section>
+
+        <section class="script-block">
+          <h3>Antes de começar</h3>
+          <ul>
+            <li>Separe objetos iguais para montar dois grupos (ex.: tampinhas)</li>
+            <li>Deixe a mesa livre, só com os objetos da atividade</li>
+          </ul>
+        </section>
+
+        <section class="script-block">
+          <h3>Passo a passo</h3>
+          <ol class="script-steps">
+            <li>Monte dois grupos bem diferentes: 3 e 6 objetos.</li>
+            <li>Conte cada grupo junto com a criança.</li>
+            <li>Pergunte: "qual grupo tem mais?".</li>
+            <li>Troque os tamanhos dos grupos e repita.</li>
+          </ol>
+        </section>
+
+        <section class="script-block script-adapt">
+          <h3>Se ficar difícil</h3>
+          <p>Aumente a diferença entre os grupos (2 e 8) — fica mais visível.</p>
+          <h3>Se ficar fácil</h3>
+          <p>Aproxime as quantidades (4 e 5) e pergunte também "qual tem menos?".</p>
+        </section>
+
+        <section class="script-block script-signal">
+          <h3>Como saber se funcionou</h3>
+          <p>A criança aponta o grupo maior sem precisar contar de novo.</p>
+        </section>
+      </div>
+    </aside>
+
+    <!-- Roteiro 4 · Formas pela casa -->
+    <aside class="side-drawer script-drawer" data-drawer="roteiro-formas" aria-hidden="true">
+      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-roteiro-formas">
+        <header class="drawer-header">
+          <div>
+            <p class="app-kicker">Roteiro guiado · 15 min</p>
+            <h2 id="titulo-roteiro-formas">Formas pela casa</h2>
+          </div>
+          <button class="drawer-close" type="button" data-drawer-close aria-label="Fechar roteiro">×</button>
+        </header>
+
+        <section class="script-block">
+          <h3>Objetivo</h3>
+          <p>Reconhecer círculo, quadrado e triângulo em objetos reais.</p>
+        </section>
+
+        <section class="script-block">
+          <h3>Antes de começar</h3>
+          <ul>
+            <li>Desenhe as três formas num papel</li>
+            <li>Combine com a criança em qual cômodo vão procurar</li>
+          </ul>
+        </section>
+
+        <section class="script-block">
+          <h3>Passo a passo</h3>
+          <ol class="script-steps">
+            <li>Mostre o desenho do círculo.</li>
+            <li>Procurem juntos um objeto redondo (prato, relógio).</li>
+            <li>Repita com o quadrado e o triângulo.</li>
+            <li>No fim, revisem o que encontraram apontando no papel.</li>
+          </ol>
+        </section>
+
+        <section class="script-block script-adapt">
+          <h3>Se ficar difícil</h3>
+          <p>Procure só círculos hoje, num único cômodo.</p>
+          <h3>Se ficar fácil</h3>
+          <p>Peça para a criança desenhar a forma do objeto que encontrou.</p>
+        </section>
+
+        <section class="script-block script-signal">
+          <h3>Como saber se funcionou</h3>
+          <p>A criança liga o objeto à forma do papel sem você nomear primeiro.</p>
+        </section>
+      </div>
+    </aside>
+
+    <!-- Roteiro 5 · Sequência com cores suaves -->
+    <aside class="side-drawer script-drawer" data-drawer="roteiro-sequencia" aria-hidden="true">
+      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-roteiro-sequencia">
+        <header class="drawer-header">
+          <div>
+            <p class="app-kicker">Roteiro guiado · 10 min</p>
+            <h2 id="titulo-roteiro-sequencia">Sequência com cores suaves</h2>
+          </div>
+          <button class="drawer-close" type="button" data-drawer-close aria-label="Fechar roteiro">×</button>
+        </header>
+
+        <section class="script-block">
+          <h3>Objetivo</h3>
+          <p>Continuar um padrão simples de duas cores.</p>
+        </section>
+
+        <section class="script-block">
+          <h3>Antes de começar</h3>
+          <ul>
+            <li>Separe peças de duas cores (tampinhas, blocos ou papéis)</li>
+            <li>Prefira cores suaves, sem contraste forte</li>
+          </ul>
+        </section>
+
+        <section class="script-block">
+          <h3>Passo a passo</h3>
+          <ol class="script-steps">
+            <li>Monte a sequência: azul, amarelo, azul, amarelo.</li>
+            <li>Leia a sequência junto, apontando cada peça.</li>
+            <li>Pergunte: "qual vem agora?".</li>
+            <li>Deixe a criança colocar a próxima peça.</li>
+            <li>Repita até a fileira ter 8 peças.</li>
+          </ol>
+        </section>
+
+        <section class="script-block script-adapt">
+          <h3>Se ficar difícil</h3>
+          <p>Use só 4 peças e leiam a sequência mais uma vez juntos.</p>
+          <h3>Se ficar fácil</h3>
+          <p>Crie um padrão com três cores e peça para a criança continuar.</p>
+        </section>
+
+        <section class="script-block script-signal">
+          <h3>Como saber se funcionou</h3>
+          <p>A criança antecipa a próxima peça antes de você perguntar.</p>
+        </section>
+      </div>
+    </aside>
+
+    <!-- Roteiro 6 · Juntando quantidades -->
+    <aside class="side-drawer script-drawer" data-drawer="roteiro-soma" aria-hidden="true">
+      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-roteiro-soma">
+        <header class="drawer-header">
+          <div>
+            <p class="app-kicker">Roteiro guiado · 15 min</p>
+            <h2 id="titulo-roteiro-soma">Juntando quantidades</h2>
+          </div>
+          <button class="drawer-close" type="button" data-drawer-close aria-label="Fechar roteiro">×</button>
+        </header>
+
+        <section class="script-block">
+          <h3>Objetivo</h3>
+          <p>Entender a soma como juntar dois grupos.</p>
+        </section>
+
+        <section class="script-block">
+          <h3>Antes de começar</h3>
+          <ul>
+            <li>Separe 10 objetos pequenos iguais</li>
+            <li>Escolha um lugar com pouca distração</li>
+          </ul>
+        </section>
+
+        <section class="script-block">
+          <h3>Passo a passo</h3>
+          <ol class="script-steps">
+            <li>Monte um grupo de 2 e um grupo de 3 objetos.</li>
+            <li>Conte cada grupo apontando.</li>
+            <li>Junte os dois grupos no centro da mesa.</li>
+            <li>Conte o total junto com a criança.</li>
+            <li>Repita com outras quantidades, até 10.</li>
+          </ol>
+        </section>
+
+        <section class="script-block script-adapt">
+          <h3>Se ficar difícil</h3>
+          <p>Volte para grupos de 1 e 2 e junte devagar.</p>
+          <h3>Se ficar fácil</h3>
+          <p>Fale a soma em voz alta ("2 mais 3") antes de juntar e pergunte o total.</p>
+        </section>
+
+        <section class="script-block script-signal">
+          <h3>Como saber se funcionou</h3>
+          <p>A criança junta os grupos e conta o total sem pular objetos.</p>
+        </section>
+      </div>
+    </aside>
+
+    <!-- Roteiro 7 · Problemas simples do cotidiano -->
+    <aside class="side-drawer script-drawer" data-drawer="roteiro-problemas" aria-hidden="true">
+      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-roteiro-problemas">
+        <header class="drawer-header">
+          <div>
+            <p class="app-kicker">Roteiro guiado · 20 min</p>
+            <h2 id="titulo-roteiro-problemas">Problemas simples do cotidiano</h2>
+          </div>
+          <button class="drawer-close" type="button" data-drawer-close aria-label="Fechar roteiro">×</button>
+        </header>
+
+        <section class="script-block">
+          <h3>Objetivo</h3>
+          <p>Interpretar uma pergunta matemática dentro de uma situação real.</p>
+        </section>
+
+        <section class="script-block">
+          <h3>Antes de começar</h3>
+          <ul>
+            <li>Pense em duas situações da rotina da criança (lanche, brinquedos)</li>
+            <li>Tenha objetos por perto para encenar, se precisar</li>
+          </ul>
+        </section>
+
+        <section class="script-block">
+          <h3>Passo a passo</h3>
+          <ol class="script-steps">
+            <li>Conte a situação: "você tem 3 biscoitos e ganha mais 2".</li>
+            <li>Pergunte: "com quantos você fica?".</li>
+            <li>Se precisar, encene com os objetos reais.</li>
+            <li>Peça para a criança explicar como pensou.</li>
+            <li>Repita com a segunda situação.</li>
+          </ol>
+        </section>
+
+        <section class="script-block script-adapt">
+          <h3>Se ficar difícil</h3>
+          <p>Encene tudo com objetos antes de fazer a pergunta.</p>
+          <h3>Se ficar fácil</h3>
+          <p>Deixe a criança inventar um problema para você resolver.</p>
+        </section>
+
+        <section class="script-block script-signal">
+          <h3>Como saber se funcionou</h3>
+          <p>A criança traduz a história em quantidades, mesmo usando os dedos.</p>
+        </section>
+      </div>
+    </aside>
+
+    <!-- Roteiro 8 · Medindo com objetos -->
+    <aside class="side-drawer script-drawer" data-drawer="roteiro-medir" aria-hidden="true">
+      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-roteiro-medir">
+        <header class="drawer-header">
+          <div>
+            <p class="app-kicker">Roteiro guiado · 15 min</p>
+            <h2 id="titulo-roteiro-medir">Medindo com objetos</h2>
+          </div>
+          <button class="drawer-close" type="button" data-drawer-close aria-label="Fechar roteiro">×</button>
+        </header>
+
+        <section class="script-block">
+          <h3>Objetivo</h3>
+          <p>Comparar tamanhos usando um objeto como unidade de medida.</p>
+        </section>
+
+        <section class="script-block">
+          <h3>Antes de começar</h3>
+          <ul>
+            <li>Escolha o objeto-medida (lápis, palmo ou tampinha)</li>
+            <li>Escolha duas coisas para medir (livro, mesa)</li>
+          </ul>
+        </section>
+
+        <section class="script-block">
+          <h3>Passo a passo</h3>
+          <ol class="script-steps">
+            <li>Mostre como medir o livro com o lápis.</li>
+            <li>Contem juntos quantos lápis o livro tem.</li>
+            <li>Peça para a criança medir a mesa do mesmo jeito.</li>
+            <li>Comparem: "qual precisou de mais lápis?".</li>
+          </ol>
+        </section>
+
+        <section class="script-block script-adapt">
+          <h3>Se ficar difícil</h3>
+          <p>Meça objetos menores, que precisem de poucas repetições.</p>
+          <h3>Se ficar fácil</h3>
+          <p>Estimem antes ("quantos lápis você acha?") e confiram medindo.</p>
+        </section>
+
+        <section class="script-block script-signal">
+          <h3>Como saber se funcionou</h3>
+          <p>A criança repete a unidade sem deixar espaços entre as medidas.</p>
+        </section>
+      </div>
+    </aside>
+
+    <!-- Roteiro 9 · Organizando uma pequena compra -->
+    <aside class="side-drawer script-drawer" data-drawer="roteiro-compra" aria-hidden="true">
+      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-roteiro-compra">
+        <header class="drawer-header">
+          <div>
+            <p class="app-kicker">Roteiro guiado · 20 min</p>
+            <h2 id="titulo-roteiro-compra">Organizando uma pequena compra</h2>
+          </div>
+          <button class="drawer-close" type="button" data-drawer-close aria-label="Fechar roteiro">×</button>
+        </header>
+
+        <section class="script-block">
+          <h3>Objetivo</h3>
+          <p>Somar valores pequenos numa situação de compra simulada.</p>
+        </section>
+
+        <section class="script-block">
+          <h3>Antes de começar</h3>
+          <ul>
+            <li>Monte uma "lojinha" com 4 itens da casa e preços de 1 a 5 reais em papel</li>
+            <li>Prepare dinheiro de papel ou desenhado</li>
+          </ul>
+        </section>
+
+        <section class="script-block">
+          <h3>Passo a passo</h3>
+          <ol class="script-steps">
+            <li>Apresente a lojinha e os preços.</li>
+            <li>Peça para a criança escolher 2 itens.</li>
+            <li>Somem juntos o total da compra.</li>
+            <li>"Paguem" com o dinheiro de papel.</li>
+            <li>Troquem os papéis: agora você é quem compra.</li>
+          </ol>
+        </section>
+
+        <section class="script-block script-adapt">
+          <h3>Se ficar difícil</h3>
+          <p>Use só 2 itens, com preços de 1 e 2 reais.</p>
+          <h3>Se ficar fácil</h3>
+          <p>Introduza o troco: pague com 10 e pergunte quanto volta.</p>
+        </section>
+
+        <section class="script-block script-signal">
+          <h3>Como saber se funcionou</h3>
+          <p>A criança soma os dois preços antes de pagar, mesmo com apoio.</p>
+        </section>
+      </div>
+    </aside>
+
+    <script src="../js/mockData.js"></script>
     <script src="../js/app.js"></script>
   </body>
 </html>

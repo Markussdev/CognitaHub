@@ -36,6 +36,16 @@
   background: var(--app-bg);
 }
 
+/* números tabulares: contadores e stats alinham e não "dançam" (detalhe de produto) */
+.app-body .admin-filter strong,
+.app-body .pipeline-col > header span,
+.app-body .nav-badge,
+.app-body .account-avatar,
+.app-body .latest-session-card strong {
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---------- Casca / sidebar (mantém a navy, tira a tradução translúcida) ---------- */
 .app-body .app-main {
   width: min(1180px, calc(100% - 48px));
@@ -475,18 +485,20 @@
     filter: brightness(1.6);
   }
 
-  /* contexto do usuário (quem está sendo acompanhado) */
+  /* bloco de workspace: contexto compacto, não faixa explicativa decorativa */
   .sidebar-context {
+    display: grid;
+    gap: 4px;
     margin-bottom: 22px;
-    border: 1px solid rgba(255, 255, 252, 0.12);
-    border-radius: var(--r-lg);
+    border: 1px solid rgba(255, 255, 252, 0.14);
+    border-radius: var(--r);
     padding: 14px;
-    background: linear-gradient(135deg, rgba(255, 255, 252, 0.1), rgba(255, 255, 252, 0.04));
+    background: rgba(255, 255, 252, 0.06);
   }
 
-  .sidebar-role {
+  .sidebar-role,
+  .context-eyebrow {
     display: block;
-    margin-bottom: 6px;
     color: var(--gold);
     font-size: 0.68rem;
     font-weight: 800;
@@ -497,16 +509,20 @@
   .sidebar-context strong {
     display: block;
     color: var(--warm-white);
-    font-size: 1rem;
-    line-height: 1.15;
+    font-size: 0.95rem;
+    line-height: 1.1;
   }
 
   .sidebar-context small {
     display: block;
-    margin-top: 5px;
-    color: rgba(255, 255, 252, 0.62);
-    font-size: 0.82rem;
+    color: rgba(255, 255, 252, 0.66);
+    font-size: 0.78rem;
     font-weight: 600;
+  }
+
+  /* segundo grupo de nav (ex.: Gestão) respira em relação ao primeiro */
+  .sidebar-nav + .nav-label {
+    margin-top: 18px;
   }
 
   .nav-label {
@@ -560,6 +576,32 @@
   .sidebar-nav a.active .nav-ico {
     color: var(--gold);
     opacity: 1;
+  }
+
+  /* "sair do app" mora na sidebar: separado do painel por um fio, mais apagado */
+  .sidebar-nav .nav-exit {
+    margin-top: var(--sp-2);
+    border-top: 1px solid rgba(255, 255, 252, 0.12);
+    border-radius: 0 0 var(--r-sm) var(--r-sm);
+    color: rgba(255, 255, 252, 0.55);
+  }
+
+  /* no desktop o link do header sai de cena (a sidebar assume); no mobile ele volta */
+  .admin-page .back-site-link {
+    display: none;
+  }
+
+  /* contador na própria navegação: produto maduro mostra a fila no menu */
+  .nav-badge {
+    margin-left: auto;
+    min-width: 22px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--gold);
+    color: var(--ink);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-align: center;
   }
 
   /* footer = conta/contexto + modo foco como toggle discreto */
@@ -996,6 +1038,20 @@
 
 .admin-page .journey-header {
   margin-bottom: var(--sp-6);
+  padding-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--line);
+  align-items: center;
+}
+
+/* funil = ferramenta, não landing: título contido, hierarquia de topbar (§10) */
+.admin-page .app-title {
+  font-size: clamp(1.6rem, 2.6vw, 2rem);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.admin-page .app-subtitle {
+  font-size: 0.9rem;
 }
 
 .admin-filters {
@@ -1005,12 +1061,12 @@
   margin-bottom: var(--sp-6);
 }
 
+/* stat card de verdade: rótulo pequeno em cima, número grande embaixo (não tab) */
 .admin-filter {
-  display: flex;
+  display: grid;
+  gap: 2px;
   min-height: 76px;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
+  align-content: center;
   border: 1px solid rgba(20, 17, 98, 0.08);
   border-radius: var(--r);
   padding: var(--sp-3) var(--sp-4);
@@ -1032,22 +1088,34 @@
 
 .admin-filter span {
   display: block;
+  order: -1;
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  line-height: 1.25;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.2;
 }
 
 .admin-filter strong {
   display: block;
   color: var(--navy);
-  font-size: 1.45rem;
-  line-height: 1;
+  font-size: 1.7rem;
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+/* meta fecha o stat: número sozinho não diz se é bom ou ruim */
+.admin-filter .filter-meta {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .admin-filter.active {
   border-color: rgba(255, 168, 0, 0.58);
-  box-shadow: inset 4px 0 0 var(--gold), var(--shadow-soft);
+  box-shadow: inset 0 0 0 1px var(--gold), var(--shadow-soft);
 }
 
 .admin-pipeline {
@@ -1059,62 +1127,70 @@
 
 .pipeline-col {
   position: relative;
-  overflow: hidden;
   min-height: 560px;
-  border: 1px solid rgba(20, 17, 98, 0.08);
+  /* §10: um nível de contraste só — coluna recuada delimita, não compete com o card */
+  border: 1px solid var(--line);
   border-radius: var(--r-lg);
-  padding: calc(var(--sp-4) + 4px) var(--sp-4) var(--sp-4);
-  background: #f7f4ee;
-  box-shadow: var(--shadow-soft);
+  padding: var(--sp-4);
+  background: rgba(20, 17, 98, 0.025);
   scroll-margin-top: 24px;
+  --col-color: var(--gold);
 }
 
-.pipeline-col::before {
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  height: 4px;
-  background: var(--gold);
-  content: "";
+.pipeline-col:nth-child(2) {
+  --col-color: #2e8b82;
 }
 
-.pipeline-col:nth-child(2)::before {
-  background: #2e8b82;
+.pipeline-col:nth-child(3) {
+  --col-color: var(--navy);
 }
 
-.pipeline-col:nth-child(3)::before {
-  background: var(--navy);
-}
-
-.pipeline-col:nth-child(4)::before {
-  background: var(--wine);
+.pipeline-col:nth-child(4) {
+  --col-color: var(--wine);
 }
 
 .pipeline-col > header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  margin-bottom: var(--sp-4);
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2) var(--sp-3);
+  margin-bottom: var(--sp-2);
 }
 
+/* dot por coluna: a cor sinaliza a etapa sem virar faixa grossa de protótipo */
 .pipeline-col h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
   color: var(--navy);
-  font-size: 1.05rem;
+  font-size: 0.92rem;
+  font-weight: 800;
   line-height: 1.2;
 }
 
+.pipeline-col h2::before {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--col-color);
+  content: "";
+}
+
+/* contador neutro: dourado fica reservado pra ação/progresso (§10) */
 .pipeline-col > header span {
   display: grid;
-  min-width: 32px;
-  height: 26px;
+  min-width: 24px;
+  height: 22px;
   place-items: center;
+  margin-left: auto;
+  padding: 0 7px;
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: var(--soft-gold);
-  color: var(--ink);
-  font-size: 0.78rem;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.74rem;
   font-weight: 800;
 }
 
@@ -1127,10 +1203,61 @@
   padding: var(--sp-4);
   background: var(--surface);
   box-shadow: 0 1px 2px rgba(20, 17, 98, 0.04), 0 6px 16px rgba(20, 17, 98, 0.05);
+  transition: box-shadow 150ms ease, transform 150ms ease;
+}
+
+/* estado de produto: o card responde ao mouse (protótipo só tem o estado parado) */
+.pipeline-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-medium);
 }
 
 .pipeline-card + .pipeline-card {
   margin-top: var(--sp-3);
+}
+
+/* identidade do card: avatar de iniciais + kicker/nome lado a lado */
+.card-id {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.card-id > div {
+  min-width: 0;
+}
+
+/* cor por TIPO de entidade, não decoração: criança = gold, tutor = blue, match = wine */
+.card-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-sm);
+  background: var(--soft-gold);
+  color: var(--navy);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.card-avatar.blue {
+  background: var(--soft-blue);
+}
+
+.card-avatar.wine {
+  background: var(--soft-wine);
+  color: var(--wine);
+}
+
+/* kicker do card recua: 3 camadas de uppercase na coluna era grito demais —
+   o nome é o protagonista, o tipo é sussurro */
+.pipeline-card .app-kicker {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  opacity: 0.6;
 }
 
 .pipeline-card h3 {
@@ -1138,6 +1265,14 @@
   color: var(--navy);
   font-size: 1rem;
   line-height: 1.2;
+}
+
+.card-id h3 {
+  margin: 0;
+}
+
+.card-id .app-kicker {
+  margin: 0;
 }
 
 .pipeline-card p:not(.app-kicker) {
@@ -1156,15 +1291,20 @@
   margin-top: 10px;
 }
 
+/* §10: borda tintada de 1px > fundo chapado — chip vira detalhe, não bloco */
 .pipeline-tags span,
 .match-chips span {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 4px 9px;
-  background: var(--surface-muted);
+  background: var(--surface);
   color: var(--muted);
   font-size: 0.72rem;
-  font-weight: 800;
-  line-height: 1.2;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .match-chips {
@@ -1172,7 +1312,8 @@
 }
 
 .match-chips .ok {
-  background: rgba(46, 139, 130, 0.12);
+  border-color: rgba(46, 139, 130, 0.3);
+  background: rgba(46, 139, 130, 0.07);
   color: #2e8b82;
 }
 
@@ -1185,10 +1326,11 @@
   padding-top: 14px;
 }
 
+/* raio médio: botão = ferramenta, pílula fica só pros chips/tags (ação ≠ rótulo) */
 .btn-sm {
   min-height: 34px;
   padding: 0 13px;
-  border-radius: 999px;
+  border-radius: var(--r-sm);
   font-size: 0.82rem;
   font-weight: 800;
 }
@@ -1221,5 +1363,431 @@
 
   .pipeline-col {
     min-height: 0;
+  }
+}
+
+/* ============================================================
+   BIBLIOTECA DE ROTEIROS (atividades.html)
+   Tese: o produto não é a atividade, é o roteiro de condução.
+   A estrutura fixa dos roteiros é o recurso de previsibilidade (§11).
+   ============================================================ */
+
+.app-main.library-page {
+  width: min(1180px, calc(100% - 48px));
+  min-height: 0;
+  margin: 24px auto;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.library-page .journey-header {
+  margin-bottom: var(--sp-4);
+  padding-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--line);
+  align-items: flex-start;
+}
+
+.library-page .app-title {
+  font-size: clamp(1.6rem, 2.6vw, 2rem);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.library-page .app-subtitle {
+  max-width: 58ch;
+  font-size: 0.9rem;
+}
+
+.library-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+}
+
+.library-header-actions .btn {
+  gap: 6px;
+}
+
+.library-header-actions .back-site-link {
+  min-height: 34px;
+}
+
+/* curadoria assumida: biblioteca pequena é informação de produto, não desculpa */
+.library-note {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: 0 0 var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-soft);
+}
+
+.library-note strong {
+  display: block;
+  color: var(--navy);
+  font-weight: 800;
+}
+
+.library-note p {
+  margin: 2px 0 0;
+}
+
+.library-note-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: var(--r-sm);
+  background: var(--surface-muted);
+  color: var(--navy);
+}
+
+.library-note-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.script-structure-card {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.9fr) minmax(0, 1.4fr);
+  gap: var(--sp-4);
+  align-items: center;
+  margin-bottom: var(--sp-4);
+  border: 1px solid rgba(20, 17, 98, 0.08);
+  border-left: 4px solid var(--gold);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.script-structure-card .app-kicker {
+  margin: 0 0 4px;
+}
+
+.script-structure-card h2 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 1.12rem;
+  line-height: 1.2;
+}
+
+.script-structure-card ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.script-structure-card li {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0 10px;
+  background: var(--surface-muted);
+  color: var(--navy);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.library-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-6);
+}
+
+/* filtro é estado, não ação decisiva: pílula permitida, ativo em navy
+   (dourado fica reservado pro "Ver roteiro" do card, §10) */
+.filter-chip {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--navy);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+}
+
+.filter-chip:hover {
+  border-color: rgba(20, 17, 98, 0.32);
+}
+
+.filter-chip:focus-visible {
+  outline: 3px solid rgba(255, 168, 0, 0.5);
+  outline-offset: 2px;
+}
+
+.filter-chip.active {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: var(--warm-white);
+}
+
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-4);
+  align-items: stretch;
+}
+
+.script-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  border: 1px solid rgba(20, 17, 98, 0.08);
+  border-radius: var(--r);
+  padding: var(--sp-4);
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(20, 17, 98, 0.04), 0 6px 16px rgba(20, 17, 98, 0.05);
+  transition: box-shadow 150ms ease, transform 150ms ease;
+}
+
+.script-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-medium);
+}
+
+/* idade + duração sempre visíveis no card: previsibilidade é saber
+   quanto dura antes de abrir (§11) */
+.script-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 0;
+}
+
+.script-meta span {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--navy);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  font-feature-settings: "tnum" 1;
+}
+
+.script-card h2 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+
+.script-card > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.script-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 0;
+}
+
+.script-tags span {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.script-includes {
+  border-top: 1px solid var(--line);
+  padding-top: var(--sp-3);
+}
+
+.script-includes span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--wine);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.script-includes p {
+  margin: 0;
+  color: var(--navy);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.script-card .card-action {
+  margin-top: auto;
+  padding-top: var(--sp-4);
+}
+
+.script-card .card-action .btn {
+  align-self: flex-start;
+}
+
+/* drawer fechado não pode deixar sombra/faixa vazando na borda direita */
+.side-drawer:not(.is-open) .drawer-panel {
+  box-shadow: none;
+}
+
+/* ---------- Drawer de roteiro (escopado: não mexe no drawer do responsável) ---------- */
+.script-drawer .drawer-panel {
+  gap: 0;
+  padding: var(--sp-6);
+  overflow-y: auto;
+  /* §10: superfície sólida, sem gradiente */
+  background: var(--surface);
+  box-shadow: -2px 0 6px rgba(20, 17, 98, 0.06), -14px 0 30px rgba(20, 17, 98, 0.14);
+}
+
+.script-drawer .drawer-header {
+  margin-bottom: var(--sp-2);
+}
+
+.script-drawer .drawer-header h2 {
+  font-size: 1.3rem;
+  line-height: 1.15;
+}
+
+.script-drawer .drawer-header .app-kicker {
+  margin: 0 0 4px;
+}
+
+.script-drawer .drawer-close {
+  width: 36px;
+  height: 36px;
+  font-size: 1.3rem;
+}
+
+/* estrutura fixa do roteiro: blocos como linhas hairline, não card dentro de card */
+.script-block {
+  padding: var(--sp-4) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.script-block:last-child {
+  border-bottom: 0;
+}
+
+.script-block h3 {
+  margin: 0 0 var(--sp-2);
+  color: var(--wine);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.script-block p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.script-block ul {
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0;
+  padding-left: 1.2em;
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.script-steps {
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0;
+  padding-left: 1.2em;
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.script-steps li {
+  line-height: 1.5;
+}
+
+/* adaptações com fundo levemente distinto — é o bloco "anti-frustração" */
+.script-adapt {
+  margin-top: var(--sp-3);
+  border-bottom: 0;
+  border-radius: var(--r);
+  padding: var(--sp-4);
+  background: var(--soft-blue);
+}
+
+.script-adapt p {
+  margin: 0 0 var(--sp-3);
+}
+
+.script-adapt p:last-child {
+  margin-bottom: 0;
+}
+
+/* verde de "sinal positivo" — mesmo tom do chip ok do admin */
+.script-signal h3 {
+  color: #2e8b82;
+}
+
+@media (max-width: 1180px) {
+  .library-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .app-main.library-page {
+    width: min(100% - 28px, 1180px);
+    margin: 14px auto 92px;
+  }
+
+  .library-page .journey-header,
+  .library-header-actions {
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  .script-structure-card {
+    grid-template-columns: 1fr;
+  }
+
+  .library-grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -173,12 +173,21 @@ Armazena os registros semanais do tutor durante o ciclo.
   format: "visual" | "concrete" | "game" | "routine",
   difficultyLevel: 1,
   estimatedMinutes,
-  instructions,
+  instructions,        // resumo curto (1 frase) para listagens
+  goal,                // objetivo em uma frase
+  setup,               // array: materiais + preparo do ambiente (2 itens)
+  steps,               // array: 3 a 5 passos curtos, voz ativa
+  ifHard,              // adaptacao para simplificar
+  ifEasy,              // adaptacao para avancar
+  successSignal,       // 1 sinal observavel de que funcionou
   tags
 }
 ```
 
-Organiza atividades sugeridas para pratica entre sessoes.
+Cada activity e um ROTEIRO de conducao para tutor/responsavel, com estrutura
+fixa (objetivo, preparo, passos, adaptacoes, sinal observavel). A estrutura
+fixa e o recurso de previsibilidade da biblioteca — nao e atividade interativa
+nem area da crianca.
 
 ## progressLogs/{logId}
 
