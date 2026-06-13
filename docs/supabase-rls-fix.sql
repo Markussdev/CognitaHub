@@ -81,6 +81,7 @@ drop policy if exists sc_guardian_select on public.support_cycles;
 drop policy if exists sc_admin_all on public.support_cycles;
 drop policy if exists ta_tutor_select on public.tutor_applications;
 drop policy if exists ta_tutor_insert on public.tutor_applications;
+drop policy if exists ta_tutor_update on public.tutor_applications;
 drop policy if exists ta_admin_all on public.tutor_applications;
 
 -- 3) Recria as policies (MVP) ---------------------------------
@@ -131,11 +132,16 @@ create policy sc_guardian_select on public.support_cycles
 create policy sc_admin_all on public.support_cycles
   for all using (public.is_admin()) with check (public.is_admin());
 
--- tutor_applications: tutor cria/lê a própria candidatura; admin tudo.
+-- tutor_applications: tutor cria/lê/edita a própria candidatura; admin tudo.
+-- O update só vale enquanto status = 'pending' (no with check): impede o
+-- tutor de se auto-aprovar ou reativar uma candidatura recusada.
 create policy ta_tutor_select on public.tutor_applications
   for select using (tutor_id = auth.uid());
 create policy ta_tutor_insert on public.tutor_applications
   for insert with check (tutor_id = auth.uid());
+create policy ta_tutor_update on public.tutor_applications
+  for update using (tutor_id = auth.uid())
+  with check (tutor_id = auth.uid() and status = 'pending');
 create policy ta_admin_all on public.tutor_applications
   for all using (public.is_admin()) with check (public.is_admin());
 

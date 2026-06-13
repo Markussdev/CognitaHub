@@ -147,8 +147,8 @@ O projeto considera princípios de acessibilidade cognitiva importantes para cri
 | Autenticação (login por papel) | Em implementação |
 | Cadastro de tutor | Em implementação (grava no Supabase) |
 | Cadastro de responsável | Em implementação (grava no Supabase) |
-| Dashboard do responsável | Protótipo (dados simulados) |
-| Dashboard do tutor | Protótipo (dados simulados) |
+| Dashboard do responsável | Status real do cadastro (Supabase) |
+| Dashboard do tutor | Estado real (sem crianças até o pareamento) |
 | Painel administrativo | Triagem funcional (aprova/recusa pelo site) |
 | Banco de dados | Em implementação (Supabase) |
 

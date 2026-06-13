@@ -1,0 +1,207 @@
+import { requireRole, signOut } from '../lib/auth.js'
+import { setupFocusMode, greeting, initials, ageFrom, el } from '../lib/ui.js'
+import { getGuardianChildren } from '../data/guardian.js'
+
+const session = await requireRole('guardian')
+
+const childrenBox = document.querySelector('[data-guardian-children]')
+const emptyBox = document.querySelector('[data-guardian-empty]')
+
+setupFocusMode()
+
+document.querySelectorAll('[data-logout]').forEach((button) => {
+  button.addEventListener('click', async (event) => {
+    event.preventDefault()
+    await signOut()
+  })
+})
+
+// Cada status da criança vira um cartão com badge + mensagem clara
+// (§11: voz ativa, sem jargão). Pareamento/ciclo ainda não existem,
+// então o estado principal hoje é "em análise" ou "aguardando tutor".
+const STATUS = {
+  waiting_review: {
+    badge: 'badge-warn',
+    label: 'Em análise',
+    text: 'Cadastro em análise pela equipe Cognita. Avisaremos assim que a avaliação terminar.',
+  },
+  revision_requested: {
+    badge: 'badge-bad',
+    label: 'Revisão solicitada',
+    text: 'A equipe Cognita pediu ajustes neste cadastro. Em breve você poderá editar as informações; enquanto isso, fique de olho no seu e-mail.',
+  },
+  waiting_match: {
+    badge: 'badge-ok',
+    label: 'Aprovado · aguardando tutor',
+    text: 'Cadastro aprovado! Estamos procurando o tutor ideal. Você será avisado quando o pareamento acontecer.',
+  },
+  matched: {
+    badge: 'badge-ok',
+    label: 'Pareamento criado',
+    text: 'Um tutor foi reservado para o ciclo. O acompanhamento vai começar em breve.',
+  },
+  active: {
+    badge: 'badge-ok',
+    label: 'Ciclo ativo',
+    text: 'Ciclo de acompanhamento em andamento. Os detalhes das sessões aparecerão aqui em breve.',
+  },
+  completed: {
+    badge: 'badge-ok',
+    label: 'Ciclo concluído',
+    text: 'O ciclo de acompanhamento foi concluído. Obrigado por participar.',
+  },
+  paused: {
+    badge: 'badge-warn',
+    label: 'Pausado',
+    text: 'O acompanhamento está pausado no momento. A equipe Cognita entrará em contato.',
+  },
+  rejected: {
+    badge: 'badge-bad',
+    label: 'Não aprovado',
+    text: 'Este cadastro não foi aprovado. Fale com a equipe Cognita para entender os próximos passos.',
+  },
+}
+
+const FALLBACK_STATUS = {
+  badge: 'badge-warn',
+  label: 'Em processamento',
+  text: 'Estamos atualizando o status deste cadastro.',
+}
+
+function setText(selector, value) {
+  const node = document.querySelector(selector)
+  if (node) node.textContent = value
+}
+
+function asText(value) {
+  if (value == null || value === '') return null
+  if (Array.isArray(value)) return value.length ? value.join(', ') : null
+  return String(value)
+}
+
+function fact(label, value) {
+  const text = asText(value)
+  if (!text) return null
+  const row = el('div')
+  row.append(el('dt', null, label), el('dd', null, text))
+  return row
+}
+
+function fillIdentity() {
+  const name = session.profile.name || 'Responsável'
+  setText('[data-guardian-title]', greeting(name))
+  setText(
+    '[data-guardian-subtitle]',
+    'Acompanhe aqui a situação do cadastro da sua criança no Cognita Hub.'
+  )
+  setText('[data-guardian-name]', name)
+  setText('[data-account-name]', name)
+  setText('[data-account-email]', session.user.email ?? '')
+  setText('[data-account-avatar]', initials(name))
+}
+
+function setCount(n) {
+  const label =
+    n === 0
+      ? 'Nenhuma criança cadastrada'
+      : n === 1
+        ? '1 criança cadastrada'
+        : `${n} crianças cadastradas`
+  setText('[data-guardian-count]', label)
+}
+
+function renderChildCard(child) {
+  const status = STATUS[child.status] ?? FALLBACK_STATUS
+  const learning = Array.isArray(child.learning_profiles)
+    ? child.learning_profiles[0]
+    : child.learning_profiles
+
+  const card = el('article', 'pipeline-card')
+
+  const identity = el('div', 'card-id')
+  const avatar = el('span', 'card-avatar', initials(child.name))
+  avatar.setAttribute('aria-hidden', 'true')
+  const heading = el('div')
+  heading.append(el('p', 'app-kicker', 'Criança'), el('h3', null, child.name ?? 'Criança'))
+  identity.append(avatar, heading)
+
+  const age = ageFrom(child.birth_date)
+  const meta = el(
+    'p',
+    null,
+    [age != null ? `${age} anos` : null, child.school_year].filter(Boolean).join(' · ') ||
+      'Perfil cadastrado'
+  )
+
+  const tags = el('div', 'pipeline-tags')
+  tags.append(el('span', `badge ${status.badge}`, status.label))
+
+  const text = el('p', null, status.text)
+
+  const details = el('details', 'card-details')
+  const dl = el('dl', 'card-facts')
+  ;[
+    fact('Principais dificuldades', child.main_difficulties),
+    fact('Dificuldades em matemática', learning?.math_difficulties),
+    fact('Formatos preferidos', learning?.preferred_formats),
+    fact('Tempo de atenção', learning?.attention_span),
+    fact('Motivadores', learning?.motivators),
+    fact('Evitar', learning?.avoidances),
+    fact('Notas sensoriais', child.sensory_notes),
+    fact('Rotina', child.routine_notes),
+  ].forEach((row) => row && dl.append(row))
+  details.append(el('summary', null, 'Ver dados do cadastro'), dl)
+
+  card.append(identity, meta, tags, text, details)
+  return card
+}
+
+function showEmpty() {
+  childrenBox.replaceChildren()
+  emptyBox.hidden = false
+  const box = el('div', 'empty-state')
+  box.append(
+    el('strong', null, 'Nenhum cadastro de criança encontrado.'),
+    el(
+      'span',
+      null,
+      'Se você acabou de concluir o cadastro, atualize a página em alguns instantes. Qualquer dúvida, fale com a equipe Cognita.'
+    )
+  )
+  emptyBox.append(box)
+}
+
+async function loadChildren() {
+  emptyBox.hidden = true
+  childrenBox.replaceChildren(el('div', 'skeleton'))
+
+  const { data, error } = await getGuardianChildren(session.user.id)
+
+  if (error) {
+    childrenBox.replaceChildren()
+    emptyBox.hidden = false
+    const box = el('div', 'empty-state')
+    box.append(
+      el('strong', null, 'Não foi possível carregar o cadastro.'),
+      el('span', null, 'Verifique sua conexão e atualize a página.')
+    )
+    emptyBox.replaceChildren(box)
+    setText('[data-guardian-count]', 'Status indisponível')
+    return
+  }
+
+  const rows = data ?? []
+  setCount(rows.length)
+
+  if (!rows.length) {
+    showEmpty()
+    return
+  }
+
+  childrenBox.replaceChildren(...rows.map(renderChildCard))
+}
+
+if (session && childrenBox && emptyBox) {
+  fillIdentity()
+  await loadChildren()
+}

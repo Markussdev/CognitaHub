@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase.js'
 // cadastro ficou pendente — ver js/lib/pending-signup.js).
 
 export async function submitTutorApplication(tutorId, application) {
-  const { error } = await supabase.from('tutor_applications').insert({
+  const payload = {
     tutor_id: tutorId,
     formation: application.formation,
     experience: application.experience,
@@ -14,9 +14,40 @@ export async function submitTutorApplication(tutorId, application) {
     linkedin: application.linkedin,
     weekly_availability: application.weeklyAvailability ?? [],
     status: 'pending',
-  })
+  }
 
-  if (error) return { error, step: 'tutor_applications' }
+  // Se a candidatura já existe (ex.: retry no primeiro login após
+  // confirmação de email), não reinsere — evita o 409 por chave
+  // duplicada que travava o fluxo em loop.
+  const { data: existing, error: selectError } = await supabase
+    .from('tutor_applications')
+    .select('id, status')
+    .eq('tutor_id', tutorId)
+    .maybeSingle()
+
+  if (selectError) {
+    return { error: selectError, step: 'tutor_applications_select' }
+  }
+
+  if (existing) {
+    // Candidatura pendente é o caso esperado do retry: nada a fazer.
+    if (existing.status === 'pending') {
+      return {}
+    }
+
+    // Já analisada (approved/rejected): não sobrescreve a decisão da equipe.
+    return {
+      error: new Error('Já existe uma candidatura finalizada para este tutor.'),
+      step: 'tutor_applications_existing',
+    }
+  }
+
+  const { error } = await supabase
+    .from('tutor_applications')
+    .insert(payload)
+
+  if (error) return { error, step: 'tutor_applications_insert' }
+
   return {}
 }
 

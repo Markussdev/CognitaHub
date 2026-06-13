@@ -18,8 +18,8 @@
 
         <div class="sidebar-context">
           <span class="sidebar-role">Tutor voluntário</span>
-          <strong data-mock="tutor.nome">Maria Silva</strong>
-          <small>3 crianças neste ciclo</small>
+          <strong data-tutor-name>Tutor</strong>
+          <small data-tutor-count>Carregando…</small>
         </div>
 
         <p class="nav-label">Painel</p>
@@ -32,22 +32,6 @@
             </svg>
             <span>Hoje</span>
           </a>
-          <a href="#criancas">
-            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <circle cx="9" cy="8" r="3" />
-              <path d="M3 20c0-3 2.5-5 6-5s6 2 6 5" />
-              <path d="M16 6a3 3 0 0 1 0 6" />
-              <path d="M18.5 20c0-2-.7-3.6-2-4.7" />
-            </svg>
-            <span>Crianças</span>
-          </a>
-          <a href="#registro">
-            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M12 20h9" />
-              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
-            </svg>
-            <span>Registrar sessão</span>
-          </a>
           <a href="atividades.html">
             <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z" />
@@ -55,14 +39,21 @@
             </svg>
             <span>Recursos</span>
           </a>
+          <a class="nav-exit" href="#" data-logout>
+            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M19 12H5" />
+              <path d="M12 19l-7-7 7-7" />
+            </svg>
+            <span>Sair</span>
+          </a>
         </nav>
 
         <div class="sidebar-footer">
           <div class="account">
-            <div class="account-avatar">J</div>
+            <div class="account-avatar" data-account-avatar>T</div>
             <div class="account-info">
-              <strong data-mock="crianca.nome">João Pereira</strong>
-              <span>Próxima sessão às 15h</span>
+              <strong data-account-name>Tutor</strong>
+              <span data-account-email>—</span>
             </div>
           </div>
 
@@ -77,10 +68,8 @@
         <header class="journey-header">
           <div>
             <p class="app-kicker">Tutor voluntário</p>
-            <h1 class="app-title">Bom dia, <span data-mock="tutor.primeiroNome">Maria</span></h1>
-            <p class="app-subtitle">
-              Veja o foco da criança, registre a sessão e escolha a próxima atividade sem se perder.
-            </p>
+            <h1 class="app-title" data-tutor-title>Carregando…</h1>
+            <p class="app-subtitle" data-tutor-subtitle></p>
           </div>
           <a class="back-site-link" href="../index.html">
             <span aria-hidden="true">←</span>
@@ -88,234 +77,19 @@
           </a>
         </header>
 
-        <section class="journey-hero" aria-label="Próximo encontro">
-          <article class="journey-hero-copy">
-            <p class="app-kicker">Próximo encontro</p>
-            <h2 data-mock="sessaoAtual.resumoHorario">Quinta, 15h</h2>
-            <p class="hero-meta">
-              Com <strong data-mock="crianca.nome">João Pereira</strong> ·
-              <span data-mock="sessaoAtual.formato">Encontro online</span>
-            </p>
-
-            <div class="journey-actions">
-              <button class="btn btn-primary" type="button">Entrar na sala</button>
-              <a class="btn btn-light" href="perfil-crianca.html">Ver perfil pedagógico</a>
-            </div>
-          </article>
-
-          <aside class="child-mini-profile">
-            <span class="cat-badge-wrap">
-              <img src="../assets/sticker.png" alt="" aria-hidden="true" />
-            </span>
-            <span class="child-name">Sessão de hoje</span>
-            <strong data-mock="crianca.nome">João Pereira</strong>
-
-            <div class="child-focus-mini">
-              <span>Foco</span>
-              <strong data-mock="sessaoAtual.tema">Soma com apoio visual</strong>
-            </div>
-            <div class="child-focus-mini">
-              <span>Horário</span>
-              <strong data-mock="sessaoAtual.resumoHorario">Quinta, 15h</strong>
-            </div>
-          </aside>
-        </section>
-
-        <p class="section-label" id="criancas">Crianças acompanhadas</p>
-        <div class="child-switcher" role="tablist" aria-label="Crianças acompanhadas">
-          <button class="child-chip active" type="button" data-hub-tab="joao" aria-selected="true">
-            João · 7
-          </button>
-          <button class="child-chip" type="button" data-hub-tab="lia" aria-selected="false">
-            Lia · 9
-          </button>
-          <button class="child-chip" type="button" data-hub-tab="pedro" aria-selected="false">
-            Pedro · 6
-          </button>
-        </div>
-
-        <section class="work-grid">
-          <div class="case-column">
-            <article class="focus-card" data-hub-panel="joao">
-              <div class="child-focus-header">
-                <div class="child-avatar">J</div>
-                <div>
-                  <h2 data-mock="crianca.nome">João Pereira</h2>
-                  <p class="child-meta">
-                    <span data-mock="crianca.idade">7 anos</span> ·
-                    <span data-mock="ciclo.mesAtual">Mês 2 de 6</span> · visual + concreto
-                  </p>
-                </div>
-              </div>
-
-              <p class="focus-label">Estratégias que funcionam</p>
-              <ul class="focus-list">
-                <li>Contagem e comparação de quantidades</li>
-                <li>Soma com apoio visual</li>
-                <li>Atividades curtas com objetos do cotidiano</li>
-              </ul>
-
-              <div class="case-insight-grid">
-                <div>
-                  <span>Último registro</span>
-                  <strong data-session-output="notes" data-mock="observacaoTutor.texto">
-                    Respondeu melhor com objetos do cotidiano.
-                  </strong>
-                </div>
-                <div>
-                  <span>Próximo passo</span>
-                  <strong data-session-output="nextStep" data-mock="atividadeSugerida.descricao">
-                    Comparar quantidades com objetos da casa.
-                  </strong>
-                </div>
-              </div>
-
-              <div class="action-row">
-                <a class="btn btn-primary" href="perfil-crianca.html">Ver perfil pedagógico</a>
-                <a class="btn btn-ghost" href="atividades.html">Ver atividades</a>
-              </div>
-            </article>
-
-            <article class="focus-card" data-hub-panel="lia" hidden>
-              <div class="child-focus-header">
-                <div class="child-avatar">L</div>
-                <div>
-                  <h2>Lia Costa</h2>
-                  <p class="child-meta">9 anos · Mês 1 de 6 · visual + jogos</p>
-                </div>
-              </div>
-
-              <p class="focus-label">Estratégias que funcionam</p>
-              <ul class="focus-list">
-                <li>Comparar quantidades com material concreto</li>
-                <li>Formas geométricas com blocos</li>
-                <li>Desafios curtos de 5 a 10 minutos</li>
-              </ul>
-
-              <div class="case-insight-grid">
-                <div>
-                  <span>Último registro</span>
-                  <strong>Engajou bem com blocos coloridos.</strong>
-                </div>
-                <div>
-                  <span>Próximo passo</span>
-                  <strong>Introduzir comparação de grupos maiores.</strong>
-                </div>
-              </div>
-
-              <div class="action-row">
-                <a class="btn btn-primary" href="perfil-crianca.html">Ver perfil pedagógico</a>
-                <a class="btn btn-ghost" href="atividades.html">Ver atividades</a>
-              </div>
-            </article>
-
-            <article class="focus-card" data-hub-panel="pedro" hidden>
-              <div class="child-focus-header">
-                <div class="child-avatar">P</div>
-                <div>
-                  <h2>Pedro Alves</h2>
-                  <p class="child-meta">6 anos · Mês 3 de 6 · concreto + rotina</p>
-                </div>
-              </div>
-
-              <p class="focus-label">Estratégias que funcionam</p>
-              <ul class="focus-list">
-                <li>Contagem ligada à rotina do dia</li>
-                <li>Apoio visual com cartões</li>
-                <li>Repetição curta e previsível</li>
-              </ul>
-
-              <div class="case-insight-grid">
-                <div>
-                  <span>Último registro</span>
-                  <strong>Contou até 10 com apoio de cartões.</strong>
-                </div>
-                <div>
-                  <span>Próximo passo</span>
-                  <strong>Começar somas simples até 5.</strong>
-                </div>
-              </div>
-
-              <div class="action-row">
-                <a class="btn btn-primary" href="perfil-crianca.html">Ver perfil pedagógico</a>
-                <a class="btn btn-ghost" href="atividades.html">Ver atividades</a>
-              </div>
-            </article>
-          </div>
-
-          <aside class="action-card" id="registro">
-            <h2>Registrar sessão</h2>
-            <form class="quick-form-grid" data-session-form>
-              <label>
-                Conteúdo trabalhado
-                <select name="topic">
-                  <option value="" disabled selected>Selecione o conteúdo...</option>
-                  <option>Contagem e quantidades</option>
-                  <option>Soma com apoio visual</option>
-                  <option>Comparação de números</option>
-                </select>
-              </label>
-
-              <label>
-                Como foi a sessão?
-                <div class="mood-row" data-mood-group>
-                  <button class="mood-option" type="button" data-mood-value="needs_support" data-engagement="2" data-difficulty="4">
-                    Difícil
-                  </button>
-                  <button class="mood-option" type="button" data-mood-value="stable" data-engagement="3" data-difficulty="3">
-                    Boa
-                  </button>
-                  <button class="mood-option" type="button" data-mood-value="improved" data-engagement="5" data-difficulty="2">
-                    Ótima
-                  </button>
-                </div>
-              </label>
-
-              <input type="hidden" name="result" value="" />
-              <input type="hidden" name="engagement" value="" />
-              <input type="hidden" name="difficulty" value="" />
-
-              <label>
-                Observação
-                <textarea name="notes" placeholder="Ex.: respondeu melhor com objetos do cotidiano."></textarea>
-              </label>
-
-              <label>
-                Próximo passo
-                <textarea name="nextStep" placeholder="Ex.: comparar quantidades com objetos da casa."></textarea>
-              </label>
-
-              <button class="btn btn-primary" type="submit">Salvar registro</button>
-              <p class="fine-print" data-session-feedback>
-                O responsável verá este registro como evolução da semana.
-              </p>
-            </form>
-          </aside>
-        </section>
-
-        <section class="latest-session-card" id="relatorios" aria-label="Último registro salvo">
-          <div>
-            <p class="eyebrow">Sessão salva</p>
-            <h2 data-session-output="topic" data-mock="sessaoAtual.registro">Soma com objetos e cartões visuais.</h2>
-            <p>
-              Engajamento <strong data-session-output="engagement">4</strong>/5 · dificuldade
-              <strong data-session-output="difficulty">2</strong>/5
-            </p>
-          </div>
-          <span class="tag wine">Relatório pendente</span>
+        <section aria-label="Crianças acompanhadas">
+          <div data-tutor-cycles aria-live="polite"></div>
+          <div data-tutor-empty hidden></div>
         </section>
       </main>
     </div>
 
     <nav class="bottom-nav" aria-label="Menu inferior">
       <a class="active" href="tutor.html">Hoje</a>
-      <a href="#criancas">Crianças</a>
-      <a href="#registro">Registro</a>
       <a href="atividades.html">Recursos</a>
-      <a href="#relatorios">Relatórios</a>
+      <a href="#" data-logout>Sair</a>
     </nav>
 
-    <script src="../js/mockData.js"></script>
-    <script src="../js/app.js"></script>
+    <script type="module" src="/js/pages/tutor.js"></script>
   </body>
 </html>
