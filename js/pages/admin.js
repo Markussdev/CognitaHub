@@ -7,11 +7,17 @@ import {
   approveChild,
   requestChildRevision,
 } from '../data/admin.js'
+import {
+  getChildrenWaitingMatch,
+  getAvailableTutors,
+  createSupportCycle,
+} from '../data/matching.js'
 
 const session = await requireRole('admin')
 
 const listChildren = document.querySelector('[data-list-children]')
 const listTutors = document.querySelector('[data-list-tutors]')
+const listMatches = document.querySelector('[data-list-matches]')
 
 document.querySelectorAll('[data-logout]').forEach((button) => {
   button.addEventListener('click', async (event) => {
@@ -83,6 +89,9 @@ function cardDetails(summaryLabel, facts) {
 
 // ---------- ações ----------
 
+// action() pode retornar { error, userMessage } (mostra a mensagem
+// específica) ou { cancelled: true } (ex.: usuário cancelou um confirm
+// interno) — nesse caso não recarrega nem mostra erro.
 function bindAction(button, buttons, errorBox, action, confirmText) {
   button.addEventListener('click', async () => {
     if (confirmText && !window.confirm(confirmText)) return
@@ -94,14 +103,22 @@ function bindAction(button, buttons, errorBox, action, confirmText) {
     })
     button.textContent = 'Salvando…'
 
-    const { error } = await action()
+    const result = (await action()) ?? {}
 
-    if (error) {
+    if (result.cancelled) {
       buttons.forEach((other) => {
         other.disabled = false
       })
       button.textContent = originalLabel
-      errorBox.textContent = 'Não foi possível concluir. Tente de novo.'
+      return
+    }
+
+    if (result.error) {
+      buttons.forEach((other) => {
+        other.disabled = false
+      })
+      button.textContent = originalLabel
+      errorBox.textContent = result.userMessage || 'Não foi possível concluir. Tente de novo.'
       errorBox.hidden = false
       return
     }
@@ -226,6 +243,106 @@ function renderChildCard(child) {
   return card
 }
 
+function renderMatchCard(child, tutors) {
+  const learning = Array.isArray(child.learning_profiles)
+    ? child.learning_profiles[0]
+    : child.learning_profiles
+
+  const card = el('article', 'pipeline-card')
+
+  const identity = el('div', 'card-id')
+  const avatar = el('span', 'card-avatar wine', initialsOf(child.name))
+  avatar.setAttribute('aria-hidden', 'true')
+  const heading = el('div')
+  heading.append(el('p', 'app-kicker', 'Aguardando tutor'), el('h3', null, child.name ?? 'Criança'))
+  identity.append(avatar, heading)
+
+  const age = ageFrom(child.birth_date)
+  const summaryParts = [age != null ? `${age} anos` : null, asText(child.main_difficulties)]
+  const summary = el('p', null, summaryParts.filter(Boolean).join(' · ') || 'Perfil aprovado')
+
+  const tags = el('div', 'pipeline-tags')
+  tags.append(el('span', 'badge badge-ok', 'aprovada'))
+
+  const details = cardDetails('Ver perfil pedagógico', [
+    fact('Ano escolar', child.school_year),
+    fact('Dificuldades em matemática', learning?.math_difficulties),
+    fact('Formatos preferidos', learning?.preferred_formats),
+    fact('Tempo de atenção', learning?.attention_span),
+    fact('Motivadores', learning?.motivators),
+    fact('Evitar', learning?.avoidances),
+  ])
+
+  const errorBox = el('p', 'card-error')
+  errorBox.hidden = true
+
+  // formulário: tutor (obrigatório) + objetivo e plano (opcionais)
+  const form = el('div', 'match-form')
+
+  const tutorLabel = el('label', null, 'Tutor')
+  const select = document.createElement('select')
+  select.append(new Option('Selecione um tutor…', ''))
+  tutors.forEach((tutor) => {
+    const application = Array.isArray(tutor.tutor_applications)
+      ? tutor.tutor_applications[0]
+      : tutor.tutor_applications
+    const formation = application?.formation ? ` · ${application.formation}` : ''
+    select.append(new Option(`${tutor.name ?? 'Tutor'}${formation}`, tutor.id))
+  })
+  tutorLabel.append(select)
+
+  const goalLabel = el('label', null, 'Objetivo principal (opcional)')
+  const goalInput = document.createElement('input')
+  goalInput.type = 'text'
+  goalInput.placeholder = 'Ex.: ganhar confiança com soma até 10'
+  goalLabel.append(goalInput)
+
+  const planLabel = el('label', null, 'Plano inicial (opcional)')
+  const planInput = document.createElement('textarea')
+  planInput.placeholder = 'Ex.: atividades curtas e visuais, conectadas à rotina'
+  planLabel.append(planInput)
+
+  form.append(tutorLabel, goalLabel, planLabel)
+
+  const actions = el('div', 'row-actions')
+  const createBtn = el('button', 'btn btn-primary btn-sm', 'Criar ciclo')
+  createBtn.type = 'button'
+  actions.append(createBtn)
+
+  if (!tutors.length) {
+    select.disabled = true
+    createBtn.disabled = true
+    errorBox.textContent = 'Nenhum tutor aprovado disponível ainda. Valide um tutor na triagem.'
+    errorBox.hidden = false
+  }
+
+  // confirm + validação ficam DENTRO da action (antes do confirm precisa
+  // ter tutor escolhido) — bindAction trata { cancelled } e { userMessage }.
+  bindAction(createBtn, [createBtn], errorBox, async () => {
+    const tutorId = select.value
+    if (!tutorId) {
+      return { error: new Error('no-tutor'), userMessage: 'Selecione um tutor para criar o ciclo.' }
+    }
+
+    const tutorName = select.options[select.selectedIndex]?.text ?? 'o tutor'
+    const ok = window.confirm(
+      `Criar um ciclo de 6 meses para ${child.name ?? 'esta criança'} com ${tutorName}? ` +
+        'A criança passa a ser acompanhada por esse tutor.'
+    )
+    if (!ok) return { cancelled: true }
+
+    return createSupportCycle({
+      childId: child.id,
+      tutorId,
+      mainGoal: goalInput.value.trim(),
+      currentPlan: planInput.value.trim(),
+    })
+  })
+
+  card.append(identity, summary, tags, details, errorBox, form, actions)
+  return card
+}
+
 // ---------- listas, estados e contadores ----------
 
 function buildEmptyState(message, withRetry) {
@@ -264,12 +381,38 @@ function setCount(selector, value) {
   })
 }
 
-function updateCounters(childrenResult, tutorsResult) {
+// Pareamento precisa da lista de tutores disponíveis para cada dropdown,
+// então tem render próprio (não usa o renderList genérico).
+function renderMatches(childrenResult, tutorsResult) {
+  if (!listMatches) return
+
+  if (childrenResult.error) {
+    listMatches.replaceChildren(
+      buildEmptyState('Não foi possível carregar a fila de pareamento.', true)
+    )
+    return
+  }
+
+  const rows = childrenResult.data ?? []
+  if (!rows.length) {
+    listMatches.replaceChildren(
+      buildEmptyState('Nenhuma criança aguardando pareamento.', false)
+    )
+    return
+  }
+
+  const tutors = tutorsResult.error ? [] : (tutorsResult.data ?? [])
+  listMatches.replaceChildren(...rows.map((child) => renderMatchCard(child, tutors)))
+}
+
+function updateCounters(childrenResult, tutorsResult, matchesResult) {
   const childCount = childrenResult.error ? null : (childrenResult.data?.length ?? 0)
   const tutorCount = tutorsResult.error ? null : (tutorsResult.data?.length ?? 0)
+  const matchCount = matchesResult?.error ? null : (matchesResult?.data?.length ?? 0)
 
   setCount('[data-count-children]', childCount)
   setCount('[data-count-tutors]', tutorCount)
+  setCount('[data-count-matches]', matchCount)
 
   const total = childCount == null || tutorCount == null ? null : childCount + tutorCount
   setCount('[data-count-triagem]', total)
@@ -287,11 +430,16 @@ function updateCounters(childrenResult, tutorsResult) {
 }
 
 async function loadQueues() {
-  ;[listChildren, listTutors].forEach((list) => {
-    list.replaceChildren(el('div', 'skeleton'), el('div', 'skeleton'))
+  ;[listChildren, listTutors, listMatches].forEach((list) => {
+    if (list) list.replaceChildren(el('div', 'skeleton'), el('div', 'skeleton'))
   })
 
-  const [tutors, children] = await Promise.all([getPendingTutors(), getChildrenWaitingReview()])
+  const [tutors, children, matchChildren, availableTutors] = await Promise.all([
+    getPendingTutors(),
+    getChildrenWaitingReview(),
+    getChildrenWaitingMatch(),
+    getAvailableTutors(),
+  ])
 
   renderList(listTutors, tutors, renderTutorCard, {
     empty: 'Nenhuma candidatura aguardando validação.',
@@ -301,8 +449,9 @@ async function loadQueues() {
     empty: 'Nenhum cadastro de criança aguardando análise.',
     error: 'Não foi possível carregar as crianças. Verifique a conexão.',
   })
+  renderMatches(matchChildren, availableTutors)
 
-  updateCounters(children, tutors)
+  updateCounters(children, tutors, matchChildren)
 }
 
 function fillAccount() {

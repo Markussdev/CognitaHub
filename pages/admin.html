@@ -141,9 +141,9 @@
             <small class="filter-meta">candidaturas recebidas</small>
           </button>
           <button class="admin-filter" type="button" data-admin-filter="matches" aria-pressed="false">
-            <span>Pareamentos sugeridos</span>
-            <strong>—</strong>
-            <small class="filter-meta">disponível na próxima fase</small>
+            <span>Aguardando pareamento</span>
+            <strong data-count-matches>—</strong>
+            <small class="filter-meta">crianças aprovadas sem tutor</small>
           </button>
           <button class="admin-filter" type="button" data-admin-filter="relatorios" aria-pressed="false">
             <span>Relatórios a liberar</span>
@@ -169,67 +169,11 @@
           <article class="pipeline-col" id="matches">
             <header>
               <h2>Pareamentos</h2>
-              <span>5</span>
+              <span data-count-matches>—</span>
             </header>
 
-            <article class="pipeline-card">
-              <div class="card-id">
-                <span class="card-avatar wine" aria-hidden="true">J·M</span>
-                <div>
-                  <p class="app-kicker">Pareamento sugerido</p>
-                  <h3>João + Maria</h3>
-                </div>
-              </div>
-              <p>Soma com apoio visual · quinta, 15h</p>
-
-              <div class="match-chips" aria-label="Compatibilidade do pareamento">
-                <span class="ok">horário ✓</span>
-                <span class="ok">foco ✓</span>
-                <span class="ok">experiência ✓</span>
-              </div>
-
-              <div class="row-actions">
-                <button class="btn btn-primary btn-sm" type="button">Criar pareamento</button>
-                <button class="btn btn-ghost btn-sm" type="button">Detalhes</button>
-              </div>
-            </article>
-
-            <article class="pipeline-card">
-              <div class="card-id">
-                <span class="card-avatar wine" aria-hidden="true">L·R</span>
-                <div>
-                  <p class="app-kicker">Pareamento sugerido</p>
-                  <h3>Lia + Rafael</h3>
-                </div>
-              </div>
-              <p>Problemas simples do cotidiano · sábado, manhã</p>
-
-              <div class="match-chips" aria-label="Compatibilidade do pareamento">
-                <span class="ok">horário ✓</span>
-                <span class="ok">foco ✓</span>
-                <span>experiência a revisar</span>
-              </div>
-
-              <div class="row-actions">
-                <button class="btn btn-primary btn-sm" type="button">Criar pareamento</button>
-                <button class="btn btn-ghost btn-sm" type="button">Detalhes</button>
-              </div>
-            </article>
-
-            <article class="pipeline-card">
-              <p class="app-kicker">Fila sem tutor</p>
-              <h3>3 vagas</h3>
-              <p>Aguardando tutor compatível por horário e foco pedagógico</p>
-
-              <div class="pipeline-tags" aria-label="Estado da fila">
-                <span>sem pareamento</span>
-                <span>prioridade média</span>
-              </div>
-
-              <div class="row-actions">
-                <button class="btn btn-ghost btn-sm" type="button">Buscar tutor</button>
-              </div>
-            </article>
+            <p class="app-kicker queue-label">Crianças aguardando tutor</p>
+            <div data-list-matches aria-live="polite"></div>
           </article>
 
           <article class="pipeline-col" id="ciclos">

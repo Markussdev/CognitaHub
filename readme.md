@@ -149,17 +149,17 @@ O projeto considera princípios de acessibilidade cognitiva importantes para cri
 | Cadastro de responsável | Em implementação (grava no Supabase) |
 | Dashboard do responsável | Status real do cadastro (Supabase) |
 | Dashboard do tutor | Estado real (sem crianças até o pareamento) |
-| Painel administrativo | Triagem funcional (aprova/recusa pelo site) |
+| Painel administrativo | Triagem + pareamento funcionais (aprova, recusa e cria ciclo pelo site) |
 | Banco de dados | Em implementação (Supabase) |
 
 ## Próximos passos
 
 * [x] Painel admin listando cadastros pendentes reais (triagem).
 * [x] Aprovação de criança e tutor pelo admin.
+* [x] Pareamento criança↔tutor e criação do ciclo de 6 meses pelo admin.
 * [ ] Registro de sessões do tutor no banco.
-* [ ] Painel do responsável lendo status real do ciclo.
+* [ ] Painel do responsável lendo o andamento do ciclo (sessões/progresso).
 * [ ] Biblioteca de atividades vinda do Supabase.
-* [ ] Match e ciclo de acompanhamento ativos.
 * [ ] Validar o projeto com professores, responsáveis e instituições.
 
 <details>

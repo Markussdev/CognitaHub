@@ -1921,6 +1921,47 @@
   border-radius: 4px;
 }
 
+/* formulário de pareamento dentro do card (criar ciclo) */
+.match-form {
+  display: grid;
+  gap: var(--sp-3);
+  margin: 10px 0 0;
+}
+
+.match-form label {
+  display: grid;
+  gap: 4px;
+  color: var(--navy);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.match-form select,
+.match-form input,
+.match-form textarea {
+  width: 100%;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--ink);
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+}
+
+.match-form textarea {
+  min-height: 58px;
+  resize: vertical;
+}
+
+.match-form select:focus-visible,
+.match-form input:focus-visible,
+.match-form textarea:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 1px;
+}
+
 /* §10 densidade: linhas com divisória hairline, não card dentro de card */
 .card-facts {
   display: grid;
