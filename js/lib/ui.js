@@ -61,3 +61,26 @@ export function el(tag, className, text) {
   if (text != null) node.textContent = text
   return node
 }
+
+// Normaliza valor para texto exibível (ou null se vazio).
+export function asText(value) {
+  if (value == null || value === '') return null
+  if (Array.isArray(value)) return value.length ? value.join(', ') : null
+  return String(value)
+}
+
+// Linha rótulo/valor para a lista de fatos hairline (.card-facts).
+// Retorna null quando não há valor — quem monta a lista filtra os nulos.
+export function fact(label, value) {
+  const text = asText(value)
+  if (!text) return null
+  const row = el('div')
+  row.append(el('dt', null, label), el('dd', null, text))
+  return row
+}
+
+export function factList(facts) {
+  const list = el('dl', 'card-facts')
+  facts.forEach((row) => row && list.append(row))
+  return list
+}
