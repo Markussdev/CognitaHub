@@ -35,6 +35,46 @@ function formatDate(value) {
   return new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' }).format(date)
 }
 
+function monthsBetween(start, end) {
+  if (!start || !end) return 6
+
+  const startDate = new Date(`${start}T00:00:00Z`)
+  const endDate = new Date(`${end}T00:00:00Z`)
+
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    return 6
+  }
+
+  const months =
+    (endDate.getUTCFullYear() - startDate.getUTCFullYear()) * 12 +
+    (endDate.getUTCMonth() - startDate.getUTCMonth())
+
+  return Math.max(1, months)
+}
+
+function currentCycleMonth(start, end) {
+  if (!start || !end) return 1
+
+  const now = new Date()
+  const startDate = new Date(`${start}T00:00:00Z`)
+  const total = monthsBetween(start, end)
+
+  if (Number.isNaN(startDate.getTime())) return 1
+
+  const elapsed =
+    (now.getUTCFullYear() - startDate.getUTCFullYear()) * 12 +
+    (now.getUTCMonth() - startDate.getUTCMonth()) +
+    1
+
+  return Math.min(Math.max(elapsed, 1), total)
+}
+
+function cycleProgressPercent(start, end) {
+  const total = monthsBetween(start, end)
+  const current = currentCycleMonth(start, end)
+  return Math.round((current / total) * 100)
+}
+
 function fillIdentity() {
   const name = session.profile.name || 'Tutor'
   setText('[data-tutor-title]', greeting(name))
@@ -62,13 +102,13 @@ function showEmpty() {
   cyclesBox.replaceChildren()
   emptyBox.hidden = false
 
-  const box = el('div', 'empty-state')
+  const box = el('div', 'empty-state os-empty')
   box.append(
     el('strong', null, 'Você ainda não possui crianças vinculadas.'),
     el(
       'span',
       null,
-      'Quando a equipe Cognita criar um pareamento, ele aparecerá aqui — com o perfil da criança e o espaço para registrar as sessões.'
+      'Quando a equipe Cognita criar um pareamento, ele aparecerá aqui com o perfil da criança e o espaço para registrar as sessões.'
     )
   )
   emptyBox.replaceChildren(box)
@@ -77,27 +117,44 @@ function showEmpty() {
 // ---------- sessões ----------
 
 function renderSession(record) {
-  const item = el('div', 'session-item')
+  const item = el('article', 'session-item os-session-item')
 
-  const head = el('p', 'session-head')
-  head.append(el('span', 'session-date', formatDate(record.date) ?? '—'))
-  head.append(document.createTextNode(` · ${record.activity_title ?? 'Sessão'}`))
-  item.append(head)
-
-  item.append(
-    factList([
-      fact('Foco', record.focus_area),
-      fact('Duração', record.duration_minutes ? `${record.duration_minutes} min` : null),
-      fact('Observação', record.notes),
-      fact('Próximo passo', record.next_step),
-    ])
+  const head = el('header', 'os-session-head')
+  head.append(
+    el('span', 'session-date os-session-date', formatDate(record.date) ?? '-'),
+    el('strong', null, record.activity_title ?? 'Sessão')
   )
 
+  const body = el('div', 'os-session-body')
+
+  if (record.focus_area) {
+    const p = el('p')
+    p.append(el('strong', null, 'Foco '), document.createTextNode(record.focus_area))
+    body.append(p)
+  }
+
+  if (record.notes) {
+    const p = el('p')
+    p.append(el('strong', null, 'Observação '), document.createTextNode(record.notes))
+    body.append(p)
+  }
+
+  if (record.next_step) {
+    const p = el('p')
+    p.append(el('strong', null, 'Próximo '), document.createTextNode(record.next_step))
+    body.append(p)
+  }
+
+  if (record.duration_minutes) {
+    body.append(el('span', 'os-session-duration', `${record.duration_minutes} min`))
+  }
+
+  item.append(head, body)
   return item
 }
 
 async function loadSessions(cycleId, container) {
-  container.replaceChildren(el('p', 'session-empty', 'Carregando sessões…'))
+  container.replaceChildren(el('p', 'session-empty', 'Carregando sessões...'))
 
   const { data, error } = await getCycleSessions(cycleId)
 
@@ -112,7 +169,7 @@ async function loadSessions(cycleId, container) {
     return
   }
 
-  const list = el('div', 'session-list')
+  const list = el('div', 'session-list os-session-list')
   rows.forEach((record) => list.append(renderSession(record)))
   container.replaceChildren(list)
 }
@@ -124,9 +181,9 @@ function labeledField(labelText, control) {
 }
 
 function renderSessionForm(cycle, onSaved) {
-  const details = el('details', 'card-details')
+  const details = el('details', 'card-details os-session-form')
   const form = document.createElement('form')
-  form.className = 'match-form'
+  form.className = 'match-form os-form'
 
   const dateInput = document.createElement('input')
   dateInput.type = 'date'
@@ -185,7 +242,7 @@ function renderSessionForm(cycle, onSaved) {
     }
 
     saveBtn.disabled = true
-    saveBtn.textContent = 'Salvando…'
+    saveBtn.textContent = 'Salvando...'
 
     const { error } = await createSessionRecord({
       cycleId: cycle.id,
@@ -219,43 +276,133 @@ function renderSessionForm(cycle, onSaved) {
 
 // ---------- card da criança vinculada ----------
 
-function renderCycleCard(cycle) {
-  const child = cycle.children ?? {}
-  const card = el('article', 'pipeline-card')
+function renderOrbit(childName, age, currentMonth, totalMonths) {
+  const orbit = el('div', 'os-orbit')
+  orbit.style.setProperty('--total', totalMonths)
 
-  const identity = el('div', 'card-id')
-  const avatar = el('span', 'card-avatar', initials(child.name))
-  avatar.setAttribute('aria-hidden', 'true')
-  const heading = el('div')
-  heading.append(el('p', 'app-kicker', 'Criança'), el('h3', null, child.name ?? 'Criança'))
-  identity.append(avatar, heading)
-
-  const age = ageFrom(child.birth_date)
-  const label = cycle.status === 'active' ? 'Ciclo ativo' : 'Ciclo planejado'
-  const tags = el('div', 'pipeline-tags')
-  tags.append(el('span', `badge ${cycle.status === 'active' ? 'badge-ok' : 'badge-warn'}`, label))
-
-  const meta = el(
-    'p',
-    null,
-    [age != null ? `${age} anos` : null, cycle.start_date ? `início ${formatDate(cycle.start_date)}` : null]
-      .filter(Boolean)
-      .join(' · ') || 'Acompanhamento em preparação'
+  const center = el('div', 'os-orbit-center')
+  center.append(
+    el('strong', null, childName ?? 'Criança'),
+    el('span', null, age != null ? `${age} anos` : 'Ciclo ativo')
   )
 
-  const actions = el('div', 'action-row')
-  const profileLink = el('a', 'btn btn-primary btn-sm', 'Ver perfil pedagógico')
-  profileLink.href = 'perfil-crianca.html'
-  actions.append(profileLink)
+  const ring = el('div', 'os-orbit-ring')
 
-  const sessionsLabel = el('p', 'app-kicker queue-label', 'Últimas sessões')
+  for (let i = 1; i <= totalMonths; i += 1) {
+    const stateClass = i === currentMonth ? 'active' : i < currentMonth ? 'done' : ''
+    const dot = el('span', `os-orbit-dot ${stateClass}`.trim(), String(i))
+    dot.style.setProperty('--i', i)
+    dot.style.setProperty('--total', totalMonths)
+    ring.append(dot)
+  }
+
+  orbit.append(ring, center)
+  return orbit
+}
+
+function renderCycleSummary(cycle, progress, currentMonth, totalMonths) {
+  const panel = el('aside', 'os-panel os-summary-panel')
+
+  panel.append(
+    el('div', 'os-panel-title', 'Resumo do ciclo'),
+    el('p', 'os-progress-number', `${progress}%`),
+    el('p', 'os-muted', `mês ${currentMonth} de ${totalMonths}`)
+  )
+
+  const bars = el('div', 'os-progress-bars')
+  bars.style.setProperty('--total-months', totalMonths)
+  for (let i = 1; i <= totalMonths; i += 1) {
+    const stateClass = i === currentMonth ? 'active' : i < currentMonth ? 'done' : ''
+    bars.append(el('span', stateClass))
+  }
+
+  const facts = factList([
+    fact('Início', formatDate(cycle.start_date)),
+    fact('Fim previsto', formatDate(cycle.end_date)),
+    fact('Meta', cycle.main_goal),
+    fact('Plano atual', cycle.current_plan),
+  ])
+
+  panel.append(bars, facts)
+
+  if (cycle.current_plan || cycle.main_goal) {
+    const next = el('div', 'os-next-card')
+    next.append(el('span', null, 'Próximo passo'), el('p', null, cycle.current_plan || cycle.main_goal))
+    panel.append(next)
+  }
+
+  return panel
+}
+
+function renderCycleCard(cycle) {
+  const child = cycle.children ?? {}
+  const age = ageFrom(child.birth_date)
+  const totalMonths = monthsBetween(cycle.start_date, cycle.end_date)
+  const currentMonth = currentCycleMonth(cycle.start_date, cycle.end_date)
+  const progress = cycleProgressPercent(cycle.start_date, cycle.end_date)
+  const statusLabel = cycle.status === 'active' ? 'Ciclo ativo' : 'Ciclo planejado'
+
+  const wrapper = el('article', 'pipeline-card os-cycle')
+
+  const hero = el('section', 'os-hero-card')
+  const orbit = renderOrbit(child.name, age, currentMonth, totalMonths)
+
+  const copy = el('div', 'os-hero-copy')
+  copy.append(
+    el('p', 'os-kicker', 'Criança em acompanhamento'),
+    el('h2', null, `${child.name ?? 'Criança'} está no mês ${currentMonth} da jornada.`),
+    el(
+      'p',
+      'os-copy',
+      `Cada órbita é um mês do ciclo de apoio. Este ciclo tem ${totalMonths} meses e segue com registros de acompanhamento.`
+    )
+  )
+
+  const chips = el('div', 'os-chip-row')
+  chips.append(el('span', 'os-chip os-chip-ok', statusLabel), el('span', 'os-chip os-chip-warn', 'Sessão pendente'))
+
+  const profileLink = el('a', 'os-btn os-btn-secondary', 'Ver perfil pedagógico')
+  profileLink.href = 'perfil-crianca.html'
+
+  copy.append(chips, profileLink)
+
+  const mascot = document.createElement('img')
+  mascot.className = 'os-mascot'
+  mascot.src = '../assets/mascot-hero-wave.png'
+  mascot.alt = ''
+
+  hero.append(orbit, copy, mascot)
+
+  const grid = el('section', 'os-dashboard-grid')
+
+  const sessionsPanel = el('div', 'os-panel os-timeline-panel')
+  sessionsPanel.append(el('div', 'os-panel-title', 'Linha do tempo das sessões'))
+
   const sessionsList = el('div')
   const form = renderSessionForm(cycle, () => loadSessions(cycle.id, sessionsList))
+  sessionsPanel.append(sessionsList, form)
 
-  card.append(identity, tags, meta, actions, form, sessionsLabel, sessionsList)
+  const summaryPanel = renderCycleSummary(cycle, progress, currentMonth, totalMonths)
+
+  grid.append(sessionsPanel, summaryPanel)
+  wrapper.append(hero, grid)
 
   loadSessions(cycle.id, sessionsList)
-  return card
+  return wrapper
+}
+
+function setupOpenSessionShortcut() {
+  const button = document.querySelector('[data-open-session]')
+  if (!button || button.dataset.shortcutReady === 'true') return
+
+  button.dataset.shortcutReady = 'true'
+  button.addEventListener('click', () => {
+    const details = document.querySelector('.os-session-form, .card-details')
+    if (!details) return
+
+    details.open = true
+    details.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  })
 }
 
 async function loadCycles() {
@@ -267,11 +414,13 @@ async function loadCycles() {
   if (error || !data?.length) {
     setCount(0)
     showEmpty()
+    setupOpenSessionShortcut()
     return
   }
 
   setCount(data.length)
   cyclesBox.replaceChildren(...data.map(renderCycleCard))
+  setupOpenSessionShortcut()
 }
 
 if (session && cyclesBox && emptyBox) {

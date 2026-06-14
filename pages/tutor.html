@@ -8,87 +8,69 @@
     <link rel="stylesheet" href="../css/tokens.css" />
     <link rel="stylesheet" href="../css/styles.css" />
     <link rel="stylesheet" href="../css/internal.css" />
+    <link rel="stylesheet" href="../css/cognita-os.css" />
   </head>
-  <body class="app-body">
-    <div class="app-shell">
-      <aside class="sidebar" aria-label="Menu do tutor">
-        <a class="sidebar-logo sidebar-logo-clean" href="../index.html">
-          <img src="../assets/logo-retangular-transparent.png" alt="CognitaHub" />
+  <body class="app-body os-body">
+    <main class="os-page">
+      <header class="os-topbar">
+        <a class="os-brand" href="../index.html" aria-label="Voltar para o site Cognita Hub">
+          <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
+          <strong>Cognita Hub</strong>
         </a>
 
-        <div class="sidebar-context">
-          <span class="sidebar-role">Tutor voluntário</span>
-          <strong data-tutor-name>Tutor</strong>
-          <small data-tutor-count>Carregando…</small>
+        <div class="os-topbar-copy">
+          <p class="os-kicker">Tutor voluntário</p>
+          <h1 data-tutor-title>Carregando...</h1>
+          <p data-tutor-subtitle></p>
         </div>
 
-        <p class="nav-label">Painel</p>
-
-        <nav class="sidebar-nav">
-          <a class="active" href="tutor.html">
-            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M3 11l9-8 9 8" />
-              <path d="M5 10v10h14V10" />
-            </svg>
-            <span>Hoje</span>
-          </a>
-          <a href="atividades.html">
-            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <div class="os-topbar-actions">
+          <a class="os-icon-link" href="atividades.html" aria-label="Abrir recursos">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z" />
               <path d="M19 17H6a2 2 0 0 0-2 2" />
             </svg>
-            <span>Recursos</span>
           </a>
-          <a class="nav-exit" href="#" data-logout>
-            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <button class="os-action-primary" type="button" data-open-session>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5v14" />
+              <path d="M5 12h14" />
+            </svg>
+            <span>Registrar sessão</span>
+          </button>
+          <button class="os-icon-button focus-toggle" type="button" data-focus-toggle aria-pressed="false" aria-label="Alternar modo foco">
+            <span class="sr-only" data-focus-label>Modo Foco</span>
+            <i class="focus-dot" aria-hidden="true"></i>
+          </button>
+          <button class="os-icon-button" type="button" data-logout aria-label="Sair">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M19 12H5" />
               <path d="M12 19l-7-7 7-7" />
             </svg>
-            <span>Sair</span>
-          </a>
-        </nav>
-
-        <div class="sidebar-footer">
-          <div class="account">
-            <div class="account-avatar" data-account-avatar>T</div>
-            <div class="account-info">
-              <strong data-account-name>Tutor</strong>
-              <span data-account-email>—</span>
-            </div>
-          </div>
-
-          <button class="focus-toggle" type="button" data-focus-toggle aria-pressed="false">
-            <span data-focus-label>Modo Foco</span>
-            <i class="focus-dot" aria-hidden="true"></i>
           </button>
+          <div class="os-avatar" data-account-avatar>T</div>
         </div>
-      </aside>
+      </header>
 
-      <main class="app-main work-page">
-        <header class="journey-header">
-          <div>
-            <p class="app-kicker">Tutor voluntário</p>
-            <h1 class="app-title" data-tutor-title>Carregando…</h1>
-            <p class="app-subtitle" data-tutor-subtitle></p>
-          </div>
-          <a class="back-site-link" href="../index.html">
-            <span aria-hidden="true">←</span>
-            Site Cognita
-          </a>
-        </header>
+      <section class="os-status-strip" aria-label="Resumo do tutor">
+        <span class="os-status-pill os-status-live">
+          <i aria-hidden="true"></i>
+          <strong data-tutor-count>Carregando...</strong>
+        </span>
+        <span class="os-status-pill">próxima sessão pendente</span>
+      </section>
 
-        <section aria-label="Crianças acompanhadas">
-          <div data-tutor-cycles aria-live="polite"></div>
-          <div data-tutor-empty hidden></div>
-        </section>
-      </main>
-    </div>
+      <section aria-label="Crianças acompanhadas">
+        <div class="os-cycles" data-tutor-cycles aria-live="polite"></div>
+        <div data-tutor-empty hidden></div>
+      </section>
 
-    <nav class="bottom-nav" aria-label="Menu inferior">
-      <a class="active" href="tutor.html">Hoje</a>
-      <a href="atividades.html">Recursos</a>
-      <a href="#" data-logout>Sair</a>
-    </nav>
+      <div class="os-hidden-identity" hidden>
+        <span data-tutor-name></span>
+        <span data-account-name></span>
+        <span data-account-email></span>
+      </div>
+    </main>
 
     <script type="module" src="/js/pages/tutor.js"></script>
   </body>
