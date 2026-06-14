@@ -136,6 +136,36 @@ function setCount(n) {
   setText('[data-guardian-count]', label)
 }
 
+function renderSession(record) {
+  const item = el('div', 'session-item')
+
+  const head = el('p', 'session-head')
+  head.append(el('span', 'session-date', formatDate(record.date) ?? '—'))
+  head.append(document.createTextNode(` · ${record.activity_title ?? 'Sessão'}`))
+  item.append(head)
+
+  item.append(
+    factList([
+      fact('Foco', record.focus_area),
+      fact('Observação', record.notes),
+      fact('Próximo passo', record.next_step),
+    ])
+  )
+
+  return item
+}
+
+function renderSessions(sessions) {
+  const rows = Array.isArray(sessions) ? sessions : []
+  if (!rows.length) {
+    return el('p', 'session-empty', 'O tutor ainda não registrou sessões deste ciclo.')
+  }
+
+  const list = el('div', 'session-list')
+  rows.forEach((record) => list.append(renderSession(record)))
+  return list
+}
+
 function renderChildCard(child) {
   const status = STATUS[child.status] ?? FALLBACK_STATUS
   const learning = Array.isArray(child.learning_profiles)
@@ -195,6 +225,8 @@ function renderChildCard(child) {
         fact('Plano inicial', activeCycle.current_plan),
       ])
     )
+
+    card.append(el('p', 'app-kicker queue-label', 'Últimas sessões'), renderSessions(activeCycle.sessions))
   }
 
   card.append(details)

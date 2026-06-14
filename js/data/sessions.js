@@ -37,6 +37,7 @@ export async function createSessionRecord({
       cycle_id: cycleId,
       date: sessionDate,
       duration_minutes: durationMinutes || null,
+      topic: activityTitle,
       activity_title: activityTitle,
       focus_area: focusArea || null,
       notes: notes || null,

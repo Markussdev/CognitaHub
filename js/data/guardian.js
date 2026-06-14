@@ -64,6 +64,31 @@ async function getGuardianChildrenInSteps(guardianId) {
     profiles = tutorProfiles ?? []
   }
 
+  const cycleIds = [...new Set((cycles ?? []).map((cycle) => cycle.id).filter(Boolean))]
+  let sessions = []
+
+  if (cycleIds.length) {
+    const { data: cycleSessions, error: sessionsError } = await supabase
+      .from('sessions')
+      .select('id, cycle_id, date, duration_minutes, activity_title, focus_area, notes, next_step, created_at')
+      .in('cycle_id', cycleIds)
+      .order('date', { ascending: false })
+      .order('created_at', { ascending: false })
+
+    if (sessionsError) {
+      return { data: null, error: sessionsError }
+    }
+
+    sessions = cycleSessions ?? []
+  }
+
+  const sessionsByCycleId = new Map()
+  sessions.forEach((sessionRow) => {
+    const list = sessionsByCycleId.get(sessionRow.cycle_id) ?? []
+    list.push(sessionRow)
+    sessionsByCycleId.set(sessionRow.cycle_id, list)
+  })
+
   const profileById = new Map(profiles.map((profile) => [profile.id, profile]))
   const cyclesByChildId = new Map()
 
@@ -71,6 +96,7 @@ async function getGuardianChildrenInSteps(guardianId) {
     const enrichedCycle = {
       ...cycle,
       profiles: cycle.tutor_id ? profileById.get(cycle.tutor_id) ?? null : null,
+      sessions: sessionsByCycleId.get(cycle.id) ?? [],
     }
     const list = cyclesByChildId.get(cycle.child_id) ?? []
     list.push(enrichedCycle)
