@@ -56,6 +56,32 @@ to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
+-- PASSO 2b — Responsável lê o perfil do tutor vinculado ----------
+-- Sem esta policy, o responsável enxerga support_cycles, mas o embed do
+-- tutor em profiles pode vir vazio por RLS.
+
+create or replace function public.is_guardian_of_tutor(tutor uuid)
+returns boolean
+language sql stable security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.support_cycles sc
+    join public.children c on c.id = sc.child_id
+    where sc.tutor_id = tutor
+      and c.guardian_id = auth.uid()
+  );
+$$;
+
+drop policy if exists profiles_guardian_tutor_select on public.profiles;
+
+create policy profiles_guardian_tutor_select
+on public.profiles
+for select
+to authenticated
+using (public.is_guardian_of_tutor(id));
+
 -- Observação: sc_tutor_select e sc_guardian_select (leitura do tutor e
 -- do responsável) já vêm do rls-fix §3 — é o que faz a criança aparecer
 -- no painel do tutor e o ciclo no painel do responsável após a criação.

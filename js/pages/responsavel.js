@@ -16,13 +16,10 @@ document.querySelectorAll('[data-logout]').forEach((button) => {
   })
 })
 
-// Cada status da criança vira um cartão com badge + mensagem clara
-// (§11: voz ativa, sem jargão). Pareamento/ciclo ainda não existem,
-// então o estado principal hoje é "em análise" ou "aguardando tutor".
 const STATUS = {
   waiting_review: {
     badge: 'badge-warn',
-    label: 'Em análise',
+    label: 'Cadastro em análise',
     text: 'Cadastro em análise pela equipe Cognita. Avisaremos assim que a avaliação terminar.',
   },
   revision_requested: {
@@ -32,8 +29,8 @@ const STATUS = {
   },
   waiting_match: {
     badge: 'badge-ok',
-    label: 'Aprovado · aguardando tutor',
-    text: 'Cadastro aprovado! Estamos procurando o tutor ideal. Você será avisado quando o pareamento acontecer.',
+    label: 'Cadastro aprovado, aguardando tutor',
+    text: 'Cadastro aprovado, aguardando tutor. Você será avisado quando o pareamento acontecer.',
   },
   matched: {
     badge: 'badge-ok',
@@ -43,22 +40,22 @@ const STATUS = {
   active: {
     badge: 'badge-ok',
     label: 'Ciclo ativo',
-    text: 'Ciclo de acompanhamento em andamento. Os detalhes das sessões aparecerão aqui em breve.',
+    text: 'Ciclo ativo com tutor vinculado.',
   },
   completed: {
     badge: 'badge-ok',
     label: 'Ciclo concluído',
-    text: 'O ciclo de acompanhamento foi concluído. Obrigado por participar.',
+    text: 'Ciclo concluído. Obrigado por participar.',
   },
   paused: {
     badge: 'badge-warn',
-    label: 'Pausado',
-    text: 'O acompanhamento está pausado no momento. A equipe Cognita entrará em contato.',
+    label: 'Acompanhamento pausado',
+    text: 'Acompanhamento pausado. A equipe Cognita entrará em contato.',
   },
   rejected: {
     badge: 'badge-bad',
-    label: 'Não aprovado',
-    text: 'Este cadastro não foi aprovado. Fale com a equipe Cognita para entender os próximos passos.',
+    label: 'Cadastro não aprovado',
+    text: 'Cadastro não aprovado. Fale com a equipe Cognita para entender os próximos passos.',
   },
 }
 
@@ -85,6 +82,35 @@ function fact(label, value) {
   const row = el('div')
   row.append(el('dt', null, label), el('dd', null, text))
   return row
+}
+
+function factList(facts) {
+  const list = el('dl', 'card-facts')
+  facts.forEach((row) => row && list.append(row))
+  return list
+}
+
+function formatDate(value) {
+  if (!value) return null
+  const date = new Date(`${value}T00:00:00Z`)
+  if (Number.isNaN(date.getTime())) return value
+
+  return new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' }).format(date)
+}
+
+function getActiveCycle(child) {
+  const cycles = Array.isArray(child.support_cycles)
+    ? child.support_cycles
+    : child.support_cycles
+      ? [child.support_cycles]
+      : []
+
+  return cycles.find((cycle) => cycle.status === 'active') ?? cycles[0] ?? null
+}
+
+function getCycleTutor(cycle) {
+  const profile = cycle?.profiles
+  return Array.isArray(profile) ? profile[0] : profile
 }
 
 function fillIdentity() {
@@ -115,6 +141,8 @@ function renderChildCard(child) {
   const learning = Array.isArray(child.learning_profiles)
     ? child.learning_profiles[0]
     : child.learning_profiles
+  const activeCycle = getActiveCycle(child)
+  const tutor = getCycleTutor(activeCycle)
 
   const card = el('article', 'pipeline-card')
 
@@ -139,20 +167,37 @@ function renderChildCard(child) {
   const text = el('p', null, status.text)
 
   const details = el('details', 'card-details')
-  const dl = el('dl', 'card-facts')
-  ;[
-    fact('Principais dificuldades', child.main_difficulties),
-    fact('Dificuldades em matemática', learning?.math_difficulties),
-    fact('Formatos preferidos', learning?.preferred_formats),
-    fact('Tempo de atenção', learning?.attention_span),
-    fact('Motivadores', learning?.motivators),
-    fact('Evitar', learning?.avoidances),
-    fact('Notas sensoriais', child.sensory_notes),
-    fact('Rotina', child.routine_notes),
-  ].forEach((row) => row && dl.append(row))
-  details.append(el('summary', null, 'Ver dados do cadastro'), dl)
+  details.append(
+    el('summary', null, 'Ver dados do cadastro'),
+    factList([
+      fact('Principais dificuldades', child.main_difficulties),
+      fact('Dificuldades em matemática', learning?.math_difficulties),
+      fact('Formatos preferidos', learning?.preferred_formats),
+      fact('Tempo de atenção', learning?.attention_span),
+      fact('Motivadores', learning?.motivators),
+      fact('Evitar', learning?.avoidances),
+      fact('Notas sensoriais', child.sensory_notes),
+      fact('Rotina', child.routine_notes),
+    ])
+  )
 
-  card.append(identity, meta, tags, text, details)
+  card.append(identity, meta, tags, text)
+
+  if (activeCycle) {
+    card.append(
+      el('p', 'app-kicker', 'Acompanhamento iniciado'),
+      factList([
+        fact('Tutor responsável', tutor?.name),
+        fact('Contato com o tutor', 'Pelo Cognita Hub'),
+        fact('Início', formatDate(activeCycle.start_date)),
+        fact('Fim previsto', formatDate(activeCycle.end_date)),
+        fact('Objetivo principal', activeCycle.main_goal),
+        fact('Plano inicial', activeCycle.current_plan),
+      ])
+    )
+  }
+
+  card.append(details)
   return card
 }
 

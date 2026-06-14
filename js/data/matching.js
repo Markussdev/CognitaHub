@@ -23,22 +23,45 @@ export async function getChildrenWaitingMatch() {
 }
 
 export async function getAvailableTutors() {
-  return supabase
+  const { data: applications, error: applicationsError } = await supabase
+    .from('tutor_applications')
+    .select('tutor_id, formation, experience, status')
+    .eq('status', 'approved')
+
+  if (applicationsError) {
+    return { data: null, error: applicationsError }
+  }
+
+  if (!applications?.length) {
+    return { data: [], error: null }
+  }
+
+  const tutorIds = applications.map((app) => app.tutor_id)
+
+  const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
-    .select(`
-      id,
-      name,
-      email,
-      phone,
-      status,
-      tutor_applications (
-        status,
-        formation,
-        experience
-      )
-    `)
+    .select('id, name, email, phone, status')
+    .in('id', tutorIds)
     .eq('role', 'tutor')
     .eq('status', 'active')
+
+  if (profilesError) {
+    return { data: null, error: profilesError }
+  }
+
+  const applicationByTutorId = new Map(
+    applications.map((app) => [app.tutor_id, app])
+  )
+
+  return {
+    data: (profiles ?? []).map((profile) => ({
+      ...profile,
+      tutor_applications: applicationByTutorId.get(profile.id)
+        ? [applicationByTutorId.get(profile.id)]
+        : [],
+    })),
+    error: null,
+  }
 }
 
 export async function createSupportCycle({ childId, tutorId, mainGoal, currentPlan }) {

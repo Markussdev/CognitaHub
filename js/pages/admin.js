@@ -401,7 +401,14 @@ function renderMatches(childrenResult, tutorsResult) {
     return
   }
 
-  const tutors = tutorsResult.error ? [] : (tutorsResult.data ?? [])
+  if (tutorsResult.error) {
+    listMatches.replaceChildren(
+      buildEmptyState('Não foi possível carregar os tutores aprovados. Verifique as policies.', true)
+    )
+    return
+  }
+
+  const tutors = tutorsResult.data ?? []
   listMatches.replaceChildren(...rows.map((child) => renderMatchCard(child, tutors)))
 }
 
