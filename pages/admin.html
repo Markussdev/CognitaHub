@@ -8,289 +8,155 @@
     <link rel="stylesheet" href="../css/tokens.css" />
     <link rel="stylesheet" href="../css/styles.css" />
     <link rel="stylesheet" href="../css/internal.css" />
+    <link rel="stylesheet" href="../css/cognita-os.css" />
   </head>
-  <body class="app-body">
-    <div class="app-shell">
-      <aside class="sidebar" aria-label="Menu administrativo">
-        <a class="sidebar-logo sidebar-logo-clean" href="../index.html">
-          <img src="../assets/logo-retangular-transparent.png" alt="CognitaHub" />
+
+  <body class="app-body os-body admin-os-body">
+    <main class="os-page admin-os-page">
+      <header class="os-topbar admin-os-topbar">
+        <a class="os-brand" href="../index.html" aria-label="Voltar para o site Cognita Hub">
+          <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
+          <strong>Cognita Hub</strong>
         </a>
 
-        <div class="sidebar-context">
-          <span class="context-eyebrow">Admin</span>
-          <strong>Operação</strong>
-          <small data-count-context>Carregando…</small>
+        <div class="os-topbar-copy">
+          <p class="os-kicker">Central de operação</p>
+          <h1>Triagem e decisões</h1>
+          <p>Analise cadastros, valide tutores e crie ciclos de acompanhamento.</p>
         </div>
 
-        <p class="nav-label">Menu</p>
-
-        <nav class="sidebar-nav" aria-label="Operação">
-          <a class="active" href="#triagem">
-            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M9 11l3 3L22 4" />
-              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-            </svg>
-            <span>Triagem</span>
-            <span class="nav-badge" data-count-total>—</span>
-          </a>
-          <a href="#matches">
-            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M16 3h5v5" />
-              <path d="M4 20L21 3" />
-              <path d="M21 16v5h-5" />
-              <path d="M15 15l6 6" />
-              <path d="M4 4l5 5" />
-            </svg>
-            <span>Pareamentos</span>
-          </a>
-          <a href="#ciclos">
-            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M4 19V5" />
-              <path d="M4 15l4-4 4 3 7-7" />
-            </svg>
-            <span>Ciclos</span>
-          </a>
-          <a href="#relatorios">
-            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <path d="M14 2v6h6" />
-              <path d="M8 13h8" />
-              <path d="M8 17h5" />
-            </svg>
-            <span>Relatórios</span>
-          </a>
-        </nav>
-
-        <p class="nav-label">Gestão</p>
-
-        <nav class="sidebar-nav" aria-label="Gestão">
-          <a href="perfil-crianca.html">
-            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-              <line x1="9" y1="9" x2="9.01" y2="9" />
-              <line x1="15" y1="9" x2="15.01" y2="9" />
-            </svg>
-            <span>Crianças</span>
-          </a>
-          <a href="#tutores-validar">
-            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-            <span>Tutores</span>
-          </a>
-          <a href="atividades.html">
-            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-            </svg>
-            <span>Atividades</span>
-          </a>
-          <a class="nav-exit" href="#" data-logout>
-            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M19 12H5" />
-              <path d="M12 19l-7-7 7-7" />
-            </svg>
-            <span>Sair</span>
-          </a>
-        </nav>
-
-        <div class="sidebar-footer">
-          <div class="account">
-            <div class="account-avatar" data-account-avatar>EC</div>
-            <div class="account-info">
-              <strong data-account-name>Equipe Cognita</strong>
-              <span data-account-email>admin@cognitahub.org</span>
-            </div>
-          </div>
-
-          <button class="focus-toggle" type="button" data-focus-toggle aria-pressed="false">
-            <span data-focus-label>Modo Foco</span>
+        <div class="os-topbar-actions">
+          <button class="os-icon-button focus-toggle" type="button" data-focus-toggle aria-pressed="false" aria-label="Alternar modo foco">
+            <span class="sr-only" data-focus-label>Modo Foco</span>
             <i class="focus-dot" aria-hidden="true"></i>
           </button>
+
+          <button class="os-icon-button" type="button" data-logout aria-label="Sair">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M19 12H5" />
+              <path d="M12 19l-7-7" />
+              <path d="M12 5l-7 7" />
+            </svg>
+          </button>
+
+          <div class="os-avatar" data-account-avatar>EC</div>
         </div>
-      </aside>
+      </header>
 
-      <main class="app-main admin-page">
-        <header class="journey-header">
-          <div>
-            <p class="app-kicker">Equipe Cognita</p>
-            <h1 class="app-title">Triagem e decisões</h1>
-            <p class="app-subtitle">
-              Analise cadastros, valide tutores e acompanhe o funil do MVP.
-            </p>
-          </div>
-          <a class="back-site-link" href="../index.html">
-            <span aria-hidden="true">←</span>
-            Site Cognita
-          </a>
-        </header>
+      <section class="os-status-strip admin-command-strip" aria-label="Resumo da operação">
+        <span class="os-status-pill os-status-live">
+          <i aria-hidden="true"></i>
+          <strong data-count-context>Carregando…</strong>
+        </span>
+        <a class="os-status-pill" href="#triagem">
+          Triagem <strong data-count-total>—</strong>
+        </a>
+        <a class="os-status-pill" href="#matches">
+          Pareamentos <strong data-count-matches>—</strong>
+        </a>
+        <a class="os-status-pill" href="#ciclos">
+          Ciclos
+        </a>
+      </section>
 
-        <section class="admin-filters" aria-label="Filtros do funil">
-          <button class="admin-filter active" type="button" data-admin-filter="triagem" aria-pressed="true">
-            <span>Crianças em análise</span>
-            <strong data-count-children>—</strong>
-            <small class="filter-meta">cadastros aguardando a equipe</small>
-          </button>
-          <button class="admin-filter" type="button" data-admin-filter="triagem" data-admin-focus="tutores-validar" aria-pressed="false">
-            <span>Tutores a validar</span>
-            <strong data-count-tutors>—</strong>
-            <small class="filter-meta">candidaturas recebidas</small>
-          </button>
-          <button class="admin-filter" type="button" data-admin-filter="matches" aria-pressed="false">
-            <span>Aguardando pareamento</span>
-            <strong data-count-matches>—</strong>
-            <small class="filter-meta">crianças aprovadas sem tutor</small>
-          </button>
-          <button class="admin-filter" type="button" data-admin-filter="relatorios" aria-pressed="false">
-            <span>Relatórios a liberar</span>
-            <strong>—</strong>
-            <small class="filter-meta">disponível na próxima fase</small>
-          </button>
-        </section>
+      <section class="admin-os-metrics" aria-label="Métricas do funil">
+        <a class="admin-os-metric active" href="#triagem">
+          <span>Crianças em análise</span>
+          <strong data-count-children>—</strong>
+          <small>cadastros aguardando a equipe</small>
+        </a>
 
-        <section class="admin-pipeline" aria-label="Funil de acompanhamento">
-          <article class="pipeline-col" id="triagem">
-            <header>
+        <a class="admin-os-metric" href="#tutores-validar">
+          <span>Tutores a validar</span>
+          <strong data-count-tutors>—</strong>
+          <small>candidaturas recebidas</small>
+        </a>
+
+        <a class="admin-os-metric" href="#matches">
+          <span>Aguardando pareamento</span>
+          <strong data-count-matches>—</strong>
+          <small>crianças aprovadas sem tutor</small>
+        </a>
+
+        <a class="admin-os-metric muted" href="#relatorios">
+          <span>Relatórios</span>
+          <strong>—</strong>
+          <small>disponível na próxima versão</small>
+        </a>
+      </section>
+
+      <section class="admin-os-grid" aria-label="Funil de acompanhamento">
+        <article class="os-panel admin-os-column" id="triagem">
+          <header class="admin-os-column-head">
+            <div>
+              <p class="os-kicker">Etapa 1</p>
               <h2>Triagem</h2>
-              <span data-count-triagem>—</span>
-            </header>
+            </div>
+            <span data-count-triagem>—</span>
+          </header>
 
-            <p class="app-kicker queue-label">Crianças em análise</p>
-            <div data-list-children aria-live="polite"></div>
+          <p class="os-kicker queue-label">Crianças em análise</p>
+          <div class="admin-os-list" data-list-children aria-live="polite"></div>
 
-            <p class="app-kicker queue-label" id="tutores-validar">Tutores a validar</p>
-            <div data-list-tutors aria-live="polite"></div>
-          </article>
+          <p class="os-kicker queue-label" id="tutores-validar">Tutores a validar</p>
+          <div class="admin-os-list" data-list-tutors aria-live="polite"></div>
+        </article>
 
-          <article class="pipeline-col" id="matches">
-            <header>
+        <article class="os-panel admin-os-column" id="matches">
+          <header class="admin-os-column-head">
+            <div>
+              <p class="os-kicker">Etapa 2</p>
               <h2>Pareamentos</h2>
-              <span data-count-matches>—</span>
-            </header>
+            </div>
+            <span data-count-matches>—</span>
+          </header>
 
-            <p class="app-kicker queue-label">Crianças aguardando tutor</p>
-            <div data-list-matches aria-live="polite"></div>
-          </article>
+          <p class="os-kicker queue-label">Crianças aguardando tutor</p>
+          <div class="admin-os-list" data-list-matches aria-live="polite"></div>
+        </article>
 
-          <article class="pipeline-col" id="ciclos">
-            <header>
+        <article class="os-panel admin-os-column" id="ciclos">
+          <header class="admin-os-column-head">
+            <div>
+              <p class="os-kicker">Etapa 3</p>
               <h2>Ciclos</h2>
-              <span>12</span>
-            </header>
+            </div>
+            <span>v1</span>
+          </header>
 
-            <article class="pipeline-card">
-              <div class="card-id">
-                <span class="card-avatar" aria-hidden="true">JP</span>
-                <div>
-                  <p class="app-kicker">Ciclo ativo</p>
-                  <h3>João Pereira</h3>
-                </div>
-              </div>
-              <p>Mês 2 de 6 · Tutor Maria · soma com apoio visual</p>
+          <div class="empty-state os-empty">
+            <strong>Ciclos ativos aparecem nos painéis de tutor e responsável.</strong>
+            <span>
+              Para o vídeo, use esta etapa como confirmação do fluxo: após criar o ciclo,
+              o tutor visualiza a criança e o responsável acompanha a jornada.
+            </span>
+          </div>
+        </article>
 
-              <div class="cycle-steps" aria-label="Mês 2 de 6">
-                <i class="on"></i>
-                <i class="on"></i>
-                <i></i>
-                <i></i>
-                <i></i>
-                <i></i>
-              </div>
-
-              <div class="row-actions">
-                <button class="btn btn-ghost btn-sm" type="button">Ver ciclo</button>
-              </div>
-            </article>
-
-            <article class="pipeline-card">
-              <div class="card-id">
-                <span class="card-avatar" aria-hidden="true">CR</span>
-                <div>
-                  <p class="app-kicker">Ciclo ativo</p>
-                  <h3>Camila Rocha</h3>
-                </div>
-              </div>
-              <p>Mês 4 de 6 · revisão de dificuldades e consolidação</p>
-
-              <div class="cycle-steps" aria-label="Mês 4 de 6">
-                <i class="on"></i>
-                <i class="on"></i>
-                <i class="on"></i>
-                <i class="on"></i>
-                <i></i>
-                <i></i>
-              </div>
-
-              <div class="row-actions">
-                <button class="btn btn-ghost btn-sm" type="button">Ver ciclo</button>
-              </div>
-            </article>
-          </article>
-
-          <article class="pipeline-col" id="relatorios">
-            <header>
+        <article class="os-panel admin-os-column" id="relatorios">
+          <header class="admin-os-column-head">
+            <div>
+              <p class="os-kicker">Próxima versão</p>
               <h2>Relatórios</h2>
-              <span>4</span>
-            </header>
+            </div>
+            <span>—</span>
+          </header>
 
-            <article class="pipeline-card">
-              <div class="card-id">
-                <span class="card-avatar" aria-hidden="true">JP</span>
-                <div>
-                  <p class="app-kicker">Relatório mensal</p>
-                  <h3>João Pereira</h3>
-                </div>
-              </div>
-              <p>Registro pendente de liberação para a família</p>
+          <div class="empty-state os-empty">
+            <strong>Relatórios mensais entram depois do MVP.</strong>
+            <span>
+              A versão atual prioriza cadastro, validação, pareamento, ciclo e registro de sessão.
+            </span>
+          </div>
+        </article>
+      </section>
 
-              <div class="pipeline-tags" aria-label="Estado do relatório">
-                <span>mês 1</span>
-                <span>revisado pelo tutor</span>
-              </div>
+      <div class="os-hidden-identity" hidden>
+        <span data-account-name>Equipe Cognita</span>
+        <span data-account-email>—</span>
+      </div>
+    </main>
 
-              <div class="row-actions">
-                <button class="btn btn-primary btn-sm" type="button">Liberar</button>
-                <button class="btn btn-ghost btn-sm" type="button">Revisar</button>
-              </div>
-            </article>
-
-            <article class="pipeline-card">
-              <div class="card-id">
-                <span class="card-avatar" aria-hidden="true">LC</span>
-                <div>
-                  <p class="app-kicker">Relatório inicial</p>
-                  <h3>Lia Costa</h3>
-                </div>
-              </div>
-              <p>Aguardando conclusão do pareamento antes do início do ciclo</p>
-
-              <div class="pipeline-tags" aria-label="Estado do relatório">
-                <span>pré-ciclo</span>
-                <span>bloqueado por pareamento</span>
-              </div>
-
-              <div class="row-actions">
-                <button class="btn btn-ghost btn-sm" type="button">Revisar</button>
-              </div>
-            </article>
-          </article>
-        </section>
-      </main>
-    </div>
-
-    <nav class="bottom-nav" aria-label="Menu inferior">
-      <a class="active" href="#triagem">Triagem</a>
-      <a href="#matches">Pareamentos</a>
-      <a href="#ciclos">Ciclos</a>
-      <a href="#relatorios">Relatórios</a>
-    </nav>
-
-    <script src="../js/mockData.js"></script>
-    <script src="../js/app.js"></script>
     <script type="module" src="/js/pages/admin.js"></script>
   </body>
 </html>

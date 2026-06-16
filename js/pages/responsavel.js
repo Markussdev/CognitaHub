@@ -136,67 +136,163 @@ function setCount(n) {
   setText('[data-guardian-count]', label)
 }
 
-function renderSession(record) {
-  const item = el('div', 'session-item')
+function monthsBetween(start, end) {
+  if (!start || !end) return 6
 
-  const head = el('p', 'session-head')
-  head.append(el('span', 'session-date', formatDate(record.date) ?? '—'))
-  head.append(document.createTextNode(` · ${record.activity_title ?? 'Sessão'}`))
-  item.append(head)
+  const startDate = new Date(`${start}T00:00:00Z`)
+  const endDate = new Date(`${end}T00:00:00Z`)
 
-  item.append(
-    factList([
-      fact('Foco', record.focus_area),
-      fact('Observação', record.notes),
-      fact('Próximo passo', record.next_step),
-    ])
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    return 6
+  }
+
+  const months =
+    (endDate.getUTCFullYear() - startDate.getUTCFullYear()) * 12 +
+    (endDate.getUTCMonth() - startDate.getUTCMonth())
+
+  return Math.max(1, months)
+}
+
+function currentCycleMonth(start, end) {
+  if (!start || !end) return 1
+
+  const now = new Date()
+  const startDate = new Date(`${start}T00:00:00Z`)
+  const total = monthsBetween(start, end)
+
+  if (Number.isNaN(startDate.getTime())) return 1
+
+  const elapsed =
+    (now.getUTCFullYear() - startDate.getUTCFullYear()) * 12 +
+    (now.getUTCMonth() - startDate.getUTCMonth()) +
+    1
+
+  return Math.min(Math.max(elapsed, 1), total)
+}
+
+function cycleProgressPercent(start, end) {
+  const total = monthsBetween(start, end)
+  const current = currentCycleMonth(start, end)
+  return Math.round((current / total) * 100)
+}
+
+function renderOrbit(childName, age, currentMonth, totalMonths) {
+  const orbit = el('div', 'os-orbit')
+  orbit.style.setProperty('--total', totalMonths)
+
+  const center = el('div', 'os-orbit-center')
+  center.append(
+    el('strong', null, childName ?? 'Criança'),
+    el('span', null, age != null ? `${age} anos` : 'Ciclo Cognita')
   )
 
+  const ring = el('div', 'os-orbit-ring')
+
+  for (let i = 1; i <= totalMonths; i += 1) {
+    const stateClass = i === currentMonth ? 'active' : i < currentMonth ? 'done' : ''
+    const dot = el('span', `os-orbit-dot ${stateClass}`.trim(), String(i))
+    dot.style.setProperty('--i', i)
+    dot.style.setProperty('--total', totalMonths)
+    ring.append(dot)
+  }
+
+  orbit.append(ring, center)
+  return orbit
+}
+
+function renderSession(record) {
+  const item = el('article', 'session-item os-session-item')
+
+  const head = el('header', 'os-session-head')
+  head.append(
+    el('span', 'session-date os-session-date', formatDate(record.date) ?? '—'),
+    el('strong', null, record.activity_title ?? 'Sessão registrada')
+  )
+
+  const body = el('div', 'os-session-body')
+
+  if (record.focus_area) {
+    const p = el('p')
+    p.append(el('strong', null, 'Foco '), document.createTextNode(record.focus_area))
+    body.append(p)
+  }
+
+  if (record.notes) {
+    const p = el('p')
+    p.append(el('strong', null, 'Observação '), document.createTextNode(record.notes))
+    body.append(p)
+  }
+
+  if (record.next_step) {
+    const p = el('p')
+    p.append(el('strong', null, 'Próximo '), document.createTextNode(record.next_step))
+    body.append(p)
+  }
+
+  if (record.duration_minutes) {
+    body.append(el('span', 'os-session-duration', `${record.duration_minutes} min`))
+  }
+
+  item.append(head, body)
   return item
 }
 
 function renderSessions(sessions) {
   const rows = Array.isArray(sessions) ? sessions : []
+
   if (!rows.length) {
     return el('p', 'session-empty', 'O tutor ainda não registrou sessões deste ciclo.')
   }
 
-  const list = el('div', 'session-list')
+  const list = el('div', 'session-list os-session-list')
   rows.forEach((record) => list.append(renderSession(record)))
   return list
 }
 
-function renderChildCard(child) {
-  const status = STATUS[child.status] ?? FALLBACK_STATUS
-  const learning = Array.isArray(child.learning_profiles)
-    ? child.learning_profiles[0]
-    : child.learning_profiles
-  const activeCycle = getActiveCycle(child)
-  const tutor = getCycleTutor(activeCycle)
+function renderCycleSummary(child, cycle, tutor, progress, currentMonth, totalMonths) {
+  const panel = el('aside', 'os-panel os-summary-panel')
 
-  const card = el('article', 'pipeline-card')
-
-  const identity = el('div', 'card-id')
-  const avatar = el('span', 'card-avatar', initials(child.name))
-  avatar.setAttribute('aria-hidden', 'true')
-  const heading = el('div')
-  heading.append(el('p', 'app-kicker', 'Criança'), el('h3', null, child.name ?? 'Criança'))
-  identity.append(avatar, heading)
-
-  const age = ageFrom(child.birth_date)
-  const meta = el(
-    'p',
-    null,
-    [age != null ? `${age} anos` : null, child.school_year].filter(Boolean).join(' · ') ||
-      'Perfil cadastrado'
+  panel.append(
+    el('div', 'os-panel-title', 'Resumo do acompanhamento'),
+    el('p', 'os-progress-number', `${progress}%`),
+    el('p', 'os-muted', `mês ${currentMonth} de ${totalMonths}`)
   )
 
-  const tags = el('div', 'pipeline-tags')
-  tags.append(el('span', `badge ${status.badge}`, status.label))
+  const bars = el('div', 'os-progress-bars')
+  bars.style.setProperty('--total-months', totalMonths)
 
-  const text = el('p', null, status.text)
+  for (let i = 1; i <= totalMonths; i += 1) {
+    const stateClass = i === currentMonth ? 'active' : i < currentMonth ? 'done' : ''
+    bars.append(el('span', stateClass))
+  }
 
-  const details = el('details', 'card-details')
+  const latestSession = Array.isArray(cycle.sessions) ? cycle.sessions[0] : null
+
+  const facts = factList([
+    fact('Tutor responsável', tutor?.name),
+    fact('Contato com o tutor', 'Pelo Cognita Hub'),
+    fact('Início', formatDate(cycle.start_date)),
+    fact('Fim previsto', formatDate(cycle.end_date)),
+    fact('Objetivo principal', cycle.main_goal),
+    fact('Plano inicial', cycle.current_plan),
+  ])
+
+  panel.append(bars, facts)
+
+  if (latestSession?.next_step || cycle.current_plan || cycle.main_goal) {
+    const next = el('div', 'os-next-card')
+    next.append(
+      el('span', null, 'Próximo passo'),
+      el('p', null, latestSession?.next_step || cycle.current_plan || cycle.main_goal)
+    )
+    panel.append(next)
+  }
+
+  return panel
+}
+
+function renderProfileDetails(child, learning) {
+  const details = el('details', 'card-details os-details')
   details.append(
     el('summary', null, 'Ver dados do cadastro'),
     factList([
@@ -210,27 +306,95 @@ function renderChildCard(child) {
       fact('Rotina', child.routine_notes),
     ])
   )
+  return details
+}
 
-  card.append(identity, meta, tags, text)
+function renderChildCard(child) {
+  const status = STATUS[child.status] ?? FALLBACK_STATUS
+  const learning = Array.isArray(child.learning_profiles)
+    ? child.learning_profiles[0]
+    : child.learning_profiles
+  const activeCycle = getActiveCycle(child)
+  const tutor = getCycleTutor(activeCycle)
+  const age = ageFrom(child.birth_date)
+
+  const totalMonths = activeCycle ? monthsBetween(activeCycle.start_date, activeCycle.end_date) : 6
+  const currentMonth = activeCycle ? currentCycleMonth(activeCycle.start_date, activeCycle.end_date) : 1
+  const progress = activeCycle ? cycleProgressPercent(activeCycle.start_date, activeCycle.end_date) : 0
+
+  const wrapper = el('article', 'pipeline-card os-cycle')
+
+  const hero = el('section', 'os-hero-card')
+  const orbit = renderOrbit(child.name, age, currentMonth, totalMonths)
+
+  const copy = el('div', 'os-hero-copy')
+  copy.append(
+    el('p', 'os-kicker', 'Jornada da criança'),
+    el(
+      'h2',
+      null,
+      activeCycle
+        ? `${child.name ?? 'Criança'} está em acompanhamento com ${tutor?.name ?? 'a equipe Cognita'}.`
+        : `${child.name ?? 'Criança'} está em ${status.label.toLowerCase()}.`
+    ),
+    el(
+      'p',
+      'os-copy',
+      activeCycle
+        ? 'A família acompanha aqui as sessões registradas pelo tutor, o progresso do ciclo e os próximos passos do apoio educacional.'
+        : status.text
+    )
+  )
+
+  const chips = el('div', 'os-chip-row')
+  chips.append(el('span', 'os-chip os-chip-ok', status.label))
+
+  if (activeCycle && tutor?.name) {
+    chips.append(el('span', 'os-chip os-chip-warn', 'Tutor vinculado'))
+  }
+
+  copy.append(chips)
+
+  const mascot = document.createElement('img')
+  mascot.className = 'os-mascot'
+  mascot.src = '../assets/mascot-hero-wave.png'
+  mascot.alt = ''
+
+  hero.append(orbit, copy, mascot)
+
+  const grid = el('section', 'os-dashboard-grid')
 
   if (activeCycle) {
-    card.append(
-      el('p', 'app-kicker', 'Acompanhamento iniciado'),
+    const sessionsPanel = el('div', 'os-panel os-timeline-panel')
+    sessionsPanel.id = 'sessoes'
+    sessionsPanel.append(el('div', 'os-panel-title', 'Linha do tempo das sessões'))
+    sessionsPanel.append(renderSessions(activeCycle.sessions))
+
+    const summaryPanel = renderCycleSummary(child, activeCycle, tutor, progress, currentMonth, totalMonths)
+
+    grid.append(sessionsPanel, summaryPanel)
+  } else {
+    const statusPanel = el('div', 'os-panel os-timeline-panel')
+    statusPanel.append(
+      el('div', 'os-panel-title', 'Status do cadastro'),
+      el('p', 'os-copy', status.text)
+    )
+
+    const summaryPanel = el('aside', 'os-panel os-summary-panel')
+    summaryPanel.append(
+      el('div', 'os-panel-title', 'Perfil cadastrado'),
       factList([
-        fact('Tutor responsável', tutor?.name),
-        fact('Contato com o tutor', 'Pelo Cognita Hub'),
-        fact('Início', formatDate(activeCycle.start_date)),
-        fact('Fim previsto', formatDate(activeCycle.end_date)),
-        fact('Objetivo principal', activeCycle.main_goal),
-        fact('Plano inicial', activeCycle.current_plan),
+        fact('Criança', child.name),
+        fact('Idade', age != null ? `${age} anos` : null),
+        fact('Ano escolar', child.school_year),
       ])
     )
 
-    card.append(el('p', 'app-kicker queue-label', 'Últimas sessões'), renderSessions(activeCycle.sessions))
+    grid.append(statusPanel, summaryPanel)
   }
 
-  card.append(details)
-  return card
+  wrapper.append(hero, grid, renderProfileDetails(child, learning))
+  return wrapper
 }
 
 function showEmpty() {

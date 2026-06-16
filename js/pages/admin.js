@@ -1,4 +1,5 @@
 import { requireRole, signOut } from '../lib/auth.js'
+import { setupFocusMode } from '../lib/ui.js'
 import {
   getPendingTutors,
   getChildrenWaitingReview,
@@ -14,6 +15,8 @@ import {
 } from '../data/matching.js'
 
 const session = await requireRole('admin')
+
+setupFocusMode()
 
 const listChildren = document.querySelector('[data-list-children]')
 const listTutors = document.querySelector('[data-list-tutors]')

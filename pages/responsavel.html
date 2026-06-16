@@ -8,89 +8,75 @@
     <link rel="stylesheet" href="../css/tokens.css" />
     <link rel="stylesheet" href="../css/styles.css" />
     <link rel="stylesheet" href="../css/internal.css" />
+    <link rel="stylesheet" href="../css/cognita-os.css" />
   </head>
-  <body class="app-body">
-    <div class="app-shell">
-      <aside class="sidebar" aria-label="Menu do responsável">
-        <a class="sidebar-logo sidebar-logo-clean" href="../index.html">
-          <img src="../assets/logo-retangular-transparent.png" alt="CognitaHub" />
+
+  <body class="app-body os-body">
+    <main class="os-page">
+      <header class="os-topbar">
+        <a class="os-brand" href="../index.html" aria-label="Voltar para o site Cognita Hub">
+          <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
+          <strong>Cognita Hub</strong>
         </a>
 
-        <div class="sidebar-context">
-          <span class="sidebar-role">Responsável</span>
-          <strong data-guardian-name>Responsável</strong>
-          <small data-guardian-count>Carregando…</small>
+        <div class="os-topbar-copy">
+          <p class="os-kicker">Responsável e criança</p>
+          <h1 data-guardian-title>Carregando...</h1>
+          <p data-guardian-subtitle></p>
         </div>
 
-        <p class="nav-label">Painel</p>
-
-        <nav class="sidebar-nav">
-          <a class="active" href="responsavel.html">
-            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <rect x="3" y="3" width="7" height="9" rx="1.5" />
-              <rect x="14" y="3" width="7" height="5" rx="1.5" />
-              <rect x="14" y="12" width="7" height="9" rx="1.5" />
-              <rect x="3" y="16" width="7" height="5" rx="1.5" />
-            </svg>
-            <span>Resumo</span>
-          </a>
-          <a href="atividades.html">
-            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <div class="os-topbar-actions">
+          <a class="os-icon-link" href="atividades.html" aria-label="Abrir atividades">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M9 11l3 3L22 4" />
               <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
             </svg>
-            <span>Atividades</span>
           </a>
-          <a class="nav-exit" href="#" data-logout>
-            <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+
+          <a class="os-action-primary" href="#sessoes">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 19V5" />
+              <path d="M4 19h16" />
+              <path d="M8 15l3-3 3 2 5-6" />
+            </svg>
+            <span>Ver acompanhamento</span>
+          </a>
+
+          <button class="os-icon-button focus-toggle" type="button" data-focus-toggle aria-pressed="false" aria-label="Alternar modo foco">
+            <span class="sr-only" data-focus-label>Modo Foco</span>
+            <i class="focus-dot" aria-hidden="true"></i>
+          </button>
+
+          <button class="os-icon-button" type="button" data-logout aria-label="Sair">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M19 12H5" />
               <path d="M12 19l-7-7 7-7" />
             </svg>
-            <span>Sair</span>
-          </a>
-        </nav>
-
-        <div class="sidebar-footer">
-          <div class="account">
-            <div class="account-avatar" data-account-avatar>R</div>
-            <div class="account-info">
-              <strong data-account-name>Responsável</strong>
-              <span data-account-email>—</span>
-            </div>
-          </div>
-
-          <button class="focus-toggle" type="button" data-focus-toggle aria-pressed="false">
-            <span data-focus-label>Modo Foco</span>
-            <i class="focus-dot" aria-hidden="true"></i>
           </button>
+
+          <div class="os-avatar" data-account-avatar>R</div>
         </div>
-      </aside>
+      </header>
 
-      <main class="app-main journey-page">
-        <header class="journey-header">
-          <div>
-            <p class="app-kicker">Responsável e criança</p>
-            <h1 class="app-title" data-guardian-title>Carregando…</h1>
-            <p class="app-subtitle" data-guardian-subtitle></p>
-          </div>
-          <a class="back-site-link" href="../index.html">
-            <span aria-hidden="true">←</span>
-            Site Cognita
-          </a>
-        </header>
+      <section class="os-status-strip" aria-label="Resumo do responsável">
+        <span class="os-status-pill os-status-live">
+          <i aria-hidden="true"></i>
+          <strong data-guardian-count>Carregando...</strong>
+        </span>
+        <span class="os-status-pill">acompanhamento familiar</span>
+      </section>
 
-        <section aria-label="Cadastros das crianças">
-          <div data-guardian-children aria-live="polite"></div>
-          <div data-guardian-empty hidden></div>
-        </section>
-      </main>
-    </div>
+      <section aria-label="Cadastros das crianças">
+        <div class="os-cycles" data-guardian-children aria-live="polite"></div>
+        <div data-guardian-empty hidden></div>
+      </section>
 
-    <nav class="bottom-nav" aria-label="Menu inferior">
-      <a class="active" href="responsavel.html">Resumo</a>
-      <a href="atividades.html">Atividades</a>
-      <a href="#" data-logout>Sair</a>
-    </nav>
+      <div class="os-hidden-identity" hidden>
+        <span data-guardian-name></span>
+        <span data-account-name></span>
+        <span data-account-email></span>
+      </div>
+    </main>
 
     <script type="module" src="/js/pages/responsavel.js"></script>
   </body>
