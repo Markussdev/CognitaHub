@@ -4462,3 +4462,39 @@ h3 {
     grid-column: auto;
   }
 }
+
+/* ============================================================
+   Polimento do Login — aproxima do Cognita OS (sem refazer HTML)
+   Vence por ordem de carga; sem !important.
+   ============================================================ */
+.login-portal {
+  background:
+    radial-gradient(circle at 82% 12%, rgba(139, 111, 232, 0.34), transparent 36%),
+    radial-gradient(circle at 8% 78%, rgba(56, 36, 160, 0.30), transparent 38%),
+    linear-gradient(135deg, #07031d 0%, #130939 50%, #1b0d48 100%);
+}
+
+.login-card {
+  border-radius: 30px;
+  border-color: rgba(186, 168, 255, 0.22);
+  box-shadow: 0 26px 80px rgba(0, 0, 0, 0.38);
+}
+
+.login-story h1 {
+  letter-spacing: -0.04em;
+}
+
+.login-form-area h2 {
+  letter-spacing: -0.045em;
+}
+
+/* Erro de login num cartão legível, só quando há texto */
+.login-form-area .fine-print:not(:empty) {
+  margin-top: 14px;
+  border: 1px solid rgba(255, 168, 0, 0.28);
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: rgba(255, 168, 0, 0.09);
+  color: var(--ink);
+  font-weight: 600;
+}

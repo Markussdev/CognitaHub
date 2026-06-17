@@ -3,134 +3,57 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Perfil Pedagogico | CognitaHub</title>
+    <title>Perfil Pedagógico | CognitaHub</title>
     <link rel="icon" type="image/png" href="../assets/logo-icon-transparent.png" />
     <link rel="stylesheet" href="../css/tokens.css" />
     <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="../css/internal.css" />
+    <link rel="stylesheet" href="../css/cognita-os.css" />
   </head>
-  <body class="app-body">
-    <div class="app-shell">
-      <aside class="sidebar" aria-label="Menu do perfil pedagógico">
-        <a class="sidebar-logo sidebar-logo-clean" href="../index.html">
-          <img src="../assets/logo-retangular-transparent.png" alt="CognitaHub" />
+  <body class="app-body os-body profile-os-body">
+    <main class="os-page profile-os-page">
+      <header class="os-topbar">
+        <a class="os-brand" href="../index.html" aria-label="Voltar para o site Cognita Hub">
+          <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
+          <strong>Cognita Hub</strong>
         </a>
-        <nav class="sidebar-nav">
-          <a href="responsavel.html">Painel</a>
-          <a class="active" href="perfil-crianca.html">Perfil da criança</a>
-          <a href="atividades.html">Atividades</a>
-          <a href="tutor.html">Tutor</a>
-          <a href="admin.html">Admin</a>
-        </nav>
-        <div class="sidebar-footer">
-          <button class="btn btn-soft" type="button" data-focus-toggle aria-pressed="false">Modo Foco</button>
-        </div>
-      </aside>
 
-      <main class="app-main">
-        <div class="app-topbar">
-          <div>
-            <p class="eyebrow">Perfil pedagógico inicial</p>
-            <h1 data-mock="crianca.nome">João Pereira</h1>
-          </div>
-          <a class="btn btn-ghost" href="responsavel.html">Voltar ao painel</a>
+        <div class="os-topbar-copy">
+          <p class="os-kicker">Perfil pedagógico</p>
+          <h1 data-profile-name>Carregando…</h1>
+          <p data-profile-subtitle></p>
         </div>
 
-        <section class="app-hero profile-hero">
-          <div>
-            <p class="eyebrow">Base para personalização</p>
-            <h2>Um resumo claro para orientar tutor, família e equipe.</h2>
-            <p>
-              Esta tela conecta cadastro, perfil pedagógico, plano atual, último registro e próximo passo do ciclo.
-            </p>
-          </div>
-          <img src="../assets/sticker.png" alt="" aria-hidden="true" />
-        </section>
+        <div class="os-topbar-actions">
+          <a class="os-link-btn" href="responsavel.html" data-back-link>
+            <span aria-hidden="true">←</span>
+            Voltar ao painel
+          </a>
+          <button class="os-icon-button focus-toggle" type="button" data-focus-toggle aria-pressed="false" aria-label="Alternar modo foco">
+            <span class="sr-only" data-focus-label>Modo Foco</span>
+            <i class="focus-dot" aria-hidden="true"></i>
+          </button>
+          <button class="os-icon-button" type="button" data-logout aria-label="Sair">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M19 12H5" />
+              <path d="M12 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <div class="os-avatar" data-account-avatar>C</div>
+        </div>
+      </header>
 
-        <section class="profile-summary-grid" aria-label="Resumo do perfil da criança">
-          <article class="app-card profile-summary-card">
-            <span>Idade</span>
-            <strong data-mock="crianca.idade">7 anos</strong>
-          </article>
-          <article class="app-card profile-summary-card">
-            <span>Foco atual</span>
-            <strong>Contagem e soma simples</strong>
-          </article>
-          <article class="app-card profile-summary-card">
-            <span>Preferencia</span>
-            <strong>Visual + concreto</strong>
-          </article>
-          <article class="app-card profile-summary-card">
-            <span>Tempo recomendado</span>
-            <strong>Atividades curtas</strong>
-          </article>
-        </section>
+      <section aria-label="Perfil da criança">
+        <div data-profile-content aria-live="polite"></div>
+        <div data-profile-empty hidden></div>
+      </section>
 
-        <section class="dashboard-grid">
-          <article class="app-card profile-detail-card">
-            <h2>Perfil de aprendizagem</h2>
-            <dl class="profile-data-list">
-              <div>
-                <dt>Interesses</dt>
-                <dd>Objetos do cotidiano, jogos e personagens.</dd>
-              </div>
-              <div>
-                <dt>Evitar</dt>
-                <dd>Textos longos e muitas instruções ao mesmo tempo.</dd>
-              </div>
-              <div>
-                <dt>Plano atual</dt>
-                <dd data-session-output="topic" data-mock="sessaoAtual.tema">Soma com apoio visual</dd>
-              </div>
-              <div>
-                <dt>Último registro</dt>
-                <dd data-session-output="notes" data-mock="observacaoTutor.texto">Respondeu melhor com exemplos da rotina.</dd>
-              </div>
-              <div>
-                <dt>Próximo passo</dt>
-                <dd data-session-output="nextStep">Comparar quantidades com objetos da casa.</dd>
-              </div>
-            </dl>
-          </article>
+      <div class="os-hidden-identity" hidden>
+        <span data-account-name></span>
+        <span data-account-email></span>
+      </div>
+    </main>
 
-          <aside class="app-card">
-            <h2>Sinais para o tutor</h2>
-            <ul class="task-list">
-              <li class="list-row">
-                <div>
-                  <strong>Formato principal</strong>
-                  <span>Usar imagens, objetos concretos e passo a passo.</span>
-                </div>
-                <span class="tag">Visual</span>
-              </li>
-              <li class="list-row">
-                <div>
-                  <strong>Ritmo</strong>
-                  <span>Dividir atividades em blocos curtos.</span>
-                </div>
-                <span class="tag blue">Curto</span>
-              </li>
-              <li class="list-row">
-                <div>
-                  <strong>Registro</strong>
-                  <span>Observar engajamento, dificuldade e próximo passo.</span>
-                </div>
-                <span class="tag wine">Sessão</span>
-              </li>
-            </ul>
-          </aside>
-        </section>
-      </main>
-    </div>
-
-    <nav class="bottom-nav" aria-label="Menu inferior">
-      <a href="responsavel.html">Painel</a>
-      <a class="active" href="perfil-crianca.html">Perfil</a>
-      <a href="atividades.html">Atividades</a>
-      <a href="tutor.html">Tutor</a>
-      <a href="admin.html">Admin</a>
-    </nav>
-
-    <script src="../js/mockData.js"></script>
-    <script src="../js/app.js"></script>
+    <script type="module" src="/js/pages/perfil-crianca.js"></script>
   </body>
 </html>
