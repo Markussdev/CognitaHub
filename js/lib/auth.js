@@ -6,6 +6,12 @@ const HOME_BY_ROLE = {
   admin: '/pages/admin.html',
 }
 
+const BLOCKED_STATUSES = ['rejected', 'inactive']
+
+export function isBlockedStatus(status) {
+  return BLOCKED_STATUSES.includes(status)
+}
+
 export async function signUp({ email, password, name, phone, role }) {
   if (!['guardian', 'tutor'].includes(role)) {
     return { error: new Error('Tipo de cadastro invalido') }
@@ -88,9 +94,7 @@ export async function requireRole(...allowedRoles) {
     return null
   }
 
-  // Role certa mas acesso não liberado (pending/rejected/inactive):
-  // volta pro login, que mostra a mensagem de status.
-  if (profile.status !== 'active') {
+  if (isBlockedStatus(profile.status)) {
     await supabase.auth.signOut()
     window.location.replace('/pages/login.html')
     return null

@@ -7,6 +7,7 @@ const session = await requireRole('tutor')
 
 const cyclesBox = document.querySelector('[data-tutor-cycles]')
 const emptyBox = document.querySelector('[data-tutor-empty]')
+const REVIEW_STATUSES = ['pending', 'waiting_review', 'tutor_pending']
 
 setupFocusMode()
 
@@ -103,14 +104,21 @@ function showEmpty() {
   emptyBox.hidden = false
 
   const box = el('div', 'empty-state os-empty')
-  box.append(
-    el('strong', null, 'Você ainda não possui crianças vinculadas.'),
-    el(
-      'span',
-      null,
-      'Quando a equipe Cognita criar um pareamento, ele aparecerá aqui com o perfil da criança e o espaço para registrar as sessões.'
+  if (REVIEW_STATUSES.includes(session.profile.status)) {
+    box.append(
+      el('strong', null, 'Candidatura em analise'),
+      el('span', null, 'A equipe Cognita vai revisar seu perfil e sua disponibilidade antes de liberar matches com criancas.')
     )
-  )
+  } else {
+    box.append(
+      el('strong', null, 'Voce ainda nao possui criancas vinculadas.'),
+      el(
+        'span',
+        null,
+        'Quando a equipe Cognita criar um pareamento, ele aparecera aqui com o perfil da crianca e o espaco para registrar as sessoes.'
+      )
+    )
+  }
   emptyBox.replaceChildren(box)
 }
 
@@ -408,6 +416,13 @@ function setupOpenSessionShortcut() {
 async function loadCycles() {
   emptyBox.hidden = true
   cyclesBox.replaceChildren(el('div', 'skeleton'))
+
+  if (REVIEW_STATUSES.includes(session.profile.status)) {
+    setCount(0)
+    showEmpty()
+    setupOpenSessionShortcut()
+    return
+  }
 
   const { data, error } = await getTutorCycles(session.user.id)
 

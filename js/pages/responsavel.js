@@ -6,6 +6,7 @@ const session = await requireRole('guardian')
 
 const childrenBox = document.querySelector('[data-guardian-children]')
 const emptyBox = document.querySelector('[data-guardian-empty]')
+const REVIEW_STATUSES = ['pending', 'waiting_review', 'tutor_pending']
 
 setupFocusMode()
 
@@ -400,21 +401,36 @@ function renderChildCard(child) {
 function showEmpty() {
   childrenBox.replaceChildren()
   emptyBox.hidden = false
+  emptyBox.replaceChildren()
+
   const box = el('div', 'empty-state')
-  box.append(
-    el('strong', null, 'Nenhum cadastro de criança encontrado.'),
-    el(
-      'span',
-      null,
-      'Se você acabou de concluir o cadastro, atualize a página em alguns instantes. Qualquer dúvida, fale com a equipe Cognita.'
+  if (REVIEW_STATUSES.includes(session.profile.status)) {
+    box.append(
+      el('strong', null, 'Cadastro em analise'),
+      el('span', null, 'A equipe Cognita esta revisando as informacoes da crianca. Voce sera avisado quando houver uma atualizacao.')
     )
-  )
+  } else {
+    box.append(
+      el('strong', null, 'Nenhum cadastro de crianca encontrado.'),
+      el(
+        'span',
+        null,
+        'Se voce acabou de concluir o cadastro, atualize a pagina em alguns instantes. Qualquer duvida, fale com a equipe Cognita.'
+      )
+    )
+  }
   emptyBox.append(box)
 }
 
 async function loadChildren() {
   emptyBox.hidden = true
   childrenBox.replaceChildren(el('div', 'skeleton'))
+
+  if (REVIEW_STATUSES.includes(session.profile.status)) {
+    setCount(0)
+    showEmpty()
+    return
+  }
 
   const { data, error } = await getGuardianChildren(session.user.id)
 

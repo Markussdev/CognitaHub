@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase.js'
-import { signIn, redirectByRole } from '../lib/auth.js'
+import { isBlockedStatus, signIn, redirectByRole } from '../lib/auth.js'
 import { completePendingSignup } from '../lib/pending-signup.js'
 
 const form = document.querySelector('[data-login-form]')
@@ -41,6 +41,8 @@ function clearLoginMessage() {
 
 function getStatusMessage(status) {
   const messages = {
+    waiting_review: 'Seu cadastro esta em analise pela equipe Cognita.',
+    tutor_pending: 'Sua candidatura de tutor esta em analise pela equipe Cognita.',
     pending: 'Seu cadastro ainda esta em analise pela equipe Cognita.',
     rejected: 'Seu cadastro nao foi aprovado. Entre em contato com a equipe Cognita.',
     inactive: 'Seu acesso esta inativo. Entre em contato com a equipe Cognita.',
@@ -88,7 +90,7 @@ async function redirectExistingSession() {
     return
   }
 
-  if (profile.status !== 'active') {
+  if (isBlockedStatus(profile.status)) {
     await supabase.auth.signOut()
     showLoginMessage(getStatusMessage(profile.status), 'warn')
     return
@@ -125,7 +127,7 @@ if (form) {
       return
     }
 
-    if (profile.status !== 'active') {
+    if (isBlockedStatus(profile.status)) {
       await supabase.auth.signOut()
       showLoginMessage(getStatusMessage(profile.status), 'warn')
       return

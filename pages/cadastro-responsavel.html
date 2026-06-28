@@ -185,6 +185,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
 /* chips */
 .chip-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
 .chip-group[aria-disabled="true"]{opacity:.4;pointer-events:none}
+.chip-group.is-invalid,.radio-group.is-invalid{outline:2px solid var(--bad);border-radius:10px}
 .chip{
   padding:8px 16px;border-radius:var(--r-pill);
   border:1.5px solid var(--border-strong);background:var(--surface);
@@ -713,8 +714,19 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
     } else if (errS2) {
       errS2.classList.remove('is-visible');
     }
+    panelEl.querySelectorAll('.chip-group').forEach(function(group){
+      var unknown = panelEl.querySelector('[data-naosabe="' + group.id + '"]');
+      var valid = group.querySelector('[aria-pressed="true"]') || (unknown && unknown.checked);
+      group.classList.toggle('is-invalid', !valid);
+      if (!valid) ok = false;
+    });
+    panelEl.querySelectorAll('.radio-group').forEach(function(group){
+      var valid = group.querySelector('input[type="radio"]:checked');
+      group.classList.toggle('is-invalid', !valid);
+      if (!valid) ok = false;
+    });
     if (!ok) {
-      var first = panelEl.querySelector('[aria-invalid="true"]');
+      var first = panelEl.querySelector('[aria-invalid="true"]') || panelEl.querySelector('.chip-group.is-invalid .chip') || panelEl.querySelector('.radio-group.is-invalid input');
       if (first) first.focus();
     }
     return ok;
