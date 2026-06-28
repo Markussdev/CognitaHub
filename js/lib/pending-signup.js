@@ -9,7 +9,12 @@ import { submitTutorApplication, submitGuardianRegistration } from '../data/sign
 const KEY = 'cognita:pending-signup'
 
 export function stashPendingSignup(kind, email, payload) {
-  localStorage.setItem(KEY, JSON.stringify({ kind, email, payload }))
+  const nextPayload = { ...payload }
+  if (kind === 'guardian' && !nextPayload.childId) {
+    nextPayload.childId = crypto.randomUUID()
+  }
+
+  localStorage.setItem(KEY, JSON.stringify({ kind, email, payload: nextPayload }))
 }
 
 export async function completePendingSignup(user) {
@@ -42,5 +47,5 @@ export async function completePendingSignup(user) {
   }
 
   localStorage.removeItem(KEY)
-  return { done: true, kind: pending.kind }
+  return { done: true, kind: pending.kind, alreadyFinalized: result.alreadyFinalized === true }
 }

@@ -35,11 +35,9 @@ export async function submitTutorApplication(tutorId, application) {
       return {}
     }
 
-    // Já analisada (approved/rejected): não sobrescreve a decisão da equipe.
-    return {
-      error: new Error('Já existe uma candidatura finalizada para este tutor.'),
-      step: 'tutor_applications_existing',
-    }
+    // Ja analisada (approved/rejected): nao sobrescreve a decisao da equipe
+    // e nao mantem pending-signup em loop no login.
+    return { alreadyFinalized: true, step: 'tutor_applications_existing' }
   }
 
   const { error } = await supabase
@@ -54,7 +52,7 @@ export async function submitTutorApplication(tutorId, application) {
 export async function submitGuardianRegistration(guardianId, registration) {
   // id gerado no cliente para encadear learning_profiles e consents
   // sem precisar de SELECT de retorno (independe de policy de leitura).
-  const childId = crypto.randomUUID()
+  const childId = registration.childId ?? crypto.randomUUID()
   const child = registration.child
   const profile = registration.learningProfile
   const consent = registration.consent
@@ -72,7 +70,7 @@ export async function submitGuardianRegistration(guardianId, registration) {
     status: 'waiting_review',
   })
 
-  if (childError) return { error: childError, step: 'children' }
+  if (childError && childError.code !== '23505') return { error: childError, step: 'children' }
 
   const { error: profileError } = await supabase.from('learning_profiles').insert({
     child_id: childId,
