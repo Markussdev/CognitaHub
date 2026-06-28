@@ -1607,10 +1607,11 @@ body.os-body.focus-mode .os-topbar {
 .library-os-body .script-tags span {
   display: inline-flex;
   align-items: center;
-  border: 1px solid var(--os-line);
+  border: 1px solid rgba(183, 156, 255, 0.32);
   border-radius: 999px;
   padding: 3px 10px;
-  color: var(--os-muted);
+  background: rgba(183, 156, 255, 0.12);
+  color: var(--os-soft);
   font-size: 0.74rem;
   font-weight: 800;
 }

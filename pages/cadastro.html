@@ -1,94 +1,199 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Participar | CognitaHub</title>
-    <link rel="icon" type="image/png" href="../assets/logo-icon-transparent.png" />
-    <link rel="stylesheet" href="../css/tokens.css" />
-    <link rel="stylesheet" href="../css/styles.css" />
-  </head>
-  <body>
-    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro | Cognita Hub</title>
+  <link rel="icon" type="image/png" href="../assets/logo-icon-transparent.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Baloo+2:wght@600;700&display=swap" rel="stylesheet">
 
-    <header class="auth-header">
-      <a class="auth-brand" href="../index.html" aria-label="Cognita Hub início">
-        <span class="brand-icon">
-          <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
-        </span>
-        <span class="brand-copy">
-          <strong>Cognita Hub</strong>
-          <small>TEA + Matemática</small>
-        </span>
+<style>
+:root{
+  --paper:#FCF7F1;--surface:#FFFFFF;--surface-soft:rgba(255,255,255,.66);
+  --soft:#F8F3FF;--indigo-soft:#F2F0FB;--warm-soft:#FFF4E2;
+  --ink:#26051F;--ink-soft:#625363;
+  --brand:#141162;--brand-deep:#540042;--accent:#FFA800;
+  --border:rgba(20,17,98,.11);--border-strong:rgba(20,17,98,.20);
+  --shadow-soft:0 10px 28px rgba(35,2,32,.055);
+  --shadow-card:0 16px 36px rgba(35,2,32,.075);
+  --r-md:14px;--r-lg:22px;--r-xl:30px;--r-pill:999px;
+  --font:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --display:"Baloo 2",var(--font);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:var(--font);color:var(--ink);line-height:1.6;font-size:17px;
+  -webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;
+  background:
+    radial-gradient(circle at 18% 8%,rgba(255,200,80,.13),transparent 26%),
+    radial-gradient(circle at 82% 6%,rgba(20,17,98,.07),transparent 26%),
+    radial-gradient(circle at 54% 44%,rgba(255,238,200,.14),transparent 22%),
+    radial-gradient(circle at 12% 68%,rgba(20,17,98,.045),transparent 24%),
+    radial-gradient(circle at 86% 80%,rgba(255,175,60,.08),transparent 22%),
+    linear-gradient(180deg,#fffdf8 0%,#fdf9f2 32%,#faf5ec 62%,#f8f3ea 100%);
+}
+.wrap{max-width:1160px;margin-inline:auto;padding-inline:24px}
+
+/* header */
+.auth-hd{position:sticky;top:0;z-index:30;background:rgba(255,252,247,.82);backdrop-filter:blur(12px) saturate(1.1);border-bottom:1px solid rgba(20,17,98,.08)}
+.auth-hd .row{display:flex;align-items:center;gap:20px;height:72px}
+.brand{display:flex;align-items:center;gap:11px;color:var(--ink);text-decoration:none;flex-shrink:0}
+.brand-mark{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--brand);overflow:hidden;flex-shrink:0;box-shadow:0 8px 20px rgba(20,17,98,.14)}
+.brand-mark img{width:80%;height:80%;object-fit:contain}
+.brand-copy strong{font-family:var(--display);font-size:1.06rem;line-height:1;color:var(--ink)}
+.brand-copy small{display:block;font-size:.74rem;color:var(--ink-soft)}
+.auth-hd-right{display:flex;align-items:center;gap:14px;margin-left:auto}
+.back-link{color:var(--brand);font-size:.9rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:5px;border-radius:8px;padding:4px 2px}
+.back-link:hover{text-decoration:underline}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border-radius:var(--r-pill);font-family:var(--font);font-weight:700;font-size:16px;cursor:pointer;border:2px solid transparent;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;text-decoration:none;line-height:1}
+.btn--primary{background:var(--accent);color:var(--ink)}
+.btn--primary:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(255,168,0,.36)}
+.btn--outline{background:transparent;color:var(--brand);border-color:var(--border-strong)}
+.btn--outline:hover{border-color:var(--brand);background:rgba(20,17,98,.04)}
+.btn--soft{background:rgba(255,168,0,.12);color:var(--ink);border-color:rgba(255,168,0,.38)}
+.btn--soft:hover{background:var(--accent);border-color:var(--accent)}
+.btn--sm{min-height:40px;padding:0 16px;font-size:14px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offset:2px;box-shadow:0 0 0 2px var(--paper);border-radius:6px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brand)}
+
+/* layout */
+.auth-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px}
+
+/* intro */
+.path-intro{text-align:center;max-width:52ch;margin-bottom:52px}
+.path-intro h1{font-size:clamp(1.8rem,3.5vw,2.4rem);font-weight:700;line-height:1.15;color:#30142d;margin-top:8px;margin-bottom:12px}
+.path-intro p{color:var(--ink-soft);font-size:1rem}
+
+/* path grid */
+.path-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:22px;
+  width:100%;
+  max-width:720px;
+}
+
+/* path cards */
+.path-card{
+  display:flex;flex-direction:column;align-items:flex-start;
+  position:relative;overflow:hidden;
+  border-radius:var(--r-xl);
+  padding:36px 32px 32px;
+  border:1.5px solid var(--border);
+  box-shadow:var(--shadow-card);
+  text-decoration:none;
+  color:var(--ink);
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+  background:rgba(255,255,255,.72);
+  backdrop-filter:blur(8px);
+}
+.path-card::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;
+  opacity:0;transition:opacity .18s ease;
+  background:radial-gradient(circle at 70% 80%,rgba(255,168,0,.14),transparent 52%);
+  pointer-events:none;
+}
+.path-card--tut::before{
+  background:radial-gradient(circle at 70% 80%,rgba(20,17,98,.10),transparent 52%);
+}
+.path-card:hover{transform:translateY(-3px);box-shadow:0 24px 54px rgba(35,2,32,.11);border-color:rgba(20,17,98,.22)}
+.path-card:hover::before{opacity:1}
+.path-card:focus-visible{outline:2px solid var(--brand);outline-offset:3px;box-shadow:0 0 0 3px var(--paper);border-radius:var(--r-xl)}
+
+.path-card-tag{font-size:12px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--brand);margin-bottom:20px}
+.path-card--tut .path-card-tag{color:var(--brand-deep)}
+
+.path-card-mascot{
+  width:110px;height:110px;object-fit:contain;
+  margin-bottom:20px;
+  filter:drop-shadow(0 10px 18px rgba(35,2,32,.13));
+  align-self:center;
+}
+
+.path-card h2{font-size:1.3rem;font-weight:700;color:#30142d;margin-bottom:10px;line-height:1.18}
+.path-card p{font-size:.95rem;color:var(--ink-soft);line-height:1.6;margin-bottom:24px;flex:1}
+
+/* accent line on hover */
+.path-card::after{
+  content:"";position:absolute;inset:0 auto 0 0;width:3px;border-radius:0 2px 2px 0;
+  background:var(--accent);opacity:0;transition:opacity .18s ease;
+}
+.path-card:hover::after{opacity:1}
+.path-card--tut::after{background:var(--brand)}
+
+/* already have account */
+.auth-already{margin-top:32px;text-align:center;font-size:.9rem;color:var(--ink-soft)}
+.auth-already a{color:var(--brand);font-weight:700;text-decoration:none}
+.auth-already a:hover{text-decoration:underline}
+
+@media(max-width:640px){
+  .path-grid{grid-template-columns:1fr;max-width:420px}
+  .path-card{padding:28px 24px 26px}
+  .path-card-mascot{width:90px;height:90px}
+  .path-intro{margin-bottom:36px}
+}
+@media(max-width:520px){
+  .back-link-text{display:none}
+  .auth-hd .row{height:62px}
+  .auth-main{padding:40px 20px}
+}
+@media(prefers-reduced-motion:reduce){
+  .path-card,.path-card::before,.path-card::after{transition:none}
+}
+</style>
+
+</head>
+<body>
+<header class="auth-hd">
+  <div class="wrap row">
+    <a class="brand" href="../index.html" aria-label="Cognita Hub — página inicial">
+      <span class="brand-mark"><img src="../assets/logo-icon-transparent.png" alt="" /></span>
+      <span class="brand-copy"><strong>Cognita Hub</strong><small>TEA + Matemática</small></span>
+    </a>
+    <div class="auth-hd-right">
+      <a class="back-link" href="../index.html">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><polyline points="13 16 7 10 13 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="back-link-text">Voltar ao site</span>
       </a>
-      <div class="auth-header-actions">
-        <a class="auth-link-btn" href="../index.html">Voltar ao site</a>
-        <a class="auth-primary-btn" href="login.html">Entrar</a>
-      </div>
-    </header>
+      <a class="btn btn--soft btn--sm" href="login.html">Entrar</a>
+    </div>
+  </div>
+</header>
 
-    <main class="login-portal" id="conteudo">
-      <div class="login-card">
-        <div class="login-story">
-          <div>
-            <p class="eyebrow">Junte-se ao Cognita Hub</p>
-            <h1>Escolha como participar.</h1>
-            <p>
-              O Cognita organiza cadastros, validações e ciclos de acompanhamento. Escolha o caminho correto para
-              iniciar o fluxo.
-            </p>
-          </div>
+<main class="auth-main">
 
-          <div class="login-mascot-wrap">
-            <img src="../assets/sticker.png" alt="" aria-hidden="true" />
-          </div>
+  <div class="path-intro">
+    <p class="eyebrow">Cadastro</p>
+    <h1>Por qual caminho você entra?</h1>
+    <p>Escolha uma opção para começar. O processo leva alguns minutos e pode ser retomado depois.</p>
+  </div>
 
-          <div class="login-mini-stats">
-            <div>
-              <strong>3 perfis</strong>
-              <span>responsável, tutor e equipe</span>
-            </div>
-            <div>
-              <strong>1 fluxo</strong>
-              <span>validação antes do ciclo</span>
-            </div>
-          </div>
-        </div>
+  <div class="path-grid" role="list">
 
-        <section class="login-form-area" aria-labelledby="cadastro-title">
-          <p class="eyebrow">Cadastro</p>
-          <h2 id="cadastro-title">Como você deseja participar?</h2>
-          <p class="login-helper">
-            Selecione seu perfil para acessar o formulário certo. O acompanhamento só começa depois da análise da equipe
-            Cognita e da disponibilidade de um tutor compatível.
-          </p>
+    <a class="path-card" href="cadastro-responsavel.html" role="listitem">
+      <span class="path-card-tag">Para famílias</span>
+      <img class="path-card-mascot" src="../assets/mascot-hero-wave.png" alt="" aria-hidden="true" />
+      <h2>Sou responsável</h2>
+      <p>Cadastre sua criança com TEA e acompanhe cada sessão de apoio em matemática — em linguagem simples, sem laudo.</p>
+      <span class="btn btn--primary">Cadastrar criança</span>
+    </a>
 
-          <div class="route-choice-grid" aria-label="Tipos de cadastro">
-            <article class="route-choice-card">
-              <span>Responsável</span>
-              <h3>Cadastre uma criança</h3>
-              <p>Informe os dados do responsável, da criança e as necessidades educacionais para entrar na fila de análise.</p>
-              <a class="btn btn-primary" href="cadastro-responsavel.html">Sou responsável</a>
-            </article>
+    <a class="path-card path-card--tut" href="cadastro-tutor.html" role="listitem">
+      <span class="path-card-tag">Para voluntários</span>
+      <img class="path-card-mascot" src="../assets/gatoprancheta-sem-fundo.png" alt="" aria-hidden="true" />
+      <h2>Sou tutor voluntário</h2>
+      <p>Ajude uma criança a progredir em matemática. A equipe Cognita valida e orienta cada tutor com plano e suporte.</p>
+      <span class="btn btn--outline">Candidatar-me</span>
+    </a>
 
-            <article class="route-choice-card">
-              <span>Tutor voluntário</span>
-              <h3>Ofereça acompanhamento</h3>
-              <p>Cadastre sua formação, experiência e disponibilidade para passar pela validação da equipe Cognita.</p>
-              <a class="btn btn-primary" href="cadastro-tutor.html">Sou tutor voluntário</a>
-            </article>
+  </div>
 
-            <article class="route-choice-card">
-              <span>Equipe</span>
-              <h3>Acesse a operação</h3>
-              <p>Use o login para acompanhar inscrições, validar tutores, criar matches e monitorar ciclos ativos.</p>
-              <a class="btn btn-ghost" href="login.html">Sou da equipe</a>
-            </article>
-          </div>
-        </section>
-      </div>
-    </main>
+  <p class="auth-already">Já tem conta? <a href="login.html">Entrar</a></p>
 
-    <script src="../js/app.js"></script>
-  </body>
+</main>
+</body>
 </html>

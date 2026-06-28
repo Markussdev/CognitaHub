@@ -7,14 +7,46 @@ const emailInput = document.querySelector('[data-login-email]')
 const passwordInput = document.querySelector('[data-login-password]')
 const errorBox = document.querySelector('[data-login-error]')
 
-function getStatusMessage(status) {
-  const messages = {
-    pending: 'Seu cadastro ainda está em análise pela equipe Cognita.',
-    rejected: 'Seu cadastro não foi aprovado. Entre em contato com a equipe Cognita.',
-    inactive: 'Seu acesso está inativo. Entre em contato com a equipe Cognita.',
+function showLoginMessage(message, type = 'error') {
+  if (!errorBox) return
+
+  errorBox.dataset.type = type
+  const title = errorBox.querySelector('[data-login-error-title]')
+  const detail = errorBox.querySelector('[data-login-error-detail]')
+
+  if (title && detail) {
+    title.textContent = type === 'warn' ? 'Acesso em analise' : 'Nao foi possivel entrar'
+    detail.textContent = message
+  } else {
+    errorBox.textContent = message
   }
 
-  return messages[status] ?? 'Seu acesso ainda não está liberado.'
+  errorBox.classList.add('is-visible')
+}
+
+function clearLoginMessage() {
+  if (!errorBox) return
+
+  errorBox.classList.remove('is-visible')
+  const title = errorBox.querySelector('[data-login-error-title]')
+  const detail = errorBox.querySelector('[data-login-error-detail]')
+
+  if (title && detail) {
+    title.textContent = ''
+    detail.textContent = ''
+  } else {
+    errorBox.textContent = ''
+  }
+}
+
+function getStatusMessage(status) {
+  const messages = {
+    pending: 'Seu cadastro ainda esta em analise pela equipe Cognita.',
+    rejected: 'Seu cadastro nao foi aprovado. Entre em contato com a equipe Cognita.',
+    inactive: 'Seu acesso esta inativo. Entre em contato com a equipe Cognita.',
+  }
+
+  return messages[status] ?? 'Seu acesso ainda nao esta liberado.'
 }
 
 async function getProfile(userId) {
@@ -39,14 +71,13 @@ async function redirectExistingSession() {
 
   if (!user) return
 
-  // Completa cadastro pendente (confirmação de email ligada ou falha anterior).
   const pendingResult = await completePendingSignup(user)
 
   if (pendingResult.error) {
-    // Não deixa o responsável entrar no painel sem a criança gravada.
     await supabase.auth.signOut()
-    errorBox.textContent =
-      'Sua conta foi acessada, mas não foi possível concluir o cadastro. Tente novamente ou fale com a equipe Cognita.'
+    showLoginMessage(
+      'Sua conta foi acessada, mas nao foi possivel concluir o cadastro. Tente novamente ou fale com a equipe Cognita.'
+    )
     return
   }
 
@@ -59,7 +90,7 @@ async function redirectExistingSession() {
 
   if (profile.status !== 'active') {
     await supabase.auth.signOut()
-    errorBox.textContent = getStatusMessage(profile.status)
+    showLoginMessage(getStatusMessage(profile.status), 'warn')
     return
   }
 
@@ -68,38 +99,38 @@ async function redirectExistingSession() {
 
 await redirectExistingSession()
 
-form.addEventListener('submit', async (event) => {
-  event.preventDefault()
+if (form) {
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault()
 
-  errorBox.textContent = ''
+    clearLoginMessage()
 
-  const email = emailInput.value.trim()
-  const password = passwordInput.value
+    const email = emailInput.value.trim()
+    const password = passwordInput.value
 
-  const { user, profile, error } = await signIn(email, password)
+    const { user, profile, error } = await signIn(email, password)
 
-  if (error || !profile) {
-    errorBox.textContent = 'E-mail ou senha incorretos. Tente novamente.'
-    return
-  }
+    if (error || !profile) {
+      showLoginMessage('E-mail ou senha incorretos. Tente novamente.')
+      return
+    }
 
-  // Completa cadastro pendente ANTES da checagem de status: o tutor fica
-  // "pending" até a aprovação, mas a candidatura precisa ser gravada.
-  const pendingResult = await completePendingSignup(user)
+    const pendingResult = await completePendingSignup(user)
 
-  if (pendingResult.error) {
-    // Não deixa o responsável entrar no painel sem a criança gravada.
-    await supabase.auth.signOut()
-    errorBox.textContent =
-      'Sua conta foi acessada, mas não foi possível concluir o cadastro. Tente novamente ou fale com a equipe Cognita.'
-    return
-  }
+    if (pendingResult.error) {
+      await supabase.auth.signOut()
+      showLoginMessage(
+        'Sua conta foi acessada, mas nao foi possivel concluir o cadastro. Tente novamente ou fale com a equipe Cognita.'
+      )
+      return
+    }
 
-  if (profile.status !== 'active') {
-    await supabase.auth.signOut()
-    errorBox.textContent = getStatusMessage(profile.status)
-    return
-  }
+    if (profile.status !== 'active') {
+      await supabase.auth.signOut()
+      showLoginMessage(getStatusMessage(profile.status), 'warn')
+      return
+    }
 
-  redirectByRole(profile.role)
-})
+    redirectByRole(profile.role)
+  })
+}

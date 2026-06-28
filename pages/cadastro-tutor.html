@@ -1,113 +1,733 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cadastro do Tutor | CognitaHub</title>
-    <link rel="icon" type="image/png" href="../assets/logo-icon-transparent.png" />
-    <link rel="stylesheet" href="../css/tokens.css" />
-    <link rel="stylesheet" href="../css/styles.css" />
-  </head>
-  <body>
-    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro do Tutor | Cognita Hub</title>
+  <link rel="icon" type="image/png" href="../assets/logo-icon-transparent.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Baloo+2:wght@600;700&display=swap" rel="stylesheet">
 
-    <header class="auth-header">
-      <a class="auth-brand" href="../index.html" aria-label="Cognita Hub início">
-        <span class="brand-icon">
-          <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
-        </span>
-        <span class="brand-copy">
-          <strong>Cognita Hub</strong>
-          <small>TEA + Matemática</small>
-        </span>
+<style>
+:root{
+  --paper:#FCF7F1;--surface:#FFFFFF;--surface-soft:rgba(255,255,255,.66);
+  --soft:#F8F3FF;--indigo-soft:#F2F0FB;--warm-soft:#FFF4E2;
+  --ink:#26051F;--ink-soft:#625363;
+  --brand:#141162;--brand-deep:#540042;--accent:#FFA800;
+  --border:rgba(20,17,98,.11);--border-strong:rgba(20,17,98,.20);
+  --shadow-soft:0 10px 28px rgba(35,2,32,.055);
+  --shadow-card:0 16px 36px rgba(35,2,32,.075);
+  --r-md:14px;--r-lg:22px;--r-xl:30px;--r-pill:999px;
+  --font:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --display:"Baloo 2",var(--font);
+  --ok:#1C7C54;--warn:#B3590A;--bad:#A3123A;
+  --ok-soft:rgba(28,124,84,.09);--warn-soft:rgba(179,89,10,.09);--bad-soft:rgba(163,18,58,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:var(--font);color:var(--ink);line-height:1.6;font-size:17px;
+  -webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;
+  background:
+    radial-gradient(circle at 18% 8%,rgba(255,200,80,.13),transparent 26%),
+    radial-gradient(circle at 82% 6%,rgba(20,17,98,.07),transparent 26%),
+    radial-gradient(circle at 54% 44%,rgba(255,238,200,.14),transparent 22%),
+    radial-gradient(circle at 12% 68%,rgba(20,17,98,.045),transparent 24%),
+    radial-gradient(circle at 86% 80%,rgba(255,175,60,.08),transparent 22%),
+    linear-gradient(180deg,#fffdf8 0%,#fdf9f2 32%,#faf5ec 62%,#f8f3ea 100%);
+}
+.wrap{max-width:1160px;margin-inline:auto;padding-inline:24px}
+
+/* header */
+.auth-hd{position:sticky;top:0;z-index:30;background:rgba(255,252,247,.82);backdrop-filter:blur(12px) saturate(1.1);border-bottom:1px solid rgba(20,17,98,.08)}
+.auth-hd .row{display:flex;align-items:center;gap:20px;height:72px}
+.brand{display:flex;align-items:center;gap:11px;color:var(--ink);text-decoration:none;flex-shrink:0}
+.brand-mark{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--brand);overflow:hidden;flex-shrink:0;box-shadow:0 8px 20px rgba(20,17,98,.14)}
+.brand-mark img{width:80%;height:80%;object-fit:contain}
+.brand-copy strong{font-family:var(--display);font-size:1.06rem;line-height:1;color:var(--ink)}
+.brand-copy small{display:block;font-size:.74rem;color:var(--ink-soft)}
+.auth-hd-right{display:flex;align-items:center;gap:14px;margin-left:auto}
+.back-link{color:var(--brand);font-size:.9rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:5px;border-radius:8px;padding:4px 2px}
+.back-link:hover{text-decoration:underline}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border-radius:var(--r-pill);font-family:var(--font);font-weight:700;font-size:16px;cursor:pointer;border:2px solid transparent;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;text-decoration:none;line-height:1}
+.btn--primary{background:var(--accent);color:var(--ink)}
+.btn--primary:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(255,168,0,.36)}
+.btn--outline{background:transparent;color:var(--brand);border-color:var(--border-strong)}
+.btn--outline:hover{border-color:var(--brand);background:rgba(20,17,98,.04)}
+.btn--soft{background:rgba(255,168,0,.12);color:var(--ink);border-color:rgba(255,168,0,.38)}
+.btn--soft:hover{background:var(--accent);border-color:var(--accent)}
+.btn--sm{min-height:40px;padding:0 16px;font-size:14px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offset:2px;box-shadow:0 0 0 2px var(--paper);border-radius:6px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brand)}
+
+/* layout */
+.auth-main{flex:1;display:flex;flex-direction:column;align-items:center;padding:48px 24px 64px}
+
+/* stepper */
+.stepper-wrap{width:100%;max-width:620px;margin-bottom:36px}
+.stepper-announce{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.step-counter{text-align:center;font-size:.82rem;color:var(--ink-soft);margin-bottom:16px;font-weight:700;letter-spacing:.04em}
+.stepper{display:flex;align-items:center;list-style:none;position:relative}
+.stepper-item{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;position:relative}
+.stepper-item:not(:last-child)::after{
+  content:"";position:absolute;left:calc(50% + 18px);right:calc(-50% + 18px);top:14px;
+  height:2px;background:var(--border);z-index:0;transition:background 250ms ease;
+}
+.stepper-item.is-done:not(:last-child)::after{background:rgba(28,124,84,.3)}
+.stepper-dot{
+  width:28px;height:28px;border-radius:50%;display:grid;place-items:center;
+  font-family:var(--display);font-size:.8rem;font-weight:700;
+  border:2px solid var(--border);background:var(--surface);color:var(--ink-soft);
+  position:relative;z-index:1;transition:all 200ms ease;flex-shrink:0;
+}
+.stepper-item.is-done .stepper-dot{background:var(--ok-soft);border-color:rgba(28,124,84,.4);color:var(--ok)}
+.stepper-item.is-active .stepper-dot{background:var(--brand);border-color:var(--brand);color:#fff;box-shadow:0 0 0 4px rgba(20,17,98,.12)}
+.stepper-label{font-size:.72rem;font-weight:700;color:var(--ink-soft);text-align:center;line-height:1.2;max-width:72px}
+.stepper-item.is-active .stepper-label{color:var(--brand)}
+.stepper-item.is-done .stepper-label{color:var(--ok)}
+
+/* wizard card */
+.wizard-card{width:100%;max-width:620px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--shadow-card);overflow:hidden}
+.step-panel{display:none}
+.step-panel.is-active{display:block}
+.step-head{padding:32px 36px 28px;border-bottom:1px solid var(--border)}
+.step-eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brand);margin-bottom:8px}
+.step-title{font-size:1.4rem;font-weight:700;color:#30142d;line-height:1.2;margin-bottom:6px}
+.step-desc{font-size:.94rem;color:var(--ink-soft);line-height:1.55}
+.step-body{padding:28px 36px 0}
+
+/* fields */
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:20px}
+.field label{font-size:.9rem;font-weight:700;color:var(--ink)}
+.field-hint{font-size:.8rem;color:var(--ink-soft);line-height:1.4}
+.field input,.field select,.field textarea{
+  width:100%;min-height:48px;padding:11px 14px;
+  border:1.5px solid var(--border-strong);border-radius:var(--r-md);
+  font:inherit;font-size:1rem;color:var(--ink);background:var(--surface);
+  transition:border-color 150ms ease,box-shadow 150ms ease;appearance:none;
+}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(20,17,98,.10)}
+.field input::placeholder{color:rgba(98,83,99,.38)}
+.field input[aria-invalid="true"],.field select[aria-invalid="true"],.field textarea[aria-invalid="true"]{border-color:var(--bad);box-shadow:0 0 0 3px rgba(163,18,58,.08)}
+.chip-group.is-invalid{outline:2px solid var(--bad);border-radius:10px}
+.field textarea{min-height:90px;resize:vertical;line-height:1.5}
+.field select{background-image:url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='6 9 12 15 18 9' stroke='%23625363' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:40px;cursor:pointer}
+.field-error{display:none;align-items:center;gap:6px;font-size:.82rem;color:var(--bad);font-weight:700;margin-top:2px}
+.field-error.is-visible{display:flex}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* password */
+.field-pw{position:relative}
+.field-pw input{padding-right:50px}
+.btn-show-pw{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;padding:9px;cursor:pointer;color:var(--ink-soft);display:grid;place-items:center;border-radius:8px;transition:color 140ms}
+.btn-show-pw:hover{color:var(--brand)}
+.btn-show-pw:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px;box-shadow:none}
+.pw-strength{display:flex;gap:4px;margin-top:6px}
+.pw-bar{flex:1;height:3px;border-radius:var(--r-pill);background:var(--border);transition:background 200ms}
+.pw-bar.s1{background:var(--bad)}.pw-bar.s2{background:var(--warn)}.pw-bar.s3,.pw-bar.s4{background:var(--ok)}
+.pw-strength-label{font-size:.76rem;color:var(--ink-soft);margin-top:4px}
+
+/* age alert */
+.field-alert{display:none;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:var(--r-md);font-size:.88rem;line-height:1.5;font-weight:700;margin-top:6px}
+.field-alert--warn{background:var(--warn-soft);border:1px solid rgba(179,89,10,.22);color:var(--warn)}
+.field-alert.is-visible{display:flex}
+.field-alert p{font-weight:400;font-size:.84rem;margin-top:2px;opacity:.85}
+.field-alert-icon{flex-shrink:0;margin-top:1px}
+
+/* radio group */
+.radio-group{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.radio-item{display:flex;align-items:center;gap:14px;padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--r-md);cursor:pointer;transition:border-color 150ms,background 150ms;font-size:.94rem;color:var(--ink)}
+.radio-item:has(input:checked){border-color:var(--brand);background:rgba(20,17,98,.04);color:var(--brand);font-weight:700}
+.radio-item input[type=radio]{
+  appearance:none;-webkit-appearance:none;
+  width:18px;height:18px;min-height:unset;padding:0;border-radius:50%;flex-shrink:0;cursor:pointer;
+  border:2px solid var(--border-strong);background:var(--surface);
+  transition:border-color 150ms ease,background 150ms ease,box-shadow 150ms ease;
+}
+.radio-item input[type=radio]:checked{border-color:var(--brand);background:var(--brand);box-shadow:inset 0 0 0 4px var(--surface)}
+.radio-item input[type=radio]:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+
+
+/* chips */
+.chip-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.chip{padding:8px 16px;border-radius:var(--r-pill);border:1.5px solid var(--border-strong);background:var(--surface);font:700 .86rem/1 var(--font);color:var(--ink-soft);cursor:pointer;transition:all 150ms ease;min-height:38px;display:inline-flex;align-items:center}
+.chip:hover{border-color:var(--brand);color:var(--brand);background:rgba(20,17,98,.04)}
+.chip[aria-pressed="true"]{background:rgba(20,17,98,.08);border-color:var(--brand);color:var(--brand)}
+.chip:focus-visible{outline:2px solid var(--brand);outline-offset:2px;box-shadow:0 0 0 2px var(--paper);border-radius:var(--r-pill)}
+
+/* terms list */
+.terms-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.terms-list-item{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:.88rem;line-height:1.55}
+.terms-list-n{width:26px;height:26px;border-radius:50%;flex-shrink:0;background:var(--indigo-soft);display:grid;place-items:center;font-family:var(--display);font-size:.75rem;font-weight:700;color:var(--brand);margin-top:1px}
+.terms-list-item strong{display:block;font-weight:700;color:var(--ink);margin-bottom:2px}
+.terms-list-item p{color:var(--ink-soft);font-size:.84rem;margin-top:2px}
+
+/* consent */
+.consent-list{display:flex;flex-direction:column;gap:12px}
+.consent-item{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;border:1.5px solid var(--border);border-radius:var(--r-md);transition:border-color 150ms,background 150ms;cursor:pointer}
+.consent-item:has(input:checked){border-color:rgba(28,124,84,.4);background:var(--ok-soft)}
+.consent-item input[type=checkbox]{width:20px;height:20px;flex-shrink:0;margin-top:2px;cursor:pointer;accent-color:var(--brand)}
+.consent-item label{cursor:pointer}
+.consent-item strong{display:block;font-size:.92rem;font-weight:700;color:var(--ink);line-height:1.3}
+.consent-item p{font-size:.84rem;color:var(--ink-soft);margin-top:4px;line-height:1.5}
+
+/* nav */
+.step-nav{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:24px 36px 32px;border-top:1px solid var(--border);margin-top:28px}
+.step-nav--first{justify-content:flex-end}
+
+/* success */
+.success-body{display:flex;flex-direction:column;align-items:center;text-align:center;padding:48px 36px 52px}
+.success-mascot{width:120px;object-fit:contain;margin-bottom:24px;filter:drop-shadow(0 10px 18px rgba(35,2,32,.12))}
+.success-title{font-size:1.55rem;font-weight:700;color:#30142d;margin-bottom:12px;line-height:1.2}
+.success-lead{color:var(--ink-soft);font-size:.98rem;max-width:42ch;margin-bottom:32px;line-height:1.65}
+.success-steps{list-style:none;display:flex;flex-direction:column;gap:10px;width:100%;max-width:380px;text-align:left;margin-bottom:36px}
+.success-steps li{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--r-md);background:rgba(255,255,255,.72);border:1px solid var(--border);font-size:.9rem;color:var(--ink)}
+.success-step-n{width:24px;height:24px;border-radius:50%;flex-shrink:0;background:var(--indigo-soft);display:grid;place-items:center;font-family:var(--display);font-size:.76rem;font-weight:700;color:var(--brand)}
+
+.success-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+@media(max-width:640px){
+  .wizard-card{border-radius:var(--r-lg)}
+  .step-head,.step-body,.step-nav{padding-inline:24px}
+  .step-head{padding-top:26px;padding-bottom:22px}
+  .field-row{grid-template-columns:1fr}
+  .stepper-label{display:none}
+  .stepper-item::after{top:13px}
+  .auth-main{padding:32px 16px 48px}
+  .comfort-scale{flex-wrap:wrap}
+}
+@media(max-width:520px){
+  .back-link-text{display:none}
+  .auth-hd .row{height:62px}
+}
+@media(prefers-reduced-motion:reduce){
+  .btn,.field input,.chip,.radio-item,.comfort-btn,.consent-item,.pw-bar,.stepper-dot,.stepper-item::after{transition:none}
+}
+</style>
+
+</head>
+<body>
+<header class="auth-hd">
+  <div class="wrap row">
+    <a class="brand" href="../index.html" aria-label="Cognita Hub — página inicial">
+      <span class="brand-mark"><img src="../assets/logo-icon-transparent.png" alt="" /></span>
+      <span class="brand-copy"><strong>Cognita Hub</strong><small>TEA + Matemática</small></span>
+    </a>
+    <div class="auth-hd-right">
+      <a class="back-link" href="cadastro.html">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><polyline points="13 16 7 10 13 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="back-link-text">Tipo de cadastro</span>
       </a>
-      <div class="auth-header-actions">
-        <a class="auth-link-btn" href="cadastro.html">Trocar perfil</a>
-        <a class="auth-primary-btn" href="login.html">Entrar</a>
+      <a class="btn btn--soft btn--sm" href="login.html">Já tenho conta</a>
+    </div>
+  </div>
+</header>
+
+<main class="auth-main">
+
+  <span class="stepper-announce" id="step-announce" role="status" aria-live="polite"></span>
+
+  <div class="stepper-wrap">
+    <p class="step-counter" id="step-counter" aria-hidden="true">Etapa 1 de 4</p>
+    <ol class="stepper" aria-label="Progresso do cadastro de tutor">
+      <li class="stepper-item is-active" id="stp-1">
+        <span class="stepper-dot" aria-hidden="true">1</span>
+        <span class="stepper-label">Sua conta</span>
+      </li>
+      <li class="stepper-item" id="stp-2">
+        <span class="stepper-dot" aria-hidden="true">2</span>
+        <span class="stepper-label">Candidatura</span>
+      </li>
+      <li class="stepper-item" id="stp-3">
+        <span class="stepper-dot" aria-hidden="true">3</span>
+        <span class="stepper-label">Termos</span>
+      </li>
+      <li class="stepper-item" id="stp-4">
+        <span class="stepper-dot" aria-hidden="true">4</span>
+        <span class="stepper-label">Enviada</span>
+      </li>
+    </ol>
+  </div>
+
+  <form class="wizard-card" data-tutor-form>
+
+    <!-- ── ETAPA 1 — Conta do tutor ── -->
+    <section class="step-panel is-active" id="panel-1" aria-labelledby="h-s1">
+      <div class="step-head">
+        <p class="step-eyebrow">Etapa 1</p>
+        <h1 class="step-title" id="h-s1">Crie sua conta</h1>
+        <p class="step-desc">Informe seus dados para criar o acesso. Nome social é aceito.</p>
       </div>
-    </header>
+      <div class="step-body">
 
-    <main class="login-portal" id="conteudo">
-      <div class="login-card">
-        <div class="login-story">
-          <div>
-            <p class="eyebrow">Cadastro do tutor</p>
-            <h1>Participe como tutor voluntário.</h1>
-            <p>
-              A equipe Cognita analisa os dados do tutor antes de liberar matches com crianças em acompanhamento.
-            </p>
+        <div class="field">
+          <label for="tt-nome">Nome completo</label>
+          <span class="field-hint" id="hint-tt-nome">Nome social aceito — como você prefere ser chamado.</span>
+          <input type="text" id="tt-nome" name="nome" autocomplete="name" required aria-required="true" aria-describedby="hint-tt-nome" />
+        </div>
+
+        <div class="field">
+          <label for="tt-email">E-mail</label>
+          <input type="email" id="tt-email" name="email" autocomplete="email" inputmode="email" required aria-required="true" placeholder="seu@email.com" />
+          <!-- TODO(wiring): auth.signUp usa este e-mail com role:'tutor' -->
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="tt-tel">Telefone</label>
+            <span class="field-hint" id="hint-tt-tel">Visível apenas para a equipe Cognita.</span>
+            <input type="tel" id="tt-tel" name="telefone" autocomplete="tel" inputmode="tel" aria-describedby="hint-tt-tel" placeholder="(00) 00000-0000" required aria-required="true" data-phone-mask />
           </div>
-
-          <div class="login-mascot-wrap">
-            <img src="../assets/mascot-hero-wave.png" alt="" aria-hidden="true" />
-          </div>
-
-          <div class="login-mini-stats">
-            <div>
-              <strong>1:1</strong>
-              <span>criança e tutor</span>
-            </div>
-            <div>
-              <strong>6 meses</strong>
-              <span>ciclo acompanhado</span>
+          <div class="field">
+            <label for="tt-nasc">Data de nascimento</label>
+            <span class="field-hint" id="hint-tt-nasc">Tutores devem ter 18 anos ou mais.</span>
+            <input type="date" id="tt-nasc" name="nasc" required aria-required="true" aria-describedby="hint-tt-nasc age-alert-tutor" data-age-check-tutor />
+            <div class="field-alert field-alert--warn" id="age-alert-tutor" role="alert" aria-live="polite">
+              <svg class="field-alert-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1.2" fill="currentColor"/></svg>
+              <div>
+                <span data-age-msg>É preciso ter 18 anos ou mais para ser tutor voluntário.</span>
+                <p data-age-detail></p>
+              </div>
             </div>
           </div>
         </div>
 
-        <section class="login-form-area" aria-labelledby="cadastro-tutor-title">
-          <p class="eyebrow">Tutor voluntário</p>
-          <h2 id="cadastro-tutor-title">Informações para validação.</h2>
-          <p class="login-helper">
-            O cadastro do tutor fica com status de validação. A equipe Cognita entrará em contato antes de qualquer
-            vínculo com uma criança.
-          </p>
+        <div class="field-row">
+          <div class="field">
+            <label for="tt-senha">Senha</label>
+            <div class="field-pw">
+              <input type="password" id="tt-senha" name="senha" autocomplete="new-password" required aria-required="true" aria-describedby="pw-label-tutor" data-pw-strength />
+              <button type="button" class="btn-show-pw" aria-label="Mostrar senha" data-toggle-pw="tt-senha">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div class="pw-strength" aria-hidden="true" data-strength-bars="tt-senha">
+              <div class="pw-bar" data-bar></div><div class="pw-bar" data-bar></div><div class="pw-bar" data-bar></div><div class="pw-bar" data-bar></div>
+            </div>
+            <span class="pw-strength-label" id="pw-label-tutor" aria-live="polite"></span>
+          </div>
+          <div class="field">
+            <label for="tt-senha2">Confirmar senha</label>
+            <div class="field-pw">
+              <input type="password" id="tt-senha2" name="senha2" autocomplete="new-password" required aria-required="true" />
+              <button type="button" class="btn-show-pw" aria-label="Mostrar senha" data-toggle-pw="tt-senha2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <span class="field-error" id="err-senha2">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1.2" fill="currentColor"/></svg>
+              As senhas não coincidem.
+            </span>
+          </div>
+        </div>
 
-          <form class="signup-panel active" data-tutor-form>
-            <div class="form-grid">
-              <div class="form-field">
-                <label for="tutor-nome">Nome</label>
-                <input id="tutor-nome" name="name" type="text" required />
-              </div>
-              <div class="form-field">
-                <label for="tutor-email">Email</label>
-                <input id="tutor-email" name="email" type="email" required />
-              </div>
-              <div class="form-field">
-                <label for="tutor-phone">Telefone</label>
-                <input id="tutor-phone" name="phone" type="tel" />
-              </div>
-              <div class="form-field">
-                <label for="tutor-password">Senha</label>
-                <input id="tutor-password" name="password" type="password" autocomplete="new-password" required />
-              </div>
-              <div class="form-field">
-                <label for="formacao">Formação</label>
-                <input id="formacao" name="formation" type="text" required />
-              </div>
-              <div class="form-field">
-                <label for="linkedin">LinkedIn</label>
-                <input id="linkedin" name="linkedin" type="url" />
-              </div>
-              <div class="form-field full">
-                <label for="experiencia">Experiência com TEA, matemática ou educação</label>
-                <textarea id="experiencia" name="experience"></textarea>
-              </div>
-              <div class="form-field full">
-                <label for="motivacao">Por que voce quer ser tutor?</label>
-                <textarea id="motivacao" name="motivation"></textarea>
-              </div>
-            </div>
-            <div class="form-actions">
-              <button class="btn btn-primary" type="submit">Enviar voluntariado</button>
-              <a class="btn btn-ghost" href="tutor.html">Ver exemplo do painel do tutor</a>
-            </div>
-            <p class="fine-print" data-tutor-error aria-live="polite"></p>
-            <p class="fine-print" data-tutor-success aria-live="polite"></p>
-          </form>
-        </section>
       </div>
-    </main>
+      <div class="step-nav step-nav--first">
+        <button type="button" class="btn btn--primary" data-next>Continuar</button>
+      </div>
+    </section>
 
-    <script type="module" src="/js/pages/cadastro-tutor.js"></script>
-  </body>
+    <!-- ── ETAPA 2 — Candidatura ── -->
+    <section class="step-panel" id="panel-2" aria-labelledby="h-s2">
+      <div class="step-head">
+        <p class="step-eyebrow">Etapa 2</p>
+        <h2 class="step-title" id="h-s2">Sobre você</h2>
+        <p class="step-desc">Essas informações ajudam a equipe a entender seu perfil como tutor. Não há resposta errada.</p>
+      </div>
+      <div class="step-body">
+
+        <div class="field-row">
+          <div class="field">
+            <label for="ap-form">Formação ou área</label>
+            <select id="ap-form" name="formacao" required aria-required="true">
+              <option value="" disabled selected>Selecione</option>
+              <option value="em">Ensino Médio completo</option>
+              <option value="est-lic">Estudante de licenciatura</option>
+              <option value="lic-mat">Licenciatura em Matemática</option>
+              <option value="ped">Pedagogia</option>
+              <option value="mat">Matemática</option>
+              <option value="outra-grad">Outra graduação</option>
+              <option value="outra">Outra formação</option>
+            </select>
+            <!-- TODO(wiring): formation em tutor_applications -->
+          </div>
+          <div class="field">
+            <label>Situação</label>
+            <div class="radio-group" role="radiogroup" aria-label="Situação da formação" style="margin-top:0">
+              <label class="radio-item" style="padding:10px 14px"><input type="radio" name="situacao" value="cursando"> Cursando</label>
+              <label class="radio-item" style="padding:10px 14px"><input type="radio" name="situacao" value="concluido"> Concluído</label>
+            </div>
+            <!-- TODO(wiring): situation em tutor_applications -->
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="ap-exp">Experiência com ensino <span style="font-weight:400;color:var(--ink-soft)">(opcional)</span></label>
+          <span class="field-hint" id="hint-ap-exp">Pode ser informal — reforço escolar, monitoria, trabalho voluntário. Não é eliminatório.</span>
+          <textarea id="ap-exp" name="experiencia" aria-describedby="hint-ap-exp" placeholder="Conte um pouco sobre experiências anteriores com ensino ou cuidado de crianças…"></textarea>
+          <!-- TODO(wiring): experience em tutor_applications -->
+        </div>
+
+        <div class="field">
+          <label for="ap-motiv">Por que você quer ser tutor voluntário?</label>
+          <textarea id="ap-motiv" name="motivacao" required aria-required="true" placeholder="Fique à vontade para escrever com suas próprias palavras…"></textarea>
+          <!-- TODO(wiring): motivation em tutor_applications -->
+        </div>
+
+        <div class="field">
+          <label>Você já teve experiência com crianças?</label>
+          <div class="radio-group" role="radiogroup" aria-label="Experiência com crianças">
+            <label class="radio-item"><input type="radio" name="exp_criancas" value="ensino"> Sim, em ensino ou monitoria</label>
+            <label class="radio-item"><input type="radio" name="exp_criancas" value="cuidado"> Sim, em cuidado ou convivência</label>
+            <label class="radio-item"><input type="radio" name="exp_criancas" value="pouca"> Pouca experiência</label>
+            <label class="radio-item"><input type="radio" name="exp_criancas" value="nao"> Não ainda</label>
+          </div>
+          <!-- TODO(wiring): children_experience em tutor_applications -->
+        </div>
+
+        <div class="field">
+          <label>Você já teve contato com crianças com TEA?</label>
+          <span class="field-hint" id="hint-exp-tea">Não é preciso ser especialista em TEA. Essa informação ajuda a equipe a orientar melhor sua participação.</span>
+          <div class="radio-group" role="radiogroup" aria-label="Contato com crianças com TEA" aria-describedby="hint-exp-tea">
+            <label class="radio-item"><input type="radio" name="exp_tea" value="sim"> Sim</label>
+            <label class="radio-item"><input type="radio" name="exp_tea" value="pouco"> Pouco</label>
+            <label class="radio-item"><input type="radio" name="exp_tea" value="nao"> Não</label>
+            <label class="radio-item"><input type="radio" name="exp_tea" value="nao_informar"> Prefiro não informar</label>
+          </div>
+          <!-- TODO(wiring): tea_experience em tutor_applications -->
+        </div>
+
+        <div class="field">
+          <label>Disponibilidade semanal</label>
+          <div class="chip-group" id="ap-dispon" role="group" aria-label="Disponibilidade semanal">
+            <button type="button" class="chip" aria-pressed="false">1 hora/semana</button>
+            <button type="button" class="chip" aria-pressed="false">2 horas/semana</button>
+            <button type="button" class="chip" aria-pressed="false">3+ horas/semana</button>
+          </div>
+          <span class="field-error" id="err-ap-dispon" style="margin-top:6px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1.2" fill="currentColor"/></svg>
+            Selecione ao menos uma opção.
+          </span>
+          <!-- TODO(wiring): weekly_hours em tutor_applications -->
+        </div>
+
+        <div class="field">
+          <label>Melhores períodos</label>
+          <div class="chip-group" id="ap-periodos" role="group" aria-label="Melhores períodos">
+            <button type="button" class="chip" aria-pressed="false">Manhã</button>
+            <button type="button" class="chip" aria-pressed="false">Tarde</button>
+            <button type="button" class="chip" aria-pressed="false">Noite</button>
+            <button type="button" class="chip" aria-pressed="false">Fins de semana</button>
+          </div>
+          <span class="field-error" id="err-ap-periodos" style="margin-top:6px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1.2" fill="currentColor"/></svg>
+            Selecione ao menos um período.
+          </span>
+          <!-- TODO(wiring): availability_periods em tutor_applications -->
+        </div>
+
+        <div class="field">
+          <label>Condição para participar das sessões</label>
+          <span class="field-hint" id="hint-participacao">As sessões são online. Isso nos ajuda a entender se há algo a combinar com a equipe.</span>
+          <div class="radio-group" role="radiogroup" aria-label="Condição para participar das sessões" aria-describedby="hint-participacao">
+            <label class="radio-item"><input type="radio" name="participacao" value="online"> Consigo participar online pela plataforma</label>
+            <label class="radio-item"><input type="radio" name="participacao" value="combinar"> Preciso combinar disponibilidade com a equipe</label>
+            <label class="radio-item"><input type="radio" name="participacao" value="duvidas"> Tenho dúvidas sobre como funcionam as sessões</label>
+          </div>
+          <!-- TODO(wiring): participation_condition em tutor_applications -->
+        </div>
+
+        <div class="field">
+          <label>Como você se sente seguindo um roteiro pronto?</label>
+          <span class="field-hint" id="hint-roteiro">Essa resposta não bloqueia a candidatura — é um sinal para a equipe orientar melhor sua participação.</span>
+          <div class="radio-group" role="radiogroup" aria-label="Conforto com roteiro de sessão" aria-describedby="hint-roteiro">
+            <label class="radio-item"><input type="radio" name="roteiro" value="ok"> Consigo seguir um roteiro sem dificuldade</label>
+            <label class="radio-item"><input type="radio" name="roteiro" value="adaptar"> Consigo seguir, mas gosto de adaptar com orientação</label>
+            <label class="radio-item"><input type="radio" name="roteiro" value="dificuldade"> Tenho dificuldade em seguir roteiro pronto</label>
+          </div>
+          <!-- TODO(wiring): script_comfort em tutor_applications — sinal de atenção, não bloqueia -->
+        </div>
+
+        <div class="field">
+          <label for="ap-li">LinkedIn <span style="font-weight:400;color:var(--ink-soft)">(opcional)</span></label>
+          <input type="url" id="ap-li" name="linkedin" inputmode="url" placeholder="https://linkedin.com/in/seuperfil" />
+          <!-- TODO(wiring): linkedin em tutor_applications -->
+        </div>
+
+      </div>
+      <div class="step-nav">
+        <button type="button" class="btn btn--outline" data-prev>Voltar</button>
+        <button type="button" class="btn btn--primary" data-next>Continuar</button>
+      </div>
+    </section>
+
+    <!-- ── ETAPA 3 — Termos de atuação ── -->
+    <section class="step-panel" id="panel-3" aria-labelledby="h-s3">
+      <div class="step-head">
+        <p class="step-eyebrow">Etapa 3</p>
+        <h2 class="step-title" id="h-s3">Termos de atuação</h2>
+        <p class="step-desc">Leia com atenção os compromissos do tutor voluntário no Cognita.</p>
+      </div>
+      <div class="step-body">
+
+        <p style="font-size:.9rem;color:var(--ink);font-weight:700;margin-bottom:6px">Esses compromissos existem para proteger a criança, a família e o próprio tutor.</p>
+        <p style="font-size:.88rem;color:var(--ink-soft);margin-bottom:14px">Como tutor voluntário do Cognita Hub, você se compromete a:</p>
+        <ol class="terms-list" aria-label="Compromissos do tutor voluntário">
+          <li class="terms-list-item">
+            <span class="terms-list-n" aria-hidden="true">1</span>
+            <div><strong>Respeitar a estrutura do programa</strong><p>As sessões seguem um plano definido pela equipe Cognita. Adaptações são bem-vindas, mas a estrutura central não é substituída pela preferência pessoal.</p></div>
+          </li>
+          <li class="terms-list-item">
+            <span class="terms-list-n" aria-hidden="true">2</span>
+            <div><strong>Manter a confidencialidade</strong><p>As informações da criança e da família são estritamente confidenciais. Não compartilhe dados fora da plataforma, nem mesmo de forma anônima.</p></div>
+          </li>
+          <li class="terms-list-item">
+            <span class="terms-list-n" aria-hidden="true">3</span>
+            <div><strong>Agir dentro dos limites do voluntariado educacional</strong><p>O papel do tutor é de apoio em matemática inicial. Não cabe ao tutor oferecer orientação clínica, terapêutica ou médica.</p></div>
+          </li>
+          <li class="terms-list-item">
+            <span class="terms-list-n" aria-hidden="true">4</span>
+            <div><strong>Comunicar dificuldades</strong><p>Qualquer situação que você não saiba como manejar — comportamento, engajamento ou dúvida sobre dados — deve ser comunicada à equipe antes de qualquer decisão.</p></div>
+          </li>
+          <li class="terms-list-item">
+            <span class="terms-list-n" aria-hidden="true">5</span>
+            <div><strong>Manter contato mediado</strong><p>Todo contato com a família é mediado pela equipe Cognita. Não compartilhe seus contatos pessoais nem acesse os contatos da família diretamente.</p></div>
+          </li>
+          <li class="terms-list-item">
+            <span class="terms-list-n" aria-hidden="true">6</span>
+            <div><strong>Registrar as sessões com honestidade</strong><p>Os registros devem refletir o que aconteceu de fato — são a principal ferramenta de acompanhamento para a família.</p></div>
+          </li>
+          <li class="terms-list-item">
+            <span class="terms-list-n" aria-hidden="true">7</span>
+            <div><strong>Respeitar a criança</strong><p>Linguagem simples, paciência e respeito ao ritmo da criança são inegociáveis em todas as sessões.</p></div>
+          </li>
+        </ol>
+        <p style="font-size:.78rem;color:var(--ink-soft);margin-bottom:18px">Versão 1.0 · Junho de 2026</p>
+
+        <div class="consent-list" role="group" aria-label="Aceite dos termos">
+          <div class="consent-item">
+            <input type="checkbox" id="tt-termos" name="tt_termos" required aria-required="true" aria-describedby="tt-termos-desc" />
+            <label for="tt-termos">
+              <strong>Li e aceito os Termos de Atuação</strong>
+              <p id="tt-termos-desc">Confirmo que li os termos acima e me comprometo a atuar dentro das diretrizes do programa Cognita Hub.</p>
+            </label>
+            <!-- TODO(wiring): inserir em tutor_terms com versão + accepted_at -->
+          </div>
+        </div>
+
+        <span class="field-error" id="err-termos" style="margin-top:8px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1.2" fill="currentColor"/></svg>
+          Aceite os termos para enviar a candidatura.
+        </span>
+
+      </div>
+      <div class="step-nav">
+        <button type="button" class="btn btn--outline" data-prev>Voltar</button>
+        <button type="button" class="btn btn--primary" data-next data-last>Enviar candidatura</button>
+      </div>
+    </section>
+
+    <!-- ── ETAPA 4 — Candidatura enviada ── -->
+    <section class="step-panel" id="panel-4" aria-labelledby="h-s4">
+      <div class="success-body">
+        <img class="success-mascot" src="../assets/gato-plaquinha.png" alt="" aria-hidden="true" />
+        <h2 class="success-title" id="h-s4">Candidatura enviada!</h2>
+        <p class="success-lead">A equipe Cognita vai avaliar sua candidatura com cuidado. Você receberá um retorno por e-mail. Confirme também o seu e-mail para garantir o recebimento.</p>
+
+        <ol class="success-steps" aria-label="Próximos passos">
+          <li><span class="success-step-n">1</span> Verifique seu e-mail e confirme o endereço.</li>
+          <li><span class="success-step-n">2</span> A equipe avalia sua candidatura — geralmente em até 7 dias úteis.</li>
+          <li><span class="success-step-n">3</span> Se aprovado, você recebe instruções para começar como tutor.</li>
+        </ol>
+
+        <p style="font-size:.86rem;color:var(--ink-soft);max-width:38ch;margin-bottom:28px">Todo contato com famílias é mediado pela equipe — você nunca receberá contato direto de uma família.</p>
+
+        <div class="success-actions">
+          <button type="button" class="btn btn--outline" data-resend>Reenviar e-mail</button>
+          <a class="btn btn--primary" href="../index.html">Entendi, voltar ao site</a>
+        </div>
+      </div>
+    </section>
+
+  </form><!-- .wizard-card -->
+</main>
+
+<script>
+(function(){
+  var TOTAL = 4;
+  var wizardForm = document.querySelector('[data-tutor-form]');
+  var current = 0;
+  var panels   = document.querySelectorAll('.step-panel');
+  var stpItems = document.querySelectorAll('.stepper-item');
+  var counter  = document.getElementById('step-counter');
+  var announce = document.getElementById('step-announce');
+  var stepLabels = ['Sua conta','Candidatura','Termos','Enviada'];
+
+  if (wizardForm) {
+    wizardForm.addEventListener('submit', function(event){
+      event.preventDefault();
+    });
+  }
+
+  function goTo(idx) {
+    panels.forEach(function(p, i){ p.classList.toggle('is-active', i === idx); });
+    stpItems.forEach(function(s, i){
+      s.classList.toggle('is-active', i === idx);
+      s.classList.toggle('is-done', i < idx);
+      var dot = s.querySelector('.stepper-dot');
+      if (i < idx) dot.innerHTML = '<svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true"><polyline points="2,6 5,9 10,3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      else dot.textContent = i + 1;
+    });
+    if (counter)  counter.textContent  = 'Etapa ' + (idx+1) + ' de ' + TOTAL;
+    if (announce) announce.textContent = 'Etapa ' + (idx+1) + ' de ' + TOTAL + ': ' + stepLabels[idx];
+    current = idx;
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    sessionStorage.setItem('tt_step', idx);
+  }
+
+  function validateStep(panelEl) {
+    var ok = true;
+    panelEl.querySelectorAll('input[required]:not([type=checkbox]),select[required],textarea[required]').forEach(function(f){
+      var invalid = !f.checkValidity();
+      f.setAttribute('aria-invalid', invalid ? 'true' : 'false');
+      if (invalid) ok = false;
+    });
+    var s1 = panelEl.querySelector('[data-pw-strength]');
+    var s2 = panelEl.querySelector('[id$="senha2"]');
+    var errS2 = panelEl.querySelector('#err-senha2');
+    if (s1 && s2 && s1.value && s1.value !== s2.value) {
+      s2.setAttribute('aria-invalid', 'true');
+      if (errS2) errS2.classList.add('is-visible');
+      ok = false;
+    } else if (errS2) {
+      errS2.classList.remove('is-visible');
+    }
+    [['ap-dispon','err-ap-dispon'],['ap-periodos','err-ap-periodos']].forEach(function(pair){
+      var group = panelEl.querySelector('#' + pair[0]);
+      var errEl = document.getElementById(pair[1]);
+      if (!group) return;
+      var hasPressed = group.querySelector('[aria-pressed="true"]');
+      if (!hasPressed) {
+        group.classList.add('is-invalid');
+        if (errEl) errEl.classList.add('is-visible');
+        ok = false;
+      } else {
+        group.classList.remove('is-invalid');
+        if (errEl) errEl.classList.remove('is-visible');
+      }
+    });
+    if (!ok) {
+      var first = panelEl.querySelector('[aria-invalid="true"]') || panelEl.querySelector('.chip-group.is-invalid .chip');
+      if (first) first.focus();
+    }
+    return ok;
+  }
+
+  // Navegação
+  document.querySelectorAll('[data-next]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      if (btn.hasAttribute('data-last')) {
+        var cb = document.getElementById('tt-termos');
+        var err = document.getElementById('err-termos');
+        if (!cb.checked) { err.classList.add('is-visible'); cb.focus(); return; }
+        err.classList.remove('is-visible');
+      } else {
+        if (!validateStep(panels[current])) return;
+      }
+      if (current < TOTAL - 1) goTo(current + 1);
+    });
+  });
+  document.querySelectorAll('[data-prev]').forEach(function(btn){
+    btn.addEventListener('click', function(){ if (current > 0) goTo(current - 1); });
+  });
+  document.querySelectorAll('[data-resend]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      // TODO(wiring): auth.resend({ type: 'signup', email })
+      btn.textContent = 'E-mail reenviado';
+      btn.disabled = true;
+    });
+  });
+
+  // Chips
+  document.querySelectorAll('.chip').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      chip.setAttribute('aria-pressed', chip.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+    });
+  });
+
+  // Mostrar/ocultar senha
+  document.querySelectorAll('[data-toggle-pw]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var input = document.getElementById(btn.dataset.togglePw);
+      if (!input) return;
+      var showing = input.type === 'text';
+      input.type = showing ? 'password' : 'text';
+      btn.setAttribute('aria-label', showing ? 'Mostrar senha' : 'Ocultar senha');
+    });
+  });
+
+  // Força da senha
+  document.querySelectorAll('[data-pw-strength]').forEach(function(input){
+    var barWrap = document.querySelector('[data-strength-bars="' + input.id + '"]');
+    var label   = document.getElementById('pw-label-tutor');
+    if (!barWrap) return;
+    var bars = barWrap.querySelectorAll('[data-bar]');
+    var levels  = ['','Muito fraca','Fraca','Boa','Forte'];
+    var classes = ['','s1','s2','s3','s4'];
+    input.addEventListener('input', function(){
+      var v = input.value, score = 0;
+      if (v.length >= 6) score++;
+      if (v.length >= 8) score++;
+      if (/[A-Z]/.test(v) && /[a-z]/.test(v)) score++;
+      if (/[0-9!@#$%^&*]/.test(v)) score++;
+      bars.forEach(function(b, i){ b.className = 'pw-bar' + (i < score ? ' ' + classes[score] : ''); });
+      if (label) label.textContent = v ? 'Senha ' + levels[score] : '';
+    });
+  });
+
+  // Máscara de telefone
+  document.querySelectorAll('[data-phone-mask]').forEach(function(inp){
+    inp.addEventListener('input', function(){
+      var v = inp.value.replace(/\D/g,'').slice(0,11);
+      if (v.length > 10)     v = '(' + v.slice(0,2) + ') ' + v.slice(2,7) + '-' + v.slice(7);
+      else if (v.length > 6) v = '(' + v.slice(0,2) + ') ' + v.slice(2,6) + '-' + v.slice(6);
+      else if (v.length > 2) v = '(' + v.slice(0,2) + ') ' + v.slice(2);
+      else if (v.length > 0) v = '(' + v;
+      inp.value = v;
+    });
+  });
+
+  // Validação de idade — tutor ≥ 18
+  var nascInput = document.getElementById('tt-nasc');
+  if (nascInput) {
+    nascInput.addEventListener('change', function(){
+      var dob = new Date(nascInput.value);
+      if (isNaN(dob)) return;
+      var now = new Date();
+      var age = now.getFullYear() - dob.getFullYear();
+      var m = now.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age--;
+
+      var box  = document.getElementById('age-alert-tutor');
+      var det  = box.querySelector('[data-age-detail]');
+      var next = document.querySelector('#panel-1 [data-next]');
+
+      if (age < 18) {
+        box.classList.add('is-visible');
+        det.textContent = 'Com ' + age + ' anos, o cadastro não pode ser concluído.';
+        if (next) next.disabled = true;
+      } else {
+        box.classList.remove('is-visible');
+        if (next) next.disabled = false;
+      }
+    });
+  }
+
+  // Restaura etapa
+  var saved = parseInt(sessionStorage.getItem('tt_step'), 10);
+  if (!isNaN(saved) && saved > 0 && saved < TOTAL) goTo(saved);
+})();
+</script>
+</body>
 </html>

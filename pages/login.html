@@ -1,103 +1,283 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Entrar | CognitaHub</title>
-    <link rel="icon" type="image/png" href="../assets/logo-icon-transparent.png" />
-    <link rel="stylesheet" href="../css/tokens.css" />
-    <link rel="stylesheet" href="../css/styles.css" />
-  </head>
-  <body>
-    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar | Cognita Hub</title>
+  <link rel="icon" type="image/png" href="../assets/logo-icon-transparent.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Baloo+2:wght@600;700&display=swap" rel="stylesheet">
 
-    <header class="auth-header">
-      <a class="auth-brand" href="../index.html" aria-label="Cognita Hub início">
-        <span class="brand-icon">
-          <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
-        </span>
-        <span class="brand-copy">
-          <strong>Cognita Hub</strong>
-          <small>TEA + Matemática</small>
-        </span>
+<style>
+:root{
+  --paper:#FCF7F1;--surface:#FFFFFF;--surface-soft:rgba(255,255,255,.66);
+  --soft:#F8F3FF;--indigo-soft:#F2F0FB;--warm-soft:#FFF4E2;
+  --ink:#26051F;--ink-soft:#625363;
+  --brand:#141162;--brand-deep:#540042;--accent:#FFA800;
+  --border:rgba(20,17,98,.11);--border-strong:rgba(20,17,98,.20);
+  --shadow-soft:0 10px 28px rgba(35,2,32,.055);
+  --shadow-card:0 16px 36px rgba(35,2,32,.075);
+  --r-md:14px;--r-lg:22px;--r-xl:30px;--r-pill:999px;
+  --font:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --display:"Baloo 2",var(--font);
+  --ok:#1C7C54;--warn:#B3590A;--bad:#A3123A;
+  --ok-soft:rgba(28,124,84,.09);--warn-soft:rgba(179,89,10,.09);--bad-soft:rgba(163,18,58,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:var(--font);color:var(--ink);line-height:1.6;font-size:17px;
+  -webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;
+  background:
+    radial-gradient(circle at 18% 8%,rgba(255,200,80,.13),transparent 26%),
+    radial-gradient(circle at 82% 6%,rgba(20,17,98,.07),transparent 26%),
+    radial-gradient(circle at 54% 44%,rgba(255,238,200,.14),transparent 22%),
+    radial-gradient(circle at 12% 68%,rgba(20,17,98,.045),transparent 24%),
+    radial-gradient(circle at 86% 80%,rgba(255,175,60,.08),transparent 22%),
+    linear-gradient(180deg,#fffdf8 0%,#fdf9f2 32%,#faf5ec 62%,#f8f3ea 100%);
+}
+.wrap{max-width:1160px;margin-inline:auto;padding-inline:24px}
+
+/* header */
+.auth-hd{position:sticky;top:0;z-index:30;background:rgba(255,252,247,.82);backdrop-filter:blur(12px) saturate(1.1);border-bottom:1px solid rgba(20,17,98,.08)}
+.auth-hd .row{display:flex;align-items:center;gap:20px;height:72px}
+.brand{display:flex;align-items:center;gap:11px;color:var(--ink);text-decoration:none;flex-shrink:0}
+.brand-mark{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--brand);overflow:hidden;flex-shrink:0;box-shadow:0 8px 20px rgba(20,17,98,.14)}
+.brand-mark img{width:80%;height:80%;object-fit:contain}
+.brand-copy strong{font-family:var(--display);font-size:1.06rem;line-height:1;color:var(--ink)}
+.brand-copy small{display:block;font-size:.74rem;color:var(--ink-soft)}
+.auth-hd-right{display:flex;align-items:center;gap:14px;margin-left:auto}
+.back-link{color:var(--brand);font-size:.9rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:5px;padding:6px 2px;border-radius:8px}
+.back-link:hover{text-decoration:underline}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border-radius:var(--r-pill);font-family:var(--font);font-weight:700;font-size:16px;cursor:pointer;border:2px solid transparent;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;text-decoration:none;line-height:1}
+.btn--primary{background:var(--accent);color:var(--ink)}
+.btn--primary:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(255,168,0,.36)}
+.btn--outline{background:transparent;color:var(--brand);border-color:var(--border-strong)}
+.btn--outline:hover{border-color:var(--brand);background:rgba(20,17,98,.04)}
+.btn--soft{background:rgba(255,168,0,.12);color:var(--ink);border-color:rgba(255,168,0,.38)}
+.btn--soft:hover{background:var(--accent);border-color:var(--accent)}
+.btn--sm{min-height:40px;padding:0 16px;font-size:14px}
+.btn--full{width:100%;justify-content:center}
+a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offset:2px;box-shadow:0 0 0 2px var(--paper);border-radius:6px}
+
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brand)}
+
+/* layout */
+.auth-main{flex:1;display:grid;place-items:center;padding:48px 24px}
+
+/* card */
+.auth-card{
+  width:100%;max-width:420px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-xl);
+  padding:40px 36px;
+  box-shadow:var(--shadow-card);
+}
+.auth-card-brand{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.auth-card-logo{width:36px;height:36px;border-radius:11px;background:var(--brand);padding:5px;object-fit:contain;flex-shrink:0}
+.auth-card-name{font-family:var(--display);font-size:1.04rem;color:var(--ink)}
+.auth-title{font-size:1.62rem;font-weight:700;color:#30142d;margin-top:5px;margin-bottom:26px;line-height:1.15}
+
+/* error/status slot */
+.auth-message{
+  display:none;align-items:flex-start;gap:12px;
+  padding:14px 16px;border-radius:var(--r-md);margin-bottom:20px;
+  font-size:.92rem;line-height:1.55;font-weight:700;
+}
+.auth-message[data-type="error"]{background:var(--bad-soft);border:1px solid rgba(163,18,58,.22);color:var(--bad)}
+.auth-message[data-type="warn"]{background:var(--warn-soft);border:1px solid rgba(179,89,10,.22);color:var(--warn)}
+.auth-message.is-visible{display:flex}
+.auth-message-icon{flex-shrink:0;margin-top:1px}
+.auth-message p{font-weight:400;font-size:.88rem;margin-top:2px;color:inherit;opacity:.82}
+
+/* fields */
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:18px}
+.field label{font-size:.9rem;font-weight:700;color:var(--ink)}
+.field-hint{font-size:.8rem;color:var(--ink-soft);line-height:1.4}
+.field input,.field select,.field textarea{
+  width:100%;min-height:48px;padding:11px 14px;
+  border:1.5px solid var(--border-strong);border-radius:var(--r-md);
+  font:inherit;font-size:1rem;color:var(--ink);background:var(--surface);
+  transition:border-color 150ms ease,box-shadow 150ms ease;appearance:none;
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(20,17,98,.10);
+}
+.field input::placeholder{color:rgba(98,83,99,.38)}
+.field-error{
+  display:none;align-items:center;gap:6px;
+  font-size:.82rem;color:var(--bad);font-weight:700;
+}
+.field-error.is-visible{display:flex}
+
+/* password field */
+.field-pw{position:relative}
+.field-pw input{padding-right:50px}
+.btn-show-pw{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  background:none;border:none;padding:9px;cursor:pointer;
+  color:var(--ink-soft);display:grid;place-items:center;border-radius:8px;
+  transition:color 140ms;
+}
+.btn-show-pw:hover{color:var(--brand)}
+.btn-show-pw:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px;box-shadow:none}
+
+.forgot-link{
+  display:block;text-align:right;font-size:.88rem;color:var(--brand);
+  text-decoration:none;font-weight:700;margin-top:-8px;margin-bottom:24px;
+}
+.forgot-link:hover{text-decoration:underline}
+
+/* separator */
+.auth-sep{display:flex;align-items:center;gap:12px;margin:24px 0;color:var(--ink-soft);font-size:.82rem}
+.auth-sep::before,.auth-sep::after{content:"";flex:1;height:1px;background:var(--border)}
+
+/* alt links */
+.auth-alt{text-align:center;font-size:.9rem;color:var(--ink-soft)}
+.auth-alt a{color:var(--brand);font-weight:700;text-decoration:none}
+.auth-alt a:hover{text-decoration:underline}
+
+@media(max-width:520px){
+  .auth-card{padding:30px 22px;border-radius:var(--r-lg)}
+  .back-link-text{display:none}
+  .auth-hd .row{height:62px}
+}
+@media(prefers-reduced-motion:reduce){
+  .btn,.field input,.field select,.auth-message,.btn-show-pw{transition:none}
+}
+</style>
+
+</head>
+<body>
+<header class="auth-hd">
+  <div class="wrap row">
+    <a class="brand" href="../index.html" aria-label="Cognita Hub — página inicial">
+      <span class="brand-mark"><img src="../assets/logo-icon-transparent.png" alt="" /></span>
+      <span class="brand-copy"><strong>Cognita Hub</strong><small>TEA + Matemática</small></span>
+    </a>
+    <div class="auth-hd-right">
+      <a class="back-link" href="../index.html">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><polyline points="13 16 7 10 13 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="back-link-text">Voltar ao site</span>
       </a>
-      <div class="auth-header-actions">
-        <a class="auth-link-btn" href="../index.html">Voltar ao site</a>
-        <a class="auth-primary-btn" href="cadastro.html">Participar</a>
+      <a class="btn btn--soft btn--sm" href="cadastro.html">Participar</a>
+    </div>
+  </div>
+</header>
+
+<main class="auth-main">
+  <div class="auth-card">
+
+    <div class="auth-card-brand">
+      <img class="auth-card-logo" src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
+      <span class="auth-card-name">Cognita Hub</span>
+    </div>
+
+    <p class="eyebrow">Bem-vindo de volta</p>
+    <h1 class="auth-title">Entrar</h1>
+
+    <!-- Slot de mensagem de status — preenchido pelo login.js via data-login-error -->
+    <!-- TODO(wiring): login.js seta .is-visible + data-type="error"|"warn" + texto -->
+    <div class="auth-message" data-login-error role="alert" aria-live="polite" data-type="error">
+      <svg class="auth-message-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+        <line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="12" cy="16" r="1.2" fill="currentColor"/>
+      </svg>
+      <div>
+        <span data-login-error-title></span>
+        <p data-login-error-detail></p>
       </div>
-    </header>
+    </div>
 
-    <main class="login-portal" id="conteudo">
-      <div class="login-card">
-        <div class="login-story">
-          <div>
-            <p class="eyebrow">Portal Cognita</p>
-            <h1>Entre no Cognita Hub.</h1>
-            <p>Acesse seu painel para acompanhar ciclos, sessões e registros educacionais em um ambiente simples e organizado.</p>
-          </div>
+    <form data-login-form>
 
-          <div class="login-mascot-wrap">
-            <img src="../assets/mascot-hero-wave.png" alt="" aria-hidden="true" />
-          </div>
+      <div class="field">
+        <label for="login-email">E-mail</label>
+        <input
+          type="email"
+          id="login-email"
+          data-login-email
+          autocomplete="email"
+          inputmode="email"
+          required
+          placeholder="seu@email.com"
+          aria-required="true"
+        />
+        <span class="field-error" id="err-email" role="alert">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1.2" fill="currentColor"/></svg>
+          Informe um e-mail válido.
+        </span>
+      </div>
 
-          <div class="login-mini-stats">
-            <div>
-              <strong>6 meses</strong>
-              <span>ciclo de apoio</span>
-            </div>
-            <div>
-              <strong>1:1</strong>
-              <span>acompanhamento</span>
-            </div>
-          </div>
+      <div class="field">
+        <label for="login-senha">Senha</label>
+        <div class="field-pw">
+          <input
+            type="password"
+            id="login-senha"
+            data-login-password
+            autocomplete="current-password"
+            required
+            aria-required="true"
+          />
+          <button type="button" class="btn-show-pw" aria-label="Mostrar senha" data-toggle-pw="login-senha">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
         </div>
-
-        <section class="login-form-area" aria-labelledby="login-title">
-          <p class="eyebrow">Bem-vindo de volta</p>
-          <h2 id="login-title">Entre no seu hub.</h2>
-          <p class="login-helper">
-            Entre com seu e-mail e senha. O Cognita identifica automaticamente sua área de acesso.
-          </p>
-
-          <form class="login-form" data-login-form>
-            <label class="login-field" for="email">
-              <span>Email</span>
-              <input id="email" name="email" data-login-email type="email" autocomplete="email" placeholder="voce@email.com" required />
-            </label>
-
-            <label class="login-field" for="password">
-              <span>Senha</span>
-              <input
-                id="password"
-                name="password"
-                data-login-password
-                type="password"
-                autocomplete="current-password"
-                placeholder="Sua senha"
-                required
-              />
-            </label>
-
-            <div class="login-options">
-              <label>
-                <input type="checkbox" />
-                <span>Lembrar acesso</span>
-              </label>
-              <a href="#">Esqueci minha senha</a>
-            </div>
-
-            <button class="login-submit" type="submit">Entrar no hub</button>
-
-            <p class="login-switch">
-              Ainda não participa? <a href="cadastro.html">Criar cadastro</a>
-            </p>
-
-            <p class="fine-print" data-login-error aria-live="polite"></p>
-          </form>
-        </section>
+        <span class="field-error" id="err-senha" role="alert">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1.2" fill="currentColor"/></svg>
+          Informe sua senha.
+        </span>
       </div>
-    </main>
 
-    <script type="module" src="/js/pages/login.js"></script>
-  </body>
+      <a class="forgot-link" href="#">Esqueci minha senha</a>
+
+      <button type="submit" class="btn btn--primary btn--full">Entrar</button>
+
+    </form>
+
+    <div class="auth-sep">ou</div>
+
+    <div class="auth-alt">
+      <p>Não tem conta? <a href="cadastro.html">Criar conta</a></p>
+    </div>
+
+  </div>
+</main>
+
+<script>
+(function(){
+  // Mostrar/ocultar senha
+  document.querySelectorAll('[data-toggle-pw]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var id = btn.dataset.togglePw;
+      var input = document.getElementById(id);
+      if (!input) return;
+      var showing = input.type === 'text';
+      input.type = showing ? 'password' : 'text';
+      btn.setAttribute('aria-label', showing ? 'Mostrar senha' : 'Ocultar senha');
+      btn.querySelector('svg').innerHTML = showing
+        ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+        : '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
+    });
+  });
+
+  var form = document.querySelector('[data-login-form]');
+  if (form) {
+    form.addEventListener('input', function(){
+      var msg = form.closest('.auth-card').querySelector('[data-login-error]');
+      msg.classList.remove('is-visible');
+    });
+  }
+})();
+</script>
+<script type="module" src="../js/pages/login.js"></script>
+</body>
 </html>

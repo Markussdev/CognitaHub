@@ -1,183 +1,879 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cadastro do Responsável | CognitaHub</title>
-    <link rel="icon" type="image/png" href="../assets/logo-icon-transparent.png" />
-    <link rel="stylesheet" href="../css/tokens.css" />
-    <link rel="stylesheet" href="../css/styles.css" />
-  </head>
-  <body>
-    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro do Responsavel | Cognita Hub</title>
+  <link rel="icon" type="image/png" href="../assets/logo-icon-transparent.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Baloo+2:wght@600;700&display=swap" rel="stylesheet">
 
-    <header class="auth-header">
-      <a class="auth-brand" href="../index.html" aria-label="Cognita Hub início">
-        <span class="brand-icon">
-          <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
-        </span>
-        <span class="brand-copy">
-          <strong>Cognita Hub</strong>
-          <small>TEA + Matemática</small>
-        </span>
+<style>
+:root{
+  --paper:#FCF7F1;--surface:#FFFFFF;--surface-soft:rgba(255,255,255,.66);
+  --soft:#F8F3FF;--indigo-soft:#F2F0FB;--warm-soft:#FFF4E2;
+  --ink:#26051F;--ink-soft:#625363;
+  --brand:#141162;--brand-deep:#540042;--accent:#FFA800;
+  --border:rgba(20,17,98,.11);--border-strong:rgba(20,17,98,.20);
+  --shadow-soft:0 10px 28px rgba(35,2,32,.055);
+  --shadow-card:0 16px 36px rgba(35,2,32,.075);
+  --r-md:14px;--r-lg:22px;--r-xl:30px;--r-pill:999px;
+  --font:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --display:"Baloo 2",var(--font);
+  --ok:#1C7C54;--warn:#B3590A;--bad:#A3123A;
+  --ok-soft:rgba(28,124,84,.09);--warn-soft:rgba(179,89,10,.09);--bad-soft:rgba(163,18,58,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:var(--font);color:var(--ink);line-height:1.6;font-size:17px;
+  -webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;
+  background:
+    radial-gradient(circle at 18% 8%,rgba(255,200,80,.13),transparent 26%),
+    radial-gradient(circle at 82% 6%,rgba(20,17,98,.07),transparent 26%),
+    radial-gradient(circle at 54% 44%,rgba(255,238,200,.14),transparent 22%),
+    radial-gradient(circle at 12% 68%,rgba(20,17,98,.045),transparent 24%),
+    radial-gradient(circle at 86% 80%,rgba(255,175,60,.08),transparent 22%),
+    linear-gradient(180deg,#fffdf8 0%,#fdf9f2 32%,#faf5ec 62%,#f8f3ea 100%);
+}
+.wrap{max-width:1160px;margin-inline:auto;padding-inline:24px}
+
+/* header */
+.auth-hd{position:sticky;top:0;z-index:30;background:rgba(255,252,247,.82);backdrop-filter:blur(12px) saturate(1.1);border-bottom:1px solid rgba(20,17,98,.08)}
+.auth-hd .row{display:flex;align-items:center;gap:20px;height:72px}
+.brand{display:flex;align-items:center;gap:11px;color:var(--ink);text-decoration:none;flex-shrink:0}
+.brand-mark{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--brand);overflow:hidden;flex-shrink:0;box-shadow:0 8px 20px rgba(20,17,98,.14)}
+.brand-mark img{width:80%;height:80%;object-fit:contain}
+.brand-copy strong{font-family:var(--display);font-size:1.06rem;line-height:1;color:var(--ink)}
+.brand-copy small{display:block;font-size:.74rem;color:var(--ink-soft)}
+.auth-hd-right{display:flex;align-items:center;gap:14px;margin-left:auto}
+.back-link{color:var(--brand);font-size:.9rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:5px;border-radius:8px;padding:4px 2px}
+.back-link:hover{text-decoration:underline}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border-radius:var(--r-pill);font-family:var(--font);font-weight:700;font-size:16px;cursor:pointer;border:2px solid transparent;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;text-decoration:none;line-height:1}
+.btn--primary{background:var(--accent);color:var(--ink)}
+.btn--primary:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(255,168,0,.36)}
+.btn--outline{background:transparent;color:var(--brand);border-color:var(--border-strong)}
+.btn--outline:hover{border-color:var(--brand);background:rgba(20,17,98,.04)}
+.btn--soft{background:rgba(255,168,0,.12);color:var(--ink);border-color:rgba(255,168,0,.38)}
+.btn--soft:hover{background:var(--accent);border-color:var(--accent)}
+.btn--sm{min-height:40px;padding:0 16px;font-size:14px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offset:2px;box-shadow:0 0 0 2px var(--paper);border-radius:6px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brand)}
+
+/* layout */
+.auth-main{flex:1;display:flex;flex-direction:column;align-items:center;padding:48px 24px 64px}
+
+/* stepper */
+.stepper-wrap{width:100%;max-width:620px;margin-bottom:36px}
+.stepper-announce{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.step-counter{text-align:center;font-size:.82rem;color:var(--ink-soft);margin-bottom:16px;font-weight:700;letter-spacing:.04em}
+.stepper{
+  display:flex;align-items:center;
+  list-style:none;position:relative;
+}
+.stepper-item{
+  display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;position:relative;
+}
+.stepper-item:not(:last-child)::after{
+  content:"";position:absolute;left:calc(50% + 18px);right:calc(-50% + 18px);top:14px;
+  height:2px;background:var(--border);z-index:0;
+  transition:background 250ms ease;
+}
+.stepper-item.is-done:not(:last-child)::after{background:rgba(28,124,84,.3)}
+
+.stepper-dot{
+  width:28px;height:28px;border-radius:50%;
+  display:grid;place-items:center;
+  font-family:var(--display);font-size:.8rem;font-weight:700;
+  border:2px solid var(--border);
+  background:var(--surface);color:var(--ink-soft);
+  position:relative;z-index:1;
+  transition:all 200ms ease;
+  flex-shrink:0;
+}
+.stepper-item.is-done .stepper-dot{background:var(--ok-soft);border-color:rgba(28,124,84,.4);color:var(--ok)}
+.stepper-item.is-active .stepper-dot{background:var(--brand);border-color:var(--brand);color:#fff;box-shadow:0 0 0 4px rgba(20,17,98,.12)}
+
+.stepper-label{font-size:.72rem;font-weight:700;color:var(--ink-soft);text-align:center;line-height:1.2;max-width:72px}
+.stepper-item.is-active .stepper-label{color:var(--brand)}
+.stepper-item.is-done .stepper-label{color:var(--ok)}
+
+/* wizard card */
+.wizard-card{
+  width:100%;max-width:620px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-xl);
+  box-shadow:var(--shadow-card);
+  overflow:hidden;
+}
+.step-panel{display:none}
+.step-panel.is-active{display:block}
+
+.step-head{
+  padding:32px 36px 0;
+  border-bottom:1px solid var(--border);
+  padding-bottom:28px;
+  margin-bottom:0;
+}
+.step-eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brand);margin-bottom:8px}
+.step-title{font-size:1.4rem;font-weight:700;color:#30142d;line-height:1.2;margin-bottom:6px}
+.step-desc{font-size:.94rem;color:var(--ink-soft);line-height:1.55}
+
+.step-body{padding:28px 36px 0}
+
+/* fields */
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:20px}
+.field label{font-size:.9rem;font-weight:700;color:var(--ink)}
+.field-hint{font-size:.8rem;color:var(--ink-soft);line-height:1.4}
+.field input,.field select,.field textarea{
+  width:100%;min-height:48px;padding:11px 14px;
+  border:1.5px solid var(--border-strong);border-radius:var(--r-md);
+  font:inherit;font-size:1rem;color:var(--ink);background:var(--surface);
+  transition:border-color 150ms ease,box-shadow 150ms ease;appearance:none;
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(20,17,98,.10);
+}
+.field input::placeholder{color:rgba(98,83,99,.38)}
+.field input[aria-invalid="true"],.field select[aria-invalid="true"],.field textarea[aria-invalid="true"]{border-color:var(--bad);box-shadow:0 0 0 3px rgba(163,18,58,.08)}
+.field textarea{min-height:90px;resize:vertical;line-height:1.5}
+.field select{background-image:url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='6 9 12 15 18 9' stroke='%23625363' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:40px;cursor:pointer}
+
+.field-error{
+  display:none;align-items:center;gap:6px;
+  font-size:.82rem;color:var(--bad);font-weight:700;margin-top:2px;
+}
+.field-error.is-visible{display:flex}
+
+/* inline alert (age warning) */
+.field-alert{
+  display:none;align-items:flex-start;gap:10px;
+  padding:12px 14px;border-radius:var(--r-md);
+  font-size:.88rem;line-height:1.5;font-weight:700;margin-top:6px;
+}
+.field-alert--warn{background:var(--warn-soft);border:1px solid rgba(179,89,10,.22);color:var(--warn)}
+.field-alert--ok{background:var(--ok-soft);border:1px solid rgba(28,124,84,.22);color:var(--ok)}
+.field-alert.is-visible{display:flex}
+.field-alert p{font-weight:400;font-size:.84rem;margin-top:2px;opacity:.85}
+.field-alert-icon{flex-shrink:0;margin-top:1px}
+
+/* two cols */
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* password */
+.field-pw{position:relative}
+.field-pw input{padding-right:50px}
+.btn-show-pw{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  background:none;border:none;padding:9px;cursor:pointer;
+  color:var(--ink-soft);display:grid;place-items:center;border-radius:8px;transition:color 140ms;
+}
+.btn-show-pw:hover{color:var(--brand)}
+.btn-show-pw:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px;box-shadow:none}
+
+/* strength bars */
+.pw-strength{display:flex;gap:4px;margin-top:6px}
+.pw-bar{flex:1;height:3px;border-radius:var(--r-pill);background:var(--border);transition:background 200ms}
+.pw-bar.s1{background:var(--bad)}
+.pw-bar.s2{background:var(--warn)}
+.pw-bar.s3,.pw-bar.s4{background:var(--ok)}
+.pw-strength-label{font-size:.76rem;color:var(--ink-soft);margin-top:4px}
+
+/* chips */
+.chip-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.chip-group[aria-disabled="true"]{opacity:.4;pointer-events:none}
+.chip{
+  padding:8px 16px;border-radius:var(--r-pill);
+  border:1.5px solid var(--border-strong);background:var(--surface);
+  font:700 .86rem/1 var(--font);color:var(--ink-soft);
+  cursor:pointer;transition:all 150ms ease;min-height:38px;
+  display:inline-flex;align-items:center;
+}
+.chip:hover{border-color:var(--brand);color:var(--brand);background:rgba(20,17,98,.04)}
+.chip[aria-pressed="true"]{background:rgba(20,17,98,.08);border-color:var(--brand);color:var(--brand)}
+.chip:focus-visible{outline:2px solid var(--brand);outline-offset:2px;box-shadow:0 0 0 2px var(--paper);border-radius:var(--r-pill)}
+
+/* não sei toggle */
+.naoseicheck{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:.86rem;color:var(--ink-soft);cursor:pointer;margin-top:10px;
+  padding:4px 0;
+}
+.naoseicheck input[type=checkbox]{
+  appearance:none;-webkit-appearance:none;
+  width:18px;height:18px;min-height:unset;padding:0;border-radius:50%;flex-shrink:0;cursor:pointer;
+  border:2px solid var(--border-strong);background:var(--surface);
+  transition:border-color 150ms ease,background 150ms ease,box-shadow 150ms ease;
+}
+.naoseicheck input[type=checkbox]:checked{border-color:var(--brand);background:var(--brand);box-shadow:inset 0 0 0 4px var(--surface)}
+.naoseicheck input[type=checkbox]:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+
+/* radio group */
+.radio-group{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.radio-item{
+  display:flex;align-items:center;gap:14px;
+  padding:12px 16px;
+  border:1.5px solid var(--border);border-radius:var(--r-md);
+  cursor:pointer;transition:border-color 150ms,background 150ms;
+  font-size:.94rem;color:var(--ink);
+}
+.radio-item:has(input:checked){border-color:var(--brand);background:rgba(20,17,98,.04);color:var(--brand);font-weight:700}
+.radio-item input[type=radio]{
+  appearance:none;-webkit-appearance:none;
+  width:18px;height:18px;min-height:unset;padding:0;border-radius:50%;flex-shrink:0;cursor:pointer;
+  border:2px solid var(--border-strong);background:var(--surface);
+  transition:border-color 150ms ease,background 150ms ease,box-shadow 150ms ease;
+}
+.radio-item input[type=radio]:checked{border-color:var(--brand);background:var(--brand);box-shadow:inset 0 0 0 4px var(--surface)}
+.radio-item input[type=radio]:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+
+/* consent */
+.consent-list{display:flex;flex-direction:column;gap:12px}
+.consent-item{
+  display:flex;gap:14px;align-items:flex-start;
+  padding:16px 18px;border:1.5px solid var(--border);border-radius:var(--r-md);
+  transition:border-color 150ms,background 150ms;
+  cursor:pointer;
+}
+.consent-item:has(input:checked){border-color:rgba(28,124,84,.4);background:var(--ok-soft)}
+.consent-item input[type=checkbox]{width:20px;height:20px;flex-shrink:0;margin-top:2px;cursor:pointer;accent-color:var(--brand)}
+.consent-item label{cursor:pointer}
+.consent-item strong{display:block;font-size:.92rem;font-weight:700;color:var(--ink);line-height:1.3}
+.consent-item p{font-size:.84rem;color:var(--ink-soft);margin-top:4px;line-height:1.5}
+.consent-item a{color:var(--brand);font-weight:700}
+.consent-note{font-size:.82rem;color:var(--ink-soft);margin-top:14px;padding:10px 14px;border-radius:var(--r-md);background:var(--indigo-soft);border:1px solid rgba(20,17,98,.10)}
+
+/* nav buttons */
+.step-nav{
+  display:flex;justify-content:space-between;align-items:center;gap:14px;
+  padding:24px 36px 32px;
+  border-top:1px solid var(--border);
+  margin-top:28px;
+}
+.step-nav--first{justify-content:flex-end}
+
+/* success step */
+.success-body{
+  display:flex;flex-direction:column;align-items:center;
+  text-align:center;padding:48px 36px 52px;
+}
+.success-icon{
+  width:72px;height:72px;border-radius:50%;
+  background:var(--ok-soft);border:2px solid rgba(28,124,84,.3);
+  display:grid;place-items:center;margin-bottom:24px;
+  color:var(--ok);
+}
+.success-mascot{width:120px;object-fit:contain;margin-bottom:24px;filter:drop-shadow(0 10px 18px rgba(35,2,32,.12))}
+.success-title{font-size:1.55rem;font-weight:700;color:#30142d;margin-bottom:12px;line-height:1.2}
+.success-lead{color:var(--ink-soft);font-size:.98rem;max-width:40ch;margin-bottom:32px;line-height:1.65}
+.success-steps{
+  list-style:none;display:flex;flex-direction:column;gap:10px;
+  width:100%;max-width:380px;text-align:left;margin-bottom:36px;
+}
+.success-steps li{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;border-radius:var(--r-md);
+  background:rgba(255,255,255,.72);border:1px solid var(--border);
+  font-size:.9rem;color:var(--ink);
+}
+.success-step-n{
+  width:24px;height:24px;border-radius:50%;flex-shrink:0;
+  background:rgba(20,17,98,.08);display:grid;place-items:center;
+  font-family:var(--display);font-size:.76rem;font-weight:700;color:var(--brand);
+}
+
+.success-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+@media(max-width:640px){
+  .wizard-card{border-radius:var(--r-lg)}
+  .step-head,.step-body,.step-nav{padding-inline:24px}
+  .step-head{padding-top:26px;padding-bottom:22px}
+  .step-body{padding-top:22px}
+  .field-row{grid-template-columns:1fr}
+  .stepper-label{display:none}
+  .stepper-item::after{top:13px}
+  .auth-main{padding:32px 16px 48px}
+  .step-nav{padding-bottom:24px}
+}
+@media(max-width:520px){
+  .back-link-text{display:none}
+  .auth-hd .row{height:62px}
+}
+@media(prefers-reduced-motion:reduce){
+  .btn,.field input,.chip,.radio-item,.consent-item,.pw-bar,.stepper-dot,.stepper-item::after{transition:none}
+}
+</style>
+
+</head>
+<body>
+<header class="auth-hd">
+  <div class="wrap row">
+    <a class="brand" href="../index.html" aria-label="Cognita Hub — página inicial">
+      <span class="brand-mark"><img src="../assets/logo-icon-transparent.png" alt="" /></span>
+      <span class="brand-copy"><strong>Cognita Hub</strong><small>TEA + Matemática</small></span>
+    </a>
+    <div class="auth-hd-right">
+      <a class="back-link" href="cadastro.html">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><polyline points="13 16 7 10 13 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="back-link-text">Tipo de cadastro</span>
       </a>
-      <div class="auth-header-actions">
-        <a class="auth-link-btn" href="cadastro.html">Trocar perfil</a>
-        <a class="auth-primary-btn" href="login.html">Entrar</a>
+      <a class="btn btn--soft btn--sm" href="login.html">Já tenho conta</a>
+    </div>
+  </div>
+</header>
+
+<main class="auth-main">
+
+  <!-- Anúncio de etapa para leitores de tela -->
+  <span class="stepper-announce" id="step-announce" role="status" aria-live="polite"></span>
+
+  <!-- Stepper -->
+  <div class="stepper-wrap">
+    <p class="step-counter" id="step-counter" aria-hidden="true">Etapa 1 de 5</p>
+    <ol class="stepper" aria-label="Progresso do cadastro">
+      <li class="stepper-item is-active" id="stp-1">
+        <span class="stepper-dot" aria-hidden="true">1</span>
+        <span class="stepper-label">Sua conta</span>
+      </li>
+      <li class="stepper-item" id="stp-2">
+        <span class="stepper-dot" aria-hidden="true">2</span>
+        <span class="stepper-label">A criança</span>
+      </li>
+      <li class="stepper-item" id="stp-3">
+        <span class="stepper-dot" aria-hidden="true">3</span>
+        <span class="stepper-label">Como aprende</span>
+      </li>
+      <li class="stepper-item" id="stp-4">
+        <span class="stepper-dot" aria-hidden="true">4</span>
+        <span class="stepper-label">Consentimento</span>
+      </li>
+      <li class="stepper-item" id="stp-5">
+        <span class="stepper-dot" aria-hidden="true">5</span>
+        <span class="stepper-label">Enviado</span>
+      </li>
+    </ol>
+  </div>
+
+  <form class="wizard-card" data-guardian-form>
+
+    <!-- ── ETAPA 1 — Conta do responsável ── -->
+    <section class="step-panel is-active" id="panel-1" aria-labelledby="h-s1">
+      <div class="step-head">
+        <p class="step-eyebrow">Etapa 1</p>
+        <h1 class="step-title" id="h-s1">Crie sua conta</h1>
+        <p class="step-desc">Esses dados são da pessoa responsável legal pela criança.</p>
       </div>
-    </header>
+      <div class="step-body">
 
-    <main class="login-portal" id="conteudo">
-      <div class="login-card">
-        <div class="login-story">
-          <div>
-            <p class="eyebrow">Cadastro do responsável</p>
-            <h1>Cadastre a criança para análise.</h1>
-            <p>
-              A equipe Cognita valida as informações, organiza a fila e entra em contato quando houver tutor compatível.
-            </p>
-          </div>
+        <div class="field">
+          <label for="rp-nome">Nome completo</label>
+          <input type="text" id="rp-nome" name="nome" autocomplete="name" required aria-required="true" placeholder="Como você prefere ser chamado" />
+        </div>
 
-          <div class="login-mascot-wrap">
-            <img src="../assets/sticker.png" alt="" aria-hidden="true" />
-          </div>
+        <div class="field">
+          <label for="rp-email">E-mail</label>
+          <span class="field-hint" id="hint-rp-email">Será usado para acessar o painel e receber atualizações.</span>
+          <input type="email" id="rp-email" name="email" autocomplete="email" inputmode="email" required aria-required="true" aria-describedby="hint-rp-email" placeholder="seu@email.com" />
+          <!-- TODO(wiring): auth.signUp usa este e-mail -->
+        </div>
 
-          <div class="login-mini-stats">
-            <div>
-              <strong>5 a 9 anos</strong>
-              <span>matemática inicial</span>
+        <div class="field">
+          <label for="rp-tel">Telefone</label>
+          <span class="field-hint" id="hint-rp-tel">Visível apenas para a equipe Cognita.</span>
+          <input type="tel" id="rp-tel" name="telefone" autocomplete="tel" inputmode="tel" aria-describedby="hint-rp-tel" placeholder="(00) 00000-0000" required aria-required="true" data-phone-mask />
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="rp-senha">Senha</label>
+            <div class="field-pw">
+              <input type="password" id="rp-senha" name="senha" autocomplete="new-password" required aria-required="true" aria-describedby="pw-strength-label-1" data-pw-strength />
+              <button type="button" class="btn-show-pw" aria-label="Mostrar senha" data-toggle-pw="rp-senha">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
             </div>
-            <div>
-              <strong>0 custo</strong>
-              <span>para responsáveis</span>
+            <div class="pw-strength" aria-hidden="true" data-strength-bars="rp-senha">
+              <div class="pw-bar" data-bar></div><div class="pw-bar" data-bar></div><div class="pw-bar" data-bar></div><div class="pw-bar" data-bar></div>
             </div>
+            <span class="pw-strength-label" id="pw-strength-label-1" aria-live="polite"></span>
+          </div>
+          <div class="field">
+            <label for="rp-senha2">Confirmar senha</label>
+            <div class="field-pw">
+              <input type="password" id="rp-senha2" name="senha2" autocomplete="new-password" required aria-required="true" />
+              <button type="button" class="btn-show-pw" aria-label="Mostrar senha" data-toggle-pw="rp-senha2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <span class="field-error" id="err-senha2">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1.2" fill="currentColor"/></svg>
+              As senhas não coincidem.
+            </span>
           </div>
         </div>
 
-        <section class="login-form-area" aria-labelledby="cadastro-responsavel-title">
-          <p class="eyebrow">Responsável</p>
-          <h2 id="cadastro-responsavel-title">Informações para iniciar a análise.</h2>
-          <p class="login-helper">
-            Este cadastro não garante início imediato do acompanhamento. A equipe Cognita analisará as informações e
-            entrará em contato quando houver tutor compatível.
-          </p>
-
-          <form class="signup-panel active" data-guardian-form>
-            <div class="form-grid">
-              <div class="form-field">
-                <label for="responsavel-nome">Nome do responsável</label>
-                <input id="responsavel-nome" name="responsavel-nome" type="text" autocomplete="name" required />
-              </div>
-              <div class="form-field">
-                <label for="responsavel-email">Email</label>
-                <input id="responsavel-email" name="responsavel-email" type="email" autocomplete="email" required />
-              </div>
-              <div class="form-field">
-                <label for="responsavel-telefone">Telefone</label>
-                <input id="responsavel-telefone" name="responsavel-telefone" type="tel" autocomplete="tel" />
-              </div>
-              <div class="form-field">
-                <label for="responsavel-senha">Senha de acesso</label>
-                <input
-                  id="responsavel-senha"
-                  name="responsavel-senha"
-                  type="password"
-                  autocomplete="new-password"
-                  minlength="6"
-                  required
-                />
-              </div>
-              <div class="form-field">
-                <label for="crianca-nome">Nome da criança</label>
-                <input id="crianca-nome" name="crianca-nome" type="text" required />
-              </div>
-              <div class="form-field">
-                <label for="crianca-nascimento">Data de nascimento da criança</label>
-                <input id="crianca-nascimento" name="crianca-nascimento" type="date" required />
-              </div>
-              <div class="form-field">
-                <label for="etapa-escolar">Etapa escolar</label>
-                <select id="etapa-escolar" name="etapa-escolar">
-                  <option>Educação infantil</option>
-                  <option>1º ano do ensino fundamental</option>
-                  <option>2º ano do ensino fundamental</option>
-                  <option>3º ano do ensino fundamental</option>
-                  <option>4º ano do ensino fundamental</option>
-                </select>
-              </div>
-              <div class="form-field full">
-                <label for="dificuldades">Dificuldades observadas em matemática</label>
-                <textarea id="dificuldades" name="dificuldades"></textarea>
-              </div>
-              <div class="form-field full">
-                <label for="acompanhamento">A criança já possui acompanhamento educacional ou terapêutico?</label>
-                <select id="acompanhamento" name="acompanhamento">
-                  <option>Sim</option>
-                  <option>Não</option>
-                  <option>Prefiro informar depois</option>
-                </select>
-              </div>
-              <div class="form-field full">
-                <label for="preferencias">Preferências de aprendizagem e observações importantes</label>
-                <textarea id="preferencias" name="preferencias"></textarea>
-              </div>
-              <fieldset class="form-field full option-group">
-                <legend>A criança aprende melhor com</legend>
-                <label><input type="checkbox" name="aprende-melhor" value="imagens" /> Imagens</label>
-                <label><input type="checkbox" name="aprende-melhor" value="objetos-concretos" /> Objetos concretos</label>
-                <label><input type="checkbox" name="aprende-melhor" value="jogos" /> Jogos</label>
-                <label><input type="checkbox" name="aprende-melhor" value="historias" /> Histórias</label>
-                <label><input type="checkbox" name="aprende-melhor" value="passo-a-passo" /> Repetição passo a passo</label>
-              </fieldset>
-              <fieldset class="form-field full option-group">
-                <legend>A criança costuma se concentrar por</legend>
-                <label><input type="radio" name="tempo-concentracao" value="ate-5" /> Até 5 minutos</label>
-                <label><input type="radio" name="tempo-concentracao" value="5-10" /> 5 a 10 minutos</label>
-                <label><input type="radio" name="tempo-concentracao" value="mais-10" /> Mais de 10 minutos</label>
-                <label><input type="radio" name="tempo-concentracao" value="nao-sei" /> Não sei informar</label>
-              </fieldset>
-              <div class="form-field full">
-                <label for="motivadores">O que costuma motivar a criança?</label>
-                <textarea id="motivadores" name="motivadores"></textarea>
-              </div>
-              <div class="form-field full">
-                <label for="dificultadores">O que costuma dificultar a atividade?</label>
-                <textarea id="dificultadores" name="dificultadores"></textarea>
-              </div>
-              <fieldset class="form-field full option-group">
-                <legend>Quais conteúdos de matemática parecem mais difíceis?</legend>
-                <label><input type="checkbox" name="conteudos-dificeis" value="reconhecer-numeros" /> Reconhecer números</label>
-                <label><input type="checkbox" name="conteudos-dificeis" value="contar" /> Contar</label>
-                <label><input type="checkbox" name="conteudos-dificeis" value="comparar-quantidades" /> Comparar quantidades</label>
-                <label><input type="checkbox" name="conteudos-dificeis" value="somar" /> Somar</label>
-                <label><input type="checkbox" name="conteudos-dificeis" value="subtrair" /> Subtrair</label>
-                <label><input type="checkbox" name="conteudos-dificeis" value="formas-geometricas" /> Formas geométricas</label>
-              </fieldset>
-              <fieldset class="form-field full option-group">
-                <legend>Consentimento (LGPD)</legend>
-                <label>
-                  <input type="checkbox" name="consentimento-dados" required />
-                  Autorizo o uso dos dados informados para análise do cadastro e acompanhamento pedagógico da criança.
-                </label>
-                <label>
-                  <input type="checkbox" name="consentimento-contato" />
-                  Aceito receber contato da equipe Cognita por email ou telefone sobre o acompanhamento.
-                </label>
-              </fieldset>
-            </div>
-            <div class="form-actions">
-              <button class="btn btn-primary" type="submit">Enviar cadastro</button>
-            </div>
-            <p class="fine-print" data-guardian-error aria-live="polite"></p>
-            <p class="fine-print" data-guardian-success aria-live="polite"></p>
-            <p class="fine-print">
-              Dados sensíveis são coletados somente quando necessários para o acompanhamento.
-            </p>
-          </form>
-        </section>
       </div>
-    </main>
+      <div class="step-nav step-nav--first">
+        <button type="button" class="btn btn--primary" data-next>Continuar</button>
+      </div>
+    </section>
 
-    <script type="module" src="/js/pages/cadastro-responsavel.js"></script>
-  </body>
+    <!-- ── ETAPA 2 — Dados da criança ── -->
+    <section class="step-panel" id="panel-2" aria-labelledby="h-s2">
+      <div class="step-head">
+        <p class="step-eyebrow">Etapa 2</p>
+        <h2 class="step-title" id="h-s2">Sobre a criança</h2>
+        <p class="step-desc">Informe apenas o necessário para começarmos. Primeiro nome é suficiente.</p>
+      </div>
+      <div class="step-body">
+
+        <div class="field">
+          <label for="cr-nome">Nome da criança</label>
+          <span class="field-hint" id="hint-cr-nome">Primeiro nome é suficiente.</span>
+          <input type="text" id="cr-nome" name="cr_nome" required aria-required="true" aria-describedby="hint-cr-nome" placeholder="ex.: Mateus" />
+        </div>
+
+        <div class="field">
+          <label for="cr-nasc">Data de nascimento</label>
+          <input type="date" id="cr-nasc" name="cr_nasc" required aria-required="true" aria-describedby="age-feedback" data-age-check />
+            <!-- Feedback de idade — JS preenche conforme regras -->
+            <div class="field-alert field-alert--warn" id="age-feedback" role="alert" aria-live="polite">
+              <svg class="field-alert-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1.2" fill="currentColor"/></svg>
+              <div>
+                <span data-age-msg></span>
+                <p data-age-detail></p>
+              </div>
+            </div>
+          </div>
+
+        <div class="field">
+          <label for="cr-etapa">Etapa escolar atual</label>
+          <select id="cr-etapa" name="cr_etapa" required aria-required="true">
+            <option value="" disabled selected>Selecione</option>
+            <option value="pre">Pré-escola (4–5 anos)</option>
+            <option value="ef1">1º ano do Ensino Fundamental</option>
+            <option value="ef2">2º ano do Ensino Fundamental</option>
+            <option value="ef3">3º ano do Ensino Fundamental</option>
+            <option value="ef4">4º ano do Ensino Fundamental</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Dificuldades em matemática <span style="font-weight:400;color:var(--ink-soft)">(selecione as que aparecem)</span></label>
+          <div class="chip-group" id="cr-dific" role="group" aria-label="Dificuldades em matemática">
+            <button type="button" class="chip" aria-pressed="false">Reconhecer números</button>
+            <button type="button" class="chip" aria-pressed="false">Contagem</button>
+            <button type="button" class="chip" aria-pressed="false">Sequência numérica</button>
+            <button type="button" class="chip" aria-pressed="false">Comparação de quantidades</button>
+            <button type="button" class="chip" aria-pressed="false">Adição e subtração</button>
+            <button type="button" class="chip" aria-pressed="false">Formas geométricas e espaço</button>
+            <button type="button" class="chip" aria-pressed="false">Resolver problemas simples</button>
+            <button type="button" class="chip" aria-pressed="false">Manter atenção em atividades de matemática</button>
+          </div>
+          <label class="naoseicheck">
+            <input type="checkbox" data-naosabe="cr-dific"> Não sei informar
+          </label>
+        </div>
+
+        <div class="field">
+          <label>A criança tem acompanhamento educacional ou terapêutico?</label>
+          <span class="field-hint">Isso não impede o cadastro — ajuda a entender o contexto.</span>
+          <div class="radio-group" role="radiogroup" aria-label="Acompanhamento atual">
+            <label class="radio-item"><input type="radio" name="acomp" value="sim"> Sim</label>
+            <label class="radio-item"><input type="radio" name="acomp" value="nao"> Não</label>
+            <label class="radio-item"><input type="radio" name="acomp" value="naosabe"> Não sei</label>
+          </div>
+          <!-- TODO(wiring): gravar em children (campo a confirmar no schema) -->
+        </div>
+
+        <div class="field">
+          <label for="cr-obs">Observações importantes <span style="font-weight:400;color:var(--ink-soft)">(opcional)</span></label>
+          <span class="field-hint" id="hint-cr-obs">Rotina, gatilhos de estresse, preferências sensoriais — o que achar relevante.</span>
+          <textarea id="cr-obs" name="cr_obs" aria-describedby="hint-cr-obs" placeholder="Ex.: Não gosta de barulho alto; funciona melhor no período da manhã."></textarea>
+          <!-- TODO(wiring): sensory_notes / routine_notes em children -->
+        </div>
+
+      </div>
+      <div class="step-nav">
+        <button type="button" class="btn btn--outline" data-prev>Voltar</button>
+        <button type="button" class="btn btn--primary" data-next>Continuar</button>
+      </div>
+    </section>
+
+    <!-- ── ETAPA 3 — Perfil pedagógico ── -->
+    <section class="step-panel" id="panel-3" aria-labelledby="h-s3">
+      <div class="step-head">
+        <p class="step-eyebrow">Etapa 3</p>
+        <h2 class="step-title" id="h-s3">Como a criança aprende</h2>
+        <p class="step-desc">Essas informações orientam o tutor. Todos os campos têm a opção "não sei informar" — use sem medo.</p>
+      </div>
+      <div class="step-body">
+
+        <div class="field">
+          <label>A criança aprende melhor com…</label>
+          <div class="chip-group" id="lp-formatos" role="group" aria-label="Formatos de aprendizagem">
+            <button type="button" class="chip" aria-pressed="false">Imagens e desenhos</button>
+            <button type="button" class="chip" aria-pressed="false">Objetos concretos</button>
+            <button type="button" class="chip" aria-pressed="false">Jogos e atividades</button>
+            <button type="button" class="chip" aria-pressed="false">Histórias e exemplos</button>
+            <button type="button" class="chip" aria-pressed="false">Repetição passo a passo</button>
+            <button type="button" class="chip" aria-pressed="false">Apoio visual (esquemas)</button>
+            <button type="button" class="chip" aria-pressed="false">Rotina previsível</button>
+          </div>
+          <label class="naoseicheck">
+            <input type="checkbox" data-naosabe="lp-formatos"> Não sei informar
+          </label>
+          <!-- TODO(wiring): preferred_formats em learning_profiles -->
+        </div>
+
+        <div class="field">
+          <label>Tempo de concentração em atividades</label>
+          <div class="radio-group" role="radiogroup" aria-label="Tempo de concentração">
+            <label class="radio-item"><input type="radio" name="atencao" value="ate5"> Até 5 minutos</label>
+            <label class="radio-item"><input type="radio" name="atencao" value="5a10"> 5 a 10 minutos</label>
+            <label class="radio-item"><input type="radio" name="atencao" value="mais10"> Mais de 10 minutos</label>
+            <label class="radio-item"><input type="radio" name="atencao" value="naosabe"> Não sei informar</label>
+          </div>
+          <!-- TODO(wiring): attention_span em learning_profiles -->
+        </div>
+
+        <div class="field">
+          <label for="lp-motiv">O que costuma motivar a criança?</label>
+          <textarea id="lp-motiv" name="lp_motiv" placeholder="Ex.: Temas de dinossauros, animais, músicas específicas…" style="min-height:76px"></textarea>
+          <label class="naoseicheck">
+            <input type="checkbox" data-naosabe-field="lp-motiv"> Não sei informar
+          </label>
+          <!-- TODO(wiring): motivators em learning_profiles -->
+        </div>
+
+        <div class="field">
+          <label for="lp-evit">O que costuma dificultar ou gerar desconforto?</label>
+          <textarea id="lp-evit" name="lp_evit" placeholder="Ex.: Barulho, tempo de espera longo, mudança de rotina…" style="min-height:76px"></textarea>
+          <label class="naoseicheck">
+            <input type="checkbox" data-naosabe-field="lp-evit"> Não sei informar
+          </label>
+          <!-- TODO(wiring): avoidances em learning_profiles -->
+        </div>
+
+      </div>
+      <div class="step-nav">
+        <button type="button" class="btn btn--outline" data-prev>Voltar</button>
+        <button type="button" class="btn btn--primary" data-next>Continuar</button>
+      </div>
+    </section>
+
+    <!-- ── ETAPA 4 — Consentimento ── -->
+    <section class="step-panel" id="panel-4" aria-labelledby="h-s4">
+      <div class="step-head">
+        <p class="step-eyebrow">Etapa 4</p>
+        <h2 class="step-title" id="h-s4">Consentimento</h2>
+        <p class="step-desc">Leia com atenção. Nenhuma opção é marcada automaticamente.</p>
+      </div>
+      <div class="step-body">
+
+        <div class="consent-list" role="group" aria-label="Termos de consentimento">
+
+          <div class="consent-item">
+            <input type="checkbox" id="cs-dados" name="cs_dados" required aria-required="true"
+              aria-describedby="cs-dados-desc" />
+            <label for="cs-dados">
+              <strong>Uso dos dados para o acompanhamento educacional</strong>
+              <p id="cs-dados-desc">Autorizo o Cognita Hub a usar as informações da criança para organizar e orientar o acompanhamento educacional em matemática, conforme a <a href="#">Política de Privacidade</a>.</p>
+            </label>
+            <!-- TODO(wiring): data_use_accepted em consents -->
+          </div>
+
+          <div class="consent-item">
+            <input type="checkbox" id="cs-escopo" name="cs_escopo" required aria-required="true"
+              aria-describedby="cs-escopo-desc" />
+            <label for="cs-escopo">
+              <strong>Entendimento do escopo do programa</strong>
+              <p id="cs-escopo-desc">Entendo que o Cognita Hub não substitui escola, clínica ou terapia. O apoio em matemática é um complemento educacional.</p>
+            </label>
+            <!-- TODO(wiring): scope_understood em consents -->
+          </div>
+
+          <div class="consent-item">
+            <input type="checkbox" id="cs-revisao" name="cs_revisao" required aria-required="true"
+              aria-describedby="cs-revisao-desc" />
+            <label for="cs-revisao">
+              <strong>Direito de revisão e remoção dos dados</strong>
+              <p id="cs-revisao-desc">Estou ciente de que posso solicitar a revisão ou remoção dos dados a qualquer momento, entrando em contato com a equipe Cognita.</p>
+            </label>
+            <!-- TODO(wiring): data_rights_accepted em consents -->
+          </div>
+
+          <div class="consent-item">
+            <input type="checkbox" id="cs-contato" name="cs_contato" required aria-required="true"
+              aria-describedby="cs-contato-desc" />
+            <label for="cs-contato">
+              <strong>Contato pela equipe Cognita</strong>
+              <p id="cs-contato-desc">Autorizo a equipe Cognita a entrar em contato por e-mail ou telefone para comunicados sobre o acompanhamento.</p>
+            </label>
+            <!-- TODO(wiring): contact_accepted em consents -->
+          </div>
+
+        </div>
+
+        <p class="consent-note">
+          O compartilhamento de informações com o tutor é acordado separadamente no momento do match — não aqui.
+        </p>
+
+        <!-- Campos ocultos para versão e data — preenchidos pelo JS no envio -->
+        <input type="hidden" name="terms_version" value="1.0" />
+        <!-- TODO(wiring): accepted_at preenchido no momento do submit -->
+
+        <div class="field-error" id="err-consent" style="margin-top:14px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1.2" fill="currentColor"/></svg>
+          Marque todos os consentimentos obrigatórios para enviar o cadastro.
+        </div>
+
+      </div>
+      <div class="step-nav">
+        <button type="button" class="btn btn--outline" data-prev>Voltar</button>
+        <button type="button" class="btn btn--primary" data-next data-last>Enviar cadastro</button>
+      </div>
+    </section>
+
+    <!-- ── ETAPA 5 — Enviado ── -->
+    <section class="step-panel" id="panel-5" aria-labelledby="h-s5">
+      <div class="success-body">
+        <img class="success-mascot" src="../assets/gato-plaquinha.png" alt="" aria-hidden="true" />
+        <h2 class="success-title" id="h-s5">Cadastro enviado!</h2>
+        <p class="success-lead">A equipe Cognita vai revisar as informações e entrar em contato. Confirme também o seu e-mail para garantir o acesso ao painel.</p>
+
+        <ol class="success-steps" aria-label="Próximos passos">
+          <li><span class="success-step-n">1</span> Verifique sua caixa de e-mail e confirme o endereço.</li>
+          <li><span class="success-step-n">2</span> A equipe revisa o cadastro — geralmente em até 5 dias úteis.</li>
+          <li><span class="success-step-n">3</span> Quando aprovado, você recebe o acesso ao painel da família.</li>
+        </ol>
+
+        <div class="success-actions">
+          <button type="button" class="btn btn--outline" data-resend>Reenviar e-mail</button>
+          <a class="btn btn--primary" href="../index.html">Entendi, voltar ao site</a>
+        </div>
+      </div>
+    </section>
+
+  </form><!-- .wizard-card -->
+</main>
+
+<script>
+(function(){
+  var TOTAL = 5;
+  var wizardForm = document.querySelector('[data-guardian-form]');
+  var current = 0;
+  var panels  = document.querySelectorAll('.step-panel');
+  var stpItems = document.querySelectorAll('.stepper-item');
+  var counter  = document.getElementById('step-counter');
+  var announce = document.getElementById('step-announce');
+  var stepLabels = ['Sua conta','A criança','Como aprende','Consentimento','Enviado'];
+
+  if (wizardForm) {
+    wizardForm.addEventListener('submit', function(event){
+      event.preventDefault();
+    });
+  }
+
+  function goTo(idx) {
+    panels.forEach(function(p, i){ p.classList.toggle('is-active', i === idx); });
+    stpItems.forEach(function(s, i){
+      s.classList.toggle('is-active', i === idx);
+      s.classList.toggle('is-done', i < idx);
+      var dot = s.querySelector('.stepper-dot');
+      if (i < idx) dot.innerHTML = '<svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true"><polyline points="2,6 5,9 10,3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      else dot.textContent = i + 1;
+    });
+    if (counter) counter.textContent = 'Etapa ' + (idx+1) + ' de ' + TOTAL;
+    if (announce) announce.textContent = 'Etapa ' + (idx+1) + ' de ' + TOTAL + ': ' + stepLabels[idx];
+    current = idx;
+    window.scrollTo({top: 0, behavior: 'smooth'});
+
+    // Salva etapa no sessionStorage para preservar progresso
+    // TODO(wiring): substituir por persistência real
+    sessionStorage.setItem('rp_step', idx);
+  }
+
+  function validateStep(panelEl) {
+    var ok = true;
+    panelEl.querySelectorAll('input[required]:not([type=checkbox]),select[required],textarea[required]').forEach(function(f){
+      var invalid = !f.checkValidity();
+      f.setAttribute('aria-invalid', invalid ? 'true' : 'false');
+      if (invalid) ok = false;
+    });
+    var s1 = panelEl.querySelector('[data-pw-strength]');
+    var s2 = panelEl.querySelector('[id$="senha2"]');
+    var errS2 = panelEl.querySelector('#err-senha2');
+    if (s1 && s2 && s1.value && s1.value !== s2.value) {
+      s2.setAttribute('aria-invalid', 'true');
+      if (errS2) errS2.classList.add('is-visible');
+      ok = false;
+    } else if (errS2) {
+      errS2.classList.remove('is-visible');
+    }
+    if (!ok) {
+      var first = panelEl.querySelector('[aria-invalid="true"]');
+      if (first) first.focus();
+    }
+    return ok;
+  }
+
+  // Navegação
+  document.querySelectorAll('[data-next]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      if (btn.hasAttribute('data-last')) {
+        var cs1 = document.getElementById('cs-dados');
+        var cs2 = document.getElementById('cs-escopo');
+        var cs3 = document.getElementById('cs-revisao');
+        var cs4 = document.getElementById('cs-contato');
+        var errCs = document.getElementById('err-consent');
+        if (!cs1.checked || !cs2.checked || !cs3.checked || !cs4.checked) {
+          errCs.classList.add('is-visible');
+          [cs1, cs2, cs3, cs4].find(function(c){ return !c.checked; }).focus();
+          return;
+        }
+        errCs.classList.remove('is-visible');
+      } else {
+        if (!validateStep(panels[current])) return;
+      }
+      if (current < TOTAL - 1) goTo(current + 1);
+    });
+  });
+  document.querySelectorAll('[data-prev]').forEach(function(btn){
+    btn.addEventListener('click', function(){ if (current > 0) goTo(current - 1); });
+  });
+  document.querySelectorAll('[data-resend]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      // TODO(wiring): auth.resend({ type: 'signup', email })
+      btn.textContent = 'E-mail reenviado';
+      btn.disabled = true;
+    });
+  });
+
+  // Chips
+  document.querySelectorAll('.chip').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      var pressed = chip.getAttribute('aria-pressed') === 'true';
+      chip.setAttribute('aria-pressed', !pressed);
+    });
+  });
+
+  // "Não sei informar" toggle
+  document.querySelectorAll('[data-naosabe]').forEach(function(cb){
+    cb.addEventListener('change', function(){
+      var group = document.getElementById(cb.dataset.naosabe);
+      if (!group) return;
+      group.setAttribute('aria-disabled', cb.checked ? 'true' : 'false');
+      if (cb.checked) {
+        group.querySelectorAll('.chip').forEach(function(c){ c.setAttribute('aria-pressed','false'); });
+      }
+    });
+  });
+
+  // Mostrar/ocultar senha
+  document.querySelectorAll('[data-toggle-pw]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var input = document.getElementById(btn.dataset.togglePw);
+      if (!input) return;
+      var showing = input.type === 'text';
+      input.type = showing ? 'password' : 'text';
+      btn.setAttribute('aria-label', showing ? 'Mostrar senha' : 'Ocultar senha');
+    });
+  });
+
+  // Força da senha
+  document.querySelectorAll('[data-pw-strength]').forEach(function(input){
+    var barWrap = document.querySelector('[data-strength-bars="' + input.id + '"]');
+    var label   = document.getElementById('pw-strength-label-1');
+    if (!barWrap) return;
+    var bars = barWrap.querySelectorAll('[data-bar]');
+    var levels = ['','Muito fraca','Fraca','Boa','Forte'];
+    var classes= ['','s1','s2','s3','s4'];
+
+    input.addEventListener('input', function(){
+      var v = input.value;
+      var score = 0;
+      if (v.length >= 6) score++;
+      if (v.length >= 8) score++;
+      if (/[A-Z]/.test(v) && /[a-z]/.test(v)) score++;
+      if (/[0-9!@#$%^&*]/.test(v)) score++;
+      bars.forEach(function(b, i){
+        b.className = 'pw-bar' + (i < score ? ' ' + classes[score] : '');
+      });
+      if (label) label.textContent = v ? 'Senha ' + levels[score] : '';
+    });
+  });
+
+  // Máscara de telefone BR
+  document.querySelectorAll('[data-phone-mask]').forEach(function(inp){
+    inp.addEventListener('input', function(){
+      var v = inp.value.replace(/\D/g,'').slice(0,11);
+      if (v.length > 10)      v = '(' + v.slice(0,2) + ') ' + v.slice(2,7) + '-' + v.slice(7);
+      else if (v.length > 6)  v = '(' + v.slice(0,2) + ') ' + v.slice(2,6) + '-' + v.slice(6);
+      else if (v.length > 2)  v = '(' + v.slice(0,2) + ') ' + v.slice(2);
+      else if (v.length > 0)  v = '(' + v;
+      inp.value = v;
+    });
+  });
+
+  // Validação de idade da criança
+  var crNasc = document.getElementById('cr-nasc');
+  if (crNasc) {
+    crNasc.addEventListener('change', function(){
+      var dob = new Date(crNasc.value);
+      if (isNaN(dob)) return;
+      var now = new Date();
+      var age = now.getFullYear() - dob.getFullYear();
+      var m = now.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age--;
+
+      var box  = document.getElementById('age-feedback');
+      var msg  = box.querySelector('[data-age-msg]');
+      var det  = box.querySelector('[data-age-detail]');
+      var icon = box.querySelector('.field-alert-icon');
+
+      box.classList.remove('is-visible','field-alert--warn','field-alert--ok');
+
+      var nextBtn = document.querySelector('#panel-2 [data-next]');
+
+      if (age < 5) {
+        box.classList.add('is-visible','field-alert--warn');
+        msg.textContent = 'Criança fora da faixa de atendimento.';
+        det.textContent = 'O Cognita atende crianças de 5 a 11 anos. Com ' + age + ' anos, ela ainda não se enquadra neste ciclo.';
+        if (nextBtn) nextBtn.disabled = true;
+      } else if (age >= 12) {
+        box.classList.add('is-visible','field-alert--warn');
+        msg.textContent = 'Faixa de idade fora do escopo atual.';
+        det.textContent = 'O Cognita atende até 11 anos. Com ' + age + ' anos, ela não se enquadra neste ciclo.';
+        if (nextBtn) nextBtn.disabled = true;
+      } else if (age >= 10) {
+        box.classList.add('is-visible','field-alert--ok');
+        msg.textContent = 'Permitido como reforço e revisão.';
+        det.textContent = 'Com ' + age + ' anos, a criança pode participar focando em revisão de conteúdos anteriores.';
+        if (nextBtn) nextBtn.disabled = false;
+      } else {
+        if (nextBtn) nextBtn.disabled = false;
+      }
+    });
+  }
+
+  // "Não sei informar" para campos de texto
+  document.querySelectorAll('[data-naosabe-field]').forEach(function(cb){
+    cb.addEventListener('change', function(){
+      var field = document.getElementById(cb.dataset.naosabeField);
+      if (!field) return;
+      field.disabled = cb.checked;
+      field.style.opacity = cb.checked ? '.4' : '1';
+      if (cb.checked) field.value = '';
+    });
+  });
+
+  // Restaura etapa salva (se existir)
+  var saved = parseInt(sessionStorage.getItem('rp_step'), 10);
+  if (!isNaN(saved) && saved > 0 && saved < TOTAL) goTo(saved);
+})();
+</script>
+</body>
 </html>
