@@ -12,7 +12,7 @@ document.querySelectorAll('[data-logout]').forEach((btn) => {
   btn.addEventListener('click', async (e) => { e.preventDefault(); await signOut() })
 })
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 const REVIEW_STATUSES = ['pending', 'waiting_review', 'tutor_pending']
 
@@ -47,7 +47,13 @@ function firstName(fullName) {
   return (fullName ?? '').trim().split(/\s+/)[0] || 'criança'
 }
 
-// ── Identity ─────────────────────────────────────────────────────────────────
+function makeSvg(path, extraAttrs = '') {
+  const wrap = document.createElement('span')
+  wrap.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extraAttrs}>${path}</svg>`
+  return wrap.firstElementChild
+}
+
+// ── Identidade ────────────────────────────────────────────────────────────────
 
 function fillIdentity() {
   const name = session.profile.name || 'Tutor'
@@ -127,6 +133,114 @@ function renderStatusStrip(state, cycle) {
   stripEl.replaceChildren(dot, text)
 }
 
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+
+function renderSidebar(state, cycle) {
+  const sidebarEl = document.querySelector('[data-tutor-sidebar]')
+  if (!sidebarEl) return
+
+  const name = session.profile.name || 'Tutor'
+  const frag = document.createDocumentFragment()
+
+  // Seção do tutor
+  const tutorRow = el('div', 'tp-sb-tutor')
+  const avatar = el('div', 'tp-sb-avatar', initials(name))
+
+  const tutorInfo = el('div')
+  tutorInfo.append(el('div', 'tp-sb-name', name))
+  tutorInfo.append(el('div', 'tp-sb-role', 'Tutor voluntário'))
+
+  const chipMap = {
+    pending:             { cls: 'warn', label: 'Em análise' },
+    orientation_pending: { cls: 'warn', label: 'Orientação pendente' },
+    available:           { cls: 'ok',   label: 'Aprovado' },
+    cycle_planned:       { cls: 'info', label: 'Ciclo planejado' },
+    cycle_active:        { cls: 'ok',   label: 'Ciclo ativo' },
+    cycle_paused:        { cls: 'warn', label: 'Ciclo pausado' },
+    cycle_completed:     { cls: 'info', label: 'Ciclo concluído' },
+  }
+  const chipCfg = chipMap[state] ?? chipMap.available
+  const chip = el('span', `tp-sb-chip tp-sb-chip--${chipCfg.cls}`)
+  chip.append(el('i'), document.createTextNode(chipCfg.label))
+  tutorInfo.append(chip)
+
+  tutorRow.append(avatar, tutorInfo)
+  frag.append(tutorRow)
+
+  frag.append(el('div', 'tp-sb-divider'))
+
+  if (cycle) {
+    const child = cycle.children ?? {}
+    const age = ageFrom(child.birth_date)
+    const totalMonths = monthsBetween(cycle.start_date, cycle.end_date)
+    const currentMonth = currentCycleMonth(cycle.start_date, cycle.end_date)
+
+    frag.append(el('div', 'tp-sb-section-label', 'Criança em acompanhamento'))
+    frag.append(el('div', 'tp-sb-child-name', child.name ?? 'Criança'))
+
+    const metaParts = []
+    if (age != null)        metaParts.push(`${age} anos`)
+    if (child.school_year) metaParts.push(child.school_year)
+    if (metaParts.length)  frag.append(el('div', 'tp-sb-child-meta', metaParts.join(' · ')))
+
+    // Widget de progresso do ciclo
+    const widget = el('div', 'tp-cycle-widget')
+    const row = el('div', 'tp-cycle-row')
+    row.append(
+      el('span', 'tp-cycle-month-num', String(currentMonth)),
+      el('span', 'tp-cycle-month-of', `de ${totalMonths} meses`)
+    )
+    widget.append(row)
+
+    const track = el('div', 'tp-cycle-track')
+    for (let i = 1; i <= totalMonths; i++) {
+      const cls = i < currentMonth ? 'tp-cycle-seg tp-cycle-seg--done'
+                : i === currentMonth ? 'tp-cycle-seg tp-cycle-seg--active'
+                : 'tp-cycle-seg'
+      track.append(el('span', cls))
+    }
+    widget.append(track)
+    widget.append(el('div', 'tp-cycle-stat', 'Mês atual do ciclo'))
+    frag.append(widget)
+
+    frag.append(el('div', 'tp-sb-divider'))
+
+    const links = el('div', 'tp-sb-links')
+
+    const profileLink = el('a', 'tp-sb-link')
+    profileLink.href = `perfil-crianca.html?id=${cycle.child_id ?? ''}`
+    profileLink.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`
+    profileLink.append(document.createTextNode('Ver perfil pedagógico'))
+    links.append(profileLink)
+
+    const libLink = el('a', 'tp-sb-link')
+    libLink.href = 'atividades.html'
+    libLink.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`
+    libLink.append(document.createTextNode('Biblioteca de atividades'))
+    links.append(libLink)
+
+    frag.append(links)
+  } else {
+    const isWaiting = ['pending', 'orientation_pending'].includes(state)
+    frag.append(el('p', 'tp-sb-empty', isWaiting
+      ? 'Ainda sem criança vinculada. Aguardando validação e pareamento.'
+      : 'Nenhuma criança vinculada. A equipe Cognita fará o pareamento em breve.'
+    ))
+
+    frag.append(el('div', 'tp-sb-divider'))
+
+    const links = el('div', 'tp-sb-links')
+    const libLink = el('a', 'tp-sb-link')
+    libLink.href = 'atividades.html'
+    libLink.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`
+    libLink.append(document.createTextNode('Biblioteca de atividades'))
+    links.append(libLink)
+    frag.append(links)
+  }
+
+  sidebarEl.replaceChildren(frag)
+}
+
 // ── Máquina de estados ────────────────────────────────────────────────────────
 
 function deriveTutorState(profileStatus, cycles) {
@@ -147,7 +261,7 @@ function deriveTutorState(profileStatus, cycles) {
   return { state: 'available' }
 }
 
-// ── Renderizadores de estado sem ciclo ───────────────────────────────────────
+// ── Estados sem ciclo ─────────────────────────────────────────────────────────
 
 function renderPending() {
   const card = el('div', 'tp-status-card')
@@ -184,7 +298,7 @@ function renderPending() {
 function renderOrientationPending() {
   const card = el('div', 'tp-status-card')
   const icon = el('div', 'tp-status-icon tp-status-icon--pending')
-  icon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
+  icon.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
 
   const body = el('div', 'tp-status-body')
   body.append(
@@ -305,30 +419,6 @@ function renderError(retry) {
 
 // ── Sessões ───────────────────────────────────────────────────────────────────
 
-function renderSession(record) {
-  const item = el('article', 'tp-session-item')
-  item.append(el('span', 'tp-session-date', formatDate(record.date) ?? '-'))
-  item.append(el('h3', 'tp-session-title', record.activity_title ?? 'Sessão'))
-
-  if (record.focus_area) {
-    const p = el('p', 'tp-session-field')
-    p.append(el('strong', null, 'Foco '), document.createTextNode(record.focus_area))
-    item.append(p)
-  }
-  if (record.notes) {
-    const p = el('p', 'tp-session-field')
-    p.append(el('strong', null, 'Resumo '), document.createTextNode(record.notes))
-    item.append(p)
-  }
-  if (record.next_step) {
-    const p = el('p', 'tp-session-field')
-    p.append(el('strong', null, 'Próximo passo '), document.createTextNode(record.next_step))
-    item.append(p)
-  }
-  if (record.duration_minutes) item.append(el('span', 'tp-session-duration', `${record.duration_minutes} min`))
-  return item
-}
-
 function renderSessionCompact(record) {
   const item = el('article', 'tp-session-item')
   item.append(el('span', 'tp-session-date', formatDate(record.date) ?? '-'))
@@ -357,18 +447,21 @@ async function loadSessions(cycleId, container, compact = false) {
   const rows = data ?? []
   if (!rows.length) {
     const empty = el('div', 'tp-empty')
-    empty.append(el('strong', null, 'Nenhuma sessão registrada'), document.createTextNode(' — registre a sessão desta semana usando o formulário acima.'))
+    empty.append(
+      el('strong', null, 'Nenhuma sessão registrada'),
+      document.createTextNode(' — registre a sessão desta semana usando o formulário acima.')
+    )
     container.replaceChildren(empty)
     return
   }
 
   const list = el('div', 'tp-session-list')
   const source = compact ? rows.slice(0, 4) : rows
-  source.forEach((r) => list.append(compact ? renderSessionCompact(r) : renderSession(r)))
+  source.forEach((r) => list.append(renderSessionCompact(r)))
   container.replaceChildren(list)
 }
 
-// ── Escala de botões (engajamento / dificuldade / resultado) ──────────────────
+// ── Escalas de botões ─────────────────────────────────────────────────────────
 
 function makeScaleGroup(options) {
   const group = el('div', 'tp-scale')
@@ -412,7 +505,7 @@ function renderSessionForm(cycle, onSaved) {
 
   const body = el('div', 'tp-form-body')
 
-  // ── Nível 1: Dados estruturados ──
+  // Nível 1: Dados estruturados
   body.append(el('div', 'tp-form-section-title', '1. Dados estruturados'))
 
   const row1 = el('div', 'tp-form-row')
@@ -466,7 +559,7 @@ function renderSessionForm(cycle, onSaved) {
   const diffField = el('div', 'tp-field')
   diffField.append(el('label', null, 'Dificuldade percebida'))
   const diff = makeScaleGroup([
-    { label: 'Baixa',            val: '1', tone: 'ok'  },
+    { label: 'Baixa',            val: '1', tone: 'ok'   },
     { label: 'Média',            val: '3', tone: 'warn' },
     { label: 'Alta',             val: '5', tone: 'bad'  },
     { label: 'Não foi possível', val: '0', tone: ''     },
@@ -476,10 +569,10 @@ function renderSessionForm(cycle, onSaved) {
   const resultField = el('div', 'tp-field')
   resultField.append(el('label', null, 'Resultado'))
   const result = makeScaleGroup([
-    { label: 'Avançou',          val: 'improved',      tone: 'ok'  },
-    { label: 'Manteve',          val: 'stable',         tone: ''    },
-    { label: 'Teve dificuldade', val: 'struggled',      tone: 'bad' },
-    { label: 'Não foi possível', val: 'not_completed',  tone: ''    },
+    { label: 'Avançou',          val: 'improved',     tone: 'ok'  },
+    { label: 'Manteve',          val: 'stable',        tone: ''    },
+    { label: 'Teve dificuldade', val: 'struggled',     tone: 'bad' },
+    { label: 'Não foi possível', val: 'not_completed', tone: ''    },
   ])
   resultField.append(result.group)
 
@@ -494,7 +587,7 @@ function renderSessionForm(cycle, onSaved) {
   nextLabel.append(nextInput); nextField.append(nextLabel)
   body.append(nextField)
 
-  // ── Nível 2: Resumo para a família ──
+  // Nível 2: Resumo para a família
   body.append(el('div', 'tp-form-section-title', '2. Resumo para a família'))
 
   const guide = el('div', 'tp-family-guide')
@@ -517,7 +610,7 @@ function renderSessionForm(cycle, onSaved) {
   body.append(familyField)
 
   const checklistTitle = el('p')
-  checklistTitle.style.cssText = 'font-size:.8rem;font-weight:700;color:var(--ink-soft);margin-bottom:8px;'
+  checklistTitle.style.cssText = 'font-size:.79rem;font-weight:700;color:var(--ink-soft);margin-bottom:8px;'
   checklistTitle.textContent = 'Antes de salvar, confirme:'
 
   const CHECKS = [
@@ -537,7 +630,7 @@ function renderSessionForm(cycle, onSaved) {
   })
   body.append(checklistTitle, checklist)
 
-  // ── Nível 3: Nota interna ──
+  // Nível 3: Nota interna
   body.append(el('div', 'tp-form-section-title', '3. Nota interna (só você e a equipe veem)'))
 
   const internalWrap = el('div', 'tp-internal-wrap')
@@ -549,7 +642,7 @@ function renderSessionForm(cycle, onSaved) {
   internalWrap.append(internalLabel, internalInput)
   body.append(internalWrap)
 
-  // ── Ações ──
+  // Ações
   const errorBox = el('p', 'tp-form-error'); errorBox.hidden = true
   const okBox    = el('p', 'tp-form-ok');    okBox.hidden = true
   const saveBtn  = el('button', 'tp-btn-save', 'Salvar registro')
@@ -584,7 +677,7 @@ function renderSessionForm(cycle, onSaved) {
       durationMinutes: durInput.value ? Number(durInput.value) : null,
       activityTitle:   actTitle,
       focusArea:       focusInput.value.trim(),
-      notes:           familySummary, // Nível 2 → campo notes existente no schema
+      notes:           familySummary,
       nextStep:        nextInput.value.trim(),
     })
 
@@ -612,16 +705,16 @@ function renderSessionForm(cycle, onSaved) {
   return details
 }
 
-// ── Painéis do workspace (ciclo ativo) ───────────────────────────────────────
+// ── Blocos do workspace (ciclo ativo) ─────────────────────────────────────────
 
-function renderNextSessionCard(cycle, onRegister) {
+function renderActionBlock(cycle, onRegister) {
   const child = cycle.children ?? {}
   const lp    = child.learning_profiles ?? {}
   const name  = firstName(child.name)
 
-  const card = el('div', 'tp-next-card')
-  card.append(el('p', 'tp-next-kicker', 'O que fazer agora'))
-  card.append(el('h2', 'tp-next-title', `Sessão desta semana com ${name}`))
+  const block = el('div', 'tp-block tp-block--action')
+  block.append(el('div', 'tp-block-label', 'Sessão desta semana'))
+  block.append(el('h1', 'tp-block-title', `Com ${name}`))
 
   const hasInfo = cycle.main_goal || lp.math_difficulties?.length || child.main_difficulties?.length
   if (hasInfo) {
@@ -638,174 +731,112 @@ function renderNextSessionCard(cycle, onRegister) {
       row.append(el('strong', null, 'Foco:'), el('span', null, txt))
       info.append(row)
     }
-    card.append(info)
+    // TODO(wiring:support_cycles): exibir atividade da semana quando current_activity_id existir
+    block.append(info)
+  } else {
+    block.append(el('p', 'tp-next-empty', 'Consulte o perfil pedagógico e a biblioteca para escolher a atividade desta semana.'))
   }
-
-  // TODO(wiring:support_cycles): exibir atividade da semana quando current_activity_id existir
 
   const btn = el('button', 'tp-btn-register')
   btn.type = 'button'
-  const ns = 'http://www.w3.org/2000/svg'
-  const svg = document.createElementNS(ns, 'svg')
-  svg.setAttribute('viewBox', '0 0 24 24')
-  svg.setAttribute('aria-hidden', 'true')
-  svg.innerHTML = '<path d="M12 5v14"/><path d="M5 12h14"/>'
-  btn.append(svg, document.createTextNode('Registrar sessão'))
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>`
+  btn.append(document.createTextNode('Registrar sessão'))
   btn.addEventListener('click', onRegister)
-  card.append(btn)
+  block.append(btn)
 
-  return card
+  return block
 }
 
-function renderPlanPanel(cycle) {
-  const panel = el('div', 'tp-panel')
-  panel.append(el('div', 'tp-panel-title', 'Plano atual'))
+function renderPlanBlock(cycle) {
+  const block = el('div', 'tp-block')
+  block.append(el('div', 'tp-block-label', 'Plano atual'))
 
-  const hasGoal = !!cycle.main_goal
-  const hasPlan = !!cycle.current_plan
-
-  if (!hasGoal && !hasPlan) {
-    panel.append(el('p', 'tp-empty', 'A equipe ainda não definiu o plano deste ciclo.'))
+  if (!cycle.main_goal && !cycle.current_plan) {
+    block.append(el('p', 'tp-empty', 'A equipe ainda não definiu o plano deste ciclo.'))
   } else {
     const entries = el('div')
-    if (hasGoal) {
+    if (cycle.main_goal) {
       const e = el('div', 'tp-plan-entry')
       e.append(el('div', 'tp-plan-key', 'Meta do ciclo'), el('div', 'tp-plan-val', cycle.main_goal))
       entries.append(e)
     }
     // TODO(wiring:support_cycles): etapa_atual e criterio_avanco quando adicionados ao schema
-    if (hasPlan) {
+    if (cycle.current_plan) {
       const e = el('div', 'tp-plan-entry')
       e.append(el('div', 'tp-plan-key', 'Plano atual'), el('div', 'tp-plan-val', cycle.current_plan))
       entries.append(e)
     }
-    panel.append(entries)
+    block.append(entries)
   }
 
   const suggestBtn = el('button', 'tp-btn-suggest', 'Sugerir ajuste à equipe')
   suggestBtn.type = 'button'
   // TODO: abrir modal de sugestão de ajuste ao plano
-  panel.append(suggestBtn)
-
-  return panel
+  block.append(suggestBtn)
+  return block
 }
 
-function renderSuggestedActivityPanel(cycle) {
-  const panel = el('div', 'tp-panel')
-  panel.append(el('div', 'tp-panel-title', 'Atividade sugerida'))
+function renderActivityBlock() {
+  const block = el('div', 'tp-block')
+  block.append(el('div', 'tp-block-label', 'Atividade sugerida'))
 
   // TODO(wiring:support_cycles): exibir atividade definida pela equipe quando current_activity_id existir
-  panel.append(el('p', 'tp-activity-note', 'A equipe ainda não definiu a atividade desta semana. Consulte a biblioteca para escolher uma de acordo com o foco do ciclo.'))
+  block.append(el('p', 'tp-activity-note', 'A equipe ainda não definiu a atividade desta semana. Consulte a biblioteca para escolher uma de acordo com o foco do ciclo.'))
 
   const link = el('a', 'tp-activity-link', 'Abrir biblioteca de atividades →')
   link.href = 'atividades.html'
-  panel.append(link)
-
-  return panel
+  block.append(link)
+  return block
 }
 
-// ── Ciclo ativo (workspace completo) ─────────────────────────────────────────
+// ── Ciclo ativo (workspace) ───────────────────────────────────────────────────
 
 function renderCycleActive(cycle) {
-  const child       = cycle.children ?? {}
-  const age         = ageFrom(child.birth_date)
-  const totalMonths = monthsBetween(cycle.start_date, cycle.end_date)
-  const currentMonth = currentCycleMonth(cycle.start_date, cycle.end_date)
-
   const frag = document.createDocumentFragment()
 
-  // ── Hero (largura total) ──
-  const hero = el('div', 'tp-hero-card')
+  // Container para sessões recentes (referenciado antes de ser passado ao onSaved)
+  const recentContainer = el('div')
 
-  const monthDisplay = el('div', 'tp-hero-month')
-  monthDisplay.append(
-    el('span', 'tp-hero-month-num', String(currentMonth)),
-    el('span', 'tp-hero-month-label', 'Mês do ciclo'),
-    el('span', 'tp-hero-month-total', `de ${totalMonths}`)
-  )
-
-  const heroBody = el('div', 'tp-hero-body')
-  heroBody.append(
-    el('p', 'tp-hero-kicker', 'Criança em acompanhamento'),
-    el('h1', 'tp-hero-name', child.name ?? 'Criança')
-  )
-
-  const chips = el('div', 'tp-hero-chips')
-  const activeChip = el('span', 'tp-chip tp-chip--ok')
-  activeChip.append(el('i'), document.createTextNode(' Ciclo ativo'))
-  chips.append(activeChip)
-  if (age != null)      chips.append(el('span', 'tp-chip tp-chip--info', `${age} anos`))
-  if (child.school_year) chips.append(el('span', 'tp-chip tp-chip--info', child.school_year))
-  heroBody.append(chips)
-
-  const track = el('div', 'tp-progress-track')
-  for (let i = 1; i <= totalMonths; i++) {
-    const cls = i < currentMonth ? 'tp-progress-seg tp-progress-seg--done'
-              : i === currentMonth ? 'tp-progress-seg tp-progress-seg--active'
-              : 'tp-progress-seg'
-    track.append(el('span', cls))
-  }
-  heroBody.append(track)
-
-  const profileLink = el('a', 'tp-hero-link', 'Ver perfil pedagógico →')
-  profileLink.href = `perfil-crianca.html?id=${cycle.child_id ?? ''}`
-  heroBody.append(profileLink)
-
-  hero.append(monthDisplay, heroBody)
-  frag.append(hero)
-
-  // ── Grid ──
-  const grid = el('div', 'tp-dashboard-grid')
-
-  // Coluna esquerda: O que fazer + formulário
-  const leftPanel = el('div', 'tp-panel')
-
-  const recentContainer = el('div') // referenciado antes de ser usado no onSaved
   const form = renderSessionForm(cycle, () => loadSessions(cycle.id, recentContainer, true))
-  const formWrap = el('div', 'tp-session-form-wrap')
-  formWrap.append(form)
 
-  const nextCard = renderNextSessionCard(cycle, () => {
+  const openForm = () => {
     form.open = true
     form.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-  })
+  }
 
-  leftPanel.append(nextCard, formWrap)
+  // Bloco 1: O que fazer agora
+  frag.append(renderActionBlock(cycle, openForm))
 
-  // Coluna direita: plano + atividade + sessões recentes
-  const rightColumn = el('div', 'tp-right-column')
+  // Bloco 2: Formulário de registro (expansível)
+  const formBlock = el('div', 'tp-block')
+  formBlock.append(form)
+  frag.append(formBlock)
 
-  const planPanel     = renderPlanPanel(cycle)
-  const activityPanel = renderSuggestedActivityPanel(cycle)
+  // Bloco 3: Plano atual
+  frag.append(renderPlanBlock(cycle))
 
-  const recentPanel = el('div', 'tp-panel')
-  recentPanel.append(el('div', 'tp-panel-title', 'Sessões recentes'))
-  recentPanel.append(recentContainer)
+  // Bloco 4: Atividade sugerida
+  frag.append(renderActivityBlock())
 
-  rightColumn.append(planPanel, activityPanel, recentPanel)
-  grid.append(leftPanel, rightColumn)
-  frag.append(grid)
+  // Bloco 5: Sessões recentes
+  const recentBlock = el('div', 'tp-block')
+  recentBlock.append(el('div', 'tp-block-label', 'Sessões recentes'))
+  recentBlock.append(recentContainer)
+  frag.append(recentBlock)
 
-  // FAB mobile (só visível < 680px via CSS)
+  // FAB mobile (visível só < 680px via CSS)
   const fab = el('button', 'tp-fab')
   fab.type = 'button'
-  const fabNS = 'http://www.w3.org/2000/svg'
-  const fabSvg = document.createElementNS(fabNS, 'svg')
-  fabSvg.setAttribute('viewBox', '0 0 24 24')
-  fabSvg.setAttribute('aria-hidden', 'true')
-  fabSvg.innerHTML = '<path d="M12 5v14"/><path d="M5 12h14"/>'
-  fab.append(fabSvg, document.createTextNode('Registrar sessão'))
-  fab.addEventListener('click', () => {
-    form.open = true
-    form.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-  })
+  fab.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>`
+  fab.append(document.createTextNode('Registrar sessão'))
+  fab.addEventListener('click', openForm)
   frag.append(fab)
 
   loadSessions(cycle.id, recentContainer, true)
   return frag
 }
 
-// ── Orquestrador principal ────────────────────────────────────────────────────
+// ── Orquestrador ──────────────────────────────────────────────────────────────
 
 async function loadAndRender() {
   if (!stateBox) return
@@ -822,6 +853,7 @@ async function loadAndRender() {
   if (error) {
     stateBox.replaceChildren(renderError(loadAndRender))
     renderStatusStrip('error')
+    renderSidebar('error', null)
     return
   }
 
@@ -830,6 +862,7 @@ async function loadAndRender() {
 
   updateTopbarBtn(derived.state)
   renderStatusStrip(derived.state, cycleMaybe)
+  renderSidebar(derived.state, cycleMaybe)
 
   switch (derived.state) {
     case 'pending':

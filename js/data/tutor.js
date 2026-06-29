@@ -25,7 +25,7 @@ export async function getTutorCycles(tutorId) {
     .from('support_cycles')
     .select('id, status, start_date, end_date, child_id, main_goal, current_plan')
     .eq('tutor_id', tutorId)
-    .in('status', ['planned', 'active'])
+    .in('status', ['planned', 'active', 'paused', 'completed'])
     .order('created_at', { ascending: false })
 
   if (error) return { data: null, error }
