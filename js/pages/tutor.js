@@ -1,444 +1,868 @@
 import { requireRole, signOut } from '../lib/auth.js'
-import { setupFocusMode, greeting, initials, ageFrom, el, fact, factList } from '../lib/ui.js'
+import { setupFocusMode, greeting, initials, ageFrom, el } from '../lib/ui.js'
 import { getTutorCycles } from '../data/tutor.js'
 import { getCycleSessions, createSessionRecord } from '../data/sessions.js'
 
 const session = await requireRole('tutor')
-
-const cyclesBox = document.querySelector('[data-tutor-cycles]')
-const emptyBox = document.querySelector('[data-tutor-empty]')
-const REVIEW_STATUSES = ['pending', 'waiting_review', 'tutor_pending']
+const stateBox = document.querySelector('[data-tutor-state]')
 
 setupFocusMode()
 
-document.querySelectorAll('[data-logout]').forEach((button) => {
-  button.addEventListener('click', async (event) => {
-    event.preventDefault()
-    await signOut()
-  })
+document.querySelectorAll('[data-logout]').forEach((btn) => {
+  btn.addEventListener('click', async (e) => { e.preventDefault(); await signOut() })
 })
 
-function setText(selector, value) {
-  const node = document.querySelector(selector)
-  if (node) node.textContent = value
-}
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+const REVIEW_STATUSES = ['pending', 'waiting_review', 'tutor_pending']
 
 function todayISO() {
   const now = new Date()
-  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-  return local.toISOString().slice(0, 10)
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10)
 }
 
 function formatDate(value) {
   if (!value) return null
-  const date = new Date(`${value}T00:00:00Z`)
-  if (Number.isNaN(date.getTime())) return value
-  return new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' }).format(date)
+  const d = new Date(`${value}T00:00:00Z`)
+  return isNaN(d.getTime()) ? value : new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' }).format(d)
 }
 
 function monthsBetween(start, end) {
   if (!start || !end) return 6
-
-  const startDate = new Date(`${start}T00:00:00Z`)
-  const endDate = new Date(`${end}T00:00:00Z`)
-
-  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
-    return 6
-  }
-
-  const months =
-    (endDate.getUTCFullYear() - startDate.getUTCFullYear()) * 12 +
-    (endDate.getUTCMonth() - startDate.getUTCMonth())
-
-  return Math.max(1, months)
+  const s = new Date(`${start}T00:00:00Z`), e = new Date(`${end}T00:00:00Z`)
+  if (isNaN(s.getTime()) || isNaN(e.getTime())) return 6
+  return Math.max(1, (e.getUTCFullYear() - s.getUTCFullYear()) * 12 + (e.getUTCMonth() - s.getUTCMonth()))
 }
 
 function currentCycleMonth(start, end) {
-  if (!start || !end) return 1
-
-  const now = new Date()
-  const startDate = new Date(`${start}T00:00:00Z`)
+  if (!start) return 1
+  const now = new Date(), s = new Date(`${start}T00:00:00Z`)
+  if (isNaN(s.getTime())) return 1
   const total = monthsBetween(start, end)
-
-  if (Number.isNaN(startDate.getTime())) return 1
-
-  const elapsed =
-    (now.getUTCFullYear() - startDate.getUTCFullYear()) * 12 +
-    (now.getUTCMonth() - startDate.getUTCMonth()) +
-    1
-
+  const elapsed = (now.getUTCFullYear() - s.getUTCFullYear()) * 12 + (now.getUTCMonth() - s.getUTCMonth()) + 1
   return Math.min(Math.max(elapsed, 1), total)
 }
 
-function cycleProgressPercent(start, end) {
-  const total = monthsBetween(start, end)
-  const current = currentCycleMonth(start, end)
-  return Math.round((current / total) * 100)
+function firstName(fullName) {
+  return (fullName ?? '').trim().split(/\s+/)[0] || 'criança'
 }
+
+// ── Identity ─────────────────────────────────────────────────────────────────
 
 function fillIdentity() {
   const name = session.profile.name || 'Tutor'
-  setText('[data-tutor-title]', greeting(name))
-  setText(
-    '[data-tutor-subtitle]',
-    'Acompanhe aqui as crianças vinculadas a você e registre as sessões da semana.'
-  )
-  setText('[data-tutor-name]', name)
-  setText('[data-account-name]', name)
-  setText('[data-account-email]', session.user.email ?? '')
-  setText('[data-account-avatar]', initials(name))
+  const set = (sel, val) => { const n = document.querySelector(sel); if (n) n.textContent = val }
+  set('[data-tutor-title]', greeting(name))
+  set('[data-tutor-name]', name)
+  set('[data-account-name]', name)
+  set('[data-account-email]', session.user.email ?? '')
+  set('[data-account-avatar]', initials(name))
 }
 
-function setCount(n) {
-  const label =
-    n === 0
-      ? 'Nenhuma criança vinculada'
-      : n === 1
-        ? '1 criança neste ciclo'
-        : `${n} crianças neste ciclo`
-  setText('[data-tutor-count]', label)
-}
+// ── Topbar ────────────────────────────────────────────────────────────────────
 
-function showEmpty() {
-  cyclesBox.replaceChildren()
-  emptyBox.hidden = false
+function updateTopbarBtn(state) {
+  const btn = document.querySelector('[data-open-session]')
+  if (!btn) return
 
-  const box = el('div', 'empty-state os-empty')
-  if (REVIEW_STATUSES.includes(session.profile.status)) {
-    box.append(
-      el('strong', null, 'Candidatura em analise'),
-      el('span', null, 'A equipe Cognita vai revisar seu perfil e sua disponibilidade antes de liberar matches com criancas.')
-    )
-  } else {
-    box.append(
-      el('strong', null, 'Voce ainda nao possui criancas vinculadas.'),
-      el(
-        'span',
-        null,
-        'Quando a equipe Cognita criar um pareamento, ele aparecera aqui com o perfil da crianca e o espaco para registrar as sessoes.'
-      )
-    )
+  const CONFIG = {
+    cycle_active:    { enabled: true,  text: 'Registrar sessão' },
+    cycle_planned:   { enabled: false, text: 'Ciclo não iniciado' },
+    cycle_paused:    { enabled: false, text: 'Ciclo pausado' },
+    cycle_completed: { enabled: false, text: 'Ver histórico' },
   }
-  emptyBox.replaceChildren(box)
+
+  const cfg = CONFIG[state]
+  if (!cfg) { btn.hidden = true; return }
+
+  btn.hidden = false
+  btn.disabled = !cfg.enabled
+  const span = btn.querySelector('span')
+  if (span) span.textContent = cfg.text
 }
 
-// ---------- sessões ----------
+function wireOpenSessionBtn() {
+  document.querySelectorAll('[data-open-session]').forEach((btn) => {
+    if (btn.dataset.wired) return
+    btn.dataset.wired = '1'
+    btn.addEventListener('click', () => {
+      const form = document.querySelector('.tp-session-form')
+      if (!form) return
+      form.open = true
+      form.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    })
+  })
+}
+
+// ── Status strip ──────────────────────────────────────────────────────────────
+
+function renderStatusStrip(state, cycle) {
+  const stripEl = document.querySelector('[data-tp-strip]')
+  if (!stripEl) return
+
+  const childName = cycle?.children?.name
+  const CONFIG = {
+    loading:             { dot: 'info',    label: 'Carregando…',              detail: null },
+    error:               { dot: 'bad',     label: 'Erro ao carregar',         detail: 'Verifique sua conexão.' },
+    pending:             { dot: 'pending', label: 'Candidatura em análise',   detail: 'A equipe Cognita vai revisar seu perfil e disponibilidade.' },
+    orientation_pending: { dot: 'pending', label: 'Orientação pendente',      detail: 'Conclua a orientação inicial antes do pareamento.' },
+    available:           { dot: 'ok',      label: 'Pronto para acompanhar',   detail: 'Aguardando pareamento da equipe Cognita.' },
+    cycle_planned:       { dot: 'info',    label: 'Ciclo planejado',          detail: childName ? `Com ${childName} — aguardando ativação.` : 'Aguardando ativação do ciclo.' },
+    cycle_active:        { dot: 'ok',      label: 'Ciclo ativo',              detail: 'Registre a sessão desta semana.' },
+    cycle_paused:        { dot: 'pending', label: 'Ciclo pausado',            detail: 'Registros bloqueados — aguarde orientação da equipe.' },
+    cycle_completed:     { dot: 'ok',      label: 'Acompanhamento concluído', detail: 'Ciclo de 6 meses finalizado.' },
+  }
+
+  const cfg = CONFIG[state] ?? CONFIG.error
+  const dot = el('span', `tp-strip-dot tp-strip-dot--${cfg.dot}`)
+  dot.setAttribute('aria-hidden', 'true')
+
+  const text = document.createElement('span')
+  if (cfg.detail) {
+    text.append(el('strong', null, cfg.label), document.createTextNode(` — ${cfg.detail}`))
+  } else {
+    text.append(el('strong', null, cfg.label))
+  }
+
+  stripEl.replaceChildren(dot, text)
+}
+
+// ── Máquina de estados ────────────────────────────────────────────────────────
+
+function deriveTutorState(profileStatus, cycles) {
+  if (REVIEW_STATUSES.includes(profileStatus)) return { state: 'pending' }
+  if (profileStatus === 'orientation_pending')  return { state: 'orientation_pending' } // TODO(wiring:profiles)
+
+  if (!cycles?.length) return { state: 'available' }
+
+  const active  = cycles.find((c)  => c.status === 'active')
+  const planned = cycles.find((c)  => c.status === 'planned')
+  const paused  = cycles.filter((c) => c.status === 'paused')
+  const done    = cycles.filter((c) => c.status === 'completed')
+
+  if (active)        return { state: 'cycle_active',    cycle: active }
+  if (planned)       return { state: 'cycle_planned',   cycle: planned }
+  if (paused.length) return { state: 'cycle_paused',    cycles: paused }
+  if (done.length)   return { state: 'cycle_completed', cycles: done }
+  return { state: 'available' }
+}
+
+// ── Renderizadores de estado sem ciclo ───────────────────────────────────────
+
+function renderPending() {
+  const card = el('div', 'tp-status-card')
+  const icon = el('div', 'tp-status-icon tp-status-icon--pending')
+  icon.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`
+
+  const body = el('div', 'tp-status-body')
+  body.append(
+    el('p', 'tp-status-kicker', 'Painel do tutor'),
+    el('h1', 'tp-status-title', 'Candidatura em análise'),
+    el('p', null, 'A equipe Cognita vai revisar seu perfil e disponibilidade antes de liberar os pareamentos com crianças.')
+  )
+
+  const steps = el('ol', 'tp-steps')
+  ;[
+    { label: 'Cadastro enviado',       desc: 'Suas informações foram recebidas.',                           state: 'done'   },
+    { label: 'Revisão pela equipe',    desc: 'A equipe analisa formação e disponibilidade.',                state: 'active' },
+    { label: 'Orientação inicial',     desc: 'Encontro introdutório com a equipe Cognita.',                 state: ''       },
+    { label: 'Pareamento com criança', desc: 'Você recebe o perfil pedagógico e começa o acompanhamento.', state: ''       },
+  ].forEach(({ label, desc, state }) => {
+    const li = el('li', 'tp-step')
+    const dot = el('div', `tp-step-dot${state ? ` tp-step-dot--${state}` : ''}`, state === 'done' ? '✓' : '')
+    const copy = el('div', 'tp-step-copy')
+    copy.append(el('strong', null, label), el('span', null, desc))
+    li.append(dot, copy)
+    steps.append(li)
+  })
+
+  body.append(steps)
+  card.append(icon, body)
+  return card
+}
+
+function renderOrientationPending() {
+  const card = el('div', 'tp-status-card')
+  const icon = el('div', 'tp-status-icon tp-status-icon--pending')
+  icon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
+
+  const body = el('div', 'tp-status-body')
+  body.append(
+    el('p', 'tp-status-kicker', 'Painel do tutor'),
+    el('h1', 'tp-status-title', 'Orientação inicial pendente'),
+    el('p', null, 'Antes do primeiro pareamento, a equipe Cognita realiza uma orientação introdutória. Conclua as etapas abaixo.')
+  )
+
+  const steps = el('div', 'tp-orient-steps')
+  ;[
+    { num: 1, label: 'Ler os compromissos do tutor',  desc: 'Leia e aceite o guia de atuação pedagógica inclusiva.' },
+    { num: 2, label: 'Treinar a escrita de resumo',   desc: 'Pratique escrever resumos claros e respeitosos para os responsáveis.' },
+    { num: 3, label: 'Confirmar com a equipe',        desc: 'Acuse recebimento da orientação com a equipe Cognita.' },
+  ].forEach(({ num, label, desc }) => {
+    const step = el('div', 'tp-orient-step')
+    step.append(el('div', 'tp-orient-num', String(num)))
+    const copy = el('div', 'tp-orient-copy')
+    copy.append(el('strong', null, label), el('span', null, desc))
+    step.append(copy)
+    steps.append(step)
+  })
+
+  body.append(steps)
+  card.append(icon, body)
+  return card
+}
+
+function renderAvailable() {
+  const card = el('div', 'tp-status-card')
+  const icon = el('div', 'tp-status-icon tp-status-icon--ok')
+  icon.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>`
+
+  const body = el('div', 'tp-status-body')
+  body.append(
+    el('p', 'tp-status-kicker', 'Painel do tutor'),
+    el('h1', 'tp-status-title', 'Pronto para acompanhar'),
+    el('p', null, 'Seu cadastro foi aprovado e a orientação inicial foi concluída. A equipe Cognita vai criar o pareamento quando houver compatibilidade de perfil e agenda.')
+  )
+
+  const libLink = el('a', 'tp-lib-link', 'Explorar biblioteca de atividades →')
+  libLink.href = 'atividades.html'
+  body.append(libLink)
+
+  card.append(icon, body)
+  return card
+}
+
+function renderCyclePlanned(cycle) {
+  const child = cycle.children ?? {}
+  const age = ageFrom(child.birth_date)
+
+  const card = el('div', 'tp-status-card')
+  const icon = el('div', 'tp-status-icon tp-status-icon--info')
+  icon.innerHTML = `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`
+
+  const body = el('div', 'tp-status-body')
+  const agePart = age != null ? `, ${age} anos` : ''
+  body.append(
+    el('p', 'tp-status-kicker', 'Pareamento criado'),
+    el('h1', 'tp-status-title', `Ciclo planejado com ${child.name ?? 'criança'}${agePart}`),
+    el('p', null, `Início em ${formatDate(cycle.start_date) ?? 'data a definir'}. Leia o perfil pedagógico antes da primeira sessão. A equipe vai ativar o ciclo em breve.`)
+  )
+
+  if (cycle.main_goal) {
+    const goal = el('div')
+    goal.style.cssText = 'margin-top:16px;padding:var(--s2);border-radius:var(--r-sm);background:rgba(20,17,98,.04);border-left:3px solid var(--brand);'
+    goal.append(el('div', 'tp-plan-key', 'Meta do ciclo'), el('p', 'tp-plan-val', cycle.main_goal))
+    body.append(goal)
+  }
+
+  const profileLink = el('a', 'tp-lib-link', 'Ver perfil pedagógico →')
+  profileLink.href = `perfil-crianca.html?id=${cycle.child_id ?? ''}`
+  body.append(profileLink)
+
+  card.append(icon, body)
+  return card
+}
+
+function renderCyclePaused() {
+  const banner = el('div', 'tp-paused-banner')
+  banner.innerHTML = `<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
+  const div = el('div')
+  div.append(
+    el('strong', null, 'Ciclo pausado — registros bloqueados'),
+    el('p', null, 'Não é possível registrar sessões enquanto o ciclo estiver pausado. Entre em contato com a equipe Cognita para saber os próximos passos.')
+  )
+  banner.append(div)
+  return banner
+}
+
+function renderCycleCompleted() {
+  const card = el('div', 'tp-status-card')
+  const icon = el('div', 'tp-status-icon tp-status-icon--ok')
+  icon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>`
+
+  const body = el('div', 'tp-status-body')
+  body.append(
+    el('p', 'tp-status-kicker', 'Acompanhamento finalizado'),
+    el('h1', 'tp-status-title', 'Ciclo concluído'),
+    el('p', null, 'Obrigado pelo acompanhamento. O histórico de sessões está registrado e disponível para consulta a qualquer momento.')
+  )
+  card.append(icon, body)
+  return card
+}
+
+function renderError(retry) {
+  const card = el('div', 'tp-error-card')
+  card.append(
+    el('strong', null, 'Não foi possível carregar os dados'),
+    el('p', null, 'Verifique sua conexão e tente de novo.')
+  )
+  const btn = el('button', 'tp-btn-retry', 'Tentar novamente')
+  btn.type = 'button'
+  btn.addEventListener('click', retry)
+  card.append(btn)
+  return card
+}
+
+// ── Sessões ───────────────────────────────────────────────────────────────────
 
 function renderSession(record) {
-  const item = el('article', 'session-item os-session-item')
-
-  const head = el('header', 'os-session-head')
-  head.append(
-    el('span', 'session-date os-session-date', formatDate(record.date) ?? '-'),
-    el('strong', null, record.activity_title ?? 'Sessão')
-  )
-
-  const body = el('div', 'os-session-body')
+  const item = el('article', 'tp-session-item')
+  item.append(el('span', 'tp-session-date', formatDate(record.date) ?? '-'))
+  item.append(el('h3', 'tp-session-title', record.activity_title ?? 'Sessão'))
 
   if (record.focus_area) {
-    const p = el('p')
+    const p = el('p', 'tp-session-field')
     p.append(el('strong', null, 'Foco '), document.createTextNode(record.focus_area))
-    body.append(p)
+    item.append(p)
   }
-
   if (record.notes) {
-    const p = el('p')
-    p.append(el('strong', null, 'Observação '), document.createTextNode(record.notes))
-    body.append(p)
+    const p = el('p', 'tp-session-field')
+    p.append(el('strong', null, 'Resumo '), document.createTextNode(record.notes))
+    item.append(p)
   }
-
   if (record.next_step) {
-    const p = el('p')
-    p.append(el('strong', null, 'Próximo '), document.createTextNode(record.next_step))
-    body.append(p)
+    const p = el('p', 'tp-session-field')
+    p.append(el('strong', null, 'Próximo passo '), document.createTextNode(record.next_step))
+    item.append(p)
   }
-
-  if (record.duration_minutes) {
-    body.append(el('span', 'os-session-duration', `${record.duration_minutes} min`))
-  }
-
-  item.append(head, body)
+  if (record.duration_minutes) item.append(el('span', 'tp-session-duration', `${record.duration_minutes} min`))
   return item
 }
 
-async function loadSessions(cycleId, container) {
-  container.replaceChildren(el('p', 'session-empty', 'Carregando sessões...'))
+function renderSessionCompact(record) {
+  const item = el('article', 'tp-session-item')
+  item.append(el('span', 'tp-session-date', formatDate(record.date) ?? '-'))
+  item.append(el('p', 'tp-session-title', record.activity_title ?? 'Sessão'))
 
+  if (record.notes) {
+    const note = el('p', 'tp-session-note')
+    note.textContent = record.notes.length > 90 ? record.notes.slice(0, 90) + '…' : record.notes
+    item.append(note)
+  }
+
+  // TODO(wiring:sessions): exibir record.visible_to_family quando o campo existir
+  item.append(el('span', 'tp-session-tag tp-session-tag--reg', 'Registrada'))
+  return item
+}
+
+async function loadSessions(cycleId, container, compact = false) {
+  container.replaceChildren(el('p', 'tp-empty', 'Carregando sessões…'))
   const { data, error } = await getCycleSessions(cycleId)
 
   if (error) {
-    container.replaceChildren(el('p', 'session-empty', 'Não foi possível carregar as sessões.'))
+    container.replaceChildren(el('p', 'tp-empty', 'Não foi possível carregar as sessões.'))
     return
   }
 
   const rows = data ?? []
   if (!rows.length) {
-    container.replaceChildren(el('p', 'session-empty', 'Nenhuma sessão registrada ainda.'))
+    const empty = el('div', 'tp-empty')
+    empty.append(el('strong', null, 'Nenhuma sessão registrada'), document.createTextNode(' — registre a sessão desta semana usando o formulário acima.'))
+    container.replaceChildren(empty)
     return
   }
 
-  const list = el('div', 'session-list os-session-list')
-  rows.forEach((record) => list.append(renderSession(record)))
+  const list = el('div', 'tp-session-list')
+  const source = compact ? rows.slice(0, 4) : rows
+  source.forEach((r) => list.append(compact ? renderSessionCompact(r) : renderSession(r)))
   container.replaceChildren(list)
 }
 
-function labeledField(labelText, control) {
-  const label = el('label', null, labelText)
-  label.append(control)
-  return label
+// ── Escala de botões (engajamento / dificuldade / resultado) ──────────────────
+
+function makeScaleGroup(options) {
+  const group = el('div', 'tp-scale')
+  group.setAttribute('role', 'radiogroup')
+  let value = ''
+  const buttons = []
+
+  options.forEach(({ label, val, tone }) => {
+    const cls = ['tp-scale-btn', tone ? `tp-scale-btn--${tone}` : ''].filter(Boolean).join(' ')
+    const btn = el('button', cls, label)
+    btn.type = 'button'
+    btn.addEventListener('click', () => {
+      buttons.forEach((b) => b.classList.remove('selected'))
+      btn.classList.add('selected')
+      value = val
+    })
+    buttons.push(btn)
+    group.append(btn)
+  })
+
+  return {
+    group,
+    getValue: () => value,
+    reset: () => { value = ''; buttons.forEach((b) => b.classList.remove('selected')) },
+  }
 }
 
+// ── Formulário de sessão (3 níveis) ──────────────────────────────────────────
+
 function renderSessionForm(cycle, onSaved) {
-  const details = el('details', 'card-details os-session-form')
-  const form = document.createElement('form')
-  form.className = 'match-form os-form'
+  const details = el('details', 'tp-session-form')
 
+  const summary = document.createElement('summary')
+  summary.textContent = 'Registrar sessão desta semana'
+  const chevron = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  chevron.setAttribute('viewBox', '0 0 24 24')
+  chevron.setAttribute('aria-hidden', 'true')
+  chevron.innerHTML = '<path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+  summary.append(chevron)
+  details.append(summary)
+
+  const body = el('div', 'tp-form-body')
+
+  // ── Nível 1: Dados estruturados ──
+  body.append(el('div', 'tp-form-section-title', '1. Dados estruturados'))
+
+  const row1 = el('div', 'tp-form-row')
+
+  const dateField = el('div', 'tp-field')
+  const dateLabel = document.createElement('label')
+  dateLabel.textContent = 'Data da sessão'
   const dateInput = document.createElement('input')
-  dateInput.type = 'date'
-  dateInput.value = todayISO()
-  dateInput.required = true
+  dateInput.type = 'date'; dateInput.value = todayISO(); dateInput.required = true
+  dateLabel.append(dateInput); dateField.append(dateLabel)
 
-  const durationInput = document.createElement('input')
-  durationInput.type = 'number'
-  durationInput.min = '0'
-  durationInput.placeholder = 'Ex.: 45'
+  const durField = el('div', 'tp-field')
+  const durLabel = document.createElement('label')
+  durLabel.textContent = 'Duração (minutos)'
+  const durInput = document.createElement('input')
+  durInput.type = 'number'; durInput.min = '0'; durInput.placeholder = 'Ex.: 45'
+  durLabel.append(durInput); durField.append(durLabel)
 
-  const activityInput = document.createElement('input')
-  activityInput.type = 'text'
-  activityInput.required = true
-  activityInput.placeholder = 'Ex.: soma com apoio visual'
+  row1.append(dateField, durField)
+  body.append(row1)
 
+  const actField = el('div', 'tp-field')
+  const actLabel = document.createElement('label')
+  actLabel.textContent = 'Atividade realizada *'
+  const actInput = document.createElement('input')
+  actInput.type = 'text'; actInput.required = true
+  actInput.placeholder = 'Ex.: Soma com apoio visual — blocos de cores'
+  actLabel.append(actInput); actField.append(actLabel)
+  body.append(actField)
+
+  const focusField = el('div', 'tp-field')
+  const focusLabel = document.createElement('label')
+  focusLabel.textContent = 'Foco trabalhado'
   const focusInput = document.createElement('input')
-  focusInput.type = 'text'
-  focusInput.placeholder = 'Ex.: contagem e comparação'
+  focusInput.type = 'text'; focusInput.placeholder = 'Ex.: Contagem e correspondência 1-a-1'
+  focusLabel.append(focusInput); focusField.append(focusLabel)
+  body.append(focusField)
 
-  const notesInput = document.createElement('textarea')
-  notesInput.placeholder = 'Como a criança respondeu?'
+  const scaleRow = el('div', 'tp-form-row-3')
 
-  const nextStepInput = document.createElement('textarea')
-  nextStepInput.placeholder = 'O que trabalhar no próximo encontro?'
+  const engField = el('div', 'tp-field')
+  engField.append(el('label', null, 'Engajamento'))
+  const eng = makeScaleGroup([
+    { label: 'Baixo',   val: '1', tone: 'bad'  },
+    { label: 'Médio',   val: '3', tone: 'warn' },
+    { label: 'Alto',    val: '5', tone: 'ok'   },
+    { label: 'Oscilou', val: '2', tone: ''      },
+  ])
+  engField.append(eng.group)
 
-  form.append(
-    labeledField('Data da sessão', dateInput),
-    labeledField('Duração (minutos)', durationInput),
-    labeledField('Atividade realizada', activityInput),
-    labeledField('Foco trabalhado', focusInput),
-    labeledField('Como a criança respondeu?', notesInput),
-    labeledField('Próximo passo', nextStepInput)
-  )
+  const diffField = el('div', 'tp-field')
+  diffField.append(el('label', null, 'Dificuldade percebida'))
+  const diff = makeScaleGroup([
+    { label: 'Baixa',            val: '1', tone: 'ok'  },
+    { label: 'Média',            val: '3', tone: 'warn' },
+    { label: 'Alta',             val: '5', tone: 'bad'  },
+    { label: 'Não foi possível', val: '0', tone: ''     },
+  ])
+  diffField.append(diff.group)
 
-  const errorBox = el('p', 'card-error')
-  errorBox.hidden = true
-  const okBox = el('p', 'session-ok')
-  okBox.hidden = true
+  const resultField = el('div', 'tp-field')
+  resultField.append(el('label', null, 'Resultado'))
+  const result = makeScaleGroup([
+    { label: 'Avançou',          val: 'improved',      tone: 'ok'  },
+    { label: 'Manteve',          val: 'stable',         tone: ''    },
+    { label: 'Teve dificuldade', val: 'struggled',      tone: 'bad' },
+    { label: 'Não foi possível', val: 'not_completed',  tone: ''    },
+  ])
+  resultField.append(result.group)
 
-  const saveBtn = el('button', 'btn btn-primary btn-sm', 'Salvar sessão')
-  saveBtn.type = 'submit'
+  scaleRow.append(engField, diffField, resultField)
+  body.append(scaleRow)
 
-  form.append(errorBox, okBox, saveBtn)
+  const nextField = el('div', 'tp-field')
+  const nextLabel = document.createElement('label')
+  nextLabel.textContent = 'Próximo passo'
+  const nextInput = document.createElement('textarea')
+  nextInput.placeholder = 'O que trabalhar na próxima sessão?'
+  nextLabel.append(nextInput); nextField.append(nextLabel)
+  body.append(nextField)
 
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault()
-    errorBox.hidden = true
-    okBox.hidden = true
+  // ── Nível 2: Resumo para a família ──
+  body.append(el('div', 'tp-form-section-title', '2. Resumo para a família'))
 
-    const activityTitle = activityInput.value.trim()
-    if (!activityTitle) {
-      errorBox.textContent = 'Informe a atividade realizada.'
-      errorBox.hidden = false
-      return
+  const guide = el('div', 'tp-family-guide')
+  guide.innerHTML = `<strong>O que você escrever aqui aparece para o responsável.</strong>
+    Descreva comportamentos observáveis — o que funcionou, o que foi difícil — em linguagem simples e respeitosa.
+    <em>Exemplo: "Ana participou com entusiasmo dos blocos de cores. Teve dificuldade com sequências acima de 3 elementos, mas conseguiu com apoio visual. Focaremos nisso na próxima sessão."</em>`
+  body.append(guide)
+
+  const familyField = el('div', 'tp-field')
+  const familyLabel = document.createElement('label')
+  familyLabel.textContent = 'Resumo para a família *'
+  const familyInput = document.createElement('textarea')
+  familyInput.placeholder = 'Descreva o que aconteceu na sessão...'
+  familyInput.required = true; familyInput.maxLength = 800
+  familyLabel.append(familyInput); familyField.append(familyLabel)
+
+  const charCount = el('div', 'tp-char-count', '0 / 800 caracteres')
+  familyInput.addEventListener('input', () => { charCount.textContent = `${familyInput.value.length} / 800 caracteres` })
+  familyField.append(charCount)
+  body.append(familyField)
+
+  const checklistTitle = el('p')
+  checklistTitle.style.cssText = 'font-size:.8rem;font-weight:700;color:var(--ink-soft);margin-bottom:8px;'
+  checklistTitle.textContent = 'Antes de salvar, confirme:'
+
+  const CHECKS = [
+    { id: 'chk-obs',  label: 'Descrevi comportamentos observáveis (não interpretações ou rótulos)' },
+    { id: 'chk-what', label: 'Expliquei o que funcionou ou não funcionou' },
+    { id: 'chk-next', label: 'Indiquei um próximo passo claro' },
+    { id: 'chk-lang', label: 'Usei linguagem simples, respeitosa e educacional' },
+  ]
+  const checklist = el('ul', 'tp-checklist')
+  CHECKS.forEach(({ id, label }) => {
+    const li = el('li')
+    const cb = document.createElement('input')
+    cb.type = 'checkbox'; cb.id = id
+    const lbl = document.createElement('label')
+    lbl.htmlFor = id; lbl.textContent = label
+    li.append(cb, lbl); checklist.append(li)
+  })
+  body.append(checklistTitle, checklist)
+
+  // ── Nível 3: Nota interna ──
+  body.append(el('div', 'tp-form-section-title', '3. Nota interna (só você e a equipe veem)'))
+
+  const internalWrap = el('div', 'tp-internal-wrap')
+  const internalLabel = el('div', 'tp-internal-label')
+  internalLabel.innerHTML = `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
+  internalLabel.append(document.createTextNode('A família nunca tem acesso a esta nota'))
+  const internalInput = document.createElement('textarea')
+  internalInput.placeholder = 'Dúvidas técnicas, pontos para revisar com a equipe, observações confidenciais…'
+  internalWrap.append(internalLabel, internalInput)
+  body.append(internalWrap)
+
+  // ── Ações ──
+  const errorBox = el('p', 'tp-form-error'); errorBox.hidden = true
+  const okBox    = el('p', 'tp-form-ok');    okBox.hidden = true
+  const saveBtn  = el('button', 'tp-btn-save', 'Salvar registro')
+  saveBtn.type   = 'button'
+
+  saveBtn.addEventListener('click', async () => {
+    errorBox.hidden = true; okBox.hidden = true
+
+    const actTitle = actInput.value.trim()
+    if (!actTitle) {
+      errorBox.textContent = 'Informe a atividade realizada.'; errorBox.hidden = false
+      actInput.focus(); return
+    }
+    const familySummary = familyInput.value.trim()
+    if (!familySummary) {
+      errorBox.textContent = 'Escreva o resumo para a família.'; errorBox.hidden = false
+      familyInput.focus(); return
+    }
+    const allChecked = CHECKS.every(({ id }) => document.getElementById(id)?.checked)
+    if (!allChecked) {
+      errorBox.textContent = 'Confirme todos os itens da lista antes de salvar.'; errorBox.hidden = false; return
     }
 
-    saveBtn.disabled = true
-    saveBtn.textContent = 'Salvando...'
+    saveBtn.disabled = true; saveBtn.textContent = 'Salvando…'
+
+    // TODO(wiring:sessions): adicionar engagement=eng.getValue(), perceived_difficulty=diff.getValue(),
+    //   result=result.getValue(), internal_note=internalInput.value.trim() quando o schema for atualizado.
 
     const { error } = await createSessionRecord({
-      cycleId: cycle.id,
-      sessionDate: dateInput.value || todayISO(),
-      durationMinutes: durationInput.value ? Number(durationInput.value) : null,
-      activityTitle,
-      focusArea: focusInput.value.trim(),
-      notes: notesInput.value.trim(),
-      nextStep: nextStepInput.value.trim(),
+      cycleId:         cycle.id,
+      sessionDate:     dateInput.value || todayISO(),
+      durationMinutes: durInput.value ? Number(durInput.value) : null,
+      activityTitle:   actTitle,
+      focusArea:       focusInput.value.trim(),
+      notes:           familySummary, // Nível 2 → campo notes existente no schema
+      nextStep:        nextInput.value.trim(),
     })
 
-    saveBtn.disabled = false
-    saveBtn.textContent = 'Salvar sessão'
+    saveBtn.disabled = false; saveBtn.textContent = 'Salvar registro'
 
     if (error) {
-      errorBox.textContent = 'Não foi possível salvar a sessão. Tente de novo.'
-      errorBox.hidden = false
-      return
+      errorBox.textContent = 'Não foi possível salvar. Tente de novo.'; errorBox.hidden = false; return
     }
 
-    form.reset()
-    dateInput.value = todayISO()
-    okBox.textContent = 'Sessão registrada com sucesso.'
-    okBox.hidden = false
+    ;[actInput, focusInput, familyInput, nextInput, internalInput].forEach((i) => { i.value = '' })
+    durInput.value = ''; dateInput.value = todayISO()
+    charCount.textContent = '0 / 800 caracteres'
+    CHECKS.forEach(({ id }) => { const cb = document.getElementById(id); if (cb) cb.checked = false })
+    eng.reset(); diff.reset(); result.reset()
+
+    okBox.textContent = 'Sessão registrada com sucesso.'; okBox.hidden = false
+    details.open = false
     await onSaved()
   })
 
-  details.append(el('summary', null, 'Registrar sessão'), form)
+  const actions = el('div', 'tp-form-actions')
+  actions.append(errorBox, okBox, saveBtn)
+  body.append(actions)
+  details.append(body)
   return details
 }
 
-// ---------- card da criança vinculada ----------
+// ── Painéis do workspace (ciclo ativo) ───────────────────────────────────────
 
-function renderOrbit(childName, age, currentMonth, totalMonths) {
-  const orbit = el('div', 'os-orbit')
-  orbit.style.setProperty('--total', totalMonths)
+function renderNextSessionCard(cycle, onRegister) {
+  const child = cycle.children ?? {}
+  const lp    = child.learning_profiles ?? {}
+  const name  = firstName(child.name)
 
-  const center = el('div', 'os-orbit-center')
-  center.append(
-    el('strong', null, childName ?? 'Criança'),
-    el('span', null, age != null ? `${age} anos` : 'Ciclo ativo')
-  )
+  const card = el('div', 'tp-next-card')
+  card.append(el('p', 'tp-next-kicker', 'O que fazer agora'))
+  card.append(el('h2', 'tp-next-title', `Sessão desta semana com ${name}`))
 
-  const ring = el('div', 'os-orbit-ring')
-
-  for (let i = 1; i <= totalMonths; i += 1) {
-    const stateClass = i === currentMonth ? 'active' : i < currentMonth ? 'done' : ''
-    const dot = el('span', `os-orbit-dot ${stateClass}`.trim(), String(i))
-    dot.style.setProperty('--i', i)
-    dot.style.setProperty('--total', totalMonths)
-    ring.append(dot)
+  const hasInfo = cycle.main_goal || lp.math_difficulties?.length || child.main_difficulties?.length
+  if (hasInfo) {
+    const info = el('div', 'tp-next-info')
+    if (cycle.main_goal) {
+      const row = el('div', 'tp-next-row')
+      row.append(el('strong', null, 'Meta:'), el('span', null, cycle.main_goal))
+      info.append(row)
+    }
+    const difficulties = lp.math_difficulties ?? child.main_difficulties
+    if (difficulties?.length) {
+      const row = el('div', 'tp-next-row')
+      const txt = Array.isArray(difficulties) ? difficulties.join(', ') : difficulties
+      row.append(el('strong', null, 'Foco:'), el('span', null, txt))
+      info.append(row)
+    }
+    card.append(info)
   }
 
-  orbit.append(ring, center)
-  return orbit
+  // TODO(wiring:support_cycles): exibir atividade da semana quando current_activity_id existir
+
+  const btn = el('button', 'tp-btn-register')
+  btn.type = 'button'
+  const ns = 'http://www.w3.org/2000/svg'
+  const svg = document.createElementNS(ns, 'svg')
+  svg.setAttribute('viewBox', '0 0 24 24')
+  svg.setAttribute('aria-hidden', 'true')
+  svg.innerHTML = '<path d="M12 5v14"/><path d="M5 12h14"/>'
+  btn.append(svg, document.createTextNode('Registrar sessão'))
+  btn.addEventListener('click', onRegister)
+  card.append(btn)
+
+  return card
 }
 
-function renderCycleSummary(cycle, progress, currentMonth, totalMonths) {
-  const panel = el('aside', 'os-panel os-summary-panel')
+function renderPlanPanel(cycle) {
+  const panel = el('div', 'tp-panel')
+  panel.append(el('div', 'tp-panel-title', 'Plano atual'))
 
-  panel.append(
-    el('div', 'os-panel-title', 'Resumo do ciclo'),
-    el('p', 'os-progress-number', `${progress}%`),
-    el('p', 'os-muted', `mês ${currentMonth} de ${totalMonths}`)
-  )
+  const hasGoal = !!cycle.main_goal
+  const hasPlan = !!cycle.current_plan
 
-  const bars = el('div', 'os-progress-bars')
-  bars.style.setProperty('--total-months', totalMonths)
-  for (let i = 1; i <= totalMonths; i += 1) {
-    const stateClass = i === currentMonth ? 'active' : i < currentMonth ? 'done' : ''
-    bars.append(el('span', stateClass))
+  if (!hasGoal && !hasPlan) {
+    panel.append(el('p', 'tp-empty', 'A equipe ainda não definiu o plano deste ciclo.'))
+  } else {
+    const entries = el('div')
+    if (hasGoal) {
+      const e = el('div', 'tp-plan-entry')
+      e.append(el('div', 'tp-plan-key', 'Meta do ciclo'), el('div', 'tp-plan-val', cycle.main_goal))
+      entries.append(e)
+    }
+    // TODO(wiring:support_cycles): etapa_atual e criterio_avanco quando adicionados ao schema
+    if (hasPlan) {
+      const e = el('div', 'tp-plan-entry')
+      e.append(el('div', 'tp-plan-key', 'Plano atual'), el('div', 'tp-plan-val', cycle.current_plan))
+      entries.append(e)
+    }
+    panel.append(entries)
   }
 
-  const facts = factList([
-    fact('Início', formatDate(cycle.start_date)),
-    fact('Fim previsto', formatDate(cycle.end_date)),
-    fact('Meta', cycle.main_goal),
-    fact('Plano atual', cycle.current_plan),
-  ])
-
-  panel.append(bars, facts)
-
-  if (cycle.current_plan || cycle.main_goal) {
-    const next = el('div', 'os-next-card')
-    next.append(el('span', null, 'Próximo passo'), el('p', null, cycle.current_plan || cycle.main_goal))
-    panel.append(next)
-  }
+  const suggestBtn = el('button', 'tp-btn-suggest', 'Sugerir ajuste à equipe')
+  suggestBtn.type = 'button'
+  // TODO: abrir modal de sugestão de ajuste ao plano
+  panel.append(suggestBtn)
 
   return panel
 }
 
-function renderCycleCard(cycle) {
-  const child = cycle.children ?? {}
-  const age = ageFrom(child.birth_date)
+function renderSuggestedActivityPanel(cycle) {
+  const panel = el('div', 'tp-panel')
+  panel.append(el('div', 'tp-panel-title', 'Atividade sugerida'))
+
+  // TODO(wiring:support_cycles): exibir atividade definida pela equipe quando current_activity_id existir
+  panel.append(el('p', 'tp-activity-note', 'A equipe ainda não definiu a atividade desta semana. Consulte a biblioteca para escolher uma de acordo com o foco do ciclo.'))
+
+  const link = el('a', 'tp-activity-link', 'Abrir biblioteca de atividades →')
+  link.href = 'atividades.html'
+  panel.append(link)
+
+  return panel
+}
+
+// ── Ciclo ativo (workspace completo) ─────────────────────────────────────────
+
+function renderCycleActive(cycle) {
+  const child       = cycle.children ?? {}
+  const age         = ageFrom(child.birth_date)
   const totalMonths = monthsBetween(cycle.start_date, cycle.end_date)
   const currentMonth = currentCycleMonth(cycle.start_date, cycle.end_date)
-  const progress = cycleProgressPercent(cycle.start_date, cycle.end_date)
-  const statusLabel = cycle.status === 'active' ? 'Ciclo ativo' : 'Ciclo planejado'
 
-  const wrapper = el('article', 'pipeline-card os-cycle')
+  const frag = document.createDocumentFragment()
 
-  const hero = el('section', 'os-hero-card')
-  const orbit = renderOrbit(child.name, age, currentMonth, totalMonths)
+  // ── Hero (largura total) ──
+  const hero = el('div', 'tp-hero-card')
 
-  const copy = el('div', 'os-hero-copy')
-  copy.append(
-    el('p', 'os-kicker', 'Criança em acompanhamento'),
-    el('h2', null, `${child.name ?? 'Criança'} está no mês ${currentMonth} da jornada.`),
-    el(
-      'p',
-      'os-copy',
-      `Cada órbita é um mês do ciclo de apoio. Este ciclo tem ${totalMonths} meses e segue com registros de acompanhamento.`
-    )
+  const monthDisplay = el('div', 'tp-hero-month')
+  monthDisplay.append(
+    el('span', 'tp-hero-month-num', String(currentMonth)),
+    el('span', 'tp-hero-month-label', 'Mês do ciclo'),
+    el('span', 'tp-hero-month-total', `de ${totalMonths}`)
   )
 
-  const chips = el('div', 'os-chip-row')
-  chips.append(el('span', 'os-chip os-chip-ok', statusLabel), el('span', 'os-chip os-chip-warn', 'Sessão pendente'))
+  const heroBody = el('div', 'tp-hero-body')
+  heroBody.append(
+    el('p', 'tp-hero-kicker', 'Criança em acompanhamento'),
+    el('h1', 'tp-hero-name', child.name ?? 'Criança')
+  )
 
-  const profileLink = el('a', 'os-btn os-btn-secondary', 'Ver perfil pedagógico')
-  profileLink.href = 'perfil-crianca.html'
+  const chips = el('div', 'tp-hero-chips')
+  const activeChip = el('span', 'tp-chip tp-chip--ok')
+  activeChip.append(el('i'), document.createTextNode(' Ciclo ativo'))
+  chips.append(activeChip)
+  if (age != null)      chips.append(el('span', 'tp-chip tp-chip--info', `${age} anos`))
+  if (child.school_year) chips.append(el('span', 'tp-chip tp-chip--info', child.school_year))
+  heroBody.append(chips)
 
-  copy.append(chips, profileLink)
+  const track = el('div', 'tp-progress-track')
+  for (let i = 1; i <= totalMonths; i++) {
+    const cls = i < currentMonth ? 'tp-progress-seg tp-progress-seg--done'
+              : i === currentMonth ? 'tp-progress-seg tp-progress-seg--active'
+              : 'tp-progress-seg'
+    track.append(el('span', cls))
+  }
+  heroBody.append(track)
 
-  const mascot = document.createElement('img')
-  mascot.className = 'os-mascot'
-  mascot.src = '../assets/mascot-hero-wave.png'
-  mascot.alt = ''
+  const profileLink = el('a', 'tp-hero-link', 'Ver perfil pedagógico →')
+  profileLink.href = `perfil-crianca.html?id=${cycle.child_id ?? ''}`
+  heroBody.append(profileLink)
 
-  hero.append(orbit, copy, mascot)
+  hero.append(monthDisplay, heroBody)
+  frag.append(hero)
 
-  const grid = el('section', 'os-dashboard-grid')
+  // ── Grid ──
+  const grid = el('div', 'tp-dashboard-grid')
 
-  const sessionsPanel = el('div', 'os-panel os-timeline-panel')
-  sessionsPanel.append(el('div', 'os-panel-title', 'Linha do tempo das sessões'))
+  // Coluna esquerda: O que fazer + formulário
+  const leftPanel = el('div', 'tp-panel')
 
-  const sessionsList = el('div')
-  const form = renderSessionForm(cycle, () => loadSessions(cycle.id, sessionsList))
-  sessionsPanel.append(sessionsList, form)
+  const recentContainer = el('div') // referenciado antes de ser usado no onSaved
+  const form = renderSessionForm(cycle, () => loadSessions(cycle.id, recentContainer, true))
+  const formWrap = el('div', 'tp-session-form-wrap')
+  formWrap.append(form)
 
-  const summaryPanel = renderCycleSummary(cycle, progress, currentMonth, totalMonths)
-
-  grid.append(sessionsPanel, summaryPanel)
-  wrapper.append(hero, grid)
-
-  loadSessions(cycle.id, sessionsList)
-  return wrapper
-}
-
-function setupOpenSessionShortcut() {
-  const button = document.querySelector('[data-open-session]')
-  if (!button || button.dataset.shortcutReady === 'true') return
-
-  button.dataset.shortcutReady = 'true'
-  button.addEventListener('click', () => {
-    const details = document.querySelector('.os-session-form, .card-details')
-    if (!details) return
-
-    details.open = true
-    details.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  const nextCard = renderNextSessionCard(cycle, () => {
+    form.open = true
+    form.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   })
+
+  leftPanel.append(nextCard, formWrap)
+
+  // Coluna direita: plano + atividade + sessões recentes
+  const rightColumn = el('div', 'tp-right-column')
+
+  const planPanel     = renderPlanPanel(cycle)
+  const activityPanel = renderSuggestedActivityPanel(cycle)
+
+  const recentPanel = el('div', 'tp-panel')
+  recentPanel.append(el('div', 'tp-panel-title', 'Sessões recentes'))
+  recentPanel.append(recentContainer)
+
+  rightColumn.append(planPanel, activityPanel, recentPanel)
+  grid.append(leftPanel, rightColumn)
+  frag.append(grid)
+
+  // FAB mobile (só visível < 680px via CSS)
+  const fab = el('button', 'tp-fab')
+  fab.type = 'button'
+  const fabNS = 'http://www.w3.org/2000/svg'
+  const fabSvg = document.createElementNS(fabNS, 'svg')
+  fabSvg.setAttribute('viewBox', '0 0 24 24')
+  fabSvg.setAttribute('aria-hidden', 'true')
+  fabSvg.innerHTML = '<path d="M12 5v14"/><path d="M5 12h14"/>'
+  fab.append(fabSvg, document.createTextNode('Registrar sessão'))
+  fab.addEventListener('click', () => {
+    form.open = true
+    form.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  })
+  frag.append(fab)
+
+  loadSessions(cycle.id, recentContainer, true)
+  return frag
 }
 
-async function loadCycles() {
-  emptyBox.hidden = true
-  cyclesBox.replaceChildren(el('div', 'skeleton'))
+// ── Orquestrador principal ────────────────────────────────────────────────────
 
-  if (REVIEW_STATUSES.includes(session.profile.status)) {
-    setCount(0)
-    showEmpty()
-    setupOpenSessionShortcut()
+async function loadAndRender() {
+  if (!stateBox) return
+
+  stateBox.replaceChildren(
+    el('div', 'tp-skeleton tp-skeleton--hero'),
+    el('div', 'tp-skeleton tp-skeleton--panel')
+  )
+  updateTopbarBtn('loading')
+  renderStatusStrip('loading')
+
+  const { data: cycles, error } = await getTutorCycles(session.user.id)
+
+  if (error) {
+    stateBox.replaceChildren(renderError(loadAndRender))
+    renderStatusStrip('error')
     return
   }
 
-  const { data, error } = await getTutorCycles(session.user.id)
+  const derived    = deriveTutorState(session.profile.status, cycles)
+  const cycleMaybe = derived.cycle ?? derived.cycles?.[0]
 
-  if (error || !data?.length) {
-    setCount(0)
-    showEmpty()
-    setupOpenSessionShortcut()
-    return
+  updateTopbarBtn(derived.state)
+  renderStatusStrip(derived.state, cycleMaybe)
+
+  switch (derived.state) {
+    case 'pending':
+      stateBox.replaceChildren(renderPending())
+      break
+    case 'orientation_pending':
+      stateBox.replaceChildren(renderOrientationPending())
+      break
+    case 'available':
+      stateBox.replaceChildren(renderAvailable())
+      break
+    case 'cycle_planned':
+      stateBox.replaceChildren(renderCyclePlanned(derived.cycle))
+      break
+    case 'cycle_active': {
+      const frag = renderCycleActive(derived.cycle)
+      stateBox.replaceChildren()
+      stateBox.append(frag)
+      wireOpenSessionBtn()
+      break
+    }
+    case 'cycle_paused':
+      stateBox.replaceChildren(renderCyclePaused())
+      break
+    case 'cycle_completed':
+      stateBox.replaceChildren(renderCycleCompleted())
+      break
+    default:
+      stateBox.replaceChildren(renderAvailable())
   }
-
-  setCount(data.length)
-  cyclesBox.replaceChildren(...data.map(renderCycleCard))
-  setupOpenSessionShortcut()
 }
 
-if (session && cyclesBox && emptyBox) {
+if (session && stateBox) {
   fillIdentity()
-  await loadCycles()
+  await loadAndRender()
 }
