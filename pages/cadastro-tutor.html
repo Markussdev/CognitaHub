@@ -553,7 +553,11 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
   </form><!-- .wizard-card -->
 </main>
 
-<script>
+<script type="module">
+import { signUp } from '../js/lib/auth.js'
+import { stashPendingSignup } from '../js/lib/pending-signup.js'
+import { submitTutorApplication } from '../js/data/signup.js'
+
 (function(){
   var TOTAL = 4;
   var wizardForm = document.querySelector('[data-tutor-form]');
@@ -568,6 +572,68 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
     wizardForm.addEventListener('submit', function(event){
       event.preventDefault();
     });
+  }
+
+  function valueOf(selector) {
+    return document.querySelector(selector)?.value.trim() ?? '';
+  }
+
+  function radioValue(name) {
+    return document.querySelector(`input[name="${name}"]:checked`)?.value ?? '';
+  }
+
+  function pressedChips(groupId) {
+    return Array.from(document.querySelectorAll(`#${groupId} .chip[aria-pressed="true"]`))
+      .map(function(chip){ return chip.textContent.trim(); });
+  }
+
+  async function submitTutorSignup() {
+    var account = {
+      name: valueOf('#tt-nome'),
+      email: valueOf('#tt-email'),
+      phone: valueOf('#tt-tel'),
+      password: valueOf('#tt-senha'),
+      role: 'tutor',
+    };
+
+    var application = {
+      formation: valueOf('#ap-form') + ' / ' + radioValue('situacao'),
+      experience: [
+        'Experiência com ensino: ' + (valueOf('#ap-exp') || 'não informado'),
+        'Experiência com crianças: ' + radioValue('exp_criancas'),
+        'Contato com TEA: ' + radioValue('exp_tea'),
+        'Condição de participação: ' + radioValue('participacao'),
+        'Roteiro pronto: ' + radioValue('roteiro'),
+      ].join('\n'),
+      motivation: valueOf('#ap-motiv'),
+      linkedin: valueOf('#ap-li'),
+      weeklyAvailability: [
+        ...pressedChips('ap-dispon'),
+        ...pressedChips('ap-periodos'),
+      ],
+    };
+
+    var signup = await signUp(account);
+
+    if (signup.error) {
+      console.error(signup.error);
+      alert('Não foi possível criar a conta agora. Verifique os dados e tente novamente.');
+      return false;
+    }
+
+    if (signup.session) {
+      var result = await submitTutorApplication(signup.user.id, application);
+
+      if (result.error) {
+        console.error(result.error);
+        alert('A conta foi criada, mas não conseguimos salvar a candidatura agora.');
+        return false;
+      }
+    } else {
+      stashPendingSignup('tutor', account.email, application);
+    }
+
+    return true;
   }
 
   function goTo(idx) {
@@ -629,14 +695,37 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
     return ok;
   }
 
+  function validatePreviousSteps(lastStep) {
+    for (var i = 0; i < lastStep; i++) {
+      if (!validateStep(panels[i])) {
+        goTo(i);
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   // Navegação
   document.querySelectorAll('[data-next]').forEach(function(btn){
-    btn.addEventListener('click', function(){
+    btn.addEventListener('click', async function(){
       if (btn.hasAttribute('data-last')) {
+        if (!validatePreviousSteps(current)) return;
+
         var cb = document.getElementById('tt-termos');
         var err = document.getElementById('err-termos');
         if (!cb.checked) { err.classList.add('is-visible'); cb.focus(); return; }
         err.classList.remove('is-visible');
+
+        btn.disabled = true;
+        btn.textContent = 'Enviando...';
+
+        var ok = await submitTutorSignup();
+
+        btn.disabled = false;
+        btn.textContent = 'Enviar candidatura';
+
+        if (!ok) return;
       } else {
         if (!validateStep(panels[current])) return;
       }
@@ -731,7 +820,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
 
   // Restaura etapa
   var saved = parseInt(sessionStorage.getItem('tt_step'), 10);
-  if (!isNaN(saved) && saved > 0 && saved < TOTAL) goTo(saved);
+  if (!isNaN(saved) && saved > 0 && saved < TOTAL && valueOf('#tt-email')) goTo(saved);
 })();
 </script>
 </body>

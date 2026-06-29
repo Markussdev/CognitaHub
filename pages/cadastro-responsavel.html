@@ -532,10 +532,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
         <div class="field">
           <label>Tempo de concentração em atividades</label>
           <div class="radio-group" role="radiogroup" aria-label="Tempo de concentração">
-            <label class="radio-item"><input type="radio" name="atencao" value="ate5"> Até 5 minutos</label>
-            <label class="radio-item"><input type="radio" name="atencao" value="5a10"> 5 a 10 minutos</label>
-            <label class="radio-item"><input type="radio" name="atencao" value="mais10"> Mais de 10 minutos</label>
-            <label class="radio-item"><input type="radio" name="atencao" value="naosabe"> Não sei informar</label>
+            <label class="radio-item"><input type="radio" name="atencao" value="short"> Até 5 minutos</label>
+            <label class="radio-item"><input type="radio" name="atencao" value="medium"> 5 a 10 minutos</label>
+            <label class="radio-item"><input type="radio" name="atencao" value="medium"> Mais de 10 minutos</label>
+            <label class="radio-item"><input type="radio" name="atencao" value="unknown"> Não sei informar</label>
           </div>
           <!-- TODO(wiring): attention_span em learning_profiles -->
         </div>
@@ -661,7 +661,11 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
   </form><!-- .wizard-card -->
 </main>
 
-<script>
+<script type="module">
+import { signIn, signUp } from '../js/lib/auth.js'
+import { stashPendingSignup } from '../js/lib/pending-signup.js'
+import { submitGuardianRegistration } from '../js/data/signup.js'
+
 (function(){
   var TOTAL = 5;
   var wizardForm = document.querySelector('[data-guardian-form]');
@@ -676,6 +680,101 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
     wizardForm.addEventListener('submit', function(event){
       event.preventDefault();
     });
+  }
+
+  function valueOf(selector) {
+    return document.querySelector(selector)?.value.trim() ?? '';
+  }
+
+  function radioValue(name) {
+    return document.querySelector(`input[name="${name}"]:checked`)?.value ?? '';
+  }
+
+  function isChecked(selector) {
+    return document.querySelector(selector)?.checked ?? false;
+  }
+
+  function pressedChips(groupId) {
+    var unknown = document.querySelector('[data-naosabe="' + groupId + '"]');
+    if (unknown && unknown.checked) return ['Não sei informar'];
+
+    return Array.from(document.querySelectorAll(`#${groupId} .chip[aria-pressed="true"]`))
+      .map(function(chip){ return chip.textContent.trim(); });
+  }
+
+  async function saveGuardianRegistration(userId, account, registration) {
+    var result = await submitGuardianRegistration(userId, registration);
+
+    if (result.error) {
+      stashPendingSignup('guardian', account.email, registration);
+      console.error(`Erro ao gravar cadastro (${result.step}):`, result.error);
+      alert('A conta foi criada, mas não conseguimos salvar o cadastro agora. Guardamos os dados para tentar concluir no primeiro login.');
+      return false;
+    }
+
+    return true;
+  }
+
+  async function submitGuardianSignup() {
+    var account = {
+      name: valueOf('#rp-nome'),
+      email: valueOf('#rp-email'),
+      phone: valueOf('#rp-tel'),
+      password: valueOf('#rp-senha'),
+      role: 'guardian',
+    };
+
+    var mathDifficulties = pressedChips('cr-dific');
+
+    var registration = {
+      childId: crypto.randomUUID(),
+      child: {
+        name: valueOf('#cr-nome'),
+        birthDate: valueOf('#cr-nasc'),
+        schoolYear: valueOf('#cr-etapa'),
+        mainDifficulties: mathDifficulties.join(', ') || null,
+        sensoryNotes: valueOf('#cr-obs') || null,
+        routineNotes: 'Acompanhamento atual: ' + radioValue('acomp'),
+      },
+      learningProfile: {
+        preferredFormats: pressedChips('lp-formatos'),
+        attentionSpan: radioValue('atencao'),
+        mathDifficulties: mathDifficulties,
+        motivators: valueOf('#lp-motiv') || 'Não sei informar',
+        avoidances: valueOf('#lp-evit') || 'Não sei informar',
+      },
+      consent: {
+        dataUseAccepted: isChecked('#cs-dados'),
+        contactAccepted: isChecked('#cs-contato'),
+        termsVersion: valueOf('[name="terms_version"]') || '1.0',
+      },
+    };
+
+    var signup = await signUp(account);
+
+    if (signup.error) {
+      console.error(signup.error);
+      var signin = await signIn(account.email, account.password);
+
+      if (signin.error) {
+        console.error(signin.error);
+        alert('Não foi possível criar a conta agora. Verifique os dados e tente novamente.');
+        return false;
+      }
+
+      return saveGuardianRegistration(signin.user.id, account, registration);
+    }
+
+    if (signup.session) {
+      var saved = await saveGuardianRegistration(signup.user.id, account, registration);
+      if (!saved) {
+        return false;
+      }
+    } else {
+      stashPendingSignup('guardian', account.email, registration);
+    }
+
+    return true;
   }
 
   function goTo(idx) {
@@ -732,10 +831,23 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
     return ok;
   }
 
+  function validatePreviousSteps(lastStep) {
+    for (var i = 0; i < lastStep; i++) {
+      if (!validateStep(panels[i])) {
+        goTo(i);
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   // Navegação
   document.querySelectorAll('[data-next]').forEach(function(btn){
-    btn.addEventListener('click', function(){
+    btn.addEventListener('click', async function(){
       if (btn.hasAttribute('data-last')) {
+        if (!validatePreviousSteps(current)) return;
+
         var cs1 = document.getElementById('cs-dados');
         var cs2 = document.getElementById('cs-escopo');
         var cs3 = document.getElementById('cs-revisao');
@@ -747,6 +859,16 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
           return;
         }
         errCs.classList.remove('is-visible');
+
+        btn.disabled = true;
+        btn.textContent = 'Enviando...';
+
+        var ok = await submitGuardianSignup();
+
+        btn.disabled = false;
+        btn.textContent = 'Enviar cadastro';
+
+        if (!ok) return;
       } else {
         if (!validateStep(panels[current])) return;
       }
@@ -884,7 +1006,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
 
   // Restaura etapa salva (se existir)
   var saved = parseInt(sessionStorage.getItem('rp_step'), 10);
-  if (!isNaN(saved) && saved > 0 && saved < TOTAL) goTo(saved);
+  if (!isNaN(saved) && saved > 0 && saved < TOTAL && valueOf('#rp-email')) goTo(saved);
 })();
 </script>
 </body>

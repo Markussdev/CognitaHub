@@ -1,5 +1,31 @@
 import { supabase } from '../lib/supabase.js'
 
+function mapAttentionSpan(value) {
+  const map = {
+    ate5: 'short',
+    'ate-5': 'short',
+    short: 'short',
+
+    '5a10': 'medium',
+    '5-10': 'medium',
+    medium: 'medium',
+
+    // Temporario: o enum do banco ainda nao aceita "long".
+    mais10: 'medium',
+    'mais-10': 'medium',
+    long: 'medium',
+
+    naosei: 'unknown',
+    'nao-sei': 'unknown',
+    unknown: 'unknown',
+    '': 'unknown',
+    null: 'unknown',
+    undefined: 'unknown',
+  }
+
+  return map[value] ?? 'unknown'
+}
+
 // Camada de gravação dos cadastros no Supabase.
 // Usada em dois momentos: logo após o signUp (quando já existe sessão)
 // ou no primeiro login (quando a confirmação de email está ligada e o
@@ -75,13 +101,15 @@ export async function submitGuardianRegistration(guardianId, registration) {
   const { error: profileError } = await supabase.from('learning_profiles').insert({
     child_id: childId,
     preferred_formats: profile.preferredFormats,
-    attention_span: profile.attentionSpan,
+    attention_span: mapAttentionSpan(profile.attentionSpan),
     math_difficulties: profile.mathDifficulties,
     motivators: profile.motivators,
     avoidances: profile.avoidances,
   })
 
-  if (profileError) return { error: profileError, step: 'learning_profiles' }
+  if (profileError && profileError.code !== '23505') {
+    return { error: profileError, step: 'learning_profiles' }
+  }
 
   const { error: consentError } = await supabase.from('consents').insert({
     guardian_id: guardianId,
@@ -93,7 +121,9 @@ export async function submitGuardianRegistration(guardianId, registration) {
     accepted_at: new Date().toISOString(),
   })
 
-  if (consentError) return { error: consentError, step: 'consents' }
+  if (consentError && consentError.code !== '23505') {
+    return { error: consentError, step: 'consents' }
+  }
 
   return { childId }
 }
