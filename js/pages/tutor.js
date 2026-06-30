@@ -1,24 +1,85 @@
+import { supabase } from '../lib/supabase.js'
 import { requireRole, signOut } from '../lib/auth.js'
-import { setupFocusMode, greeting, initials, ageFrom, el } from '../lib/ui.js'
+import { greeting, initials, ageFrom, el } from '../lib/ui.js'
 import { getTutorCycles } from '../data/tutor.js'
 import { getCycleSessions, createSessionRecord } from '../data/sessions.js'
 
 const session = await requireRole('tutor')
 const stateBox = document.querySelector('[data-tutor-state]')
 
-setupFocusMode()
-
 document.querySelectorAll('[data-logout]').forEach((btn) => {
   btn.addEventListener('click', async (e) => { e.preventDefault(); await signOut() })
 })
 
-document.querySelectorAll('.rail-link').forEach((link) => {
-  if (link.getAttribute('href') === '#') link.addEventListener('click', (e) => e.preventDefault())
+// goHome/goRecord/openSupportDrawer são function declarations definidas mais
+// abaixo — hoisted, então o listener pode referenciá-las aqui sem problema de
+// ordem (currentDerived é lido só no momento do clique, já populado).
+document.querySelector('[data-rail-home]')?.addEventListener('click', (e) => { e.preventDefault(); goHome() })
+document.querySelector('[data-rail-sessions]')?.addEventListener('click', (e) => { e.preventDefault(); goRecord('sessions') })
+document.querySelector('[data-rail-team]')?.addEventListener('click', (e) => {
+  e.preventDefault()
+  const hasRecord = currentDerived && RECORD_STATES.includes(currentDerived.state)
+  openSupportDrawer(hasRecord ? firstName(currentDerived.cycle.children?.name) : null)
+})
+document.querySelector('[data-rail-profile]')?.addEventListener('click', (e) => { e.preventDefault(); goProfile() })
+
+document.querySelector('[data-cmdk-trigger]')?.addEventListener('click', openCommandPalette)
+document.querySelector('[data-cmdk-backdrop]')?.addEventListener('click', closeCommandPalette)
+document.querySelector('[data-cmdk-input]')?.addEventListener('input', (e) => renderCommandResults(e.target.value))
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openCommandPalette(); return }
+  if (e.key === 'Escape') { closeSupportDrawer(); closeCommandPalette() }
 })
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const REVIEW_STATUSES = ['pending', 'waiting_review', 'tutor_pending']
+
+// ── Avatar (Supabase Storage, bucket privado) ─────────────────────────────────
+
+const AVATAR_BUCKET = 'profile-photos'
+
+function getFileExt(file) {
+  return file.name.split('.').pop()?.toLowerCase() || 'png'
+}
+
+function validateAvatarFile(file) {
+  const allowed = ['image/png', 'image/jpeg', 'image/webp']
+  if (!allowed.includes(file.type)) throw new Error('Use uma imagem PNG, JPG ou WEBP.')
+  if (file.size > 2 * 1024 * 1024) throw new Error('A imagem precisa ter até 2MB.')
+}
+
+async function getAvatarUrl(path) {
+  if (!path) return null
+  const { data, error } = await supabase.storage.from(AVATAR_BUCKET).createSignedUrl(path, 3600)
+  if (error) { console.warn('Erro ao carregar avatar:', error); return null }
+  return data.signedUrl
+}
+
+async function uploadTutorAvatar(file) {
+  validateAvatarFile(file)
+  const filePath = `${session.user.id}/avatar-${Date.now()}.${getFileExt(file)}`
+  const { error: uploadError } = await supabase.storage
+    .from(AVATAR_BUCKET)
+    .upload(filePath, file, { cacheControl: '3600', contentType: file.type, upsert: false })
+  if (uploadError) throw uploadError
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .update({ avatar_path: filePath })
+    .eq('id', session.user.id)
+  if (profileError) throw profileError
+  session.profile.avatar_path = filePath
+  return filePath
+}
+
+function setAvatarImage(sel, url) {
+  const node = document.querySelector(sel)
+  if (!node) return
+  node.textContent = ''
+  const img = document.createElement('img')
+  img.src = url; img.alt = ''
+  node.append(img)
+}
 
 function todayISO() {
   const now = new Date()
@@ -29,11 +90,6 @@ function formatDate(value) {
   if (!value) return null
   const d = new Date(`${value}T00:00:00Z`)
   return isNaN(d.getTime()) ? value : new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' }).format(d)
-}
-
-function truncateText(value, max = 110) {
-  const text = (value ?? '').trim()
-  return text.length > max ? `${text.slice(0, max).trim()}...` : text
 }
 
 function formatLastSession(value) {
@@ -76,14 +132,113 @@ function simpleHead(title) {
   return head
 }
 
-const SUGGESTED_ACTIVITY = {
-  title: 'Blocos de contagem coloridos',
-  skill: 'contagem até 10',
-  focus: 'contagem, adição simples e comparação de quantidades',
-  time: '15-20 min',
-  materials: 'blocos, tampinhas ou objetos pequenos',
-  why: 'Combina com apoio visual e dura pouco — bom para sessões curtas.',
-  nextStep: 'Repetir contagem até 10 com apoio visual e comparar dois grupos pequenos.',
+function renderFeedItems(container, items) {
+  container.replaceChildren()
+  items.forEach((item) => {
+    const row = el('div', 'feed-item')
+    const ico = el('div', `feed-ico ${item.tone}`)
+    ico.innerHTML = item.icon
+    const tx = el('div', 'feed-tx')
+    tx.innerHTML = item.html
+    if (item.sub) tx.append(el('span', 'sub', item.sub))
+    row.append(ico, tx)
+    if (item.time) row.append(el('div', 'feed-time', item.time))
+    container.append(row)
+  })
+}
+
+// Normaliza valores que podem chegar como array real, JSON stringificado
+// ("[\"a\",\"b\"]") ou literal de array do Postgres ("{a,\"b c\"}") — o
+// schema real mistura os três conforme a coluna foi preenchida.
+function toList(value) {
+  if (value == null || value === '') return []
+  if (Array.isArray(value)) return value.filter(Boolean)
+  if (typeof value !== 'string') return [String(value)]
+
+  const trimmed = value.trim()
+  if (!trimmed) return []
+
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    const inner = trimmed.slice(1, -1)
+    if (!inner) return []
+    return (inner.match(/"(?:[^"\\]|\\.)*"|[^,]+/g) || [])
+      .map((s) => s.trim().replace(/^"|"$/g, '').replace(/\\"/g, '"'))
+      .filter(Boolean)
+  }
+  if (trimmed.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(trimmed)
+      if (Array.isArray(parsed)) return parsed.filter(Boolean)
+    } catch { /* não era JSON válido — trata como texto simples abaixo */ }
+  }
+  return [trimmed]
+}
+
+function formatList(value, fallback) {
+  const list = toList(value)
+  return list.length ? list.join(', ') : fallback
+}
+
+const ATTENTION_SPAN_LABEL = {
+  short: 'Sessões bem curtas, de 5 a 10 minutos, com pausas frequentes.',
+  medium: 'Sessões curtas, de 15 a 20 minutos, com pausas.',
+  long: 'Consegue manter o foco por períodos mais longos, 30 minutos ou mais.',
+}
+
+function formatAttentionSpan(value, fallback) {
+  if (!value) return fallback
+  const label = ATTENTION_SPAN_LABEL[String(value).trim().toLowerCase()]
+  return label ?? value
+}
+
+// Biblioteca local enxuta: a sugestão muda conforme o foco do ciclo em vez
+// de ser sempre a mesma atividade fixa. TODO(wiring:activities): trocar por
+// consulta à tabela activities quando ela existir.
+const ACTIVITY_LIBRARY = {
+  contagem: {
+    title: 'Blocos de contagem coloridos', skill: 'contagem até 10',
+    focus: 'contagem, adição simples e comparação de quantidades', time: '15-20 min',
+    materials: 'blocos, tampinhas ou objetos pequenos',
+    why: 'Combina com apoio visual e dura pouco — bom para sessões curtas.',
+    nextStep: 'Repetir contagem até 10 com apoio visual e comparar dois grupos pequenos.',
+  },
+  'adição simples': {
+    title: 'Soma com objetos concretos', skill: 'adição até 10',
+    focus: 'adição simples com apoio visual', time: '15-20 min',
+    materials: 'objetos pequenos ou desenhos',
+    why: 'Trabalha a adição de forma concreta antes do cálculo abstrato.',
+    nextStep: 'Avançar para somas com dois dígitos quando estiver confiante.',
+  },
+  'comparação de quantidades': {
+    title: 'Qual grupo tem mais?', skill: 'comparação de quantidades',
+    focus: 'comparar dois grupos de objetos', time: '10-15 min',
+    materials: 'objetos pequenos de duas cores',
+    why: 'Prepara o terreno para maior/menor antes da adição e subtração.',
+    nextStep: 'Introduzir os símbolos de maior e menor depois da comparação visual.',
+  },
+  'sequência numérica': {
+    title: 'Trilha numérica', skill: 'sequência de 1 a 10',
+    focus: 'ordem numérica e reconhecimento dos números', time: '15-20 min',
+    materials: 'cartões numerados ou trilha desenhada',
+    why: 'Reforça a ordem dos números com movimento, bom para manter o foco.',
+    nextStep: 'Aumentar a trilha até 20 quando a sequência até 10 estiver firme.',
+  },
+  subtração: {
+    title: 'Tirando da coleção', skill: 'subtração até 10',
+    focus: 'subtração simples com apoio concreto', time: '15-20 min',
+    materials: 'objetos pequenos para retirar do grupo',
+    why: 'Mostra a subtração como ação física antes do símbolo no papel.',
+    nextStep: 'Registrar a subtração por escrito quando a ação concreta estiver clara.',
+  },
+}
+const DEFAULT_ACTIVITY = ACTIVITY_LIBRARY.contagem
+
+function pickSuggestedActivity(difficulties) {
+  const list = toList(difficulties).map((d) => d.toLowerCase())
+  const match = Object.keys(ACTIVITY_LIBRARY).find((key) =>
+    list.some((d) => d.includes(key) || key.includes(d))
+  )
+  return match ? ACTIVITY_LIBRARY[match] : DEFAULT_ACTIVITY
 }
 
 // ── Identidade (uma vez por sessão) ──────────────────────────────────────────
@@ -95,6 +250,13 @@ function fillIdentity() {
   set('[data-account-avatar]', initials(name))
   set('[data-topbar-avatar]', initials(name))
   set('[data-account-email]', session.user.email ?? '')
+  if (session.profile.avatar_path) {
+    getAvatarUrl(session.profile.avatar_path).then((url) => {
+      if (!url) return
+      setAvatarImage('[data-account-avatar]', url)
+      setAvatarImage('[data-topbar-avatar]', url)
+    })
+  }
 }
 
 // ── Rail / breadcrumb ─────────────────────────────────────────────────────────
@@ -102,33 +264,43 @@ function fillIdentity() {
 function renderRail(hasRecord, childName) {
   const group = document.querySelector('[data-rail-acomp-group]')
   const slot = document.querySelector('[data-rail-child-slot]')
-  const teamLink = document.querySelector('[data-rail-team]')
+  const sessionsLink = document.querySelector('[data-rail-sessions]')
   if (!slot) return
 
+  // "Falar com equipe" é suporte global — fica sempre visível, com ou sem ciclo.
   if (!hasRecord) {
     group.hidden = true
     slot.replaceChildren()
-    teamLink.hidden = true
+    sessionsLink.hidden = true
     return
   }
 
   group.hidden = false
-  teamLink.hidden = false
+  sessionsLink.hidden = false
 
-  const link = el('a', 'rail-link active')
+  const link = el('a', 'rail-link')
   link.href = '#'
   link.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/></svg>`
   link.append(document.createTextNode(childName))
-  link.addEventListener('click', (e) => { e.preventDefault(); switchTab('overview') })
+  link.addEventListener('click', (e) => { e.preventDefault(); goRecord() })
   slot.replaceChildren(link)
 }
 
-function renderCrumb(hasRecord, childName) {
+function setActiveNav(view) {
+  const homeLink = document.querySelector('[data-rail-home]')
+  const childLink = document.querySelector('[data-rail-child-slot] .rail-link')
+  if (homeLink) homeLink.classList.toggle('active', view === 'home')
+  if (childLink) childLink.classList.toggle('active', view === 'record')
+}
+
+function renderCrumb(view, childName) {
   const crumb = document.querySelector('[data-crumb]')
   if (!crumb) return
   crumb.replaceChildren()
-  if (hasRecord) {
+  if (view === 'record' && childName) {
     crumb.append(document.createTextNode('Acompanhamento / '), el('b', null, childName))
+  } else if (view === 'profile') {
+    crumb.append(document.createTextNode('Meu perfil'))
   } else {
     crumb.append(document.createTextNode('Painel do tutor'))
   }
@@ -420,7 +592,7 @@ function renderSessionForm(cycle, onSaved) {
 
     previewSummary.textContent = summaryText ||
       `${childName} participou da atividade${activity ? ` "${activity}"` : ''}${focus ? ` com foco em ${focus}` : ''}. Escreva aqui o que funcionou, o que ficou difícil e qual apoio ajudou.`
-    previewNext.textContent = `Próximo passo: ${next || SUGGESTED_ACTIVITY.nextStep}`
+    previewNext.textContent = `Próximo passo: ${next || 'a definir com base na sessão de hoje'}`
   }
 
   ;[actInput, focusInput, familyInput, nextInput].forEach((input) => {
@@ -523,7 +695,7 @@ function renderSessionForm(cycle, onSaved) {
   body.append(actions)
   details.append(body)
 
-  details.fillSuggestedActivity = (activity = SUGGESTED_ACTIVITY) => {
+  details.fillSuggestedActivity = (activity = DEFAULT_ACTIVITY) => {
     actInput.value = activity.title
     focusInput.value = activity.focus
     if (!nextInput.value.trim()) nextInput.value = activity.nextStep
@@ -615,26 +787,26 @@ function buildOverviewPanel(cycle, state, openForm, useSuggestedActivity) {
     document.createTextNode(cycle.main_goal || 'Fortalecer contagem até 10 com apoio visual.')
   )
 
-  const difficulties = lp.math_difficulties?.length ? lp.math_difficulties : child.main_difficulties
+  const difficultiesList = toList(lp.math_difficulties).length ? toList(lp.math_difficulties) : toList(child.main_difficulties)
   const focusValue = (() => {
-    if (!difficulties?.length) return document.createTextNode('Ainda não informado pela equipe.')
+    if (!difficultiesList.length) return document.createTextNode('Ainda não informado pela equipe.')
     const chips = el('div', 'chips')
-    ;(Array.isArray(difficulties) ? difficulties : [difficulties]).forEach((d) => chips.append(el('span', 'chip', d)))
+    difficultiesList.forEach((d, i) => chips.append(el('span', `chip chip--${(i % 3) + 1}`, d)))
     return chips
   })()
   addKv(null, 'Foco atual', focusValue)
 
   addKv(null, 'Preferências', document.createTextNode(
-    lp.preferred_formats?.length ? lp.preferred_formats.join(', ') : 'Apoio visual e temas concretos.'
+    formatList(lp.preferred_formats, 'Apoio visual e temas concretos.')
   ))
   addKv(null, 'Concentração', document.createTextNode(
-    lp.attention_span || 'Sessões curtas, com pausas frequentes.'
+    formatAttentionSpan(lp.attention_span, 'Sessões curtas, com pausas frequentes.')
   ))
   addKv(null, 'Motivadores', document.createTextNode(
-    lp.motivators || 'Elogio específico e atividades com manipulação de objetos.'
+    formatList(lp.motivators, 'Elogio específico e atividades com manipulação de objetos.')
   ))
   addKv(null, 'O que dificulta', document.createTextNode(
-    lp.avoidances || 'Instruções longas e sequências extensas sem apoio.'
+    formatList(lp.avoidances, 'Instruções longas e sequências extensas sem apoio.')
   ))
 
   detailsBody.append(kv)
@@ -664,16 +836,18 @@ function buildOverviewPanel(cycle, state, openForm, useSuggestedActivity) {
   }
   side.append(nextbar)
 
+  const activity = pickSuggestedActivity(difficultiesList)
+
   if (state === 'cycle_active' || state === 'cycle_planned') {
     const sgCard = el('div', 'card suggestion-card')
     sgCard.append(simpleHead('Atividade sugerida'))
     const sgBody = el('div', 'card-b')
     sgBody.append(
-      el('div', 'sg-title', SUGGESTED_ACTIVITY.title),
-      el('div', 'sg-why', `Por que: ${SUGGESTED_ACTIVITY.why}`)
+      el('div', 'sg-title', activity.title),
+      el('div', 'sg-why', `Por que: ${activity.why}`)
     )
     const facts = el('div', 'sg-facts')
-    ;[SUGGESTED_ACTIVITY.skill, SUGGESTED_ACTIVITY.time, SUGGESTED_ACTIVITY.materials].forEach((f) => facts.append(el('span', null, f)))
+    ;[activity.skill, activity.time, activity.materials].forEach((f) => facts.append(el('span', null, f)))
     sgBody.append(facts)
 
     const actionsRow = el('div', 'rec-actions')
@@ -681,7 +855,7 @@ function buildOverviewPanel(cycle, state, openForm, useSuggestedActivity) {
     if (state === 'cycle_active') {
       const useBtn = el('button', 'btn btn-ghost btn-sm', 'Usar no registro')
       useBtn.type = 'button'
-      useBtn.addEventListener('click', () => useSuggestedActivity(SUGGESTED_ACTIVITY))
+      useBtn.addEventListener('click', () => useSuggestedActivity(activity))
       actionsRow.append(useBtn)
     }
     const openLink = el('a', 'btn btn-ghost btn-sm', 'Abrir biblioteca')
@@ -691,25 +865,6 @@ function buildOverviewPanel(cycle, state, openForm, useSuggestedActivity) {
     sgCard.append(sgBody)
     side.append(sgCard)
   }
-
-  // Suporte
-  const supportCard = el('section', 'card')
-  supportCard.id = 'team-support'
-  const supportHead = el('div', 'card-h')
-  supportHead.append(el('h3', null, 'Falar com equipe'))
-  const supportBody = el('div', 'card-b')
-  supportBody.append(el('p', 'card-copy', 'Procure a equipe se a criança demonstrar desconforto, a atividade estiver difícil demais ou você precisar ajustar o plano. Resposta em até 48h.'))
-  const supportActions = el('div', 'rec-actions')
-  supportActions.style.cssText = 'margin-top:11px;gap:8px'
-  const mail = el('a', 'btn btn-ghost btn-sm', 'Enviar e-mail')
-  mail.href = 'mailto:equipecognita@email.com?subject=Ajuda%20no%20ciclo%20Cognita'
-  const whats = el('a', 'btn btn-ghost btn-sm', 'WhatsApp')
-  whats.href = 'https://wa.me/5500000000000'
-  whats.target = '_blank'; whats.rel = 'noopener'
-  supportActions.append(mail, whats)
-  supportBody.append(supportActions)
-  supportCard.append(supportHead, supportBody)
-  side.append(supportCard)
 
   // Feed
   const feedCard = el('div', 'card feed-card')
@@ -724,7 +879,6 @@ function buildOverviewPanel(cycle, state, openForm, useSuggestedActivity) {
   panel.append(cols)
 
   panel.renderFeed = (rows) => {
-    feed.replaceChildren()
     const items = []
     rows.slice(0, 2).forEach((r) => {
       items.push({
@@ -752,17 +906,7 @@ function buildOverviewPanel(cycle, state, openForm, useSuggestedActivity) {
       time: formatDate(cycle.start_date) ?? '',
     })
 
-    items.forEach((item) => {
-      const row = el('div', 'feed-item')
-      const ico = el('div', `feed-ico ${item.tone}`)
-      ico.innerHTML = item.icon
-      const tx = el('div', 'feed-tx')
-      tx.innerHTML = item.html
-      if (item.sub) tx.append(el('span', 'sub', item.sub))
-      row.append(ico, tx)
-      if (item.time) row.append(el('div', 'feed-time', item.time))
-      feed.append(row)
-    })
+    renderFeedItems(feed, items)
   }
 
   return panel
@@ -927,12 +1071,432 @@ function buildReportsPanel(cycle) {
   const historyCard = el('div', 'card')
   historyCard.append(simpleHead('Histórico de relatórios'))
   const historyBody = el('div', 'card-b')
-  historyBody.style.cssText = 'padding:20px 0;text-align:center'
-  historyBody.append(el('p', 'card-copy', `Nenhum relatório enviado ainda. O do mês ${currentMonth} será solicitado ao fim do mês.`))
+  const historyEmpty = el('div', 'empty-state')
+  const historyImg = document.createElement('img')
+  historyImg.src = '../assets/gatoprancheta-sem-fundo.png'
+  historyImg.alt = ''
+  historyEmpty.append(
+    historyImg,
+    el('strong', null, 'Nenhum relatório enviado ainda.'),
+    el('span', null, `O do mês ${currentMonth} será solicitado ao fim do mês.`)
+  )
+  historyBody.append(historyEmpty)
   historyCard.append(historyBody)
 
   cols.append(reportCard, historyCard)
   panel.append(cols)
+  return panel
+}
+
+// ── Central Cognita: drawer global de suporte ─────────────────────────────────
+// Suporte é utilitário global (qualquer tela pode abrir), não um recurso do
+// acompanhamento de uma criança — por isso vive num slide-over, não numa aba.
+
+function buildSupportDrawerContent(childName) {
+  const frag = document.createDocumentFragment()
+
+  if (childName) {
+    const ctx = el('div', 'support-context')
+    ctx.append(document.createTextNode('Sobre: '), el('b', null, childName))
+    frag.append(ctx)
+  }
+
+  frag.append(el('p', 'card-copy', 'Quando algo sair do esperado, a equipe está aqui. Escolha o tipo e descreva a situação.'))
+
+  const typeField = el('div', 'field')
+  typeField.append(el('label', null, 'Tipo de solicitação'))
+  const type = makeScaleGroup([
+    { label: 'Dúvida sobre atividade', val: 'activity', tone: '' },
+    { label: 'Ajuste no plano', val: 'plan', tone: '' },
+    { label: 'Questão com responsável', val: 'guardian', tone: '' },
+    { label: 'Pausa no ciclo', val: 'pause', tone: 'warn' },
+    { label: 'Situação sensível', val: 'sensitive', tone: 'warn' },
+    { label: 'Outro', val: 'other', tone: '' },
+  ])
+  typeField.append(type.group)
+  frag.append(typeField)
+
+  const msgField = el('div', 'field')
+  const msgLabel = document.createElement('label')
+  msgLabel.textContent = 'Mensagem'
+  const msgInput = document.createElement('textarea')
+  msgInput.placeholder = 'Descreva a situação com o máximo de detalhes possível...'
+  msgField.append(msgLabel, msgInput)
+  frag.append(msgField)
+
+  const errorBox = el('p', 'form-error'); errorBox.hidden = true
+  const okBox = el('p', 'form-ok'); okBox.hidden = true
+  const sendBtn = el('button', 'btn btn-accent btn-sm', 'Enviar para equipe')
+  sendBtn.type = 'button'
+
+  sendBtn.addEventListener('click', () => {
+    errorBox.hidden = true; okBox.hidden = true
+    if (!msgInput.value.trim()) {
+      errorBox.textContent = 'Escreva uma mensagem antes de enviar.'; errorBox.hidden = false
+      msgInput.focus(); return
+    }
+    // TODO(wiring:support_requests): persistir em support_requests quando a tabela existir.
+    // Por enquanto fica só local — use e-mail/WhatsApp abaixo para contato imediato.
+    msgInput.value = ''
+    type.reset()
+    okBox.textContent = 'Mensagem registrada. Por enquanto isso fica só com você — use e-mail ou WhatsApp abaixo para falar com a equipe agora.'
+    okBox.hidden = false
+  })
+
+  const actions = el('div', 'form-actions')
+  actions.append(errorBox, okBox, sendBtn)
+  frag.append(actions)
+
+  frag.append(el('div', 'support-divider'))
+
+  frag.append(el('p', 'card-copy', 'Para algo urgente, fale direto com a equipe. Tempo médio de resposta: até 48h.'))
+  const contactActions = el('div', 'rec-actions')
+  contactActions.style.cssText = 'gap:8px;flex-direction:column;align-items:stretch'
+  const mail = el('a', 'btn btn-ghost btn-sm', 'Enviar e-mail')
+  mail.href = `mailto:equipecognita@email.com?subject=${encodeURIComponent(childName ? `Ajuda no ciclo de ${childName}` : 'Ajuda no Cognita Hub')}`
+  const whats = el('a', 'btn btn-ghost btn-sm', 'Chamar no WhatsApp')
+  whats.href = 'https://wa.me/5500000000000'
+  whats.target = '_blank'; whats.rel = 'noopener'
+  contactActions.append(mail, whats)
+  frag.append(contactActions)
+
+  return frag
+}
+
+function openSupportDrawer(childName) {
+  const body = document.querySelector('[data-support-body]')
+  const drawer = document.querySelector('[data-support-drawer]')
+  const backdrop = document.querySelector('[data-support-backdrop]')
+  if (!body || !drawer || !backdrop) return
+  body.replaceChildren(buildSupportDrawerContent(childName))
+  drawer.classList.add('open')
+  backdrop.classList.add('open')
+  drawer.setAttribute('aria-hidden', 'false')
+}
+
+function closeSupportDrawer() {
+  document.querySelector('[data-support-drawer]')?.classList.remove('open')
+  document.querySelector('[data-support-backdrop]')?.classList.remove('open')
+  document.querySelector('[data-support-drawer]')?.setAttribute('aria-hidden', 'true')
+}
+
+document.querySelector('[data-support-close]')?.addEventListener('click', closeSupportDrawer)
+document.querySelector('[data-support-backdrop]')?.addEventListener('click', closeSupportDrawer)
+
+// ── Busca / command palette (local, V1 só navega dentro da própria tela) ─────
+
+let recentSessionsCache = []
+
+const CMDK_ICONS = {
+  plus: `<svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>`,
+  user: `<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/></svg>`,
+  book: `<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
+  team: `<svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>`,
+  history: `<svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-7"/></svg>`,
+}
+
+function getCommandGroups() {
+  const hasRecord = currentDerived && RECORD_STATES.includes(currentDerived.state)
+  const cycle = hasRecord ? currentDerived.cycle : null
+  const childName = cycle ? firstName(cycle.children?.name) : null
+
+  const quick = []
+  if (hasRecord) {
+    quick.push({ label: 'Registrar sessão', icon: CMDK_ICONS.plus, action: () => goRecord('sessions') })
+    quick.push({ label: 'Ver perfil pedagógico', icon: CMDK_ICONS.user, action: () => { window.location.href = `perfil-crianca.html?id=${cycle.child_id ?? ''}` } })
+  }
+  quick.push({ label: 'Abrir biblioteca de atividades', icon: CMDK_ICONS.book, action: () => { window.location.href = 'atividades.html' } })
+  quick.push({ label: 'Falar com a equipe', icon: CMDK_ICONS.team, action: () => openSupportDrawer(childName) })
+
+  const groups = [{ label: 'Ações rápidas', items: quick }]
+
+  if (hasRecord) {
+    groups.push({
+      label: 'Acompanhamentos',
+      items: [{ label: cycle.children?.name ?? 'Criança', icon: CMDK_ICONS.user, action: () => goRecord() }],
+    })
+
+    groups.push({
+      label: 'Atividades',
+      items: Object.values(ACTIVITY_LIBRARY).map((activity) => ({
+        label: activity.title,
+        icon: CMDK_ICONS.book,
+        action: () => { window.location.href = 'atividades.html' },
+      })),
+    })
+
+    if (recentSessionsCache.length) {
+      groups.push({
+        label: 'Sessões recentes',
+        items: recentSessionsCache.slice(0, 4).map((r) => ({
+          label: `${r.activity_title ?? 'Sessão'} — ${formatLastSession(r.date)}`,
+          icon: CMDK_ICONS.history,
+          action: () => goRecord('sessions'),
+        })),
+      })
+    }
+  }
+
+  return groups
+}
+
+function renderCommandResults(query) {
+  const results = document.querySelector('[data-cmdk-results]')
+  if (!results) return
+  const q = query.trim().toLowerCase()
+
+  const groups = getCommandGroups()
+    .map((g) => ({ ...g, items: q ? g.items.filter((i) => i.label.toLowerCase().includes(q)) : g.items }))
+    .filter((g) => g.items.length)
+
+  if (!groups.length) {
+    results.replaceChildren(el('div', 'cmdk-empty', 'Nada encontrado por aqui.'))
+    return
+  }
+
+  const frag = document.createDocumentFragment()
+  groups.forEach((g) => {
+    frag.append(el('div', 'cmdk-group-label', g.label))
+    g.items.forEach((item) => {
+      const btn = el('button', 'cmdk-item')
+      btn.type = 'button'
+      btn.innerHTML = item.icon
+      btn.append(document.createTextNode(item.label))
+      btn.addEventListener('click', () => { closeCommandPalette(); item.action() })
+      frag.append(btn)
+    })
+  })
+  results.replaceChildren(frag)
+}
+
+function openCommandPalette() {
+  const panel = document.querySelector('[data-cmdk]')
+  const backdrop = document.querySelector('[data-cmdk-backdrop]')
+  const input = document.querySelector('[data-cmdk-input]')
+  if (!panel || !backdrop) return
+  panel.classList.add('open')
+  backdrop.classList.add('open')
+  if (input) {
+    input.value = ''
+    renderCommandResults('')
+    requestAnimationFrame(() => input.focus())
+  }
+}
+
+function closeCommandPalette() {
+  document.querySelector('[data-cmdk]')?.classList.remove('open')
+  document.querySelector('[data-cmdk-backdrop]')?.classList.remove('open')
+}
+
+// ── Painel: Orientações (contexto do ciclo, não suporte geral) ───────────────
+
+function buildOrientationsPanel(cycle, childName) {
+  const panel = el('section', 'panel')
+  panel.dataset.panel = 'orientations'
+  panel.hidden = true
+
+  const cols = el('div', 'cols')
+  const left = el('div', 'stack')
+
+  const planCard = el('div', 'card card--accent')
+  planCard.append(simpleHead('Última orientação da equipe'))
+  const planBody = el('div', 'card-b')
+  planBody.append(el('p', 'card-copy', cycle.main_goal
+    ? `Meta definida para o ciclo: ${cycle.main_goal}`
+    : 'A equipe ainda não registrou uma orientação específica para este ciclo.'))
+  if (cycle.current_plan) {
+    const stepP = el('p', 'card-copy', `Etapa atual: ${cycle.current_plan}`)
+    stepP.style.marginTop = '8px'
+    planBody.append(stepP)
+  }
+  planCard.append(planBody)
+  left.append(planCard)
+
+  const adjustCard = el('div', 'card')
+  adjustCard.append(simpleHead('Ajustes solicitados'))
+  const adjustBody = el('div', 'card-b')
+  adjustBody.append(el('p', 'card-copy', 'Nenhum ajuste pendente. Quando a equipe responder a uma solicitação sua sobre este ciclo, a resposta aparece aqui.'))
+  adjustCard.append(adjustBody)
+  left.append(adjustCard)
+
+  const notesCard = el('div', 'card')
+  notesCard.append(simpleHead('Observações internas liberadas ao tutor'))
+  const notesBody = el('div', 'card-b')
+  notesBody.append(el('p', 'card-copy', 'Sem observações adicionais da equipe por enquanto.'))
+  notesCard.append(notesBody)
+  left.append(notesCard)
+
+  const right = el('div', 'stack')
+
+  const historyCard = el('div', 'card')
+  historyCard.append(simpleHead('Histórico de decisões do ciclo'))
+  const historyBody = el('div', 'card-b')
+  const feed = el('div', 'feed')
+  const items = []
+  if (cycle.main_goal) {
+    items.push({
+      tone: 'team',
+      icon: `<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
+      html: '<b>Equipe Cognita</b> definiu o plano do ciclo',
+      sub: `Objetivo: ${cycle.main_goal}`,
+      time: formatDate(cycle.start_date) ?? '',
+    })
+  }
+  items.push({
+    tone: 'team',
+    icon: `<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>`,
+    html: `<b>Ciclo</b> iniciado com ${childName}`,
+    sub: 'Acompanhamento de 6 meses',
+    time: formatDate(cycle.start_date) ?? '',
+  })
+  renderFeedItems(feed, items)
+  historyBody.append(feed)
+  historyCard.append(historyBody)
+  right.append(historyCard)
+
+  const ctaCard = el('div', 'card card--warm')
+  ctaCard.append(simpleHead('Precisa falar com a equipe?'))
+  const ctaBody = el('div', 'card-b')
+  ctaBody.append(el('p', 'card-copy', `Dúvidas sobre atividade, ajustes no plano ou qualquer situação sensível com ${childName}.`))
+  const ctaBtn = el('button', 'btn btn-accent btn-sm', `Abrir solicitação sobre ${childName}`)
+  ctaBtn.type = 'button'
+  ctaBtn.style.marginTop = '12px'
+  ctaBtn.addEventListener('click', () => openSupportDrawer(childName))
+  ctaBody.append(ctaBtn)
+  ctaCard.append(ctaBody)
+  right.append(ctaCard)
+
+  cols.append(left, right)
+  panel.append(cols)
+  return panel
+}
+
+// ── Tela Início (home antes do record) ────────────────────────────────────────
+
+const HOME_SUMMARY = {
+  cycle_active: 'Você tem 1 acompanhamento ativo.',
+  cycle_planned: 'Seu próximo acompanhamento ainda não começou.',
+  cycle_paused: 'Seu acompanhamento está pausado no momento.',
+  cycle_completed: 'Seu acompanhamento foi concluído — obrigado pelo cuidado.',
+}
+
+const NEXT_ACTION_LABEL = {
+  cycle_active: 'Registrar a sessão desta semana',
+  cycle_planned: 'Aguardando a equipe ativar o ciclo',
+  cycle_paused: 'Ciclo pausado — fale com a equipe',
+  cycle_completed: 'Nenhuma — ciclo concluído',
+}
+
+const CYCLE_LABEL = {
+  cycle_active: 'Ciclo ativo',
+  cycle_planned: 'Ciclo planejado',
+  cycle_paused: 'Ciclo pausado',
+  cycle_completed: 'Ciclo concluído',
+}
+
+async function buildHomeView(state, cycle, openRecord) {
+  const panel = el('section', 'panel')
+  const child = cycle.children ?? {}
+  const lp = child.learning_profiles ?? {}
+
+  const head = el('div', 'home-head')
+  const mascot = document.createElement('img')
+  mascot.className = 'mascot'
+  mascot.src = '../assets/logo-icon-transparent.png'
+  mascot.alt = ''
+  const headCopy = el('div')
+  headCopy.append(
+    el('p', 'kicker', 'Hoje'),
+    el('h1', null, greeting(session.profile.name || 'tutor')),
+    el('p', null, HOME_SUMMARY[state] ?? HOME_SUMMARY.cycle_active)
+  )
+  head.append(mascot, headCopy)
+  panel.append(head)
+
+  const { data, error } = await getCycleSessions(cycle.id)
+  const rows = error ? [] : (data ?? [])
+  const last = rows[0]
+  recentSessionsCache = rows
+
+  const difficulties = toList(lp.math_difficulties).length ? lp.math_difficulties : child.main_difficulties
+  const activity = pickSuggestedActivity(difficulties)
+
+  const stack = el('div', 'stack')
+  stack.style.cssText = 'padding:18px 26px 60px'
+
+  const buildStat = (label, value, accent) => {
+    const stat = el('div', `card home-stat${accent ? ' card--accent' : ''}`)
+    stat.append(el('div', 'lbl', label), el('div', 'val', value))
+    return stat
+  }
+
+  const statsRow = el('div', 'home-stats')
+  statsRow.append(
+    buildStat('Próxima ação', NEXT_ACTION_LABEL[state] ?? NEXT_ACTION_LABEL.cycle_active, true),
+    buildStat('Última sessão', last
+      ? `${formatLastSession(last.date)} · ${last.activity_title ?? 'sessão registrada'}`
+      : 'Ainda sem sessões registradas.'),
+    buildStat('Atividade sugerida', activity.title)
+  )
+  stack.append(statsRow)
+
+  const accCard = el('div', 'card')
+  accCard.append(simpleHead('Acompanhamentos'))
+  const accBody = el('div', 'card-b')
+  const list = el('div', 'home-list')
+
+  const item = el('button', 'home-item')
+  item.type = 'button'
+  const av = el('div', 'av', initials(child.name ?? 'Criança'))
+  const tx = el('div', 'tx')
+  const monthText = state === 'cycle_active'
+    ? ` · Mês ${currentCycleMonth(cycle.start_date, cycle.end_date)}/${monthsBetween(cycle.start_date, cycle.end_date)}`
+    : ''
+  const pendingText = state === 'cycle_active' && !rows.length ? ' · sessão pendente' : ''
+  tx.append(
+    el('b', null, child.name ?? 'Criança'),
+    el('span', null, `${CYCLE_LABEL[state] ?? ''}${monthText}${pendingText}`)
+  )
+  const chevron = document.createElement('span')
+  chevron.innerHTML = `<svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>`
+  item.append(av, tx, chevron.firstElementChild)
+  item.addEventListener('click', () => openRecord())
+  list.append(item)
+
+  accBody.append(list)
+  accCard.append(accBody)
+  stack.append(accCard)
+
+  const shortcutsCard = el('div', 'card')
+  shortcutsCard.append(simpleHead('Atalhos'))
+  const shortcutsBody = el('div', 'card-b')
+  const shortcuts = el('div', 'shortcut-list')
+
+  const biblio = el('a', 'shortcut-item')
+  biblio.href = 'atividades.html'
+  biblio.innerHTML = `<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`
+  biblio.append(document.createTextNode('Biblioteca'))
+  shortcuts.append(biblio)
+
+  const teamShortcut = el('button', 'shortcut-item')
+  teamShortcut.type = 'button'
+  teamShortcut.innerHTML = `<svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>`
+  teamShortcut.append(document.createTextNode('Falar com equipe'))
+  teamShortcut.addEventListener('click', () => openSupportDrawer(firstName(child.name)))
+  shortcuts.append(teamShortcut)
+
+  const sessionsShortcut = el('button', 'shortcut-item')
+  sessionsShortcut.type = 'button'
+  sessionsShortcut.innerHTML = `<svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-7"/></svg>`
+  sessionsShortcut.append(document.createTextNode('Ver sessões'))
+  sessionsShortcut.addEventListener('click', () => openRecord('sessions'))
+  shortcuts.append(sessionsShortcut)
+
+  shortcutsBody.append(shortcuts)
+  shortcutsCard.append(shortcutsBody)
+  stack.append(shortcutsCard)
+
+  panel.append(stack)
   return panel
 }
 
@@ -1001,6 +1565,7 @@ function renderTabs(sessionCount) {
     { id: 'sessions', label: 'Sessões', badge: sessionCount },
     { id: 'plan', label: 'Plano' },
     { id: 'reports', label: 'Relatórios' },
+    { id: 'orientations', label: 'Orientações' },
   ].forEach(({ id, label, badge }, i) => {
     const tab = el('button', `tab${i === 0 ? ' active' : ''}`)
     tab.type = 'button'; tab.dataset.tab = id; tab.setAttribute('role', 'tab')
@@ -1011,13 +1576,14 @@ function renderTabs(sessionCount) {
   return tabs
 }
 
-function renderRecord(state, cycle) {
+function renderRecord(state, cycle, initialTab) {
   const frag = document.createDocumentFragment()
+  const childName = firstName(cycle.children?.name)
 
   let sessionForm
   const refreshSessions = async () => {
     const rows = await sessionsPanel.loadTable()
-    recentContainer.rows = rows
+    recentSessionsCache = rows
     overviewPanel.renderFeed(rows)
     const badge = tabs.querySelector('[data-tab="sessions"] .badge')
     if (badge) badge.textContent = String(rows.length)
@@ -1046,10 +1612,15 @@ function renderRecord(state, cycle) {
   const sessionsPanel = buildSessionsPanel(cycle, state, sessionForm)
   const planPanel = buildPlanPanel(cycle)
   const reportsPanel = buildReportsPanel(cycle)
+  const orientationsPanel = buildOrientationsPanel(cycle, childName)
 
-  frag.append(header, tabs, overviewPanel, sessionsPanel, planPanel, reportsPanel)
+  frag.append(header, tabs, overviewPanel, sessionsPanel, planPanel, reportsPanel, orientationsPanel)
 
-  queueMicrotask(() => { wireTabs(); refreshSessions() })
+  queueMicrotask(() => {
+    wireTabs()
+    refreshSessions()
+    if (initialTab && initialTab !== 'overview') switchTab(initialTab)
+  })
 
   return frag
 }
@@ -1076,38 +1647,277 @@ function deriveTutorState(profileStatus, cycles) {
 
 const RECORD_STATES = ['cycle_planned', 'cycle_active', 'cycle_paused', 'cycle_completed']
 
-// ── Orquestrador ──────────────────────────────────────────────────────────────
+// ── Tela Meu perfil (configurações do tutor) ──────────────────────────────────
+// V1: só rascunho local. TODO(wiring:profiles): persistir nome/telefone/
+// apresentação/formação/disponibilidade/preferências quando o schema existir.
 
-async function loadAndRender() {
+function buildProfileField(labelText, { textarea = false, value = '', placeholder = '', type = 'text' } = {}) {
+  const field = el('div', 'field')
+  const label = document.createElement('label')
+  label.textContent = labelText
+  const input = textarea ? document.createElement('textarea') : document.createElement('input')
+  if (!textarea) input.type = type
+  input.value = value
+  input.placeholder = placeholder
+  field.append(label, input)
+  return field
+}
+
+// Perfil deve vender identidade validada, não parecer formulário de cadastro:
+// preview (como a família/equipe veem) à esquerda, edição dividida em
+// público-pra-família vs. interno-da-equipe à direita.
+function buildProfileView() {
+  const panel = el('section', 'profile-page')
+  const name = session.profile.name || 'Tutor'
+  const isPending = REVIEW_STATUSES.includes(session.profile.status)
+
+  const head = el('div', 'profile-head')
+  const headCopy = el('div')
+  headCopy.append(el('p', 'kicker', 'Meu perfil'), el('h1', null, 'Identidade do tutor'))
+  head.append(headCopy)
+  const saveBtnTop = el('button', 'btn btn-brand btn-sm', 'Salvar alterações')
+  saveBtnTop.type = 'button'
+  head.append(saveBtnTop)
+  panel.append(head)
+
+  const grid = el('div', 'profile-grid')
+
+  const preview = el('div', 'card profile-preview')
+
+  // Linha de foto: avatar (squircle) + controles de troca
+  const previewAvatar = el('div', 'profile-avatar')
+  previewAvatar.setAttribute('data-profile-avatar', '')
+  previewAvatar.textContent = initials(name)
+  if (session.profile.avatar_path) {
+    getAvatarUrl(session.profile.avatar_path).then((url) => {
+      if (!url) return
+      previewAvatar.textContent = ''
+      const img = document.createElement('img'); img.src = url; img.alt = ''; previewAvatar.append(img)
+    })
+  }
+
+  const photoCopy = el('p')
+  photoCopy.style.cssText = 'font-size:.79rem;color:var(--muted);margin:4px 0 10px;line-height:1.4'
+  photoCopy.textContent = 'Essa foto pode ser mostrada à família após o pareamento e validação da equipe Cognita.'
+  const avatarInput = document.createElement('input')
+  avatarInput.type = 'file'; avatarInput.accept = 'image/png,image/jpeg,image/webp'; avatarInput.hidden = true
+  const avatarBtn = el('button', 'btn btn-ghost btn-sm', 'Alterar foto')
+  avatarBtn.type = 'button'
+  const avatarError = el('p', 'form-error'); avatarError.hidden = true; avatarError.style.marginTop = '6px'
+  const photoInfo = el('div')
+  photoInfo.append(el('strong', null, 'Foto de perfil'), photoCopy, avatarInput, avatarBtn, avatarError)
+  const photoRow = el('div', 'profile-photo-row')
+  photoRow.append(previewAvatar, photoInfo)
+  preview.append(photoRow)
+
+  const previewName = el('div', 'nm', name)
+  preview.append(previewName, el('div', 'rl', 'Tutor voluntário · Cognita Hub'))
+
+  const quote = el('div', 'quote', 'Escreva como você se apresenta — a prévia aparece aqui.')
+  preview.append(quote)
+
+  const chips = el('div', 'profile-chips')
+  const statusChip = el('span', 'meta-chip')
+  statusChip.append(el('span', `dot ${isPending ? 'warn' : 'ok'}`), document.createTextNode(isPending ? 'Em análise pela equipe' : 'Validado pela equipe'))
+  const visibleChip = el('span', 'meta-chip')
+  visibleChip.append(el('span', 'dot info'), document.createTextNode('Visível após pareamento'))
+  const privateChip = el('span', 'meta-chip', 'Contato privado')
+  chips.append(statusChip, visibleChip, privateChip)
+  preview.append(chips)
+  grid.append(preview)
+
+  const stack = el('div', 'stack')
+
+  const publicCard = el('div', 'card')
+  publicCard.append(simpleHead('Informações públicas para a família'))
+  const publicBody = el('div', 'card-b')
+
+  const nameField = buildProfileField('Nome exibido', { value: name })
+  const nameInput = nameField.querySelector('input')
+  publicBody.append(nameField)
+
+  const guide = el('div', 'guide')
+  guide.style.marginTop = '12px'
+  guide.innerHTML = '<strong>A família verá essa apresentação apenas após o pareamento e validação da equipe Cognita.</strong> Não inclua telefone, redes sociais ou contato pessoal direto.'
+  publicBody.append(guide)
+
+  const presField = buildProfileField('Como a família verá você', {
+    textarea: true,
+    placeholder: 'Olá, sou tutor voluntário no Cognita Hub. Meu foco é apoiar atividades de matemática inicial com calma, previsibilidade e respeito ao ritmo da criança.',
+  })
+  presField.style.marginTop = '12px'
+  const presInput = presField.querySelector('textarea')
+  publicBody.append(presField)
+
+  const formField = buildProfileField('Formação / experiência resumida', { placeholder: 'Ex.: Pedagogia, 2 anos de experiência com alfabetização matemática.' })
+  formField.style.marginTop = '12px'
+  publicBody.append(formField)
+
+  publicCard.append(publicBody)
+  stack.append(publicCard)
+
+  const internalCard = el('div', 'card')
+  internalCard.append(simpleHead('Informações internas da equipe'))
+  const internalBody = el('div', 'card-b')
+  const row = el('div', 'row')
+  row.append(
+    buildProfileField('Telefone de contato', { type: 'tel', placeholder: 'Só a equipe Cognita vê' }),
+    buildProfileField('E-mail de contato', { type: 'email', value: session.user.email ?? '' })
+  )
+  internalBody.append(row)
+  const availField = buildProfileField('Disponibilidade semanal', { placeholder: 'Ex.: Terças e quintas, à noite' })
+  availField.style.marginTop = '12px'
+  internalBody.append(availField)
+  const prefField = buildProfileField('Preferências de atuação', {
+    textarea: true, placeholder: 'Ex.: Prefiro crianças mais novas, com apoio visual forte.',
+  })
+  prefField.style.marginTop = '12px'
+  internalBody.append(prefField)
+  internalCard.append(internalBody)
+  stack.append(internalCard)
+
+  const okBox = el('p', 'form-ok'); okBox.hidden = true
+  const saveBtnBottom = el('button', 'btn btn-brand', 'Salvar alterações')
+  saveBtnBottom.type = 'button'
+  const actions = el('div', 'form-actions')
+  actions.append(okBox, saveBtnBottom)
+  stack.append(actions)
+
+  grid.append(stack)
+  panel.append(grid)
+
+  const updateQuote = () => {
+    const text = presInput.value.trim()
+    quote.textContent = text ? `"${text}"` : 'Escreva como você se apresenta — a prévia aparece aqui.'
+  }
+  presInput.addEventListener('input', updateQuote)
+  updateQuote()
+
+  nameInput.addEventListener('input', () => {
+    const v = nameInput.value.trim() || name
+    previewName.textContent = v
+    if (!previewAvatar.querySelector('img')) previewAvatar.textContent = initials(v)
+  })
+
+  avatarBtn.addEventListener('click', () => avatarInput.click())
+  avatarInput.addEventListener('change', async (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    avatarError.hidden = true
+    try {
+      avatarBtn.disabled = true; avatarBtn.textContent = 'Enviando…'
+      const objectUrl = URL.createObjectURL(file)
+      previewAvatar.textContent = ''
+      const previewImg = document.createElement('img'); previewImg.src = objectUrl; previewImg.alt = ''; previewAvatar.append(previewImg)
+      setAvatarImage('[data-account-avatar]', objectUrl)
+      setAvatarImage('[data-topbar-avatar]', objectUrl)
+      // TODO(wiring:storage): requer bucket 'profile-photos' e coluna avatar_path em profiles.
+      await uploadTutorAvatar(file)
+      avatarBtn.textContent = 'Foto salva'
+    } catch (err) {
+      avatarError.textContent = err.message || 'Não foi possível enviar a foto.'
+      avatarError.hidden = false
+      avatarBtn.textContent = 'Alterar foto'
+    } finally {
+      avatarBtn.disabled = false
+      avatarInput.value = ''
+    }
+  })
+
+  const doSave = () => {
+    // TODO(wiring:profiles): persistir nome/telefone/apresentação/formação/
+    // disponibilidade/preferências quando o schema existir.
+    okBox.textContent = 'Alterações salvas neste dispositivo. Em breve isso vai direto para o seu perfil.'
+    okBox.hidden = false
+  }
+  saveBtnTop.addEventListener('click', doSave)
+  saveBtnBottom.addEventListener('click', doSave)
+
+  return panel
+}
+
+// ── Orquestrador / navegação Início ↔ Record ──────────────────────────────────
+
+let currentDerived = null
+let currentView = 'home'
+let pendingTab = null
+
+async function renderCurrentView() {
+  if (!currentDerived || !stateBox) return
+
+  if (currentView === 'profile') {
+    setActiveNav('profile')
+    renderCrumb('profile', '')
+    stateBox.replaceChildren(buildProfileView())
+    return
+  }
+
+  const hasRecord = RECORD_STATES.includes(currentDerived.state)
+
+  if (!hasRecord) {
+    setActiveNav('home')
+    renderCrumb('home', '')
+    stateBox.replaceChildren(renderNoRecord(currentDerived.state, bootstrap))
+    return
+  }
+
+  const childName = currentDerived.cycle.children?.name ?? 'Criança'
+  setActiveNav(currentView)
+  renderCrumb(currentView, childName)
+
+  if (currentView === 'record') {
+    const tab = pendingTab
+    pendingTab = null
+    stateBox.replaceChildren(renderRecord(currentDerived.state, currentDerived.cycle, tab))
+  } else {
+    stateBox.replaceChildren(el('div', 'skel skel-rec'), el('div', 'skel skel-panel'))
+    const frag = await buildHomeView(currentDerived.state, currentDerived.cycle, (tab) => goRecord(tab))
+    stateBox.replaceChildren(frag)
+  }
+}
+
+function goHome() {
+  if (!currentDerived) return
+  currentView = 'home'
+  renderCurrentView()
+}
+
+function goRecord(tabId) {
+  if (!currentDerived || !RECORD_STATES.includes(currentDerived.state)) return
+  currentView = 'record'
+  pendingTab = tabId ?? null
+  renderCurrentView()
+}
+
+function goProfile() {
+  if (!currentDerived) return
+  currentView = 'profile'
+  renderCurrentView()
+}
+
+async function bootstrap() {
   if (!stateBox) return
 
   stateBox.replaceChildren(el('div', 'skel skel-rec'), el('div', 'skel skel-panel'))
   renderRail(false, '')
-  renderCrumb(false, '')
+  renderCrumb('home', '')
 
   const { data: cycles, error } = await getTutorCycles(session.user.id)
 
   if (error) {
-    stateBox.replaceChildren(renderNoRecord('error', loadAndRender))
+    currentDerived = { state: 'error' }
+    stateBox.replaceChildren(renderNoRecord('error', bootstrap))
     return
   }
 
-  const derived = deriveTutorState(session.profile.status, cycles)
-  const hasRecord = RECORD_STATES.includes(derived.state)
-  const childName = hasRecord ? (derived.cycle?.children?.name ?? 'Criança') : ''
-
-  renderRail(hasRecord, firstName(childName))
-  renderCrumb(hasRecord, childName)
-
-  if (hasRecord) {
-    stateBox.replaceChildren()
-    stateBox.append(renderRecord(derived.state, derived.cycle))
-  } else {
-    stateBox.replaceChildren(renderNoRecord(derived.state, loadAndRender))
-  }
+  currentDerived = deriveTutorState(session.profile.status, cycles)
+  const hasRecord = RECORD_STATES.includes(currentDerived.state)
+  renderRail(hasRecord, hasRecord ? firstName(currentDerived.cycle.children?.name) : '')
+  currentView = 'home'
+  await renderCurrentView()
 }
 
 if (session && stateBox) {
   fillIdentity()
-  await loadAndRender()
+  await bootstrap()
 }
