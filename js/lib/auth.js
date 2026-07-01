@@ -52,7 +52,7 @@ export async function signIn(email, password) {
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('role, status, name')
+    .select('role, status, name, email, phone, avatar_path, tutor_presentation, tutor_formation, tutor_availability, tutor_preferences')
     .eq('id', data.user.id)
     .single()
 
@@ -80,7 +80,7 @@ export async function requireRole(...allowedRoles) {
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('role, status, name')
+    .select('role, status, name, email, phone, avatar_path, tutor_presentation, tutor_formation, tutor_availability, tutor_preferences')
     .eq('id', user.id)
     .single()
 

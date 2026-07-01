@@ -1675,9 +1675,6 @@ function buildProfileView() {
   const headCopy = el('div')
   headCopy.append(el('p', 'kicker', 'Meu perfil'), el('h1', null, 'Identidade do tutor'))
   head.append(headCopy)
-  const saveBtnTop = el('button', 'btn btn-brand btn-sm', 'Salvar alterações')
-  saveBtnTop.type = 'button'
-  head.append(saveBtnTop)
   panel.append(head)
 
   const grid = el('div', 'profile-grid')
@@ -1697,8 +1694,6 @@ function buildProfileView() {
   }
 
   const photoCopy = el('p')
-  photoCopy.style.cssText = 'font-size:.79rem;color:var(--muted);margin:4px 0 10px;line-height:1.4'
-  photoCopy.textContent = 'Essa foto pode ser mostrada à família após o pareamento e validação da equipe Cognita.'
   const avatarInput = document.createElement('input')
   avatarInput.type = 'file'; avatarInput.accept = 'image/png,image/jpeg,image/webp'; avatarInput.hidden = true
   const avatarBtn = el('button', 'btn btn-ghost btn-sm', 'Alterar foto')
@@ -1713,7 +1708,12 @@ function buildProfileView() {
   const previewName = el('div', 'nm', name)
   preview.append(previewName, el('div', 'rl', 'Tutor voluntário · Cognita Hub'))
 
-  const quote = el('div', 'quote', 'Escreva como você se apresenta — a prévia aparece aqui.')
+  const quote = el('div', 'quote')
+  const quoteEyebrow = el('div', 'quote-eyebrow')
+  quoteEyebrow.innerHTML = `<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
+  quoteEyebrow.append(document.createTextNode('Prévia para a família'))
+  const quoteText = el('span', 'quote-text', '')
+  quote.append(quoteEyebrow, quoteText)
   preview.append(quote)
 
   const chips = el('div', 'profile-chips')
@@ -1743,13 +1743,18 @@ function buildProfileView() {
 
   const presField = buildProfileField('Como a família verá você', {
     textarea: true,
+    value: session.profile.tutor_presentation || '',
     placeholder: 'Olá, sou tutor voluntário no Cognita Hub. Meu foco é apoiar atividades de matemática inicial com calma, previsibilidade e respeito ao ritmo da criança.',
   })
   presField.style.marginTop = '12px'
   const presInput = presField.querySelector('textarea')
   publicBody.append(presField)
 
-  const formField = buildProfileField('Formação / experiência resumida', { placeholder: 'Ex.: Pedagogia, 2 anos de experiência com alfabetização matemática.' })
+  const formField = buildProfileField('Formação / experiência resumida', {
+    value: session.profile.tutor_formation || '',
+    placeholder: 'Ex.: Pedagogia, 2 anos de experiência com alfabetização matemática.',
+  })
+  const formInput = formField.querySelector('input')
   formField.style.marginTop = '12px'
   publicBody.append(formField)
 
@@ -1760,17 +1765,33 @@ function buildProfileView() {
   internalCard.append(simpleHead('Informações internas da equipe'))
   const internalBody = el('div', 'card-b')
   const row = el('div', 'row')
-  row.append(
-    buildProfileField('Telefone de contato', { type: 'tel', placeholder: 'Só a equipe Cognita vê' }),
-    buildProfileField('E-mail de contato', { type: 'email', value: session.user.email ?? '' })
-  )
+  const phoneField = buildProfileField('Telefone de contato', {
+    type: 'tel',
+    value: session.profile.phone || '',
+    placeholder: 'Só a equipe Cognita vê',
+  })
+  const phoneInput = phoneField.querySelector('input')
+  const emailField = buildProfileField('E-mail de contato', {
+    type: 'email',
+    value: session.user.email ?? '',
+  })
+  const emailInput = emailField.querySelector('input')
+  emailInput.disabled = true
+  row.append(phoneField, emailField)
   internalBody.append(row)
-  const availField = buildProfileField('Disponibilidade semanal', { placeholder: 'Ex.: Terças e quintas, à noite' })
+  const availField = buildProfileField('Disponibilidade semanal', {
+    value: session.profile.tutor_availability || '',
+    placeholder: 'Ex.: Terças e quintas, à noite',
+  })
+  const availInput = availField.querySelector('input')
   availField.style.marginTop = '12px'
   internalBody.append(availField)
   const prefField = buildProfileField('Preferências de atuação', {
-    textarea: true, placeholder: 'Ex.: Prefiro crianças mais novas, com apoio visual forte.',
+    textarea: true,
+    value: session.profile.tutor_preferences || '',
+    placeholder: 'Ex.: Prefiro crianças mais novas, com apoio visual forte.',
   })
+  const prefInput = prefField.querySelector('textarea')
   prefField.style.marginTop = '12px'
   internalBody.append(prefField)
   internalCard.append(internalBody)
@@ -1788,7 +1809,8 @@ function buildProfileView() {
 
   const updateQuote = () => {
     const text = presInput.value.trim()
-    quote.textContent = text ? `"${text}"` : 'Escreva como você se apresenta — a prévia aparece aqui.'
+    quoteText.textContent = text ? `"${text}"` : 'Escreva como você se apresenta — a prévia aparece aqui.'
+    quoteText.classList.toggle('filled', !!text)
   }
   presInput.addEventListener('input', updateQuote)
   updateQuote()
@@ -1811,6 +1833,7 @@ function buildProfileView() {
       const previewImg = document.createElement('img'); previewImg.src = objectUrl; previewImg.alt = ''; previewAvatar.append(previewImg)
       setAvatarImage('[data-account-avatar]', objectUrl)
       setAvatarImage('[data-topbar-avatar]', objectUrl)
+      setAvatarImage('[data-profile-avatar]', objectUrl)
       // TODO(wiring:storage): requer bucket 'profile-photos' e coluna avatar_path em profiles.
       await uploadTutorAvatar(file)
       avatarBtn.textContent = 'Foto salva'
@@ -1824,13 +1847,35 @@ function buildProfileView() {
     }
   })
 
-  const doSave = () => {
-    // TODO(wiring:profiles): persistir nome/telefone/apresentação/formação/
-    // disponibilidade/preferências quando o schema existir.
-    okBox.textContent = 'Alterações salvas neste dispositivo. Em breve isso vai direto para o seu perfil.'
+  const doSave = async () => {
+    okBox.hidden = true
+    const payload = {
+      name: nameInput.value.trim() || name,
+      phone: phoneInput.value.trim() || null,
+      tutor_presentation: presInput.value.trim() || null,
+      tutor_formation: formInput.value.trim() || null,
+      tutor_availability: availInput.value.trim() || null,
+      tutor_preferences: prefInput.value.trim() || null,
+    }
+    saveBtnBottom.disabled = true; saveBtnBottom.textContent = 'Salvando…'
+    const { error } = await supabase.from('profiles').update(payload).eq('id', session.user.id)
+    saveBtnBottom.disabled = false; saveBtnBottom.textContent = 'Salvar alterações'
+    if (error) {
+      okBox.textContent = 'Não conseguimos salvar agora. Tente novamente.'
+      okBox.className = 'form-error'
+      okBox.hidden = false
+      console.error('Erro ao salvar perfil:', error)
+      return
+    }
+    Object.assign(session.profile, payload)
+    const nameEl = document.querySelector('[data-account-name]')
+    if (nameEl) nameEl.textContent = payload.name
+    previewName.textContent = payload.name
+    if (!previewAvatar.querySelector('img')) previewAvatar.textContent = initials(payload.name)
+    okBox.textContent = 'Perfil atualizado com sucesso.'
+    okBox.className = 'form-ok'
     okBox.hidden = false
   }
-  saveBtnTop.addEventListener('click', doSave)
   saveBtnBottom.addEventListener('click', doSave)
 
   return panel
