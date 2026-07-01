@@ -1,4 +1,4 @@
-import { requireRole } from '../lib/auth.js'
+import { requireRole, signOut } from '../lib/auth.js'
 import { el, initials } from '../lib/ui.js'
 import { getActivities } from '../data/activities.js'
 
@@ -143,7 +143,18 @@ function svgFormats(formats) {
   })
 }
 
+// ── URL params — contexto de criança vindo do tutor ─────────────────────────
+
+const _params = new URLSearchParams(location.search)
+const CTX_CHILD    = _params.get('child') || ''      // nome da criança
+const CTX_CHILD_ID = _params.get('child_id') || ''   // id da criança
+const CTX_CYCLE    = _params.get('cycle_id') || ''   // id do ciclo
+const CTX_SKILL    = _params.get('skill') || ''      // habilidade a pré-filtrar
+
 // ── Identidade do rail ───────────────────────────────────────────────────────
+
+const ROLE_LABELS = { tutor: 'Tutor', guardian: 'Responsável', admin: 'Equipe Cognita' }
+const ROLE_HOME   = { tutor: 'tutor.html', guardian: 'responsavel.html', admin: 'admin.html' }
 
 async function loadIdentity() {
   session = await requireRole('tutor', 'guardian', 'admin')
@@ -152,23 +163,111 @@ async function loadIdentity() {
   const { profile, user } = session
   const name = profile.name || user.email || 'Usuário'
   const role = profile.role
+  const homeHref = ROLE_HOME[role] || 'login.html'
 
-  const roleLabels = { tutor: 'Tutor', guardian: 'Responsável', admin: 'Equipe Cognita' }
-  const roleHome = { tutor: 'tutor.html', guardian: 'responsavel.html', admin: 'admin.html' }
+  const set = (sel, val) => { const n = $(sel); if (n) n.textContent = val }
+  set('[data-account-name]', name)
+  set('[data-account-role]', ROLE_LABELS[role] || role)
+  set('[data-rail-role]', ROLE_LABELS[role] || role)
+  $('[data-account-avatar]') && ($('[data-account-avatar]').textContent = initials(name))
+  $('[data-topbar-avatar]') && ($('[data-topbar-avatar]').textContent = initials(name))
 
-  const acctName = $('[data-account-name]')
-  const acctRole = $('[data-account-role]')
-  const acctAv = $('[data-account-avatar]')
-  const topAv = $('[data-topbar-avatar]')
-  const railRole = $('[data-rail-role]')
-  const backLink = $('[data-rail-back]')
+  // Início → home da role
+  const homeLink = $('[data-rail-home]')
+  if (homeLink) homeLink.href = homeHref
 
-  if (acctName) acctName.textContent = name
-  if (acctRole) acctRole.textContent = roleLabels[role] || role
-  if (acctAv) acctAv.textContent = initials(name)
-  if (topAv) topAv.textContent = initials(name)
-  if (railRole) railRole.textContent = roleLabels[role] || role
-  if (backLink) backLink.setAttribute('href', roleHome[role] || 'login.html')
+  // Acompanhamento — mostra se há contexto de criança
+  const acmpGroup = $('[data-rail-acomp-group]')
+  const childSlot = $('[data-rail-child-slot]')
+  if (CTX_CHILD && acmpGroup && childSlot) {
+    acmpGroup.hidden = false
+    const link = el('a', 'rail-link')
+    link.href = CTX_CYCLE ? `${homeHref}?cycle_id=${CTX_CYCLE}` : homeHref
+    link.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/></svg>`
+    link.append(document.createTextNode(CTX_CHILD))
+    childSlot.replaceChildren(link)
+  }
+
+  // Sessões → volta para tutor com tab sessions
+  const sessLink = $('[data-rail-sessions]')
+  if (sessLink) {
+    sessLink.addEventListener('click', (e) => {
+      e.preventDefault()
+      window.location.href = CTX_CYCLE
+        ? `${homeHref}?tab=sessions&cycle_id=${CTX_CYCLE}`
+        : `${homeHref}?tab=sessions`
+    })
+  }
+
+  // Meu perfil → abre a view de perfil no painel
+  $('[data-rail-profile]')?.addEventListener('click', (e) => {
+    e.preventDefault()
+    window.location.href = 'tutor.html?view=profile'
+  })
+
+  // Suporte
+  $('[data-rail-team]')?.addEventListener('click', (e) => {
+    e.preventDefault()
+    openSupportDrawer()
+  })
+
+  // Logout
+  document.querySelectorAll('[data-logout]').forEach((btn) => {
+    btn.addEventListener('click', async (e) => { e.preventDefault(); await signOut() })
+  })
+}
+
+// ── Suporte drawer ───────────────────────────────────────────────────────────
+
+function buildSupportBody() {
+  const frag = document.createDocumentFragment()
+
+  if (CTX_CHILD) {
+    const ctx = el('div', 'support-context')
+    ctx.append(document.createTextNode('Sobre: '), el('b', null, CTX_CHILD))
+    frag.append(ctx)
+  }
+
+  frag.append(el('p', null, 'Quando algo sair do esperado, a equipe está aqui. Fale direto ou deixe uma mensagem.'))
+
+  const msgField = el('div', 'field')
+  const lbl = document.createElement('label')
+  lbl.textContent = 'Mensagem para a equipe'
+  const ta = document.createElement('textarea')
+  ta.placeholder = 'Descreva a situação com o máximo de detalhes possível…'
+  msgField.append(lbl, ta)
+  frag.append(msgField)
+
+  frag.append(el('div', 'support-divider'))
+
+  frag.append(el('p', null, 'Para algo urgente, fale direto. Tempo médio de resposta: até 48h.'))
+  const actions = el('div', 'support-actions')
+  const mail = el('a', 'btn-outline', 'Enviar e-mail')
+  mail.href = `mailto:equipecognita@email.com?subject=${encodeURIComponent(CTX_CHILD ? `Ajuda no ciclo de ${CTX_CHILD}` : 'Ajuda no Cognita Hub')}`
+  const whats = el('a', 'btn-outline', 'WhatsApp')
+  whats.href = 'https://wa.me/5500000000000'
+  whats.target = '_blank'; whats.rel = 'noopener'
+  actions.append(mail, whats)
+  frag.append(actions)
+
+  return frag
+}
+
+function openSupportDrawer() {
+  const body = $('[data-support-body]')
+  const drawer = $('[data-support-drawer]')
+  const backdrop = $('[data-support-backdrop]')
+  if (!body || !drawer || !backdrop) return
+  body.replaceChildren(buildSupportBody())
+  drawer.classList.add('open')
+  backdrop.classList.add('open')
+  drawer.setAttribute('aria-hidden', 'false')
+}
+
+function closeSupportDrawer() {
+  $('[data-support-drawer]')?.classList.remove('open')
+  $('[data-support-backdrop]')?.classList.remove('open')
+  $('[data-support-drawer]')?.setAttribute('aria-hidden', 'true')
 }
 
 // ── Filtros ──────────────────────────────────────────────────────────────────
@@ -495,7 +594,7 @@ function closeDrawer() {
 // ── Bootstrap ────────────────────────────────────────────────────────────────
 
 async function init() {
-  // Esqueleto de carregamento
+  // Esqueleto
   const grid = $('#lib-grid')
   if (grid) {
     const skel = el('div', 'lib-empty')
@@ -506,6 +605,26 @@ async function init() {
   await loadIdentity()
   await loadActivities()
 
+  // Pré-filtro de habilidade vindo do tutor
+  if (CTX_SKILL && SKILLS.some((s) => s.id === CTX_SKILL)) {
+    state.skill = CTX_SKILL
+  }
+
+  // Banner de contexto de criança
+  const ctxBanner = $('#lib-context')
+  const ctxLabel = $('#lib-context-label')
+  const ctxClear = $('#lib-context-clear')
+  if (CTX_CHILD && ctxBanner && ctxLabel) {
+    ctxLabel.textContent = `Atividades para ${CTX_CHILD}`
+    ctxBanner.classList.add('visible')
+    ctxClear?.addEventListener('click', () => {
+      ctxBanner.classList.remove('visible')
+      // Remove params da URL sem recarregar
+      const clean = location.pathname + location.hash
+      history.replaceState({}, '', clean)
+    })
+  }
+
   update()
 
   $('#lib-search')?.addEventListener('input', (e) => {
@@ -513,9 +632,17 @@ async function init() {
     renderGrid()
   })
 
+  // Gaveta de atividade
   $('#drawer-close')?.addEventListener('click', closeDrawer)
   $('#drawer-backdrop')?.addEventListener('click', closeDrawer)
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawer() })
+
+  // Suporte
+  $('[data-support-close]')?.addEventListener('click', closeSupportDrawer)
+  $('[data-support-backdrop]')?.addEventListener('click', closeSupportDrawer)
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { closeDrawer(); closeSupportDrawer() }
+  })
 }
 
 init()

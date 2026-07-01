@@ -34,6 +34,16 @@ document.querySelectorAll('[data-logout]').forEach((btn) => {
 // ordem (currentDerived é lido só no momento do clique, já populado).
 document.querySelector('[data-rail-home]')?.addEventListener('click', (e) => { e.preventDefault(); goHome() })
 document.querySelector('[data-rail-sessions]')?.addEventListener('click', (e) => { e.preventDefault(); goRecord('sessions') })
+document.querySelector('[data-rail-library]')?.addEventListener('click', (e) => {
+  e.preventDefault()
+  const cycle = currentDerived?.cycle
+  if (!cycle) { window.location.href = 'atividades.html'; return }
+  const params = new URLSearchParams()
+  const childFirst = firstName(cycle.children?.name)
+  if (childFirst) params.set('child', childFirst)
+  if (cycle.id) params.set('cycle_id', cycle.id)
+  window.location.href = 'atividades.html?' + params.toString()
+})
 document.querySelector('[data-rail-team]')?.addEventListener('click', (e) => {
   e.preventDefault()
   const hasRecord = currentDerived && RECORD_STATES.includes(currentDerived.state)
@@ -1227,7 +1237,12 @@ function getCommandGroups() {
     quick.push({ label: 'Registrar sessão', icon: CMDK_ICONS.plus, action: () => goRecord('sessions') })
     quick.push({ label: 'Ver perfil pedagógico', icon: CMDK_ICONS.user, action: () => { window.location.href = `perfil-crianca.html?id=${cycle.child_id ?? ''}` } })
   }
-  quick.push({ label: 'Abrir biblioteca de atividades', icon: CMDK_ICONS.book, action: () => { window.location.href = 'atividades.html' } })
+  quick.push({ label: 'Abrir biblioteca de atividades', icon: CMDK_ICONS.book, action: () => {
+    const c = hasRecord ? currentDerived.cycle : null
+    const p = new URLSearchParams()
+    if (c) { const cf = firstName(c.children?.name); if (cf) p.set('child', cf); if (c.id) p.set('cycle_id', c.id) }
+    window.location.href = 'atividades.html' + (p.toString() ? '?' + p.toString() : '')
+  } })
   quick.push({ label: 'Falar com a equipe', icon: CMDK_ICONS.team, action: () => openSupportDrawer(childName) })
 
   const groups = [{ label: 'Ações rápidas', items: quick }]
@@ -1986,7 +2001,10 @@ async function bootstrap() {
   currentDerived = deriveTutorState(session.profile.status, cycles)
   const hasRecord = RECORD_STATES.includes(currentDerived.state)
   renderRail(hasRecord, hasRecord ? firstName(currentDerived.cycle.children?.name) : '')
-  if (pendingActivity && hasRecord) {
+  const _viewParam = new URLSearchParams(location.search).get('view')
+  if (_viewParam === 'profile') {
+    currentView = 'profile'
+  } else if (pendingActivity && hasRecord) {
     currentView = 'record'
     pendingTab = 'sessions'
   } else {
