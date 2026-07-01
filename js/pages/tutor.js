@@ -3,9 +3,27 @@ import { requireRole, signOut } from '../lib/auth.js'
 import { greeting, initials, ageFrom, el } from '../lib/ui.js'
 import { getTutorCycles } from '../data/tutor.js'
 import { getCycleSessions, createSessionRecord } from '../data/sessions.js'
+import { getActivityById } from '../data/activities.js'
 
 const session = await requireRole('tutor')
 const stateBox = document.querySelector('[data-tutor-state]')
+
+// Detecta ?activity=<uuid> e pré-busca a atividade (vem da Biblioteca via "Usar no registro")
+let pendingActivity = null
+{
+  const _actParam = new URLSearchParams(location.search).get('activity')
+  if (session && _actParam) {
+    const { data: _actData } = await getActivityById(_actParam)
+    if (_actData) {
+      pendingActivity = {
+        id: _actData.id,
+        title: _actData.title,
+        focus: _actData.skills?.label || '',
+        nextStep: '',
+      }
+    }
+  }
+}
 
 document.querySelectorAll('[data-logout]').forEach((btn) => {
   btn.addEventListener('click', async (e) => { e.preventDefault(); await signOut() })
@@ -464,6 +482,7 @@ function makeScaleGroup(options) {
 function renderSessionForm(cycle, onSaved) {
   const details = el('details', 'card form')
   const childName = firstName(cycle.children?.name)
+  let _selectedActivityId = null
 
   const summary = document.createElement('summary')
   summary.append(document.createTextNode('Registro guiado — sessão desta semana'))
@@ -662,6 +681,7 @@ function renderSessionForm(cycle, onSaved) {
 
     const { error } = await createSessionRecord({
       cycleId: cycle.id,
+      activityId: _selectedActivityId,
       sessionDate: dateInput.value || todayISO(),
       durationMinutes: durInput.value ? Number(durInput.value) : null,
       activityTitle: actTitle,
@@ -678,6 +698,7 @@ function renderSessionForm(cycle, onSaved) {
       return
     }
 
+    _selectedActivityId = null
     ;[actInput, focusInput, familyInput, nextInput, internalInput].forEach((i) => { i.value = '' })
     durInput.value = ''; dateInput.value = todayISO()
     charCount.textContent = '0 / 800 caracteres'
@@ -698,7 +719,8 @@ function renderSessionForm(cycle, onSaved) {
   details.fillSuggestedActivity = (activity = DEFAULT_ACTIVITY) => {
     actInput.value = activity.title
     focusInput.value = activity.focus
-    if (!nextInput.value.trim()) nextInput.value = activity.nextStep
+    if (!nextInput.value.trim()) nextInput.value = activity.nextStep || ''
+    _selectedActivityId = activity.id || null
     details.open = true
     updateFamilyPreview()
     actInput.focus()
@@ -1620,6 +1642,12 @@ function renderRecord(state, cycle, initialTab) {
     wireTabs()
     refreshSessions()
     if (initialTab && initialTab !== 'overview') switchTab(initialTab)
+    if (pendingActivity && sessionForm) {
+      const act = pendingActivity
+      pendingActivity = null
+      sessionForm.fillSuggestedActivity(act)
+      requestAnimationFrame(() => sessionForm.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+    }
   })
 
   return frag
@@ -1958,7 +1986,12 @@ async function bootstrap() {
   currentDerived = deriveTutorState(session.profile.status, cycles)
   const hasRecord = RECORD_STATES.includes(currentDerived.state)
   renderRail(hasRecord, hasRecord ? firstName(currentDerived.cycle.children?.name) : '')
-  currentView = 'home'
+  if (pendingActivity && hasRecord) {
+    currentView = 'record'
+    pendingTab = 'sessions'
+  } else {
+    currentView = 'home'
+  }
   await renderCurrentView()
 }
 

@@ -11,6 +11,7 @@ export async function getCycleSessions(cycleId) {
       cycle_id,
       date,
       duration_minutes,
+      activity_id,
       activity_title,
       focus_area,
       notes,
@@ -24,6 +25,7 @@ export async function getCycleSessions(cycleId) {
 
 export async function createSessionRecord({
   cycleId,
+  activityId,
   sessionDate,
   durationMinutes,
   activityTitle,
@@ -35,6 +37,7 @@ export async function createSessionRecord({
     .from('sessions')
     .insert({
       cycle_id: cycleId,
+      activity_id: activityId || null,
       date: sessionDate,
       duration_minutes: durationMinutes || null,
       topic: activityTitle,

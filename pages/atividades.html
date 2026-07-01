@@ -76,25 +76,36 @@
     .lib-head { padding: 22px 26px 0; }
     .lib-head .kicker { font-size: .7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
     .lib-head h1 { margin-top: 4px; font-size: 1.5rem; font-weight: 800; color: var(--brand-deep); font-family: var(--baloo); letter-spacing: -.02em; line-height: 1.15; }
+    .lib-subtitle { margin-top: 7px; font-size: .86rem; color: var(--ink-soft); line-height: 1.55; max-width: 62ch; }
 
     /* ── Filtros ── */
-    .lib-filters { padding: 16px 26px 0; display: flex; flex-direction: column; gap: 10px; }
+    .lib-filters { padding: 14px 26px 0; display: flex; flex-direction: column; gap: 8px; }
+    .filter-section-label { font-size: .63rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); display: block; margin-bottom: 2px; }
     .filter-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
-    .filter-row-label { font-size: .64rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; width: 66px; flex-shrink: 0; }
-    .fchip { height: 28px; padding: 0 12px; border-radius: var(--pill); border: 1px solid var(--line-2); background: var(--card); color: var(--muted); font-family: var(--font); font-size: .77rem; font-weight: 700; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; }
+    .filter-row-label { font-size: .63rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; width: 62px; flex-shrink: 0; }
+    /* chip primário — habilidade */
+    .fchip { height: 32px; padding: 0 14px; border-radius: var(--pill); border: 1px solid var(--line-2); background: var(--card); color: var(--ink-soft); font-family: var(--font); font-size: .82rem; font-weight: 700; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; transition: border-color .12s, background .12s, color .12s; }
     .fchip:hover { border-color: var(--brand); color: var(--brand); }
-    .fchip.on { background: var(--brand-soft); border-color: transparent; color: var(--brand); }
+    .fchip.on { background: var(--brand); color: #fff; border-color: transparent; }
+    /* chip secundário — filtros */
+    .fchip-sm { height: 26px; padding: 0 10px; border-radius: var(--pill); border: 1px solid var(--line-2); background: var(--card); color: var(--muted); font-family: var(--font); font-size: .74rem; font-weight: 700; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; transition: border-color .12s, background .12s, color .12s; }
+    .fchip-sm:hover { border-color: var(--brand); color: var(--brand); }
+    .fchip-sm.on { background: var(--brand-soft); border-color: transparent; color: var(--brand); }
     .filter-sep { height: 1px; background: var(--line); }
+    .filter-secondary-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
+    .filter-sec-group { display: flex; align-items: center; gap: 5px; }
+    .filter-sec-divider { width: 1px; height: 18px; background: var(--line-2); align-self: center; }
 
     /* ── Grade de cards ── */
     .lib-grid { padding: 18px 26px 60px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; align-items: start; }
 
     /* ── Card de atividade ── */
-    .activity-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; width: 100%; text-align: left; font-family: var(--font); transition: border-color .15s, box-shadow .15s; }
+    .activity-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px; display: flex; flex-direction: column; gap: 9px; cursor: pointer; width: 100%; text-align: left; font-family: var(--font); transition: border-color .15s, box-shadow .15s; }
     .activity-card:hover { border-color: var(--line-2); box-shadow: 0 4px 18px rgba(20,17,98,.1); }
     .activity-card:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
     .ac-skill { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: var(--pill); background: var(--brand-soft); color: var(--brand); font-size: .7rem; font-weight: 700; align-self: flex-start; }
     .ac-title { font-size: 1.02rem; font-weight: 700; color: var(--ink); font-family: var(--baloo); line-height: 1.25; }
+    .ac-summary { font-size: .82rem; color: var(--ink-soft); line-height: 1.5; }
     .ac-meta { display: flex; flex-wrap: wrap; gap: 8px; }
     .ac-meta-item { display: flex; align-items: center; gap: 4px; font-size: .74rem; color: var(--muted); font-weight: 700; }
     .ac-meta-item svg { width: 13px; height: 13px; flex-shrink: 0; }
@@ -108,7 +119,7 @@
     .btn-ghost-sm { height: 30px; padding: 0 12px; border-radius: var(--r-sm); background: var(--card); color: var(--brand); border: 1px solid var(--line-2); font-family: var(--font); font-size: .8rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
     .btn-ghost-sm:hover { background: rgba(20,17,98,.04); }
     .btn-ghost-sm svg { width: 13px; height: 13px; }
-    .btn-brand-sm { height: 30px; padding: 0 12px; border-radius: var(--r-sm); background: var(--brand); color: #fff; border: none; font-family: var(--font); font-size: .8rem; font-weight: 700; cursor: pointer; }
+    .btn-brand-sm { height: 34px; padding: 0 16px; border-radius: var(--r-sm); background: var(--brand); color: #fff; border: none; font-family: var(--font); font-size: .84rem; font-weight: 700; cursor: pointer; }
 
     /* ── Estado vazio ── */
     .lib-empty { grid-column: 1/-1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 48px 20px; }
@@ -213,6 +224,7 @@
       <div class="lib-head">
         <p class="kicker">Biblioteca</p>
         <h1>Atividades de matemática inicial</h1>
+        <p class="lib-subtitle">Roteiros guiados para sessões de matemática inicial, com passos claros, adaptações prontas e apoio ao perfil da criança.</p>
       </div>
 
       <div class="lib-filters" id="lib-filters" aria-label="Filtrar atividades"></div>
