@@ -416,9 +416,9 @@
   @media(max-width:520px){.trust-item{padding:22px 18px 24px}}
 
   /* ---------- FOOTER vinho ---------- */
-  .ft-wrap{padding:72px 24px 36px;background:transparent}
+  .ft-wrap{padding:58px 24px 36px;background:transparent}
   .ft{
-    max-width:var(--maxw);
+    max-width:1160px;
     margin-inline:auto;
     background:
       radial-gradient(circle at 12% 8%,rgba(255,255,255,.08),transparent 28%),
@@ -426,12 +426,19 @@
       var(--brand-deep);
     color:#fff;
     border-radius:36px;
-    padding:64px 56px 40px;
+    padding:56px clamp(32px,5vw,64px) 36px;
     box-shadow:0 28px 70px rgba(35,2,32,.16),0 0 0 1px rgba(255,255,255,.08) inset;
   }
   .ft-logo{display:block;width:148px;text-decoration:none;margin-bottom:4px}
   .ft-logo img{width:100%;height:auto;display:block;object-fit:contain}
-  .ft .top{display:grid;grid-template-columns:1.3fr repeat(4,1fr);gap:30px}
+  .ft .top{
+    display:grid;
+    grid-template-columns:minmax(210px,260px) repeat(4,max-content);
+    justify-content:space-between;
+    align-items:start;
+    gap:34px clamp(32px,4vw,58px);
+  }
+  .ft .top>div:first-child{max-width:260px}
   .ft .logo{font-family:var(--display);font-size:1.5rem;color:#fff;display:flex;align-items:center;gap:10px}
   .ft .logo .mk{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.12);display:grid;place-items:center;font-size:18px}
   .ft .social-label{color:rgba(255,255,255,.7);font-size:.9rem;margin:22px 0 12px}
@@ -441,7 +448,7 @@
   .ft h4{font-size:.95rem;color:#fff;margin-bottom:14px;letter-spacing:.01em}
   .ft ul{list-style:none}.ft li{margin-bottom:11px}
   .ft li a{color:rgba(255,255,255,.78);font-size:.95rem}.ft li a:hover{color:#fff}
-  .ft .rule{height:1px;background:rgba(255,255,255,.16);margin:38px 0 22px}
+  .ft .rule{height:1px;background:rgba(255,255,255,.16);margin:46px 0 22px}
   .ft .bot{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
   .ft .cforce{font-family:var(--display);font-size:2rem;color:#fff;letter-spacing:.01em}
   .ft .made{color:rgba(255,255,255,.7);font-size:.9rem}
@@ -462,7 +469,7 @@
     .duo{grid-template-columns:1fr}
     .safe .card{grid-template-columns:1fr;text-align:center;padding:36px}
     .safe .pip{margin-inline:auto}
-    .ft{padding:44px 24px 30px;border-radius:26px}.ft .top{grid-template-columns:1fr 1fr}
+    .ft{padding:44px 24px 30px;border-radius:26px}.ft .top{grid-template-columns:1fr 1fr;justify-content:initial}
     .ft-wrap{padding:48px 16px 24px}
     .sec{padding:64px 0}.hero{padding:44px 0 50px}
   }
@@ -1666,7 +1673,7 @@
       <div><h4>Acesse o hub</h4><ul><li><a href="#">Painel do responsável</a></li><li><a href="#">Painel do tutor</a></li><li><a href="#">Painel admin</a></li></ul></div>
     </div>
     <div class="rule"></div>
-    <div class="bot"><div class="cforce">C-FORCE</div><div class="made">Feito pela C-FORCE</div></div>
+    <div class="bot"><div class="cforce">C-FORCE</div><div class="made"></div></div>
   </footer>
 </div>
 

@@ -1,5 +1,6 @@
 import { requireRole, signOut } from '../lib/auth.js'
 import { el, initials } from '../lib/ui.js'
+import { getAvatarUrl, setAvatarImage } from '../lib/avatar.js'
 import { getActivities } from '../data/activities.js'
 
 // ── Dados carregados do Supabase ─────────────────────────────────────────────
@@ -157,64 +158,81 @@ const ROLE_LABELS = { tutor: 'Tutor', guardian: 'Responsável', admin: 'Equipe C
 const ROLE_HOME   = { tutor: 'tutor.html', guardian: 'responsavel.html', admin: 'admin.html' }
 
 async function loadIdentity() {
-  session = await requireRole('tutor', 'guardian', 'admin')
-  if (!session) return
+  try {
+    session = await requireRole('tutor', 'guardian', 'admin')
+    if (!session) return
 
-  const { profile, user } = session
-  const name = profile.name || user.email || 'Usuário'
-  const role = profile.role
-  const homeHref = ROLE_HOME[role] || 'login.html'
+    const { profile, user } = session
+    const name = profile.name || user.email || 'Usuário'
+    const role = profile.role
+    const homeHref = ROLE_HOME[role] || 'login.html'
 
-  const set = (sel, val) => { const n = $(sel); if (n) n.textContent = val }
-  set('[data-account-name]', name)
-  set('[data-account-role]', ROLE_LABELS[role] || role)
-  set('[data-rail-role]', ROLE_LABELS[role] || role)
-  $('[data-account-avatar]') && ($('[data-account-avatar]').textContent = initials(name))
-  $('[data-topbar-avatar]') && ($('[data-topbar-avatar]').textContent = initials(name))
+    const set = (sel, val) => {
+      const n = $(sel)
+      if (n) n.textContent = val
+    }
 
-  // Início → home da role
-  const homeLink = $('[data-rail-home]')
-  if (homeLink) homeLink.href = homeHref
+    set('[data-account-name]', name)
+    set('[data-account-role]', ROLE_LABELS[role] || role)
+    set('[data-rail-role]', ROLE_LABELS[role] || role)
+    $('[data-account-avatar]') && ($('[data-account-avatar]').textContent = initials(name))
+    $('[data-topbar-avatar]') && ($('[data-topbar-avatar]').textContent = initials(name))
 
-  // Acompanhamento — mostra se há contexto de criança
-  const acmpGroup = $('[data-rail-acomp-group]')
-  const childSlot = $('[data-rail-child-slot]')
-  if (CTX_CHILD && acmpGroup && childSlot) {
-    acmpGroup.hidden = false
-    const link = el('a', 'rail-link')
-    link.href = CTX_CYCLE ? `${homeHref}?cycle_id=${CTX_CYCLE}` : homeHref
-    link.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/></svg>`
-    link.append(document.createTextNode(CTX_CHILD))
-    childSlot.replaceChildren(link)
-  }
+    if (profile.avatar_path) {
+      const url = await getAvatarUrl(profile.avatar_path)
+      if (url) {
+        setAvatarImage('[data-account-avatar]', url)
+        setAvatarImage('[data-topbar-avatar]', url)
+      }
+    }
 
-  // Sessões → volta para tutor com tab sessions
-  const sessLink = $('[data-rail-sessions]')
-  if (sessLink) {
-    sessLink.addEventListener('click', (e) => {
+    // Início → home da role
+    const homeLink = $('[data-rail-home]')
+    if (homeLink) homeLink.href = homeHref
+
+    // Acompanhamento — mostra se há contexto de criança
+    const acmpGroup = $('[data-rail-acomp-group]')
+    const childSlot = $('[data-rail-child-slot]')
+    if (CTX_CHILD && acmpGroup && childSlot) {
+      acmpGroup.hidden = false
+      const link = el('a', 'rail-link')
+      link.href = CTX_CYCLE ? `${homeHref}?cycle_id=${CTX_CYCLE}` : homeHref
+      link.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/></svg>`
+      link.append(document.createTextNode(CTX_CHILD))
+      childSlot.replaceChildren(link)
+    }
+
+    // Sessões → volta para tutor com tab sessions
+    const sessLink = $('[data-rail-sessions]')
+    if (sessLink) {
+      sessLink.addEventListener('click', (e) => {
+        e.preventDefault()
+        window.location.href = CTX_CYCLE
+          ? `${homeHref}?tab=sessions&cycle_id=${CTX_CYCLE}`
+          : `${homeHref}?tab=sessions`
+      })
+    }
+
+    // Meu perfil → abre a view de perfil no painel
+    $('[data-rail-profile]')?.addEventListener('click', (e) => {
       e.preventDefault()
-      window.location.href = CTX_CYCLE
-        ? `${homeHref}?tab=sessions&cycle_id=${CTX_CYCLE}`
-        : `${homeHref}?tab=sessions`
+      const back = encodeURIComponent(location.pathname + location.search)
+      window.location.href = `tutor.html?view=profile&return=${back}`
     })
+
+    // Suporte
+    $('[data-rail-team]')?.addEventListener('click', (e) => {
+      e.preventDefault()
+      openSupportDrawer()
+    })
+
+    // Logout
+    document.querySelectorAll('[data-logout]').forEach((btn) => {
+      btn.addEventListener('click', async (e) => { e.preventDefault(); await signOut() })
+    })
+  } catch (error) {
+    console.warn('Biblioteca: erro ao carregar identidade.', error)
   }
-
-  // Meu perfil → abre a view de perfil no painel
-  $('[data-rail-profile]')?.addEventListener('click', (e) => {
-    e.preventDefault()
-    window.location.href = 'tutor.html?view=profile'
-  })
-
-  // Suporte
-  $('[data-rail-team]')?.addEventListener('click', (e) => {
-    e.preventDefault()
-    openSupportDrawer()
-  })
-
-  // Logout
-  document.querySelectorAll('[data-logout]').forEach((btn) => {
-    btn.addEventListener('click', async (e) => { e.preventDefault(); await signOut() })
-  })
 }
 
 // ── Suporte drawer ───────────────────────────────────────────────────────────
@@ -602,8 +620,18 @@ async function init() {
     grid.replaceChildren(skel)
   }
 
-  await loadIdentity()
-  await loadActivities()
+  const identityResult = await Promise.allSettled([
+    loadIdentity(),
+    loadActivities(),
+  ])
+
+  if (identityResult[0].status === 'rejected') {
+    console.warn('Biblioteca: falha ao carregar identidade.', identityResult[0].reason)
+  }
+
+  if (identityResult[1].status === 'rejected') {
+    console.warn('Biblioteca: falha ao carregar atividades.', identityResult[1].reason)
+  }
 
   // Pré-filtro de habilidade vindo do tutor
   if (CTX_SKILL && SKILLS.some((s) => s.id === CTX_SKILL)) {

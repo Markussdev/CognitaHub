@@ -1,12 +1,14 @@
 import { supabase } from '../lib/supabase.js'
 import { requireRole, signOut } from '../lib/auth.js'
 import { greeting, initials, ageFrom, el } from '../lib/ui.js'
+import { getAvatarUrl, setAvatarImage } from '../lib/avatar.js'
 import { getTutorCycles } from '../data/tutor.js'
 import { getCycleSessions, createSessionRecord } from '../data/sessions.js'
 import { getActivityById } from '../data/activities.js'
 
 const session = await requireRole('tutor')
 const stateBox = document.querySelector('[data-tutor-state]')
+const profileReturn = new URLSearchParams(location.search).get('return') || ''
 
 // Detecta ?activity=<uuid> e pré-busca a atividade (vem da Biblioteca via "Usar no registro")
 let pendingActivity = null
@@ -65,8 +67,6 @@ const REVIEW_STATUSES = ['pending', 'waiting_review', 'tutor_pending']
 
 // ── Avatar (Supabase Storage, bucket privado) ─────────────────────────────────
 
-const AVATAR_BUCKET = 'profile-photos'
-
 function getFileExt(file) {
   return file.name.split('.').pop()?.toLowerCase() || 'png'
 }
@@ -77,18 +77,11 @@ function validateAvatarFile(file) {
   if (file.size > 2 * 1024 * 1024) throw new Error('A imagem precisa ter até 2MB.')
 }
 
-async function getAvatarUrl(path) {
-  if (!path) return null
-  const { data, error } = await supabase.storage.from(AVATAR_BUCKET).createSignedUrl(path, 3600)
-  if (error) { console.warn('Erro ao carregar avatar:', error); return null }
-  return data.signedUrl
-}
-
 async function uploadTutorAvatar(file) {
   validateAvatarFile(file)
   const filePath = `${session.user.id}/avatar-${Date.now()}.${getFileExt(file)}`
   const { error: uploadError } = await supabase.storage
-    .from(AVATAR_BUCKET)
+    .from('profile-photos')
     .upload(filePath, file, { cacheControl: '3600', contentType: file.type, upsert: false })
   if (uploadError) throw uploadError
   const { error: profileError } = await supabase
@@ -98,15 +91,6 @@ async function uploadTutorAvatar(file) {
   if (profileError) throw profileError
   session.profile.avatar_path = filePath
   return filePath
-}
-
-function setAvatarImage(sel, url) {
-  const node = document.querySelector(sel)
-  if (!node) return
-  node.textContent = ''
-  const img = document.createElement('img')
-  img.src = url; img.alt = ''
-  node.append(img)
 }
 
 function todayISO() {
@@ -1718,6 +1702,11 @@ function buildProfileView() {
   const headCopy = el('div')
   headCopy.append(el('p', 'kicker', 'Meu perfil'), el('h1', null, 'Identidade do tutor'))
   head.append(headCopy)
+  if (profileReturn && !profileReturn.startsWith('//') && !/^https?:\/\//i.test(profileReturn)) {
+    const backLink = el('a', 'btn btn-ghost btn-sm', 'Voltar para Biblioteca')
+    backLink.href = profileReturn
+    head.append(backLink)
+  }
   panel.append(head)
 
   const grid = el('div', 'profile-grid')
