@@ -1,464 +1,499 @@
-import { requireRole, signOut } from '../lib/auth.js'
-import { setupFocusMode, greeting, initials, ageFrom, el } from '../lib/ui.js'
-import { getGuardianChildren } from '../data/guardian.js'
+import { el } from '../lib/ui.js'
 
-const session = await requireRole('guardian')
+// ── Fatia 1 (casca) ───────────────────────────────────────────────────────────
+// Ainda SEM Supabase de propósito: o objetivo desta fatia é validar a casca +
+// status-hero + timeline reusando o shell do tutor, antes de ligar no banco
+// (guardian_dashboard_view entra na Fatia 2). Troque o estado pela URL, ex.:
+// responsavel.html?estado=active — ver ESTADOS_VALIDOS abaixo.
 
-const childrenBox = document.querySelector('[data-guardian-children]')
-const emptyBox = document.querySelector('[data-guardian-empty]')
-const REVIEW_STATUSES = ['pending', 'waiting_review', 'tutor_pending']
+const ESTADOS_VALIDOS = [
+  'waiting_review', 'revision_requested', 'waiting_match',
+  'matched', 'active', 'paused', 'completed', 'rejected',
+]
 
-setupFocusMode()
+const estadoParam = new URLSearchParams(location.search).get('estado')
+const estadoAtual = ESTADOS_VALIDOS.includes(estadoParam) ? estadoParam : 'waiting_review'
+
+const MOCK = {
+  guardianName: 'Ana',
+  child: {
+    name: 'Lucas',
+    age: 6,
+    schoolYear: 'Educação Infantil',
+    mainDifficulties: ['reconhecer números', 'contar objetos'],
+    preferredFormats: ['visual', 'objetos concretos'],
+  },
+  cycle: {
+    currentMonth: 2,
+    totalMonths: 6,
+    mainGoal: 'Contar objetos até 10 com apoio visual.',
+    nextStep: 'Comparar quantidades pequenas (qual grupo tem mais).',
+    tutor: {
+      name: 'Marina Souza',
+      formation: 'Pedagogia · validada pela equipe Cognita',
+    },
+    suggestedActivity: {
+      title: 'Conte os animais até 5',
+      format: 'visual',
+      time: '5 min',
+      why: 'Apoio visual e atividade curta — combina com o momento do Lucas.',
+    },
+    sessions: [
+      {
+        date: '2026-07-12',
+        activityTitle: 'Contagem com apoio visual',
+        familySummary: 'Lucas contou até 5 usando figuras de animais e mostrou bastante interesse pelos bichos.',
+        nextStep: 'Repetir a contagem com pequenas variações no material.',
+        durationMinutes: 20,
+      },
+      {
+        date: '2026-07-05',
+        activityTitle: 'Reconhecimento de números até 5',
+        familySummary: 'Reconheceu os números 1, 2 e 3 com segurança; 4 e 5 ainda precisam de apoio visual.',
+        nextStep: 'Trabalhar 4 e 5 com objetos concretos antes de avançar.',
+        durationMinutes: 25,
+      },
+    ],
+    progress: [
+      { skill: 'Reconhecer números', label: 'Em desenvolvimento', level: 2 },
+      { skill: 'Contar objetos', label: 'Trabalhando com apoio', level: 1 },
+      { skill: 'Comparar quantidades', label: 'Próxima etapa', level: 0 },
+    ],
+    reports: [
+      { month: 1, status: 'available' },
+      { month: 2, status: 'in_review' },
+    ],
+  },
+}
 
 document.querySelectorAll('[data-logout]').forEach((button) => {
-  button.addEventListener('click', async (event) => {
+  button.addEventListener('click', (event) => {
     event.preventDefault()
-    await signOut()
+    // TODO(wiring:auth): trocar por signOut() real na Fatia 2.
+    window.location.href = 'login.html'
   })
 })
 
-const STATUS = {
-  waiting_review: {
-    badge: 'badge-warn',
-    label: 'Cadastro em análise',
-    text: 'Cadastro em análise pela equipe Cognita. Avisaremos assim que a avaliação terminar.',
-  },
-  revision_requested: {
-    badge: 'badge-bad',
-    label: 'Revisão solicitada',
-    text: 'A equipe Cognita pediu ajustes neste cadastro. Em breve você poderá editar as informações; enquanto isso, fique de olho no seu e-mail.',
-  },
-  waiting_match: {
-    badge: 'badge-ok',
-    label: 'Cadastro aprovado, aguardando tutor',
-    text: 'Cadastro aprovado, aguardando tutor. Você será avisado quando o pareamento acontecer.',
-  },
-  matched: {
-    badge: 'badge-ok',
-    label: 'Pareamento criado',
-    text: 'Um tutor foi reservado para o ciclo. O acompanhamento vai começar em breve.',
-  },
-  active: {
-    badge: 'badge-ok',
-    label: 'Ciclo ativo',
-    text: 'Ciclo ativo com tutor vinculado.',
-  },
-  completed: {
-    badge: 'badge-ok',
-    label: 'Ciclo concluído',
-    text: 'Ciclo concluído. Obrigado por participar.',
-  },
-  paused: {
-    badge: 'badge-warn',
-    label: 'Acompanhamento pausado',
-    text: 'Acompanhamento pausado. A equipe Cognita entrará em contato.',
-  },
-  rejected: {
-    badge: 'badge-bad',
-    label: 'Cadastro não aprovado',
-    text: 'Cadastro não aprovado. Fale com a equipe Cognita para entender os próximos passos.',
-  },
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function initials(name) {
+  const parts = (name ?? '').trim().split(/\s+/).filter(Boolean)
+  if (!parts.length) return '?'
+  const first = parts[0][0]
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : ''
+  return (first + last).toUpperCase()
 }
 
-const FALLBACK_STATUS = {
-  badge: 'badge-warn',
-  label: 'Em processamento',
-  text: 'Estamos atualizando o status deste cadastro.',
-}
-
-function setText(selector, value) {
-  const node = document.querySelector(selector)
-  if (node) node.textContent = value
-}
-
-function asText(value) {
-  if (value == null || value === '') return null
-  if (Array.isArray(value)) return value.length ? value.join(', ') : null
-  return String(value)
-}
-
-function fact(label, value) {
-  const text = asText(value)
-  if (!text) return null
-  const row = el('div')
-  row.append(el('dt', null, label), el('dd', null, text))
-  return row
-}
-
-function factList(facts) {
-  const list = el('dl', 'card-facts')
-  facts.forEach((row) => row && list.append(row))
-  return list
+function firstName(name) {
+  return (name ?? '').trim().split(/\s+/)[0] || ''
 }
 
 function formatDate(value) {
   if (!value) return null
   const date = new Date(`${value}T00:00:00Z`)
   if (Number.isNaN(date.getTime())) return value
-
   return new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' }).format(date)
 }
 
-function getActiveCycle(child) {
-  const cycles = Array.isArray(child.support_cycles)
-    ? child.support_cycles
-    : child.support_cycles
-      ? [child.support_cycles]
-      : []
-
-  return cycles.find((cycle) => cycle.status === 'active') ?? cycles[0] ?? null
-}
-
-function getCycleTutor(cycle) {
-  const profile = cycle?.profiles
-  return Array.isArray(profile) ? profile[0] : profile
-}
-
 function fillIdentity() {
-  const name = session.profile.name || 'Responsável'
-  setText('[data-guardian-title]', greeting(name))
-  setText(
-    '[data-guardian-subtitle]',
-    'Acompanhe aqui a situação do cadastro da sua criança no Cognita Hub.'
-  )
-  setText('[data-guardian-name]', name)
-  setText('[data-account-name]', name)
-  setText('[data-account-email]', session.user.email ?? '')
-  setText('[data-account-avatar]', initials(name))
+  const name = MOCK.guardianName
+  const set = (sel, val) => { const node = document.querySelector(sel); if (node) node.textContent = val }
+  set('[data-account-name]', name)
+  set('[data-account-avatar]', initials(name))
+  set('[data-topbar-avatar]', initials(name))
+  set('[data-account-email]', 'ana@email.com')
 }
 
-function setCount(n) {
-  const label =
-    n === 0
-      ? 'Nenhuma criança cadastrada'
-      : n === 1
-        ? '1 criança cadastrada'
-        : `${n} crianças cadastradas`
-  setText('[data-guardian-count]', label)
+// ── Rail: navegação por âncora dentro da própria página ──────────────────────
+
+function scrollToSection(id) {
+  document.querySelector(`[data-section="${id}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-function monthsBetween(start, end) {
-  if (!start || !end) return 6
+document.querySelector('[data-rail-home]')?.addEventListener('click', () => {
+  document.querySelector('#main-content')?.scrollTo({ top: 0, behavior: 'smooth' })
+})
+document.querySelectorAll('[data-rail-scroll]').forEach((button) => {
+  button.addEventListener('click', () => scrollToSection(button.dataset.railScroll))
+})
 
-  const startDate = new Date(`${start}T00:00:00Z`)
-  const endDate = new Date(`${end}T00:00:00Z`)
+// ── Central Cognita: canais externos (V2 = assíncrono, sem caixa interna) ────
 
-  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
-    return 6
-  }
+function buildSupportDrawerContent() {
+  const frag = document.createDocumentFragment()
 
-  const months =
-    (endDate.getUTCFullYear() - startDate.getUTCFullYear()) * 12 +
-    (endDate.getUTCMonth() - startDate.getUTCMonth())
+  frag.append(el('p', 'support-note', 'Na V2, o contato com a equipe Cognita é pelos canais oficiais abaixo. Tempo médio de resposta: até 48h.'))
 
-  return Math.max(1, months)
+  const mail = el('a', 'support-channel')
+  mail.href = 'mailto:equipecognita@email.com?subject=' + encodeURIComponent(`Dúvida sobre o acompanhamento de ${MOCK.child.name}`)
+  mail.innerHTML = '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>'
+  mail.append(document.createTextNode('E-mail oficial'))
+
+  const whats = el('a', 'support-channel')
+  whats.href = 'https://wa.me/5500000000000'
+  whats.target = '_blank'
+  whats.rel = 'noopener'
+  whats.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>'
+  whats.append(document.createTextNode('WhatsApp oficial'))
+
+  const social = el('a', 'support-channel')
+  social.href = '../index.html'
+  social.innerHTML = '<svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/></svg>'
+  social.append(document.createTextNode('Redes oficiais'))
+
+  frag.append(mail, whats, social)
+  return frag
 }
 
-function currentCycleMonth(start, end) {
-  if (!start || !end) return 1
-
-  const now = new Date()
-  const startDate = new Date(`${start}T00:00:00Z`)
-  const total = monthsBetween(start, end)
-
-  if (Number.isNaN(startDate.getTime())) return 1
-
-  const elapsed =
-    (now.getUTCFullYear() - startDate.getUTCFullYear()) * 12 +
-    (now.getUTCMonth() - startDate.getUTCMonth()) +
-    1
-
-  return Math.min(Math.max(elapsed, 1), total)
+function openSupportDrawer() {
+  const body = document.querySelector('[data-support-body]')
+  const drawer = document.querySelector('[data-support-drawer]')
+  const backdrop = document.querySelector('[data-support-backdrop]')
+  if (!body || !drawer || !backdrop) return
+  body.replaceChildren(buildSupportDrawerContent())
+  drawer.classList.add('open')
+  backdrop.classList.add('open')
+  drawer.setAttribute('aria-hidden', 'false')
 }
 
-function cycleProgressPercent(start, end) {
-  const total = monthsBetween(start, end)
-  const current = currentCycleMonth(start, end)
-  return Math.round((current / total) * 100)
+function closeSupportDrawer() {
+  document.querySelector('[data-support-drawer]')?.classList.remove('open')
+  document.querySelector('[data-support-backdrop]')?.classList.remove('open')
+  document.querySelector('[data-support-drawer]')?.setAttribute('aria-hidden', 'true')
 }
 
-function renderOrbit(childName, age, currentMonth, totalMonths) {
-  const orbit = el('div', 'os-orbit')
-  orbit.style.setProperty('--total', totalMonths)
+document.querySelector('[data-rail-team]')?.addEventListener('click', () => openSupportDrawer())
+document.querySelector('[data-support-close]')?.addEventListener('click', closeSupportDrawer)
+document.querySelector('[data-support-backdrop]')?.addEventListener('click', closeSupportDrawer)
+document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeSupportDrawer() })
 
-  const center = el('div', 'os-orbit-center')
-  center.append(
-    el('strong', null, childName ?? 'Criança'),
-    el('span', null, age != null ? `${age} anos` : 'Ciclo Cognita')
-  )
+// ── status-hero: um por tela, sempre no topo ──────────────────────────────────
 
-  const ring = el('div', 'os-orbit-ring')
+const TIMELINE_LABELS = ['Cadastro enviado', 'Em análise', 'Aguardando tutor', 'Ciclo ativo']
 
-  for (let i = 1; i <= totalMonths; i += 1) {
-    const stateClass = i === currentMonth ? 'active' : i < currentMonth ? 'done' : ''
-    const dot = el('span', `os-orbit-dot ${stateClass}`.trim(), String(i))
-    dot.style.setProperty('--i', i)
-    dot.style.setProperty('--total', totalMonths)
-    ring.append(dot)
-  }
-
-  orbit.append(ring, center)
-  return orbit
+// timelineIndex = etapa "now"; tudo antes fica "done", tudo depois fica neutro.
+const STATUS_COPY = {
+  waiting_review: {
+    tone: 'warn', timelineIndex: 1,
+    icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
+    label: 'Cadastro em análise',
+    title: (child) => `Recebemos o cadastro do ${child}.`,
+    desc: 'A equipe Cognita está analisando as informações para organizar o acompanhamento.',
+    meta: 'Próximo passo: a equipe avisa quando houver uma atualização.',
+  },
+  revision_requested: {
+    tone: 'bad', timelineIndex: 0,
+    icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+    label: 'Revisão solicitada',
+    title: (child) => `A equipe pediu ajustes no cadastro do ${child}.`,
+    desc: 'Em breve você poderá editar as informações por aqui; enquanto isso, fique de olho no seu e-mail.',
+    meta: 'Próximo passo: aguardar o link de edição por e-mail.',
+  },
+  waiting_match: {
+    tone: 'ok', timelineIndex: 2,
+    icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>',
+    label: 'Cadastro aprovado',
+    title: (child) => `Cadastro do ${child} aprovado — aguardando tutor.`,
+    desc: 'A equipe Cognita está organizando o pareamento com um tutor compatível.',
+    meta: 'Próximo passo: avisaremos assim que o pareamento acontecer.',
+  },
+  matched: {
+    tone: 'ok', timelineIndex: 3,
+    icon: '<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>',
+    label: 'Pareamento criado',
+    title: (child) => `Um tutor foi reservado para ${child}.`,
+    desc: 'O acompanhamento vai começar em breve — a equipe confirma a data do primeiro encontro.',
+    meta: 'Próximo passo: aguardar a confirmação do início do ciclo.',
+  },
+  active: {
+    tone: 'info',
+    icon: '<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+    label: 'Ciclo ativo',
+    title: () => 'O acompanhamento está em andamento.',
+  },
+  paused: {
+    tone: 'warn',
+    icon: '<svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>',
+    label: 'Acompanhamento pausado',
+    title: () => 'O ciclo está pausado no momento.',
+    desc: 'A equipe Cognita vai entrar em contato com os próximos passos.',
+    meta: 'Falar com a equipe se tiver dúvidas sobre a pausa.',
+  },
+  completed: {
+    tone: 'ok',
+    icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>',
+    label: 'Ciclo concluído',
+    title: (child) => `O ciclo de acompanhamento do ${child} foi concluído.`,
+    desc: 'Obrigado por caminhar com a gente. O histórico de sessões e relatórios continua disponível abaixo.',
+  },
+  rejected: {
+    tone: 'bad',
+    icon: '<svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>',
+    label: 'Cadastro não aprovado',
+    title: () => 'Não foi possível aprovar este cadastro.',
+    desc: 'Fale com a equipe Cognita para entender os próximos passos.',
+  },
 }
 
-function renderSession(record) {
-  const item = el('article', 'session-item os-session-item')
-
-  const head = el('header', 'os-session-head')
-  head.append(
-    el('span', 'session-date os-session-date', formatDate(record.date) ?? '—'),
-    el('strong', null, record.activity_title ?? 'Sessão registrada')
-  )
-
-  const body = el('div', 'os-session-body')
-
-  if (record.focus_area) {
-    const p = el('p')
-    p.append(el('strong', null, 'Foco '), document.createTextNode(record.focus_area))
-    body.append(p)
-  }
-
-  if (record.notes) {
-    const p = el('p')
-    p.append(el('strong', null, 'Observação '), document.createTextNode(record.notes))
-    body.append(p)
-  }
-
-  if (record.next_step) {
-    const p = el('p')
-    p.append(el('strong', null, 'Próximo '), document.createTextNode(record.next_step))
-    body.append(p)
-  }
-
-  if (record.duration_minutes) {
-    body.append(el('span', 'os-session-duration', `${record.duration_minutes} min`))
-  }
-
-  item.append(head, body)
-  return item
+function renderTimeline(timelineIndex) {
+  const wrap = el('div', 'steps')
+  TIMELINE_LABELS.forEach((label, index) => {
+    const cls = index < timelineIndex ? 'done' : index === timelineIndex ? 'now' : ''
+    const step = el('div', `step${cls ? ` ${cls}` : ''}`)
+    step.append(el('div', 'step-n', index < timelineIndex ? '✓' : String(index + 1)))
+    step.append(el('div', null, label))
+    wrap.append(step)
+  })
+  return wrap
 }
 
-function renderSessions(sessions) {
-  const rows = Array.isArray(sessions) ? sessions : []
+function renderStatusHero(state) {
+  const copy = STATUS_COPY[state] ?? STATUS_COPY.waiting_review
+  const childName = MOCK.child.name
 
-  if (!rows.length) {
-    return el('p', 'session-empty', 'O tutor ainda não registrou sessões deste ciclo.')
-  }
+  const hero = el('section', 'status-hero')
+  hero.dataset.section = 'inicio'
 
-  const list = el('div', 'session-list os-session-list')
-  rows.forEach((record) => list.append(renderSession(record)))
-  return list
-}
+  const chip = el('span', `hero-chip tone-${copy.tone}`)
+  chip.innerHTML = copy.icon
+  chip.append(document.createTextNode(copy.label))
+  hero.append(chip)
 
-function renderCycleSummary(child, cycle, tutor, progress, currentMonth, totalMonths) {
-  const panel = el('aside', 'os-panel os-summary-panel')
+  hero.append(el('h1', 'hero-title', copy.title(childName)))
 
-  panel.append(
-    el('div', 'os-panel-title', 'Resumo do acompanhamento'),
-    el('p', 'os-progress-number', `${progress}%`),
-    el('p', 'os-muted', `mês ${currentMonth} de ${totalMonths}`)
-  )
-
-  const bars = el('div', 'os-progress-bars')
-  bars.style.setProperty('--total-months', totalMonths)
-
-  for (let i = 1; i <= totalMonths; i += 1) {
-    const stateClass = i === currentMonth ? 'active' : i < currentMonth ? 'done' : ''
-    bars.append(el('span', stateClass))
-  }
-
-  const latestSession = Array.isArray(cycle.sessions) ? cycle.sessions[0] : null
-
-  const facts = factList([
-    fact('Tutor responsável', tutor?.name),
-    fact('Contato com o tutor', 'Pelo Cognita Hub'),
-    fact('Início', formatDate(cycle.start_date)),
-    fact('Fim previsto', formatDate(cycle.end_date)),
-    fact('Objetivo principal', cycle.main_goal),
-    fact('Plano inicial', cycle.current_plan),
-  ])
-
-  panel.append(bars, facts)
-
-  if (latestSession?.next_step || cycle.current_plan || cycle.main_goal) {
-    const next = el('div', 'os-next-card')
-    next.append(
-      el('span', null, 'Próximo passo'),
-      el('p', null, latestSession?.next_step || cycle.current_plan || cycle.main_goal)
-    )
-    panel.append(next)
-  }
-
-  return panel
-}
-
-function renderProfileDetails(child, learning) {
-  const details = el('details', 'card-details os-details')
-  details.append(
-    el('summary', null, 'Ver dados do cadastro'),
-    factList([
-      fact('Principais dificuldades', child.main_difficulties),
-      fact('Dificuldades em matemática', learning?.math_difficulties),
-      fact('Formatos preferidos', learning?.preferred_formats),
-      fact('Tempo de atenção', learning?.attention_span),
-      fact('Motivadores', learning?.motivators),
-      fact('Evitar', learning?.avoidances),
-      fact('Notas sensoriais', child.sensory_notes),
-      fact('Rotina', child.routine_notes),
-    ])
-  )
-  return details
-}
-
-function renderChildCard(child) {
-  const status = STATUS[child.status] ?? FALLBACK_STATUS
-  const learning = Array.isArray(child.learning_profiles)
-    ? child.learning_profiles[0]
-    : child.learning_profiles
-  const activeCycle = getActiveCycle(child)
-  const tutor = getCycleTutor(activeCycle)
-  const age = ageFrom(child.birth_date)
-
-  const totalMonths = activeCycle ? monthsBetween(activeCycle.start_date, activeCycle.end_date) : 6
-  const currentMonth = activeCycle ? currentCycleMonth(activeCycle.start_date, activeCycle.end_date) : 1
-  const progress = activeCycle ? cycleProgressPercent(activeCycle.start_date, activeCycle.end_date) : 0
-
-  const wrapper = el('article', 'pipeline-card os-cycle')
-
-  const hero = el('section', 'os-hero-card')
-  const orbit = renderOrbit(child.name, age, currentMonth, totalMonths)
-
-  const copy = el('div', 'os-hero-copy')
-  copy.append(
-    el('p', 'os-kicker', 'Jornada da criança'),
-    el(
-      'h2',
-      null,
-      activeCycle
-        ? `${child.name ?? 'Criança'} está em acompanhamento com ${tutor?.name ?? 'a equipe Cognita'}.`
-        : `${child.name ?? 'Criança'} está em ${status.label.toLowerCase()}.`
-    ),
-    el(
-      'p',
-      'os-copy',
-      activeCycle
-        ? 'A família acompanha aqui as sessões registradas pelo tutor, o progresso do ciclo e os próximos passos do apoio educacional.'
-        : status.text
-    )
-  )
-
-  const chips = el('div', 'os-chip-row')
-  chips.append(el('span', 'os-chip os-chip-ok', status.label))
-
-  if (activeCycle && tutor?.name) {
-    chips.append(el('span', 'os-chip os-chip-warn', 'Tutor vinculado'))
-  }
-
-  copy.append(chips)
-
-  const mascot = document.createElement('img')
-  mascot.className = 'os-mascot'
-  mascot.src = '../assets/mascot-hero-wave.png'
-  mascot.alt = ''
-
-  hero.append(orbit, copy, mascot)
-
-  const grid = el('section', 'os-dashboard-grid')
-
-  if (activeCycle) {
-    const sessionsPanel = el('div', 'os-panel os-timeline-panel')
-    sessionsPanel.id = 'sessoes'
-    sessionsPanel.append(el('div', 'os-panel-title', 'Linha do tempo das sessões'))
-    sessionsPanel.append(renderSessions(activeCycle.sessions))
-
-    const summaryPanel = renderCycleSummary(child, activeCycle, tutor, progress, currentMonth, totalMonths)
-
-    grid.append(sessionsPanel, summaryPanel)
+  if (state === 'active' || state === 'matched') {
+    const cycle = MOCK.cycle
+    hero.append(el('p', 'hero-meta', `Mês ${cycle.currentMonth} de ${cycle.totalMonths}`))
+    hero.append(el('p', 'hero-desc', `Objetivo atual: ${cycle.mainGoal}`))
+    if (cycle.nextStep) hero.append(el('p', 'hero-desc', `Próxima etapa: ${cycle.nextStep}`))
   } else {
-    const statusPanel = el('div', 'os-panel os-timeline-panel')
-    statusPanel.append(
-      el('div', 'os-panel-title', 'Status do cadastro'),
-      el('p', 'os-copy', status.text)
-    )
-
-    const summaryPanel = el('aside', 'os-panel os-summary-panel')
-    summaryPanel.append(
-      el('div', 'os-panel-title', 'Perfil cadastrado'),
-      factList([
-        fact('Criança', child.name),
-        fact('Idade', age != null ? `${age} anos` : null),
-        fact('Ano escolar', child.school_year),
-      ])
-    )
-
-    grid.append(statusPanel, summaryPanel)
+    if (copy.desc) hero.append(el('p', 'hero-desc', copy.desc))
   }
 
-  wrapper.append(hero, grid, renderProfileDetails(child, learning))
-  return wrapper
+  if (copy.timelineIndex != null) {
+    hero.append(renderTimeline(copy.timelineIndex))
+  }
+
+  if (copy.meta) hero.append(el('p', 'hero-meta', copy.meta))
+
+  if (['waiting_review', 'revision_requested', 'waiting_match'].includes(state)) {
+    const actions = el('div', 'hero-actions')
+    const seeData = el('button', 'btn btn-ghost btn-sm', 'Ver dados enviados')
+    seeData.type = 'button'
+    seeData.addEventListener('click', () => scrollToSection('crianca'))
+    actions.append(seeData)
+    hero.append(actions)
+  }
+
+  return hero
 }
 
-function showEmpty() {
-  childrenBox.replaceChildren()
-  emptyBox.hidden = false
-  emptyBox.replaceChildren()
+// ── Resumo da criança + "Enquanto isso" (estados pré-match) ──────────────────
 
-  const box = el('div', 'empty-state')
-  if (REVIEW_STATUSES.includes(session.profile.status)) {
-    box.append(
-      el('strong', null, 'Cadastro em analise'),
-      el('span', null, 'A equipe Cognita esta revisando as informacoes da crianca. Voce sera avisado quando houver uma atualizacao.')
+function renderPrematchRow() {
+  const row = el('div', 'row')
+  row.dataset.section = 'crianca'
+
+  const resumo = el('div', 'card')
+  const resumoHead = el('div', 'card-h')
+  resumoHead.append(el('h3', null, `Resumo do ${firstName(MOCK.child.name)}`))
+  const resumoBody = el('div', 'card-b')
+  const kv = el('dl', 'kv')
+  kv.append(
+    el('dt', null, 'Idade'), el('dd', null, `${MOCK.child.age} anos`),
+    el('dt', null, 'Ano escolar'), el('dd', null, MOCK.child.schoolYear),
+    el('dt', null, 'Aprende melhor'), el('dd', null, MOCK.child.preferredFormats.join(', ')),
+    el('dt', null, 'Foco'), el('dd', null, MOCK.child.mainDifficulties.join(', ')),
+  )
+  resumoBody.append(kv)
+  const editBtn = el('button', 'btn btn-ghost btn-sm', 'Editar perfil')
+  editBtn.type = 'button'
+  editBtn.style.marginTop = '12px'
+  // TODO(wiring:fatia4): abrir edição real do perfil pedagógico na Fatia 4.
+  resumoBody.append(editBtn)
+  resumo.append(resumoHead, resumoBody)
+
+  const enquanto = el('div', 'card')
+  const enquantoHead = el('div', 'card-h')
+  enquantoHead.append(el('h3', null, 'Enquanto isso'))
+  const enquantoBody = el('div', 'card-b stack')
+  const lib = el('a', 'card-h-link', 'Conheça as atividades →')
+  lib.href = 'atividades.html'
+  const perfil = el('button', 'card-h-link', 'Revise o perfil enviado →')
+  perfil.type = 'button'
+  perfil.style.cssText = 'background:none;border:none;text-align:left;cursor:pointer;font-family:inherit'
+  perfil.addEventListener('click', () => scrollToSection('crianca'))
+  enquantoBody.append(lib, perfil)
+  enquanto.append(enquantoHead, enquantoBody)
+
+  row.append(resumo, enquanto)
+  return row
+}
+
+// ── Ciclo ativo: tutor + atividade sugerida ───────────────────────────────────
+
+function renderTutorAndActivityRow() {
+  const row = el('div', 'row')
+  row.dataset.section = 'crianca'
+
+  const tutorCard = el('div', 'card')
+  const tutorHead = el('div', 'card-h')
+  tutorHead.append(el('h3', null, 'Tutor vinculado'))
+  tutorCard.append(tutorHead)
+  const tutorBody = el('div', 'card-b')
+  const tutorInner = el('div', 'tutor-card')
+  tutorInner.append(el('div', 'av', initials(MOCK.cycle.tutor.name)))
+  const tx = el('div', 'tx')
+  tx.append(el('b', null, MOCK.cycle.tutor.name), el('span', null, MOCK.cycle.tutor.formation))
+  tutorInner.append(tx)
+  tutorBody.append(tutorInner)
+  tutorBody.append(el('div', 'tutor-note', 'Contato é sempre mediado pela equipe Cognita.'))
+  tutorCard.append(tutorBody)
+
+  const activityCard = el('div', 'card')
+  const activityHead = el('div', 'card-h')
+  activityHead.append(el('h3', null, 'Próxima atividade sugerida'))
+  activityCard.append(activityHead)
+  const activityBody = el('div', 'card-b')
+  const activity = MOCK.cycle.suggestedActivity
+  activityBody.append(el('div', 'sg-title', activity.title))
+  activityBody.append(el('div', 'sg-why', `Por quê: ${activity.why}`))
+  const facts = el('div', 'sg-facts')
+  facts.append(el('span', null, activity.format), el('span', null, activity.time))
+  activityBody.append(facts)
+  const actions = el('div', 'hero-actions')
+  const openLib = el('a', 'btn btn-ghost btn-sm', 'Ver atividade')
+  openLib.href = 'atividades.html'
+  actions.append(openLib)
+  activityBody.append(actions)
+  activityCard.append(activityBody)
+
+  row.append(tutorCard, activityCard)
+  return row
+}
+
+// ── Sessões recentes (resumo para a família — nunca notas internas) ──────────
+
+function renderSessionsCard() {
+  const card = el('div', 'card')
+  card.dataset.section = 'sessoes'
+  const head = el('div', 'card-h')
+  head.append(el('h3', null, 'Sessões recentes'))
+  card.append(head)
+  const body = el('div', 'card-b')
+
+  if (!MOCK.cycle.sessions.length) {
+    const empty = el('div', 'empty-state')
+    empty.append(
+      el('strong', null, 'Nenhuma sessão registrada ainda.'),
+      el('span', null, 'Assim que o tutor registrar a primeira sessão, o resumo aparece aqui.'),
     )
+    body.append(empty)
   } else {
-    box.append(
-      el('strong', null, 'Nenhum cadastro de crianca encontrado.'),
-      el(
-        'span',
-        null,
-        'Se voce acabou de concluir o cadastro, atualize a pagina em alguns instantes. Qualquer duvida, fale com a equipe Cognita.'
-      )
-    )
+    MOCK.cycle.sessions.forEach((session) => {
+      const item = el('div', 'session-card')
+      const scHead = el('div', 'sc-head')
+      scHead.append(el('span', 'sc-date', formatDate(session.date) ?? '—'))
+      if (session.durationMinutes) scHead.append(el('span', 'sc-date', `${session.durationMinutes} min`))
+      item.append(scHead)
+      item.append(el('div', 'sc-title', session.activityTitle))
+      item.append(el('p', 'sc-summary', session.familySummary))
+      if (session.nextStep) item.append(el('p', 'sc-next', `Próximo passo: ${session.nextStep}`))
+      const foot = el('div', 'sc-foot')
+      const flag = el('button', 'sc-flag', '⚑ Sinalizar')
+      flag.type = 'button'
+      // TODO(wiring:fatia3): abrir fluxo real de sinalização quando o Registro
+      // de Sessão tiver os 3 níveis (estruturado / resumo família / interno).
+      foot.append(flag)
+      item.append(foot)
+      body.append(item)
+    })
   }
-  emptyBox.append(box)
+
+  card.append(body)
+  return card
 }
 
-async function loadChildren() {
-  emptyBox.hidden = true
-  childrenBox.replaceChildren(el('div', 'skeleton'))
+// ── Progresso qualitativo (habilidade + etapa — sem % como métrica principal) ─
 
-  if (REVIEW_STATUSES.includes(session.profile.status)) {
-    setCount(0)
-    showEmpty()
-    return
-  }
+function renderProgressCard() {
+  const card = el('div', 'card')
+  const head = el('div', 'card-h')
+  head.append(el('h3', null, 'Progresso'))
+  card.append(head)
+  const body = el('div', 'card-b progress-row')
 
-  const { data, error } = await getGuardianChildren(session.user.id)
+  MOCK.cycle.progress.forEach((item) => {
+    const row = el('div', 'progress-item')
+    const rowHead = el('div', 'pi-head')
+    rowHead.append(el('span', 'pi-skill', item.skill), el('span', 'pi-label', item.label))
+    row.append(rowHead)
+    const bar = el('div', 'pi-bar')
+    const fill = el('div', 'pi-fill')
+    fill.style.width = `${(item.level + 1) * 30}%`
+    bar.append(fill)
+    row.append(bar)
+    body.append(row)
+  })
 
-  if (error) {
-    childrenBox.replaceChildren()
-    emptyBox.hidden = false
-    const box = el('div', 'empty-state')
-    box.append(
-      el('strong', null, 'Não foi possível carregar o cadastro.'),
-      el('span', null, 'Verifique sua conexão e atualize a página.')
-    )
-    emptyBox.replaceChildren(box)
-    setText('[data-guardian-count]', 'Status indisponível')
-    return
-  }
-
-  const rows = data ?? []
-  setCount(rows.length)
-
-  if (!rows.length) {
-    showEmpty()
-    return
-  }
-
-  childrenBox.replaceChildren(...rows.map(renderChildCard))
+  body.append(el('p', 'progress-note', 'Qualitativo — sem nota, sem comparar com outras crianças.'))
+  card.append(body)
+  return card
 }
 
-if (session && childrenBox && emptyBox) {
-  fillIdentity()
-  await loadChildren()
+// ── Relatórios (só os revisados) ──────────────────────────────────────────────
+
+function renderReportsCard() {
+  const card = el('div', 'card')
+  card.dataset.section = 'relatorios'
+  const head = el('div', 'card-h')
+  head.append(el('h3', null, 'Relatórios'))
+  card.append(head)
+  const body = el('div', 'card-b')
+
+  MOCK.cycle.reports.forEach((report) => {
+    const row = el('div', 'report-row')
+    row.append(el('b', null, `Mês ${report.month}`))
+    if (report.status === 'available') {
+      const wrap = el('span')
+      wrap.style.cssText = 'display:flex;align-items:center;gap:10px'
+      wrap.append(el('span', 'pill pill-ok', 'Disponível'))
+      const link = el('a', 'card-h-link', 'Ver →')
+      link.href = '#'
+      wrap.append(link)
+      row.append(wrap)
+    } else {
+      row.append(el('span', 'pill pill-mid', 'Em revisão'))
+    }
+    body.append(row)
+  })
+
+  card.append(body)
+  return card
 }
+
+// ── Monta a página conforme o estado ──────────────────────────────────────────
+
+function render(state) {
+  const box = document.querySelector('[data-guardian-state]')
+  if (!box) return
+
+  const panel = el('div', 'panel')
+  panel.append(renderStatusHero(state))
+
+  if (['waiting_review', 'revision_requested', 'waiting_match'].includes(state)) {
+    panel.append(renderPrematchRow())
+  } else if (['matched'].includes(state)) {
+    panel.append(renderPrematchRow())
+  } else {
+    panel.append(renderTutorAndActivityRow())
+    panel.append(renderSessionsCard())
+    panel.append(renderProgressCard())
+    panel.append(renderReportsCard())
+  }
+
+  box.replaceChildren(panel)
+}
+
+fillIdentity()
+render(estadoAtual)
