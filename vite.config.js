@@ -17,6 +17,7 @@ module.exports = {
 
         atividades: resolve(__dirname, 'pages/atividades.html'),
         perfilCrianca: resolve(__dirname, 'pages/perfil-crianca.html'),
+        modoCrianca: resolve(__dirname, 'pages/modo-crianca.html'),
       },
     },
   },
