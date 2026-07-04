@@ -416,9 +416,12 @@ function formatDate(value) {
 function fillIdentity() {
   const name = MOCK.guardianName
   const set = (sel, val) => { const node = document.querySelector(sel); if (node) node.textContent = val }
+  const setAll = (sel, val) => document.querySelectorAll(sel).forEach((node) => { node.textContent = val })
   set('[data-account-name]', name)
   set('[data-account-avatar]', initials(name))
   set('[data-topbar-avatar]', initials(name))
+  setAll('[data-account-menu-name]', name)
+  setAll('[data-account-menu-avatar]', initials(name))
   set('[data-account-email]', MOCK.guardianEmail)
 }
 
@@ -448,15 +451,20 @@ document.querySelectorAll('[data-rail-tab]').forEach((button) => {
 const accountTrigger = document.querySelector('[data-account-trigger]')
 const accountMenu = document.querySelector('[data-account-menu]')
 
+function closeAccountMenu() {
+  accountMenu?.classList.remove('open')
+  accountTrigger?.classList.remove('is-open')
+  accountTrigger?.setAttribute('aria-expanded', 'false')
+}
+
 accountTrigger?.addEventListener('click', (event) => {
   event.stopPropagation()
   const isOpen = accountMenu.classList.toggle('open')
+  accountTrigger.classList.toggle('is-open', isOpen)
   accountTrigger.setAttribute('aria-expanded', String(isOpen))
 })
-document.addEventListener('click', () => {
-  accountMenu?.classList.remove('open')
-  accountTrigger?.setAttribute('aria-expanded', 'false')
-})
+accountMenu?.addEventListener('click', (event) => event.stopPropagation())
+document.addEventListener('click', closeAccountMenu)
 
 function profileField(label, value) {
   const field = el('div', 'field')
@@ -533,7 +541,7 @@ function closeAccountDrawer() {
 
 document.querySelectorAll('[data-account-open]').forEach((button) => {
   button.addEventListener('click', () => {
-    accountMenu?.classList.remove('open')
+    closeAccountMenu()
     openAccountDrawer(button.dataset.accountOpen)
   })
 })
