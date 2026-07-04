@@ -323,6 +323,22 @@
 
     .card--home-tips { background: linear-gradient(160deg, #fffefc 0%, rgba(28,124,84,.06) 100%); border-color: rgba(28,124,84,.22); }
 
+    /* ── Aba Atividades: cards com identidade própria (sem card-h uniforme) ── */
+    .activity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+    .activity-icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0; margin-bottom: 12px; }
+    .activity-icon svg { width: 19px; height: 19px; }
+    .activity-icon.tone-brand { background: var(--brand-soft); color: var(--brand); }
+    .activity-icon.tone-ok { background: var(--ok-soft); color: var(--ok); }
+    .activity-icon.tone-warn { background: var(--warn-soft); color: var(--warn); }
+    .activity-title { font-size: .96rem; font-weight: 700; color: var(--ink); }
+    .activity-block { margin-top: 12px; }
+    .activity-block .lbl { font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
+    .activity-block p { font-size: .86rem; color: var(--ink-soft); line-height: 1.5; }
+    .activity-care { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; padding: 9px 11px; border-radius: var(--r-sm); background: var(--warn-soft); }
+    .activity-care svg { width: 14px; height: 14px; color: var(--warn); flex-shrink: 0; margin-top: 2px; }
+    .activity-care p { font-size: .8rem; color: var(--ink-soft); line-height: 1.4; }
+    @media (max-width: 480px) { .activity-grid { grid-template-columns: 1fr; } }
+
     /* ── Conta (avatar → menu → gaveta) ── */
     .account-wrap { position: relative; flex: 1; min-width: 0; }
     .rail-account-btn { display: flex; align-items: center; gap: 9px; width: 100%; background: none; border: none; padding: 4px; border-radius: 8px; cursor: pointer; text-align: left; font-family: var(--font); }

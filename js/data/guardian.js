@@ -54,7 +54,7 @@ async function getGuardianChildrenInSteps(guardianId) {
   if (tutorIds.length) {
     const { data: tutorProfiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, name, email, phone')
+      .select('id, name, email, phone, avatar_path, tutor_presentation, tutor_formation, tutor_availability')
       .in('id', tutorIds)
 
     if (profilesError) {

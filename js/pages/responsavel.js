@@ -1,14 +1,20 @@
-import { el } from '../lib/ui.js'
+import { el, ageFrom, initials } from '../lib/ui.js'
+import { requireRole, signOut } from '../lib/auth.js'
+import { getGuardianChildren } from '../data/guardian.js'
 import astronautaSrc from '../../assets/cat-astronauta.png'
 import cientistaSrc from '../../assets/cat-cientista.png'
 import magoSrc from '../../assets/cat-mago.png'
 import pintorSrc from '../../assets/cat-pintor.png'
 
-// ── Fatia A (casca completa, ainda mockada) ──────────────────────────────────
-// Continua intencionalmente sem Supabase — a ideia é fechar o desenho das 4
-// abas (Início/Criança/Sessões/Relatórios) + Atividades antes de conectar o
-// banco (Fatia C em diante). Troque o estado pela URL, ex.:
-// responsavel.html?estado=active — ver ESTADOS_VALIDOS abaixo.
+// ── Ligado ao Supabase ────────────────────────────────────────────────────────
+// Início/Criança/Sessões usam dado real (children → support_cycles → tutor →
+// sessions, via js/data/guardian.js). Relatórios e Atividades continuam
+// mockados de propósito — não há monthly_reports nem curadoria de atividades
+// pra família no banco ainda.
+//
+// O `?estado=` na URL vira fallback de demo: só é usado se NÃO houver ciclo
+// real (ver boot() no fim do arquivo). Assim que existir support_cycles de
+// verdade, o dado real sempre vence — a URL nunca sobrepõe uma família real.
 
 const ESTADOS_VALIDOS = [
   'waiting_review', 'revision_requested', 'waiting_match',
@@ -16,7 +22,7 @@ const ESTADOS_VALIDOS = [
 ]
 
 const estadoParam = new URLSearchParams(location.search).get('estado')
-const estadoAtual = ESTADOS_VALIDOS.includes(estadoParam) ? estadoParam : 'waiting_review'
+const estadoOverride = ESTADOS_VALIDOS.includes(estadoParam) ? estadoParam : null
 
 // Estados em que já existe tutor vinculado E sessão/relatório de verdade.
 // 'matched' fica de fora: já tem tutor, mas o ciclo ainda não começou —
@@ -46,6 +52,15 @@ const TRAIT_ICONS = {
   shuffle: '<svg viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>',
 }
 
+// Ícones das atividades sugeridas (aba Atividades) — um por tipo de exercício.
+const ACTIVITY_ICONS = {
+  contar: '<svg viewBox="0 0 24 24"><rect x="3" y="10" width="4" height="8" rx="1"/><rect x="10" y="6" width="4" height="12" rx="1"/><rect x="17" y="13" width="4" height="5" rx="1"/></svg>',
+  comparar: '<svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M4 8l3 5h-6z"/><path d="M20 8l3 5h-6z"/><path d="M2 13a3 2 0 0 0 5 0"/><path d="M17 13a3 2 0 0 0 5 0"/></svg>',
+  trilha: '<svg viewBox="0 0 24 24"><circle cx="5" cy="19" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="19" cy="5" r="2.2"/><path d="M6.6 17.4l3.8-3.8"/><path d="M13.6 10.4l3.8-3.8"/></svg>',
+}
+
+const CARE_ICON = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+
 const MOCK = {
   guardianName: 'Ana',
   guardianPhone: '(91) 90000-0000',
@@ -57,6 +72,7 @@ const MOCK = {
     mainDifficulties: ['reconhecer números', 'contar objetos'],
     preferredFormats: ['visual', 'objetos concretos'],
     identityChips: ['Aprende melhor com apoio visual', 'Gosta de temas com animais', 'Sessões curtas funcionam melhor'],
+    favoriteTheme: 'Animais',
     avatarIcon: 'astronauta',
     avatarColor: AVATAR_COLORS[0],
     learning: {
@@ -181,23 +197,142 @@ const MOCK = {
   familyActivities: [
     {
       title: 'Conte objetos da casa',
-      time: '5 min', tag: 'objetos concretos',
+      time: '5 min', tag: 'objetos concretos', icon: 'contar', tone: 'brand',
       how: 'Escolha até 5 objetos (talheres, brinquedos, frutas) e conte junto com a criança, apontando um por um.',
       careNote: 'Não transforme em prova. Faça como brincadeira, sem cobrar acerto.',
     },
     {
       title: 'Qual grupo tem mais?',
-      time: '10 min', tag: 'comparação visual',
+      time: '10 min', tag: 'comparação visual', icon: 'comparar', tone: 'ok',
       how: 'Separe dois grupos pequenos de objetos iguais e pergunte qual tem mais, apontando para os dois.',
       careNote: 'Se não responder de primeira, mostre contando os dois grupos em voz alta.',
     },
     {
       title: 'Trilha numerada',
-      time: '15 min', tag: 'sequência visual',
+      time: '15 min', tag: 'sequência visual', icon: 'trilha', tone: 'warn',
       how: 'Desenhe uma trilha de 1 a 10 no chão ou papel e peça para pular/apontar na ordem certa.',
       careNote: 'Pare em 5 se perceber cansaço — não precisa completar até 10 sempre.',
     },
   ],
+}
+
+// ── Adaptação de dado real → o mesmo formato que os render*Panel já leem ────
+// Estratégia: em vez de reescrever cada função de render, sobrescreve os
+// campos de MOCK.* com dado real quando ele existe. Campo sem valor real
+// mantém o mock como fallback — nunca fica um card vazio por causa de um
+// campo opcional que a família não preencheu.
+
+// Prioriza o ciclo mais "adiante" no fluxo — planned > active > paused >
+// completed — quando por algum motivo existir mais de um em support_cycles.
+function pickCycle(child) {
+  const cycles = child?.support_cycles ?? []
+  if (!cycles.length) return null
+  const priority = ['active', 'paused', 'completed', 'planned']
+  for (const status of priority) {
+    const found = cycles.find((cycle) => cycle.status === status)
+    if (found) return found
+  }
+  return cycles[0]
+}
+
+function applyRealChild(child) {
+  const learningProfile = Array.isArray(child.learning_profiles) ? child.learning_profiles[0] : child.learning_profiles
+  const age = ageFrom(child.birth_date)
+
+  MOCK.child.name = child.name || MOCK.child.name
+  MOCK.child.age = age ?? MOCK.child.age
+  MOCK.child.schoolYear = child.school_year || MOCK.child.schoolYear
+
+  const difficulties = toList(child.main_difficulties).length
+    ? toList(child.main_difficulties)
+    : toList(learningProfile?.math_difficulties)
+  if (difficulties.length) MOCK.child.mainDifficulties = difficulties
+
+  const formats = toList(learningProfile?.preferred_formats)
+  if (formats.length) MOCK.child.preferredFormats = formats.map(cap)
+
+  const motivators = toList(learningProfile?.motivators)
+  if (motivators.length) {
+    MOCK.child.learning.oQueAjuda = motivators.map((text, index) => ({
+      icon: ['heart', 'chat', 'clock'][index % 3],
+      text,
+    }))
+  }
+
+  const avoidances = toList(learningProfile?.avoidances)
+  if (avoidances.length) {
+    MOCK.child.learning.oQueDificulta = avoidances.map((text, index) => ({
+      icon: ['doc', 'megaphone', 'shuffle'][index % 3],
+      text,
+    }))
+  }
+
+  if (difficulties.length) {
+    MOCK.child.learning.focoChips = difficulties.map(cap)
+    MOCK.child.learning.focoAtual = `Trabalhar ${difficulties.join(', ')}.`
+  }
+
+  if (learningProfile?.attention_span) {
+    MOCK.child.learning.duracaoIdeal = ATTENTION_SPAN_DURATION[learningProfile.attention_span] ?? MOCK.child.learning.duracaoIdeal
+  }
+  if (formats.length) {
+    MOCK.child.learning.formatoIdeal = `Apoio em ${formats.join(', ').toLowerCase()}`
+  }
+
+  // Chips de identidade do hero — só entram quando há dado real por trás.
+  const chips = []
+  if (formats[0]) chips.push(`Aprende melhor com ${formats[0].toLowerCase()}`)
+  if (learningProfile?.attention_span) chips.push(`Duração ideal: ${ATTENTION_SPAN_DURATION[learningProfile.attention_span] ?? ''}`)
+  if (difficulties[0]) chips.push(`Foco: ${difficulties[0]}`)
+  if (chips.length) MOCK.child.identityChips = chips
+}
+
+function applyRealCycle(cycle) {
+  const tutor = Array.isArray(cycle.profiles) ? cycle.profiles[0] : cycle.profiles
+  const sessions = cycle.sessions ?? []
+
+  MOCK.cycle.totalMonths = monthsBetween(cycle.start_date, cycle.end_date)
+  MOCK.cycle.currentMonth = currentCycleMonth(cycle.start_date, cycle.end_date)
+  MOCK.cycle.mainGoal = cycle.main_goal || MOCK.cycle.mainGoal
+  MOCK.cycle.nextStep = sessions[0]?.next_step || cycle.current_plan || MOCK.cycle.nextStep
+
+  if (tutor?.name) {
+    MOCK.cycle.tutor = {
+      name: tutor.name,
+      formation: tutor.tutor_formation
+        ? `${tutor.tutor_formation} · validada pela equipe Cognita`
+        : 'Validado(a) pela equipe Cognita',
+      presentation: tutor.tutor_presentation || null,
+    }
+  }
+
+  if (sessions.length) {
+    MOCK.cycle.sessions = sessions.map((session) => ({
+      date: session.date,
+      title: session.activity_title || 'Sessão registrada',
+      activity: session.activity_title || '—',
+      focus: session.focus_area || '—',
+      // TODO(wiring:sessions-family-summary): trocar `notes` por
+      // `family_summary` quando o Registro de Sessão separar os 3 níveis
+      // (estruturado / resumo família / nota interna) — ver PLANO-V1.
+      howItWent: session.notes || 'O tutor ainda não deixou um resumo para esta sessão.',
+      whatHelped: null,
+      whatHindered: null,
+      nextStep: session.next_step || null,
+      duration: session.duration_minutes || null,
+    }))
+  }
+}
+
+// cycle.status já cobre o pós-match (planned/active/paused/completed);
+// antes disso, quem manda é child.status (waiting_review → ... → waiting_match).
+function deriveGuardianStatus(child, cycle) {
+  if (!child) return null
+  if (cycle?.status === 'planned') return 'matched'
+  if (cycle?.status === 'active') return 'active'
+  if (cycle?.status === 'paused') return 'paused'
+  if (cycle?.status === 'completed') return 'completed'
+  return child.status || 'waiting_review'
 }
 
 const CRUMB_LABEL = {
@@ -209,22 +344,63 @@ const CRUMB_LABEL = {
 }
 
 document.querySelectorAll('[data-logout]').forEach((button) => {
-  button.addEventListener('click', (event) => {
+  button.addEventListener('click', async (event) => {
     event.preventDefault()
-    // TODO(wiring:auth): trocar por signOut() real na Fatia C.
-    window.location.href = 'login.html'
+    await signOut()
   })
 })
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function initials(name) {
-  const parts = (name ?? '').trim().split(/\s+/).filter(Boolean)
-  if (!parts.length) return '?'
-  const first = parts[0][0]
-  const last = parts.length > 1 ? parts[parts.length - 1][0] : ''
-  return (first + last).toUpperCase()
+// Normaliza valores vindos do Postgres em formatos diferentes: array real,
+// JSON stringificado ("[\"a\",\"b\"]") ou literal de array ("{a,\"b c\"}") —
+// mesma robustez usada em tutor.js pro mesmo problema.
+function toList(value) {
+  if (value == null || value === '') return []
+  if (Array.isArray(value)) return value.filter(Boolean)
+  if (typeof value !== 'string') return [String(value)]
+
+  const trimmed = value.trim()
+  if (!trimmed) return []
+
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    const inner = trimmed.slice(1, -1)
+    if (!inner) return []
+    return (inner.match(/"(?:[^"\\]|\\.)*"|[^,]+/g) || [])
+      .map((s) => s.trim().replace(/^"|"$/g, '').replace(/\\"/g, '"'))
+      .filter(Boolean)
+  }
+  if (trimmed.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(trimmed)
+      if (Array.isArray(parsed)) return parsed.filter(Boolean)
+    } catch { /* não era JSON válido — trata como texto simples abaixo */ }
+  }
+  return [trimmed]
 }
+
+function monthsBetween(start, end) {
+  if (!start || !end) return 6
+  const startDate = new Date(`${start}T00:00:00Z`)
+  const endDate = new Date(`${end}T00:00:00Z`)
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return 6
+  const months = (endDate.getUTCFullYear() - startDate.getUTCFullYear()) * 12 +
+    (endDate.getUTCMonth() - startDate.getUTCMonth())
+  return Math.max(1, months)
+}
+
+function currentCycleMonth(start, end) {
+  if (!start) return 1
+  const now = new Date()
+  const startDate = new Date(`${start}T00:00:00Z`)
+  if (Number.isNaN(startDate.getTime())) return 1
+  const total = monthsBetween(start, end)
+  const elapsed = (now.getUTCFullYear() - startDate.getUTCFullYear()) * 12 +
+    (now.getUTCMonth() - startDate.getUTCMonth()) + 1
+  return Math.min(Math.max(elapsed, 1), total)
+}
+
+const ATTENTION_SPAN_DURATION = { short: '5 a 10 minutos', medium: '15 a 20 minutos', long: '30 minutos ou mais' }
 
 function firstName(name) {
   return (name ?? '').trim().split(/\s+/)[0] || ''
@@ -640,7 +816,10 @@ function renderTutorAndActivityRow() {
   tx.append(el('b', null, MOCK.cycle.tutor.name), el('span', null, MOCK.cycle.tutor.formation))
   tutorInner.append(tx)
   tutorBody.append(tutorInner)
-  tutorBody.append(el('div', 'tutor-note', 'Contato é sempre mediado pela equipe Cognita.'))
+  const note = MOCK.cycle.tutor.presentation
+    ? `"${MOCK.cycle.tutor.presentation}" — contato é sempre mediado pela equipe Cognita.`
+    : 'Contato é sempre mediado pela equipe Cognita.'
+  tutorBody.append(el('div', 'tutor-note', note))
   tutorCard.append(tutorBody)
 
   const activityCard = el('div', 'card')
@@ -897,15 +1076,19 @@ function buildSessionDetailBody(session) {
   const note = el('p', 'session-detail-note', session.howItWent)
   frag.append(note)
 
+  // Nem toda sessão real tem os 6 campos (whatHelped/whatHindered ainda não
+  // existem no schema) — só entra na lista o que existir de verdade.
   const kv = el('dl', 'kv')
-  kv.append(
-    el('dt', null, 'Atividade usada'), el('dd', null, session.activity),
-    el('dt', null, 'Foco / objetivo'), el('dd', null, session.focus),
-    el('dt', null, 'Duração'), el('dd', null, `${session.duration} min`),
-    el('dt', null, 'O que ajudou'), el('dd', null, session.whatHelped),
-    el('dt', null, 'O que dificultou'), el('dd', null, session.whatHindered),
-    el('dt', null, 'Próximo foco'), el('dd', null, session.nextStep),
-  )
+  const addRow = (label, value) => {
+    if (!value) return
+    kv.append(el('dt', null, label), el('dd', null, value))
+  }
+  addRow('Atividade usada', session.activity)
+  addRow('Foco / objetivo', session.focus)
+  addRow('Duração', session.duration ? `${session.duration} min` : null)
+  addRow('O que ajudou', session.whatHelped)
+  addRow('O que dificultou', session.whatHindered)
+  addRow('Próximo foco', session.nextStep)
   frag.append(kv)
 
   const flag = el('button', 'btn btn-ghost btn-sm', '⚑ Sinalizar essa sessão')
@@ -950,7 +1133,7 @@ function renderSessionCard(session) {
 
   const scHead = el('div', 'sc-head')
   scHead.append(el('span', 'sc-date', formatDate(session.date) ?? '—'))
-  scHead.append(el('span', 'sc-date', `${session.duration} min`))
+  if (session.duration) scHead.append(el('span', 'sc-date', `${session.duration} min`))
   item.append(scHead)
 
   item.append(el('div', 'sc-title', session.title))
@@ -1328,26 +1511,65 @@ function renderReportsPanel(state) {
 
 // ── Painel: Atividades (versão simplificada para a família) ─────────────────
 
-function renderActivitiesPanel() {
-  const wrap = el('div', 'stack')
-  wrap.append(el('p', 'stub-note', 'Atividades curtas e seguras para apoiar o acompanhamento em casa — a versão técnica fica com o tutor.'))
+function renderActivityCard(activity) {
+  const card = el('div', 'card')
+  const body = el('div', 'card-b')
 
-  MOCK.familyActivities.forEach((activity) => {
-    const card = el('div', 'card')
-    const head = el('div', 'card-h')
-    head.append(el('h3', null, activity.title))
-    card.append(head)
-    const body = el('div', 'card-b')
-    const facts = el('div', 'sg-facts')
-    facts.append(el('span', null, activity.time), el('span', null, activity.tag))
-    body.append(facts)
-    body.append(el('p', 'sg-why', `Como fazer: ${activity.how}`))
-    const care = el('p', 'sg-why', `Cuidado: ${activity.careNote}`)
-    care.style.color = 'var(--warn)'
-    body.append(care)
-    card.append(body)
-    wrap.append(card)
-  })
+  const icon = el('div', `activity-icon tone-${activity.tone}`)
+  icon.innerHTML = ACTIVITY_ICONS[activity.icon] ?? ACTIVITY_ICONS.contar
+  body.append(icon)
+
+  body.append(el('div', 'activity-title', activity.title))
+
+  const facts = el('div', 'sg-facts')
+  facts.style.marginTop = '8px'
+  facts.append(el('span', null, activity.time), el('span', null, activity.tag))
+  body.append(facts)
+
+  const howBlock = el('div', 'activity-block')
+  howBlock.append(el('div', 'lbl', 'Como fazer'), el('p', null, activity.how))
+  body.append(howBlock)
+
+  const care = el('div', 'activity-care')
+  const careIco = document.createElement('span')
+  careIco.innerHTML = CARE_ICON
+  care.append(careIco, el('p', null, activity.careNote))
+  body.append(care)
+
+  card.append(body)
+  return card
+}
+
+function renderActivitiesPanel() {
+  const wrap = el('div')
+  const childFirst = firstName(MOCK.child.name)
+
+  const head = el('header', 'section-head')
+  head.append(
+    el('h1', null, `Atividades para ${childFirst}`),
+    el('p', null, 'Ideias curtas e seguras para apoiar o acompanhamento em casa — a versão técnica, com passo a passo pedagógico, fica com o tutor.'),
+  )
+  wrap.append(head)
+
+  const stats = el('div', 'stat-row')
+  const addStat = (label, value) => {
+    const statCard = el('div', 'card stat-card')
+    statCard.append(el('div', 'lbl', label), el('div', 'val', value))
+    stats.append(statCard)
+  }
+  const avgTime = Math.round(
+    MOCK.familyActivities.reduce((sum, activity) => sum + parseInt(activity.time, 10), 0) / MOCK.familyActivities.length,
+  )
+  addStat('Atividades sugeridas', String(MOCK.familyActivities.length))
+  addStat('Foco atual', MOCK.child.learning.focoChips.slice(0, 2).join(' · '))
+  addStat('Tema preferido', MOCK.child.favoriteTheme)
+  addStat('Duração média', `${avgTime} min`)
+  wrap.append(stats)
+
+  const grid = el('div', 'activity-grid')
+  grid.style.marginTop = '16px'
+  MOCK.familyActivities.forEach((activity) => grid.append(renderActivityCard(activity)))
+  wrap.append(grid)
 
   return wrap
 }
@@ -1375,5 +1597,82 @@ function render(state) {
   switchTab(activeTab)
 }
 
-fillIdentity()
-render(estadoAtual)
+// ── Estados sem conteúdo normal (sem sessão do Supabase, ou sem criança) ─────
+
+function renderLoadError() {
+  const box = document.querySelector('[data-guardian-state]')
+  if (!box) return
+  const panel = el('div', 'panel')
+  const card = el('div', 'card')
+  const body = el('div', 'card-b')
+  const empty = el('div', 'empty-state')
+  empty.append(
+    el('strong', null, 'Não foi possível carregar seus dados.'),
+    el('span', null, 'Verifique sua conexão e atualize a página. Se o problema continuar, fale com a equipe Cognita.'),
+  )
+  body.append(empty)
+  card.append(body)
+  panel.append(card)
+  box.replaceChildren(panel)
+}
+
+function renderNoChild() {
+  const box = document.querySelector('[data-guardian-state]')
+  if (!box) return
+  const panel = el('div', 'panel')
+  const head = el('header', 'family-head')
+  head.append(
+    el('p', 'kicker', 'Hoje'),
+    el('h1', null, `Olá, ${MOCK.guardianName}.`),
+  )
+  panel.append(head)
+  const card = el('div', 'card')
+  const body = el('div', 'card-b')
+  const empty = el('div', 'empty-state')
+  empty.append(
+    el('strong', null, 'Nenhuma criança cadastrada ainda.'),
+    el('span', null, 'Se você acabou de concluir o cadastro, atualize a página em alguns instantes. Qualquer dúvida, fale com a equipe Cognita.'),
+  )
+  body.append(empty)
+  card.append(body)
+  panel.append(card)
+  box.replaceChildren(panel)
+}
+
+// ── Boot: autentica, busca dado real, deriva o estado, então renderiza ──────
+
+async function boot() {
+  const session = await requireRole('guardian')
+  if (!session) return // requireRole já redirecionou pro login
+
+  MOCK.guardianName = session.profile.name || MOCK.guardianName
+  MOCK.guardianEmail = session.user.email || MOCK.guardianEmail
+  MOCK.guardianPhone = session.profile.phone || MOCK.guardianPhone
+  fillIdentity()
+
+  const { data: children, error } = await getGuardianChildren(session.user.id)
+  if (error) {
+    renderLoadError()
+    return
+  }
+
+  const child = children?.[0] ?? null
+  if (!child) {
+    renderNoChild()
+    return
+  }
+
+  applyRealChild(child)
+  const cycle = pickCycle(child)
+  if (cycle) applyRealCycle(cycle)
+
+  const realState = deriveGuardianStatus(child, cycle)
+  // A URL só decide quando ainda não existe ciclo real — serve pra revisar
+  // os estados pós-match (matched/active/paused/completed) num cadastro de
+  // teste que só chegou até "aguardando tutor". Com ciclo real, ela é ignorada.
+  const state = (!cycle && estadoOverride) ? estadoOverride : realState
+
+  render(state)
+}
+
+boot()
