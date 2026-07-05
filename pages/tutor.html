@@ -279,6 +279,42 @@
     .scale-btn--ok.selected { border-color: var(--ok); background: var(--ok-soft); color: var(--ok); }
     .scale-btn--warn.selected { border-color: var(--warn); background: var(--warn-soft); color: var(--warn); }
     .scale-btn--bad.selected { border-color: var(--bad); background: var(--bad-soft); color: var(--bad); }
+    .scale-btn:disabled { opacity: .45; cursor: not-allowed; pointer-events: none; }
+    .scale-btn-lock { width: 11px; height: 11px; margin-right: 5px; flex-shrink: 0; }
+
+    /* ── Slider (config do molde — faixas largas) ── */
+    .slider-head { display: flex; align-items: baseline; justify-content: space-between; }
+    .slider-value { font-size: 1.15rem; font-weight: 800; color: var(--brand-deep); font-variant-numeric: tabular-nums; }
+    .slider-input {
+      width: 100%; margin-top: 6px; height: 4px; border-radius: 999px;
+      accent-color: var(--brand); cursor: pointer;
+    }
+
+    /* ── Pills numeradas (config do molde — faixas curtas) ── */
+    .pill-select-row { display: flex; gap: 6px; }
+    .pill-num {
+      width: 32px; height: 32px; border-radius: var(--r-sm); border: 1px solid var(--line-2);
+      background: var(--canvas); color: var(--ink-soft); font-family: var(--font);
+      font-weight: 700; font-size: .82rem; cursor: pointer;
+    }
+    .pill-num:hover { border-color: var(--brand); color: var(--brand); }
+    .pill-num.selected { background: var(--brand); border-color: var(--brand); color: #fff; }
+
+    /* ── Compor + prévia ── */
+    .compose-summary {
+      font-size: .87rem; color: var(--ink-soft); line-height: 1.55; padding: 12px 15px;
+      background: rgba(20,17,98,.03); border-left: 3px solid var(--brand); border-radius: var(--r-sm);
+    }
+    .compose-summary strong { color: var(--brand-deep); }
+    .preview-card-h { display: flex; align-items: center; gap: 7px; }
+    .preview-card-h svg { width: 14px; height: 14px; color: var(--muted); flex-shrink: 0; }
+    .preview-frame-wrap { padding: 18px 16px; display: flex; justify-content: center; }
+    .preview-frame {
+      width: 100%; max-width: 300px; height: 540px; border-radius: 22px;
+      border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(20,17,98,.12);
+      overflow: hidden; background: #fff;
+    }
+    .preview-frame iframe { width: 100%; height: 100%; border: none; display: block; }
 
     .family-preview { display: grid; gap: 5px; padding: 12px; border-radius: var(--r-sm); border: 1px solid var(--line); background: #fffdf8; }
     .family-preview-label { font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--brand); }

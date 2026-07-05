@@ -5,6 +5,8 @@ import { getAvatarUrl, setAvatarImage } from '../lib/avatar.js'
 import { getTutorCycles } from '../data/tutor.js'
 import { getCycleSessions, createSessionRecord } from '../data/sessions.js'
 import { getActivityById } from '../data/activities.js'
+import { createChildActivity, listChildActivities } from '../data/child-activities.js'
+import { MOLDES_REGISTRO, buildContractFromParts, formatConfigResumo } from '../data/moldes-registro.js'
 
 const session = await requireRole('tutor')
 const stateBox = document.querySelector('[data-tutor-state]')
@@ -469,6 +471,95 @@ function makeScaleGroup(options) {
     getValue: () => value,
     reset: () => { value = ''; buttons.forEach((b) => b.classList.remove('selected')) },
   }
+}
+
+const LOCK_SVG = '<svg class="scale-btn-lock" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" stroke-width="2"/></svg>'
+
+// Igual a makeScaleGroup, mas com suporte a opção desabilitada (cadeado +
+// "em breve") — precisa disso pros moldes/temas que ainda não existem
+// aparecerem no form sem serem clicáveis. selectedId escolhe o item ativo
+// de largada.
+function makeChoiceButtons(options, selectedId, onChange) {
+  const group = el('div', 'scale')
+  group.setAttribute('role', 'radiogroup')
+  let value = selectedId
+  const buttons = []
+
+  options.forEach(({ id, label, disabled }) => {
+    const btn = el('button', 'scale-btn')
+    btn.type = 'button'
+    btn.disabled = !!disabled
+    if (disabled) {
+      btn.innerHTML = LOCK_SVG
+      btn.append(document.createTextNode(`${label} · em breve`))
+    } else {
+      btn.textContent = label
+    }
+    if (id === selectedId) btn.classList.add('selected')
+    btn.addEventListener('click', () => {
+      buttons.forEach((b) => b.classList.remove('selected'))
+      btn.classList.add('selected')
+      value = id
+      onChange?.(id)
+    })
+    buttons.push(btn)
+    group.append(btn)
+  })
+
+  return { group, getValue: () => value }
+}
+
+// Slider — pra faixas largas ("de sensação contínua", ex.: quantos itens).
+function makeSlider({ label, min, max, value, onChange }) {
+  const field = el('div', 'field')
+  const head = el('div', 'slider-head')
+  head.append(el('label', null, label))
+  const valueBox = el('span', 'slider-value num', String(value))
+  head.append(valueBox)
+  field.append(head)
+
+  const input = document.createElement('input')
+  input.type = 'range'
+  input.className = 'slider-input'
+  input.min = String(min)
+  input.max = String(max)
+  input.value = String(value)
+
+  let current = value
+  input.addEventListener('input', () => {
+    current = Number(input.value)
+    valueBox.textContent = String(current)
+    onChange?.(current)
+  })
+
+  field.append(input)
+  return { field, getValue: () => current }
+}
+
+// Pills numeradas — pra faixas curtas e precisas (ex.: nível, rodadas).
+function makePillSelector({ label, min, max, value, onChange }) {
+  const field = el('div', 'field')
+  field.append(el('label', null, label))
+  const row = el('div', 'pill-select-row')
+
+  let current = value
+  const buttons = []
+  for (let n = min; n <= max; n += 1) {
+    const btn = el('button', 'pill-num', String(n))
+    btn.type = 'button'
+    if (n === value) btn.classList.add('selected')
+    btn.addEventListener('click', () => {
+      buttons.forEach((b) => b.classList.remove('selected'))
+      btn.classList.add('selected')
+      current = n
+      onChange?.(current)
+    })
+    buttons.push(btn)
+    row.append(btn)
+  }
+
+  field.append(row)
+  return { field, getValue: () => current }
 }
 
 // ── Formulário de sessão (3 níveis) ──────────────────────────────────────────
@@ -982,6 +1073,298 @@ function buildSessionsPanel(cycle, state, sessionForm) {
   panel.append(stack)
 
   panel.loadTable = () => loadSessionsTable(cycle.id, tbody, emptyWrap, table)
+  return panel
+}
+
+// ── Painel: Atividades preparadas (autoria do tutor pro Modo Criança) ───────
+// O que este form salva é a instância child_activities — ver
+// docs/supabase-fase-4b-corrente.sql. Ligar o Modo Criança nela (trocar
+// getStubActivityContract() por um select via ?activity=<id>) é a etapa
+// seguinte, não esta: "Fazer com a criança" já aponta pro protótipo.
+
+function renderChildActivityRow(row) {
+  const tr = document.createElement('tr')
+  const molde = MOLDES_REGISTRO[row.molde]
+  const temaLabel = molde?.temas.find((t) => t.id === row.tema)?.label || row.tema
+
+  const titleTd = document.createElement('td')
+  titleTd.textContent = row.titulo || molde?.tituloPadrao?.(temaLabel) || row.molde
+
+  const detailsTd = document.createElement('td')
+  detailsTd.className = 'muted'
+  detailsTd.textContent = `${molde?.label || row.molde} · ${temaLabel} · ${formatConfigResumo(row.molde, row.config)}`
+
+  const dateTd = document.createElement('td')
+  dateTd.className = 'num muted'
+  dateTd.textContent = formatLastSession(row.created_at?.slice(0, 10))
+
+  const actionTd = document.createElement('td')
+  const link = el('a', 'btn btn-ghost btn-sm', 'Fazer com a criança')
+  link.href = `modo-crianca.html?${new URLSearchParams({ activity: row.id, return: 'tutor.html' })}`
+  actionTd.append(link)
+
+  tr.append(titleTd, detailsTd, dateTd, actionTd)
+  return tr
+}
+
+async function loadChildActivitiesTable(childId, tbody, emptyWrap, table) {
+  tbody.replaceChildren()
+  const { data, error } = await listChildActivities(childId)
+  const rows = error ? [] : (data ?? [])
+
+  if (!rows.length) {
+    table.hidden = true
+    emptyWrap.hidden = false
+  } else {
+    table.hidden = false
+    emptyWrap.hidden = true
+    rows.forEach((r) => tbody.append(renderChildActivityRow(r)))
+  }
+  return rows
+}
+
+function buildActivitiesPanel(cycle, state, onSaved) {
+  const panel = el('section', 'panel')
+  panel.dataset.panel = 'activities'
+  panel.hidden = true
+
+  const childName = firstName(cycle.children?.name)
+  const childAge = ageFrom(cycle.children?.birth_date)
+  const stack = el('div', 'stack')
+  stack.style.maxWidth = 'none'
+
+  const LOCKED = {
+    cycle_paused: 'Preparar atividades fica bloqueado enquanto o ciclo estiver pausado. Fale com a equipe Cognita para retomar.',
+    cycle_completed: 'Este ciclo já foi concluído — não é mais possível preparar novas atividades. O que já foi preparado continua listado abaixo.',
+  }
+
+  if (LOCKED[state]) {
+    const lockedCard = el('div', 'card')
+    const note = el('div', 'locked-note')
+    note.innerHTML = `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
+    note.append(document.createTextNode(LOCKED[state]))
+    lockedCard.append(note)
+    stack.append(lockedCard)
+  } else {
+    const cols = el('div', 'cols')
+
+    // ── Coluna esquerda: compor ──
+    const composeCard = el('div', 'card')
+    const composeHead = el('div', 'card-h')
+    const headCopy = el('div')
+    headCopy.append(el('h3', null, 'Preparar atividade'))
+    const headSub = el('span', null, `para ${childName}${childAge != null ? ` · ${childAge} anos` : ''}`)
+    headSub.style.cssText = 'display:block;font-size:.78rem;color:var(--muted);font-weight:400;margin-top:2px;'
+    headCopy.append(headSub)
+    composeHead.append(headCopy)
+    composeCard.append(composeHead)
+    const composeBody = el('div', 'card-b')
+
+    const moldeOptions = Object.entries(MOLDES_REGISTRO).map(([id, m]) => ({ id, label: m.label, disabled: !m.disponivel }))
+    const temaWrap = el('div')
+    const configWrap = el('div', 'stack')
+
+    const instField = el('div', 'field')
+    instField.append(el('label', null, 'Instrução *'))
+    const instInput = document.createElement('textarea')
+    instInput.required = true
+    instField.append(instInput)
+
+    const tituloField = el('div', 'field')
+    tituloField.append(el('label', null, 'Título (só para você identificar)'))
+    const tituloInput = document.createElement('input')
+    tituloInput.type = 'text'
+    tituloField.append(tituloInput)
+
+    // Precisa existir antes de rebuildForMolde() rodar lá embaixo — é ela
+    // que pushPreview() usa pra postar o contrato ao vivo.
+    const previewIframe = document.createElement('iframe')
+    previewIframe.src = 'modo-crianca.html?preview=1'
+    previewIframe.title = 'Prévia do Modo Criança'
+
+    const summary = el('p', 'compose-summary')
+    const errorBox = el('p', 'form-error'); errorBox.hidden = true
+    const okBox = el('p', 'form-ok'); okBox.hidden = true
+    const saveBtn = el('button', 'btn btn-accent btn-sm', 'Salvar atividade')
+    saveBtn.type = 'button'
+
+    let temaChoice = null
+    let controlFields = []
+
+    function currentConfig() {
+      const molde = MOLDES_REGISTRO[moldeChoice.getValue()]
+      const config = {}
+      molde.campos.forEach((campo, i) => { config[campo.key] = controlFields[i]?.getValue() ?? campo.default })
+      return config
+    }
+
+    function updateSummary() {
+      const moldeKey = moldeChoice.getValue()
+      const molde = MOLDES_REGISTRO[moldeKey]
+      const temaLabel = molde.temas.find((t) => t.id === temaChoice?.getValue())?.label || ''
+      const tituloAtual = tituloInput.value.trim() || molde.tituloPadrao?.(temaLabel) || molde.label
+      summary.replaceChildren(
+        document.createTextNode('Vai criar '),
+        el('strong', null, tituloAtual),
+        document.createTextNode(` — ${formatConfigResumo(moldeKey, currentConfig())}.`)
+      )
+    }
+
+    // Reusa buildContractFromParts (a mesma função que monta o contrato real
+    // no Modo Criança) — a prévia não é uma maquete, é a própria casca
+    // rodando num <iframe>, recebendo o estado atual do form ao vivo.
+    function pushPreview() {
+      if (!previewIframe.contentWindow) return
+      const moldeKey = moldeChoice.getValue()
+      const contract = buildContractFromParts({
+        molde: moldeKey,
+        tema: temaChoice?.getValue(),
+        config: currentConfig(),
+        instrucao: instInput.value,
+        titulo: tituloInput.value,
+      })
+      previewIframe.contentWindow.postMessage({ type: 'cognita-preview-contract', contract }, window.location.origin)
+    }
+
+    function onConfigChange() { updateSummary(); pushPreview() }
+
+    function rebuildConfig() {
+      configWrap.replaceChildren()
+      const molde = MOLDES_REGISTRO[moldeChoice.getValue()]
+      const pillsRow = el('div', 'row')
+      controlFields = molde.campos.map((campo) => {
+        const control = campo.control === 'slider'
+          ? makeSlider({ label: campo.label, min: campo.min, max: campo.max, value: campo.default, onChange: onConfigChange })
+          : makePillSelector({ label: campo.label, min: campo.min, max: campo.max, value: campo.default, onChange: onConfigChange })
+        if (campo.control === 'slider') configWrap.append(control.field)
+        else pillsRow.append(control.field)
+        return control
+      })
+      if (pillsRow.children.length) configWrap.append(pillsRow)
+
+      const temaLabel = molde.temas.find((t) => t.id === temaChoice?.getValue())?.label || ''
+      instInput.value = molde.instrucaoPadrao || ''
+      tituloInput.value = molde.tituloPadrao ? molde.tituloPadrao(temaLabel) : ''
+      updateSummary()
+      pushPreview()
+    }
+
+    function rebuildForMolde() {
+      const molde = MOLDES_REGISTRO[moldeChoice.getValue()]
+      temaWrap.replaceChildren()
+      const temaOptions = molde.temas.map((t) => ({ id: t.id, label: t.label, disabled: !t.disponivel }))
+      const defaultTema = temaOptions.find((o) => !o.disabled)?.id
+      temaChoice = makeChoiceButtons(temaOptions, defaultTema, rebuildConfig)
+      temaWrap.append(temaChoice.group)
+      rebuildConfig()
+    }
+
+    const defaultMolde = moldeOptions.find((o) => !o.disabled)?.id
+    const moldeChoice = makeChoiceButtons(moldeOptions, defaultMolde, rebuildForMolde)
+
+    composeBody.append(el('div', 'lvl', 'Como a criança vai interagir'), moldeChoice.group)
+    composeBody.append(el('div', 'lvl', 'Tema'), temaWrap)
+    composeBody.append(configWrap)
+    composeBody.append(el('div', 'lvl', 'O que a criança lê'), instField, tituloField)
+    composeBody.append(el('div', 'lvl', 'Revisar e salvar'), summary)
+
+    ;[instInput, tituloInput].forEach((input) => input.addEventListener('input', () => { updateSummary(); pushPreview() }))
+    rebuildForMolde()
+
+    saveBtn.addEventListener('click', async () => {
+      errorBox.hidden = true; okBox.hidden = true
+
+      const instrucao = instInput.value.trim()
+      if (!instrucao) {
+        errorBox.textContent = 'Escreva a instrução para a criança.'
+        errorBox.hidden = false
+        instInput.focus()
+        return
+      }
+
+      const moldeKey = moldeChoice.getValue()
+      const molde = MOLDES_REGISTRO[moldeKey]
+      const temaId = temaChoice.getValue()
+      const temaLabel = molde.temas.find((t) => t.id === temaId)?.label || ''
+      const config = currentConfig()
+
+      saveBtn.disabled = true; saveBtn.textContent = 'Salvando…'
+      const { error } = await createChildActivity({
+        childId: cycle.child_id,
+        createdBy: session.user.id,
+        molde: moldeKey,
+        tema: temaId,
+        config,
+        instrucao,
+        titulo: tituloInput.value.trim() || molde.tituloPadrao?.(temaLabel) || molde.label,
+      })
+      saveBtn.disabled = false; saveBtn.textContent = 'Salvar atividade'
+
+      if (error) {
+        errorBox.textContent = 'Não conseguimos salvar agora. Seu texto continua aqui para você tentar de novo.'
+        errorBox.hidden = false
+        return
+      }
+
+      okBox.textContent = 'Atividade preparada. Já aparece na lista abaixo.'
+      okBox.hidden = false
+      await onSaved?.()
+    })
+
+    const actions = el('div', 'form-actions')
+    actions.append(errorBox, okBox, saveBtn)
+    composeBody.append(actions)
+    composeCard.append(composeBody)
+
+    // ── Coluna direita: prévia ao vivo — o Modo Criança de verdade, num
+    // <iframe>, em modo prévia (sem login, sem gravar nada). Mesma casca.
+    const previewCard = el('div', 'card')
+    const previewHead = el('div', 'card-h')
+    const previewHeadInner = el('div', 'preview-card-h')
+    previewHeadInner.innerHTML = '<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+    previewHeadInner.append(document.createTextNode('Prévia — o que a criança vê'))
+    previewHead.append(previewHeadInner)
+    previewCard.append(previewHead)
+
+    const previewFrameWrap = el('div', 'preview-frame-wrap')
+    const previewFrame = el('div', 'preview-frame')
+    previewIframe.addEventListener('load', pushPreview)
+    previewFrame.append(previewIframe)
+    previewFrameWrap.append(previewFrame)
+    previewCard.append(previewFrameWrap)
+
+    cols.append(composeCard, previewCard)
+    stack.append(cols)
+  }
+
+  const historyCard = el('div', 'card')
+  const bar = el('div', 'tbl-bar')
+  bar.append(el('h3', null, `Atividades preparadas para ${childName}`))
+  historyCard.append(bar)
+
+  const table = el('table', 'tbl')
+  table.innerHTML = `<thead><tr><th>Título</th><th>Detalhes</th><th>Criada em</th><th></th></tr></thead>`
+  const tbody = document.createElement('tbody')
+  table.append(tbody)
+
+  const emptyWrap = el('div', 'card-b')
+  const empty = el('div', 'empty-state')
+  const img = document.createElement('img')
+  img.src = '../assets/gatomatematico-sem-fundo.png'
+  img.alt = ''
+  empty.append(
+    img,
+    el('strong', null, 'Nenhuma atividade preparada ainda.'),
+    el('span', null, 'Componha a primeira acima — ela aparece aqui na hora, pronta para fazer com a criança.')
+  )
+  emptyWrap.append(empty)
+  emptyWrap.hidden = true
+
+  historyCard.append(table, emptyWrap)
+  stack.append(historyCard)
+  panel.append(stack)
+
+  panel.loadTable = () => loadChildActivitiesTable(cycle.child_id, tbody, emptyWrap, table)
   return panel
 }
 
@@ -1523,7 +1906,7 @@ async function buildHomeView(state, cycle, openRecord) {
 
 // ── Record completo (estado com ciclo) ───────────────────────────────────────
 
-function renderRecordHeader(cycle, state, openForm) {
+function renderRecordHeader(cycle, state, openForm, openActivities) {
   const child = cycle.children ?? {}
   const name = child.name ?? 'Criança'
   const age = ageFrom(child.birth_date)
@@ -1569,6 +1952,11 @@ function renderRecordHeader(cycle, state, openForm) {
   if (cfg.action) regBtn.addEventListener('click', cfg.action)
   actions.append(regBtn)
 
+  const prepareBtn = el('button', 'btn btn-ghost', 'Preparar atividade')
+  prepareBtn.type = 'button'
+  prepareBtn.addEventListener('click', openActivities)
+  actions.append(prepareBtn)
+
   const profileLink = el('a', 'btn btn-ghost', 'Ver perfil')
   profileLink.href = `perfil-crianca.html?id=${cycle.child_id ?? ''}`
   actions.append(profileLink)
@@ -1578,12 +1966,13 @@ function renderRecordHeader(cycle, state, openForm) {
   return header
 }
 
-function renderTabs(sessionCount) {
+function renderTabs(sessionCount, activitiesCount) {
   const tabs = el('div', 'tabs')
   tabs.setAttribute('role', 'tablist')
   ;[
     { id: 'overview', label: 'Visão geral' },
     { id: 'sessions', label: 'Sessões', badge: sessionCount },
+    { id: 'activities', label: 'Atividades preparadas', badge: activitiesCount },
     { id: 'plan', label: 'Plano' },
     { id: 'reports', label: 'Relatórios' },
     { id: 'orientations', label: 'Orientações' },
@@ -1610,6 +1999,12 @@ function renderRecord(state, cycle, initialTab) {
     if (badge) badge.textContent = String(rows.length)
   }
 
+  const refreshActivities = async () => {
+    const rows = await activitiesPanel.loadTable()
+    const badge = tabs.querySelector('[data-tab="activities"] .badge')
+    if (badge) badge.textContent = String(rows.length)
+  }
+
   const openForm = () => {
     switchTab('sessions')
     if (sessionForm) {
@@ -1617,6 +2012,8 @@ function renderRecord(state, cycle, initialTab) {
       requestAnimationFrame(() => sessionForm.scrollIntoView({ behavior: 'smooth', block: 'start' }))
     }
   }
+
+  const openActivities = () => switchTab('activities')
 
   if (state === 'cycle_active') {
     sessionForm = renderSessionForm(cycle, refreshSessions)
@@ -1627,19 +2024,21 @@ function renderRecord(state, cycle, initialTab) {
     openForm()
   }
 
-  const header = renderRecordHeader(cycle, state, openForm)
-  const tabs = renderTabs(0)
+  const header = renderRecordHeader(cycle, state, openForm, openActivities)
+  const tabs = renderTabs(0, 0)
   const overviewPanel = buildOverviewPanel(cycle, state, openForm, useSuggestedActivity)
   const sessionsPanel = buildSessionsPanel(cycle, state, sessionForm)
+  const activitiesPanel = buildActivitiesPanel(cycle, state, refreshActivities)
   const planPanel = buildPlanPanel(cycle)
   const reportsPanel = buildReportsPanel(cycle)
   const orientationsPanel = buildOrientationsPanel(cycle, childName)
 
-  frag.append(header, tabs, overviewPanel, sessionsPanel, planPanel, reportsPanel, orientationsPanel)
+  frag.append(header, tabs, overviewPanel, sessionsPanel, activitiesPanel, planPanel, reportsPanel, orientationsPanel)
 
   queueMicrotask(() => {
     wireTabs()
     refreshSessions()
+    refreshActivities()
     if (initialTab && initialTab !== 'overview') switchTab(initialTab)
     if (pendingActivity && sessionForm) {
       const act = pendingActivity

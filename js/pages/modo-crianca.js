@@ -1,3 +1,7 @@
+import { requireRole } from '../lib/auth.js'
+import { getChildActivityById } from '../data/child-activities.js'
+import { createAtividadeExecucao } from '../data/atividade-execucao.js'
+import { buildContractFromParts } from '../data/moldes-registro.js'
 import { getStubActivityContract } from '../data/modo-crianca-stub.js'
 import { mount as montarContar } from './moldes/contar.js'
 
@@ -7,10 +11,15 @@ const MOLDES = {
   contar: montarContar,
 }
 
-// Integração futura: ler ?activity=&role=&return= e buscar do Supabase.
-// Hoje sempre o stub — a casca não fala com o Supabase (item 5 da direção).
-function resolveContract() {
-  return getStubActivityContract()
+// Contrato a partir de uma child_activity real. buildContractFromParts é
+// compartilhado com a prévia ao vivo do form de composição (tutor.js) —
+// as duas renderizações nascem exatamente da mesma lógica.
+function buildContractFromRow(row) {
+  return {
+    ...buildContractFromParts(row),
+    _childId: row.child_id,
+    _childActivityId: row.id,
+  }
 }
 
 function formatTemplate(str, data) {
@@ -25,10 +34,14 @@ function pickRandom(list) {
 // entre eles (guardrail da direção de design). "Adaptação" não é um estado
 // visual — é a folha do adulto mexendo em config e voltando pra 'atividade'.
 class ModoCrianca {
-  constructor(contract) {
+  constructor(contract, authSession, { previewMode = false } = {}) {
     this.contract = contract
+    this.authSession = authSession
+    this.previewMode = previewMode
     this.config = { ...contract.config }
-    this.state = 'acolhimento'
+    // Modo prévia (form de composição do tutor) pula direto pra 'atividade':
+    // o que importa ali é ver o palco funcionando, não o acolhimento.
+    this.state = previewMode ? 'atividade' : 'acolhimento'
     this.previousState = null
     this.round = 0
     this.startedAt = Date.now()
@@ -59,6 +72,24 @@ class ModoCrianca {
     }
 
     this.bindEvents()
+    if (previewMode) this.montarMolde()
+    this.render()
+  }
+
+  // Chamado pela prévia ao vivo (postMessage do form de composição) sempre
+  // que o tutor muda molde/tema/config/instrução. Atualiza o mesmo palco em
+  // vez de recriar a instância — recriar empilharia um listener novo em
+  // cada botão a cada tecla digitada.
+  updateContract(newContract) {
+    const configMudou =
+      this.contract.molde !== newContract.molde ||
+      this.contract.tema !== newContract.tema ||
+      JSON.stringify(this.config) !== JSON.stringify(newContract.config)
+
+    this.contract = newContract
+    this.config = { ...newContract.config }
+    if (this.state !== 'atividade') this.state = 'atividade'
+    if (configMudou) this.montarMolde()
     this.render()
   }
 
@@ -215,8 +246,8 @@ class ModoCrianca {
     this.irPara('encerramento')
   }
 
-  // O gancho de saída (item 6): monta o sinal leve pro Registro de Sessão.
-  // A gravação em si fica para a integração — aqui só deixamos o objeto pronto.
+  // O gancho de saída (item 6): monta o sinal leve pro Registro de Sessão —
+  // Nível 1 (dado estruturado) do Registro em 3 níveis.
   montarAtividadeExecucao() {
     return {
       molde: this.contract.molde,
@@ -228,9 +259,28 @@ class ModoCrianca {
     }
   }
 
-  sair() {
+  // Grava de verdade quando veio de uma child_activity real (tem
+  // _childActivityId e sessão autenticada); no modo stub/demonstração
+  // (sem ?activity= na URL) não há onde gravar, então só loga.
+  async sair() {
     const execucao = this.montarAtividadeExecucao()
-    console.info('[modo-crianca] atividade_execucao', execucao)
+
+    if (this.contract._childActivityId && this.authSession) {
+      const { error } = await createAtividadeExecucao({
+        childActivityId: this.contract._childActivityId,
+        childId: this.contract._childId,
+        executedBy: this.authSession.user.id,
+        molde: execucao.molde,
+        tema: execucao.tema,
+        nivelFinal: execucao.nivel_final,
+        precisouMaisFacil: execucao.precisou_mais_facil,
+        tempoAproximadoSegundos: execucao.tempo_aproximado_segundos,
+        comoEncerrou: execucao.como_encerrou,
+      })
+      if (error) console.error('[modo-crianca] falha ao gravar atividade_execucao', error)
+    } else {
+      console.info('[modo-crianca] atividade_execucao (modo demonstração, não gravado)', execucao)
+    }
 
     const params = new URLSearchParams(window.location.search)
     const returnTo = params.get('return')
@@ -312,9 +362,44 @@ class ModoCrianca {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const instance = new ModoCrianca(resolveContract())
-  window.CognitaModoCrianca = {
-    reportarResultado: (kind) => instance.reportarResultado(kind),
+const params = new URLSearchParams(window.location.search)
+const activityId = params.get('activity')
+const isPreview = params.get('preview') === '1'
+
+if (isPreview) {
+  // Embutido como <iframe> no form de composição do tutor (tutor.js) — a
+  // MESMA casca, ao vivo, sem autenticação e sem gravar nada. O tutor vê
+  // exatamente o que a criança veria enquanto ainda está compondo.
+  const instance = new ModoCrianca(getStubActivityContract(), null, { previewMode: true })
+  window.addEventListener('message', (event) => {
+    if (event.origin !== window.location.origin) return
+    if (event.data?.type !== 'cognita-preview-contract') return
+    instance.updateContract(event.data.contract)
+  })
+} else {
+  // Sem ?activity=: modo stub/demonstração, não exige login (a casca
+  // continua testável isolada). Com ?activity=<id>: exige tutor ou
+  // responsável autenticado, porque o encerramento grava atividade_execucao
+  // com executed_by = auth.uid().
+  let authSession = null
+  if (activityId) {
+    authSession = await requireRole('tutor', 'guardian')
+    // requireRole já redireciona pro login quando authSession é null —
+    // não monta nada nesse caso, a navegação está em andamento.
   }
-})
+
+  if (!activityId || authSession) {
+    let contract = null
+    if (activityId && authSession) {
+      const { data: row, error } = await getChildActivityById(activityId)
+      if (!error && row) contract = buildContractFromRow(row)
+      else console.warn('[modo-crianca] não achou a atividade — caindo no stub de demonstração', error)
+    }
+    if (!contract) contract = getStubActivityContract()
+
+    const instance = new ModoCrianca(contract, authSession)
+    window.CognitaModoCrianca = {
+      reportarResultado: (kind) => instance.reportarResultado(kind),
+    }
+  }
+}
