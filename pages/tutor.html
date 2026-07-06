@@ -332,6 +332,11 @@
     .internal-note textarea { display: block; width: 100%; padding: 11px; border: none; background: var(--card); color: var(--ink); font-family: var(--font); font-size: .86rem; min-height: 64px; resize: vertical; line-height: 1.5; }
     .internal-note textarea:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
 
+    .pending-execucoes { display: grid; gap: 8px; padding: 12px; border-radius: var(--r-sm); border: 1px solid var(--line); background: rgba(20,17,98,.03); }
+    .pending-execucoes-label { font-size: .71rem; font-weight: 700; letter-spacing: .04em; color: var(--brand); }
+    .pending-execucao-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); font-size: .82rem; color: var(--ink-soft); }
+    .pending-execucao-item:first-of-type { border-top: none; }
+
     .form-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
     .form-ok { font-size: .86rem; color: var(--ok); font-weight: 700; }
     .form-error { font-size: .86rem; color: var(--bad); font-weight: 700; }

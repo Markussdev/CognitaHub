@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase.js'
+import { getFamilySessions } from './sessions.js'
 
 const CHILDREN_SELECT = `
   id,
@@ -64,23 +65,20 @@ async function getGuardianChildrenInSteps(guardianId) {
     profiles = tutorProfiles ?? []
   }
 
-  const cycleIds = [...new Set((cycles ?? []).map((cycle) => cycle.id).filter(Boolean))]
-  let sessions = []
+  // A família nunca lê a tabela sessions direto — só pela função
+  // get_family_sessions (security definer), que devolve níveis 1+2 e
+  // jamais a coluna notes (nível 3, nota interna do tutor). Ver
+  // docs/supabase-fase-4c-registro-sessao.sql.
+  const familySessionsResults = await Promise.all(
+    childIds.map((childId) => getFamilySessions(childId))
+  )
 
-  if (cycleIds.length) {
-    const { data: cycleSessions, error: sessionsError } = await supabase
-      .from('sessions')
-      .select('id, cycle_id, date, duration_minutes, activity_title, focus_area, notes, next_step, created_at')
-      .in('cycle_id', cycleIds)
-      .order('date', { ascending: false })
-      .order('created_at', { ascending: false })
-
-    if (sessionsError) {
-      return { data: null, error: sessionsError }
-    }
-
-    sessions = cycleSessions ?? []
+  const sessionsError = familySessionsResults.find((r) => r.error)?.error
+  if (sessionsError) {
+    return { data: null, error: sessionsError }
   }
+
+  const sessions = familySessionsResults.flatMap((r) => r.data ?? [])
 
   const sessionsByCycleId = new Map()
   sessions.forEach((sessionRow) => {

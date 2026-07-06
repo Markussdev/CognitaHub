@@ -3,9 +3,10 @@ import { requireRole, signOut } from '../lib/auth.js'
 import { greeting, initials, ageFrom, el } from '../lib/ui.js'
 import { getAvatarUrl, setAvatarImage } from '../lib/avatar.js'
 import { getTutorCycles } from '../data/tutor.js'
-import { getCycleSessions, createSessionRecord } from '../data/sessions.js'
+import { getCycleSessions, createSessionRecord, linkExecucaoToSession } from '../data/sessions.js'
 import { getActivityById } from '../data/activities.js'
 import { createChildActivity, listChildActivities } from '../data/child-activities.js'
+import { listPendingExecucoes } from '../data/atividade-execucao.js'
 import { MOLDES_REGISTRO, buildContractFromParts, formatConfigResumo } from '../data/moldes-registro.js'
 
 const session = await requireRole('tutor')
@@ -568,6 +569,7 @@ function renderSessionForm(cycle, onSaved) {
   const details = el('details', 'card form')
   const childName = firstName(cycle.children?.name)
   let _selectedActivityId = null
+  let _pendingExecucao = null
 
   const summary = document.createElement('summary')
   summary.append(document.createTextNode('Registro guiado — sessão desta semana'))
@@ -581,6 +583,38 @@ function renderSessionForm(cycle, onSaved) {
   const body = el('div', 'form-body')
 
   body.append(el('div', 'lvl', '1 · Dados estruturados — aparecem para todos'))
+
+  // Execuções do Modo Criança ainda sem registro (session_id nulo) — o
+  // tutor escolhe uma em vez de digitar de novo o que a casca já gravou
+  // sozinha em atividade_execucao (ver docs/supabase-fase-4c-registro-sessao.sql).
+  const pendingWrap = el('div', 'pending-execucoes')
+  pendingWrap.hidden = true
+  body.append(pendingWrap)
+
+  function renderPendingExecucaoItem(execucao) {
+    const item = el('div', 'pending-execucao-item')
+    const molde = MOLDES_REGISTRO[execucao.molde]
+    const temaLabel = molde?.temas.find((t) => t.id === execucao.tema)?.label || execucao.tema
+    const label = el('span', null,
+      `${molde?.label || execucao.molde} · ${temaLabel} · nível ${execucao.nivel_final ?? '—'}` +
+      (execucao.precisou_mais_facil ? ' · precisou de mais fácil' : ''))
+    const useBtn = el('button', 'btn btn-ghost btn-sm', 'Usar esta execução')
+    useBtn.type = 'button'
+    useBtn.addEventListener('click', () => details.fillFromExecucao(execucao))
+    item.append(label, useBtn)
+    return item
+  }
+
+  async function loadPendingExecucoes() {
+    const { data, error } = await listPendingExecucoes(cycle.child_id)
+    const rows = error ? [] : (data ?? [])
+    pendingWrap.replaceChildren()
+    if (!rows.length) { pendingWrap.hidden = true; return }
+    pendingWrap.hidden = false
+    pendingWrap.append(el('p', 'pending-execucoes-label', 'Execuções do Modo Criança aguardando registro'))
+    rows.forEach((execucao) => pendingWrap.append(renderPendingExecucaoItem(execucao)))
+  }
+  loadPendingExecucoes()
 
   const row1 = el('div', 'row')
   const dateField = el('div', 'field')
@@ -762,16 +796,18 @@ function renderSessionForm(cycle, onSaved) {
     saveBtn.disabled = true; saveBtn.textContent = 'Salvando…'
 
     // TODO(wiring:sessions): adicionar engagement=eng.getValue(), perceived_difficulty=diff.getValue(),
-    //   result=result.getValue(), internal_note=internalInput.value.trim() quando o schema for atualizado.
+    //   result=result.getValue() quando o schema for atualizado.
 
-    const { error } = await createSessionRecord({
+    const { data, error } = await createSessionRecord({
       cycleId: cycle.id,
       activityId: _selectedActivityId,
+      childActivityId: _pendingExecucao?.child_activity_id || null,
       sessionDate: dateInput.value || todayISO(),
       durationMinutes: durInput.value ? Number(durInput.value) : null,
       activityTitle: actTitle,
       focusArea: focusInput.value.trim(),
-      notes: familySummary,
+      familySummary,
+      notes: internalInput.value.trim() || null,
       nextStep: nextInput.value.trim(),
     })
 
@@ -783,7 +819,13 @@ function renderSessionForm(cycle, onSaved) {
       return
     }
 
+    if (_pendingExecucao && data?.id) {
+      const { error: linkError } = await linkExecucaoToSession(_pendingExecucao.id, data.id)
+      if (linkError) console.error('[tutor] falha ao ligar atividade_execucao à sessão', linkError)
+    }
+
     _selectedActivityId = null
+    _pendingExecucao = null
     ;[actInput, focusInput, familyInput, nextInput, internalInput].forEach((i) => { i.value = '' })
     durInput.value = ''; dateInput.value = todayISO()
     charCount.textContent = '0 / 800 caracteres'
@@ -793,6 +835,7 @@ function renderSessionForm(cycle, onSaved) {
 
     okBox.textContent = 'Sessão registrada. A família já consegue acompanhar o resumo.'; okBox.hidden = false
     details.open = false
+    await loadPendingExecucoes()
     await onSaved()
   })
 
@@ -809,6 +852,23 @@ function renderSessionForm(cycle, onSaved) {
     details.open = true
     updateFamilyPreview()
     actInput.focus()
+  }
+
+  // Nível 1 já vem pronto do Modo Criança — o tutor não digita de novo o
+  // que atividade_execucao já gravou, só escreve os níveis 2 e 3.
+  details.fillFromExecucao = (execucao) => {
+    const molde = MOLDES_REGISTRO[execucao.molde]
+    const temaLabel = molde?.temas.find((t) => t.id === execucao.tema)?.label || execucao.tema
+    actInput.value = molde?.tituloPadrao?.(temaLabel) || `${molde?.label || execucao.molde} · ${temaLabel}`
+    focusInput.value = molde?.label || execucao.molde
+    if (execucao.tempo_aproximado_segundos) {
+      durInput.value = String(Math.round(execucao.tempo_aproximado_segundos / 60))
+    }
+    _selectedActivityId = null
+    _pendingExecucao = execucao
+    details.open = true
+    updateFamilyPreview()
+    familyInput.focus()
   }
 
   return details

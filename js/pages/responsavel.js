@@ -312,10 +312,7 @@ function applyRealCycle(cycle) {
       title: session.activity_title || 'Sessão registrada',
       activity: session.activity_title || '—',
       focus: session.focus_area || '—',
-      // TODO(wiring:sessions-family-summary): trocar `notes` por
-      // `family_summary` quando o Registro de Sessão separar os 3 níveis
-      // (estruturado / resumo família / nota interna) — ver PLANO-V1.
-      howItWent: session.notes || 'O tutor ainda não deixou um resumo para esta sessão.',
+      howItWent: session.family_summary || 'O tutor ainda não deixou um resumo para esta sessão.',
       whatHelped: null,
       whatHindered: null,
       nextStep: session.next_step || null,
