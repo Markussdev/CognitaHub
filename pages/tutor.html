@@ -246,6 +246,29 @@
     .pill-bad { background: var(--bad-soft); color: var(--bad); }
     .tbl-bar { display: flex; align-items: center; justify-content: space-between; padding: 11px 16px; border-bottom: 1px solid var(--line); }
 
+    /* ── Ações da linha de atividade preparada (Fazer/Duplicar/Editar/Arquivar) ── */
+    .activity-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    /* ── Banner de edição no form de composição ── */
+    .activity-edit-banner { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; background: var(--warn-soft); border: 1px solid rgba(179,89,10,.2); border-radius: var(--r-sm); font-size: .82rem; color: var(--warn); font-weight: 700; }
+    .activity-edit-banner button { flex-shrink: 0; }
+
+    /* ── Execuções do Modo Criança (pendentes na aba Sessões, histórico na aba Atividades) ── */
+    .pending-execucoes { display: grid; gap: 8px; padding: 12px; background: rgba(20,17,98,.03); border: 1px solid var(--line); border-radius: var(--r-sm); }
+    .pending-execucoes-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+    .pending-execucao-item { display: grid; gap: 3px; padding: 10px 12px; background: var(--card); border: 1px solid var(--line); border-radius: var(--r-sm); }
+    .pending-execucao-item strong { font-size: .88rem; }
+    .pending-execucao-detalhes { font-size: .78rem; color: var(--ink-soft); }
+    .pending-execucao-rodape { font-size: .76rem; color: var(--muted); }
+    .pending-execucao-item .btn { justify-self: start; margin-top: 4px; }
+    .execucoes-msg { font-size: .82rem; color: var(--muted); padding: 2px; }
+
+    .recent-execucoes-list { display: grid; gap: 8px; }
+    .recent-execucao-item { padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-sm); }
+    .recent-execucao-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .recent-execucao-row strong { font-size: .86rem; }
+    .recent-execucao-detalhes { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+
     /* ── Form de sessão ── */
     .form > summary { display: flex; align-items: center; justify-content: space-between; height: 46px; padding: 0 16px; cursor: pointer; list-style: none; font-size: .86rem; font-weight: 700; }
     .form > summary::-webkit-details-marker { display: none; }

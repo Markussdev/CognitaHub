@@ -8,13 +8,35 @@ import { supabase } from '../lib/supabase.js'
 // Execuções do Modo Criança que ainda não viraram Registro de Sessão
 // (session_id nulo) — alimenta a lista "Usar esta execução" no Registrar
 // sessão do tutor (js/pages/tutor.js), pra não digitar de novo o Nível 1.
+// Embute child_activities (titulo, config) pelo FK child_activity_id — dá
+// pro item pendente mostrar título e rodadas sem duplicar essa informação
+// em atividade_execucao (que só guarda o snapshot de molde/tema/nível).
+const EXECUCAO_SELECT = `
+  id, child_activity_id, molde, tema, nivel_final, precisou_mais_facil,
+  tempo_aproximado_segundos, como_encerrou, created_at, session_id,
+  child_activities ( titulo, config )
+`
+
 export async function listPendingExecucoes(childId) {
   return supabase
     .from('atividade_execucao')
-    .select('id, child_activity_id, molde, tema, nivel_final, precisou_mais_facil, tempo_aproximado_segundos, como_encerrou, created_at')
+    .select(EXECUCAO_SELECT)
     .eq('child_id', childId)
     .is('session_id', null)
     .order('created_at', { ascending: false })
+}
+
+// Visão de leitura (sem ação) pra aba "Atividades preparadas" — mostra as
+// últimas execuções do Modo Criança, pendentes ou já registradas, só pro
+// tutor acompanhar o que a criança andou fazendo. "Usar esta execução"
+// continua exclusiva da aba Sessões (é lá que o registro nasce de verdade).
+export async function listRecentExecucoes(childId, limit = 5) {
+  return supabase
+    .from('atividade_execucao')
+    .select(EXECUCAO_SELECT)
+    .eq('child_id', childId)
+    .order('created_at', { ascending: false })
+    .limit(limit)
 }
 
 export async function createAtividadeExecucao({

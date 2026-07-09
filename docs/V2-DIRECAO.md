@@ -101,13 +101,17 @@ trabalho de 29/06–05/07, ver memória de projeto). O que esta entrega fez foi
   `sessions` não expõe nenhuma leitura direta pro responsável (só
   `sessions_admin_all`/`sessions_tutor_*`). Ver §7 para a prova de ponta a
   ponta com dado real.
-- **Responsável ainda não tem um botão para abrir o Modo Criança.** A visão de
-  produto da V2 diz "aberto por tutor **ou responsável**", mas hoje só
-  `tutor.html` tem o link "Fazer com a criança". As policies de RLS já
-  permitem isso (`ca_guardian_select`, `ae_guardian_insert` em
-  `supabase-fase-4b-corrente.sql`) — falta só a UI em `responsavel.html`. Não
-  foi adicionado nesta entrega por não estar na lista da "primeira entrega";
-  sinalizar antes de implementar, porque é uma superfície nova de tela.
+- **Decisão oficial (2026-07-09): na V2, o Modo Criança é aberto pelo tutor.**
+  A abertura pelo responsável fica para uma fase posterior — não é mais uma
+  pendência em aberto, é escopo decidido conscientemente. Motivo: deixar o
+  responsável abrir exigiria decidir, antes de qualquer linha de código, se
+  ele escolhe qualquer atividade ou só as liberadas pelo tutor, quem registra
+  a sessão quando ele faz em casa, se isso vira sessão de verdade ou só
+  prática doméstica, e se o tutor fica sabendo depois — é uma superfície de
+  produto nova, não um botão a mais. As policies de RLS já permitem
+  (`ca_guardian_select`, `ae_guardian_insert` em
+  `supabase-fase-4b-corrente.sql`), então nada no banco bloqueia retomar isso
+  quando fizer sentido — mas não antes do ciclo do tutor estar redondo.
 - **Só um molde existe** (`contar` / tema `dinossauros`). `identificar`,
   `comparar` e `associar` estão registrados em `MOLDES_REGISTRO` com
   `disponivel: false`. Adicionar um molde novo é trabalho de produto (desenhar
@@ -281,3 +285,87 @@ null`) na próxima vez que estiver no SQL Editor — não bloqueia a Sprint 2
 **Não fizemos (fora do escopo combinado):** segundo molde (`identificar`),
 qualquer trilha navegável, login/ranking/pontos/loja pra criança, mudança em
 `internal.css`/`styles.css` do hub adulto.
+
+## 9. Sprint 2.5 — Fechar Atividades Preparadas (2026-07-09)
+
+Antes de qualquer visual novo (Modo Criança bonito já fechou a Sprint 2; o
+próximo molde ainda não começa), esta rodada fechou o **ciclo operacional**
+de Atividades Preparadas: criar, revisar, executar, reutilizar e organizar
+sem o tutor se perder. Só tocou `js/pages/tutor.js`,
+`js/data/child-activities.js`, `js/data/atividade-execucao.js` e
+`pages/tutor.html` — nada em Modo Criança, moldes, Supabase/Auth/RLS além de
+duas colunas de update já previstas no schema (ver abaixo).
+
+**Investigação da higiene de dados (pendência da Sprint 2, §8):** resolvida
+sem precisar de SQL Editor — a tela enriquecida (item abaixo) já mostra
+data/hora de cada execução, e revelou que as "2 execuções idênticas" eram na
+verdade duas execuções **genuinamente diferentes** ("teste E2E" às 21:32,
+registrada, e outra às 21:43, ainda pendente) — sobra de reexecuções
+manuais durante o QA da Sprint 1, não um bug de gravação duplicada. Card
+encerrado.
+
+**O que mudou:**
+
+- **"Usar esta execução" ganhou contexto de verdade.** Antes: só
+  `"Contar · Dinossauros · nível 1"`. Agora: título da atividade, nível +
+  itens + rodadas, e "Feita hoje às 14:32 · Concluída · 8s" — dá pra
+  diferenciar duas execuções do mesmo molde/tema sem adivinhar. Isso exigiu
+  uma mudança pequena na consulta (`listPendingExecucoes` em
+  `atividade-execucao.js` agora embute `child_activities(titulo, config)`
+  pelo FK `child_activity_id` — leitura a mais, nenhuma tabela/coluna nova).
+- **Ações na tabela de atividades preparadas.** Cada linha ganhou, além de
+  "Fazer com a criança": **Duplicar** (pré-preenche o form com "(cópia)" no
+  título, foco automático nele, tutor decide o que muda e salva como
+  atividade nova — não cria nada sozinho), **Editar** (mesmo form, vira
+  "Salvar alterações", faz `UPDATE` na linha de origem via
+  `updateChildActivity`) e **Arquivar** (confirmação nativa + `UPDATE
+  status='archived'` via `archiveChildActivity` — o valor já existia no
+  `check` constraint da Fase 4B, não precisou migração). Sem "Excluir", como
+  combinado — uma atividade pode ter execução/sessão vinculada.
+- **Três blocos com rótulo na aba Atividades preparadas:** "1 · Preparar
+  atividade", "2 · Atividades salvas", "3 · Últimas execuções" — mesma
+  estrutura de antes, só nomeada, pra deixar o ciclo visível sem redesenhar
+  nada.
+- **"Últimas execuções" (bloco novo, só leitura).** Mostra as últimas 5
+  execuções do Modo Criança pra essa criança — pendentes ou já registradas —
+  com um selo "Registrada"/"Aguardando registro". A ação "Usar esta
+  execução" continua exclusiva da aba Sessões (é lá que o registro nasce);
+  este bloco é só orientação, pra o tutor ver o que a criança andou fazendo
+  sem trocar de aba.
+- **Estados vazios e de erro.** "Nenhuma atividade preparada ainda" agora
+  cita o nome da criança. "Execuções pendentes" e "Últimas execuções" nunca
+  mais desaparecem silenciosamente quando vazios — mostram a frase que
+  explica o que vai aparecer ali. A tabela de atividades preparadas agora
+  distingue **erro** de carregamento (com botão "Tentar novamente") de
+  **vazio de verdade** — antes os dois caíam no mesmo estado, escondendo uma
+  falha real atrás de uma mensagem de "ainda não tem nada".
+
+**Detalhe de implementação que vale registrar:** os seletores de
+molde/tema/config (`makeChoiceButtons`, `makeSlider`, `makePillSelector` em
+`tutor.js`) não tinham como ser preenchidos programaticamente — só reagiam a
+clique. Duplicar/Editar precisavam disso pra pré-preencher o form, então os
+três ganharam um `setValue()` que reusa o mesmo caminho do clique (mesmo
+efeito colateral, incluindo disparar `onChange` pra reconstruir tema/config
+em cascata). Testado que o clique manual (fluxo de criação normal) continua
+funcionando idêntico depois da mudança.
+
+**Verificação ao vivo (2026-07-09):** todas as ações testadas contra o
+Supabase real (mesmo projeto de teste, criança "Mateus"): Editar mudou
+rodadas de 3→4 e persistiu depois de recarregar a página; Duplicar criou uma
+6ª atividade a partir de uma existente (badge da aba foi de 3 para 4);
+Arquivar removeu a cópia da lista ativa (badge voltou pra 3) com o diálogo de
+confirmação certo; Cancelar edição voltou o form pro estado de criação limpo;
+o fluxo de criação normal (do zero, sem Duplicar/Editar) continuou
+funcionando depois do refactor dos seletores. **Nenhum erro de console em
+nenhum dos testes.**
+
+**Pendência nova, não bloqueante:** o volume de dado de teste em Mateus
+cresceu mais nesta rodada (mais uma atividade duplicada/arquivada, mais uma
+"criação normal pós-refactor"). Segue a mesma pergunta em aberto desde a
+Sprint 1 — perguntar a Marcus se quer um script de limpeza ou se mantém como
+exemplo vivo.
+
+**Não fizemos (fora do escopo combinado):** segundo molde, trilha, "ver
+atividades arquivadas"/desarquivar (arquivar é só pra sair da lista ativa —
+reverter isso não foi pedido), qualquer coisa em `internal.css`/`styles.css`
+do hub adulto.

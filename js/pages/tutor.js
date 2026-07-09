@@ -5,8 +5,8 @@ import { getAvatarUrl, setAvatarImage } from '../lib/avatar.js'
 import { getTutorCycles } from '../data/tutor.js'
 import { getCycleSessions, createSessionRecord, linkExecucaoToSession } from '../data/sessions.js'
 import { getActivityById } from '../data/activities.js'
-import { createChildActivity, listChildActivities } from '../data/child-activities.js'
-import { listPendingExecucoes } from '../data/atividade-execucao.js'
+import { createChildActivity, listChildActivities, updateChildActivity, archiveChildActivity } from '../data/child-activities.js'
+import { listPendingExecucoes, listRecentExecucoes } from '../data/atividade-execucao.js'
 import { MOLDES_REGISTRO, buildContractFromParts, formatConfigResumo } from '../data/moldes-registro.js'
 
 const session = await requireRole('tutor')
@@ -121,6 +121,40 @@ function formatLastSession(value) {
   return formatDate(value) ?? 'sem registro'
 }
 
+// Timestamp completo (com hora) das execuções do Modo Criança — diferente
+// de formatLastSession, que só lida com datas puras (coluna `date` de
+// sessions). "hoje às 14:32" em vez de só "hoje", porque o tutor pode
+// registrar mais de uma execução no mesmo dia e precisa diferenciá-las.
+function formatExecucaoQuando(isoTimestamp) {
+  if (!isoTimestamp) return null
+  const d = new Date(isoTimestamp)
+  if (isNaN(d.getTime())) return null
+
+  const hora = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(d)
+  const today = new Date()
+  const base = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const dayOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+  const diffDays = Math.round((base - dayOnly) / 86400000)
+
+  if (diffDays === 0) return `hoje às ${hora}`
+  if (diffDays === 1) return `ontem às ${hora}`
+  const dataCurta = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit' }).format(d)
+  return `${dataCurta} às ${hora}`
+}
+
+function formatDuracaoAprox(segundos) {
+  if (!segundos) return null
+  if (segundos < 60) return `${segundos}s`
+  return `${Math.round(segundos / 60)} min`
+}
+
+const COMO_ENCERROU_LABEL = {
+  crianca_concluiu: 'Concluída',
+  adulto_encerrou: 'Encerrada pelo adulto',
+  pausa: 'Pausada',
+  recusa: 'Recusada',
+}
+
 function monthsBetween(start, end) {
   if (!start || !end) return 6
   const s = new Date(`${start}T00:00:00Z`), e = new Date(`${end}T00:00:00Z`)
@@ -139,6 +173,12 @@ function currentCycleMonth(start, end) {
 
 function firstName(fullName) {
   return (fullName ?? '').trim().split(/\s+/)[0] || 'criança'
+}
+
+// Supabase embute relação 1:1 via FK (child_activities em atividade_execucao)
+// ora como objeto, ora como array de 1 — normaliza pros dois formatos.
+function pickEmbedded(value) {
+  return Array.isArray(value) ? value[0] : value
 }
 
 function simpleHead(title) {
@@ -484,7 +524,20 @@ function makeChoiceButtons(options, selectedId, onChange) {
   const group = el('div', 'scale')
   group.setAttribute('role', 'radiogroup')
   let value = selectedId
-  const buttons = []
+  const entries = []
+
+  // Compartilhada entre o clique real e o setValue programático (Duplicar/
+  // Editar pré-preenchendo o form) — as duas vias precisam do mesmo efeito
+  // colateral (destacar visualmente e disparar onChange pra reconstruir
+  // tema/config na cascata).
+  function select(id) {
+    const entry = entries.find((e) => e.id === id)
+    if (!entry || entry.disabled) return
+    entries.forEach((e) => e.btn.classList.remove('selected'))
+    entry.btn.classList.add('selected')
+    value = id
+    onChange?.(id)
+  }
 
   options.forEach(({ id, label, disabled }) => {
     const btn = el('button', 'scale-btn')
@@ -497,17 +550,12 @@ function makeChoiceButtons(options, selectedId, onChange) {
       btn.textContent = label
     }
     if (id === selectedId) btn.classList.add('selected')
-    btn.addEventListener('click', () => {
-      buttons.forEach((b) => b.classList.remove('selected'))
-      btn.classList.add('selected')
-      value = id
-      onChange?.(id)
-    })
-    buttons.push(btn)
+    btn.addEventListener('click', () => select(id))
+    entries.push({ id, disabled, btn })
     group.append(btn)
   })
 
-  return { group, getValue: () => value }
+  return { group, getValue: () => value, setValue: select }
 }
 
 // Slider — pra faixas largas ("de sensação contínua", ex.: quantos itens).
@@ -527,14 +575,16 @@ function makeSlider({ label, min, max, value, onChange }) {
   input.value = String(value)
 
   let current = value
-  input.addEventListener('input', () => {
-    current = Number(input.value)
+  function setValue(v) {
+    current = Number(v)
+    input.value = String(current)
     valueBox.textContent = String(current)
     onChange?.(current)
-  })
+  }
+  input.addEventListener('input', () => setValue(input.value))
 
   field.append(input)
-  return { field, getValue: () => current }
+  return { field, getValue: () => current, setValue }
 }
 
 // Pills numeradas — pra faixas curtas e precisas (ex.: nível, rodadas).
@@ -545,22 +595,27 @@ function makePillSelector({ label, min, max, value, onChange }) {
 
   let current = value
   const buttons = []
+  const values = []
+  function setValue(n) {
+    const idx = values.indexOf(n)
+    if (idx === -1) return
+    buttons.forEach((b) => b.classList.remove('selected'))
+    buttons[idx].classList.add('selected')
+    current = n
+    onChange?.(current)
+  }
   for (let n = min; n <= max; n += 1) {
     const btn = el('button', 'pill-num', String(n))
     btn.type = 'button'
     if (n === value) btn.classList.add('selected')
-    btn.addEventListener('click', () => {
-      buttons.forEach((b) => b.classList.remove('selected'))
-      btn.classList.add('selected')
-      current = n
-      onChange?.(current)
-    })
+    btn.addEventListener('click', () => setValue(n))
     buttons.push(btn)
+    values.push(n)
     row.append(btn)
   }
 
   field.append(row)
-  return { field, getValue: () => current }
+  return { field, getValue: () => current, setValue }
 }
 
 // ── Formulário de sessão (3 níveis) ──────────────────────────────────────────
@@ -591,27 +646,63 @@ function renderSessionForm(cycle, onSaved) {
   pendingWrap.hidden = true
   body.append(pendingWrap)
 
+  // Cada item mostra o suficiente pra diferenciar execuções que, no molde
+  // contar/dinossauros de hoje, sempre têm a mesma cara (nível 1, mesmo
+  // tema) — sem isso o tutor não sabe se são duas execuções de verdade ou
+  // uma tela duplicada (ver docs/V2-DIRECAO.md §8, higiene de dados).
   function renderPendingExecucaoItem(execucao) {
     const item = el('div', 'pending-execucao-item')
     const molde = MOLDES_REGISTRO[execucao.molde]
     const temaLabel = molde?.temas.find((t) => t.id === execucao.tema)?.label || execucao.tema
-    const label = el('span', null,
-      `${molde?.label || execucao.molde} · ${temaLabel} · nível ${execucao.nivel_final ?? '—'}` +
-      (execucao.precisou_mais_facil ? ' · precisou de mais fácil' : ''))
+    const atividade = pickEmbedded(execucao.child_activities)
+    const titulo = atividade?.titulo || molde?.tituloPadrao?.(temaLabel) || `${molde?.label || execucao.molde} · ${temaLabel}`
+
+    const detalhes = [
+      `Nível ${execucao.nivel_final ?? '—'}`,
+      atividade?.config?.quantidade ? `${atividade.config.quantidade} itens` : null,
+      atividade?.config?.rodadas ? `${atividade.config.rodadas} rodada${atividade.config.rodadas === 1 ? '' : 's'}` : null,
+    ].filter(Boolean).join(' · ')
+
+    const quando = formatExecucaoQuando(execucao.created_at)
+    const rodape = [
+      quando ? `Feita ${quando}` : null,
+      COMO_ENCERROU_LABEL[execucao.como_encerrou],
+      formatDuracaoAprox(execucao.tempo_aproximado_segundos),
+      execucao.precisou_mais_facil ? 'precisou de mais fácil' : null,
+    ].filter(Boolean).join(' · ')
+
     const useBtn = el('button', 'btn btn-ghost btn-sm', 'Usar esta execução')
     useBtn.type = 'button'
     useBtn.addEventListener('click', () => details.fillFromExecucao(execucao))
-    item.append(label, useBtn)
+
+    item.append(
+      el('strong', null, titulo),
+      el('p', 'pending-execucao-detalhes', detalhes),
+      el('p', 'pending-execucao-rodape', rodape),
+      useBtn
+    )
     return item
   }
 
+  // Fica sempre visível (mesmo vazio) — estado vazio é direção, não
+  // decoração (CLAUDE.md §11): o tutor precisa saber que essa área existe
+  // antes mesmo da primeira execução aparecer nela.
   async function loadPendingExecucoes() {
-    const { data, error } = await listPendingExecucoes(cycle.child_id)
-    const rows = error ? [] : (data ?? [])
     pendingWrap.replaceChildren()
-    if (!rows.length) { pendingWrap.hidden = true; return }
     pendingWrap.hidden = false
+    const { data, error } = await listPendingExecucoes(cycle.child_id)
+
+    if (error) {
+      pendingWrap.append(el('p', 'execucoes-msg', 'Não conseguimos carregar as execuções pendentes agora.'))
+      return
+    }
+
     pendingWrap.append(el('p', 'pending-execucoes-label', 'Execuções do Modo Criança aguardando registro'))
+    const rows = data ?? []
+    if (!rows.length) {
+      pendingWrap.append(el('p', 'execucoes-msg', 'Nenhuma execução pendente. Quando a criança concluir uma atividade, ela aparecerá aqui para virar registro de sessão.'))
+      return
+    }
     rows.forEach((execucao) => pendingWrap.append(renderPendingExecucaoItem(execucao)))
   }
   loadPendingExecucoes()
@@ -1142,7 +1233,10 @@ function buildSessionsPanel(cycle, state, sessionForm) {
 // Criança com a atividade real (getChildActivityById via ?activity=<id>) —
 // ver docs/V2-DIRECAO.md para o mapeamento completo da jornada.
 
-function renderChildActivityRow(row) {
+// callbacks vem só quando o ciclo permite editar o conjunto de atividades
+// (ver buildActivitiesPanel) — undefined nos estados bloqueados, onde só
+// "Fazer com a criança" continua fazendo sentido.
+function renderChildActivityRow(row, callbacks) {
   const tr = document.createElement('tr')
   const molde = MOLDES_REGISTRO[row.molde]
   const temaLabel = molde?.temas.find((t) => t.id === row.tema)?.label || row.tema
@@ -1159,31 +1253,106 @@ function renderChildActivityRow(row) {
   dateTd.textContent = formatLastSession(row.created_at?.slice(0, 10))
 
   const actionTd = document.createElement('td')
+  const actionsWrap = el('div', 'activity-actions')
+
   const link = el('a', 'btn btn-ghost btn-sm', 'Fazer com a criança')
   // return aponta direto pra aba Sessões: é lá que a execução recém-gravada
   // aparece em "Usar esta execução", fechando o loop sem o tutor ter que
   // procurar onde continuar.
   link.href = `modo-crianca.html?${new URLSearchParams({ activity: row.id, return: 'tutor.html?view=record&tab=sessions' })}`
-  actionTd.append(link)
+  actionsWrap.append(link)
 
+  if (callbacks) {
+    const dupBtn = el('button', 'btn btn-ghost btn-sm', 'Duplicar')
+    dupBtn.type = 'button'
+    dupBtn.addEventListener('click', () => callbacks.onDuplicate(row))
+    actionsWrap.append(dupBtn)
+
+    const editBtn = el('button', 'btn btn-ghost btn-sm', 'Editar')
+    editBtn.type = 'button'
+    editBtn.addEventListener('click', () => callbacks.onEdit(row))
+    actionsWrap.append(editBtn)
+
+    const archiveBtn = el('button', 'btn btn-ghost btn-sm', 'Arquivar')
+    archiveBtn.type = 'button'
+    archiveBtn.addEventListener('click', () => callbacks.onArchive(row))
+    actionsWrap.append(archiveBtn)
+  }
+
+  actionTd.append(actionsWrap)
   tr.append(titleTd, detailsTd, dateTd, actionTd)
   return tr
 }
 
-async function loadChildActivitiesTable(childId, tbody, emptyWrap, table) {
+// Distingue erro de "sem dado" (CLAUDE.md §11: estado vazio é direção, não
+// decoração — e um erro fingindo de vazio esconde que algo quebrou).
+async function loadChildActivitiesTable(childId, tbody, emptyWrap, errorWrap, table, callbacks) {
   tbody.replaceChildren()
   const { data, error } = await listChildActivities(childId)
-  const rows = error ? [] : (data ?? [])
 
+  if (error) {
+    table.hidden = true
+    emptyWrap.hidden = true
+    errorWrap.hidden = false
+    return []
+  }
+  errorWrap.hidden = true
+
+  const rows = data ?? []
   if (!rows.length) {
     table.hidden = true
     emptyWrap.hidden = false
   } else {
     table.hidden = false
     emptyWrap.hidden = true
-    rows.forEach((r) => tbody.append(renderChildActivityRow(r)))
+    rows.forEach((r) => tbody.append(renderChildActivityRow(r, callbacks)))
   }
   return rows
+}
+
+// ── "Últimas execuções" — leitura, sem ação (a ação "Usar esta execução"
+// continua só na aba Sessões, que é onde o registro nasce de verdade) ──
+
+function renderRecentExecucaoItem(execucao) {
+  const item = el('div', 'recent-execucao-item')
+  const molde = MOLDES_REGISTRO[execucao.molde]
+  const temaLabel = molde?.temas.find((t) => t.id === execucao.tema)?.label || execucao.tema
+  const atividade = pickEmbedded(execucao.child_activities)
+  const titulo = atividade?.titulo || molde?.tituloPadrao?.(temaLabel) || `${molde?.label || execucao.molde} · ${temaLabel}`
+
+  const quando = formatExecucaoQuando(execucao.created_at)
+  const detalhes = [
+    quando ? `Feita ${quando}` : null,
+    COMO_ENCERROU_LABEL[execucao.como_encerrou],
+  ].filter(Boolean).join(' · ')
+
+  const statusPill = execucao.session_id
+    ? el('span', 'pill pill-ok', 'Registrada')
+    : el('span', 'pill pill-mid', 'Aguardando registro')
+
+  const row = el('div', 'recent-execucao-row')
+  const tx = el('div')
+  tx.append(el('strong', null, titulo), el('p', 'recent-execucao-detalhes', detalhes))
+  row.append(tx, statusPill)
+  item.append(row)
+  return item
+}
+
+async function loadRecentExecucoes(childId, list) {
+  list.replaceChildren()
+  const { data, error } = await listRecentExecucoes(childId, 5)
+
+  if (error) {
+    list.append(el('p', 'execucoes-msg', 'Não conseguimos carregar as últimas execuções agora.'))
+    return
+  }
+
+  const rows = data ?? []
+  if (!rows.length) {
+    list.append(el('p', 'execucoes-msg', 'Nenhuma execução registrada ainda. Quando a criança fizer uma atividade no Modo Criança, ela aparece aqui.'))
+    return
+  }
+  rows.forEach((execucao) => list.append(renderRecentExecucaoItem(execucao)))
 }
 
 function buildActivitiesPanel(cycle, state, onSaved) {
@@ -1201,6 +1370,12 @@ function buildActivitiesPanel(cycle, state, onSaved) {
     cycle_completed: 'Este ciclo já foi concluído — não é mais possível preparar novas atividades. O que já foi preparado continua listado abaixo.',
   }
 
+  // callbacks das ações de linha (Duplicar/Editar/Arquivar) só existem
+  // quando o form de composição existe pra recebê-las — undefined nos
+  // estados bloqueados (renderChildActivityRow aí só mostra "Fazer com a
+  // criança", que não depende do form).
+  let rowCallbacks
+
   if (LOCKED[state]) {
     const lockedCard = el('div', 'card')
     const note = el('div', 'locked-note')
@@ -1209,6 +1384,7 @@ function buildActivitiesPanel(cycle, state, onSaved) {
     lockedCard.append(note)
     stack.append(lockedCard)
   } else {
+    stack.append(el('div', 'lvl', '1 · Preparar atividade'))
     const cols = el('div', 'cols')
 
     // ── Coluna esquerda: compor ──
@@ -1222,6 +1398,17 @@ function buildActivitiesPanel(cycle, state, onSaved) {
     composeHead.append(headCopy)
     composeCard.append(composeHead)
     const composeBody = el('div', 'card-b')
+
+    // Banner de edição — só aparece quando "Editar" pré-preencheu o form com
+    // uma atividade já salva. "Duplicar" NÃO passa por aqui: pré-preenche
+    // mas mantém o form em modo criação (salvar gera uma linha nova).
+    const editBanner = el('div', 'activity-edit-banner')
+    editBanner.hidden = true
+    const editBannerText = el('span', null, '')
+    const cancelEditBtn = el('button', 'btn btn-ghost btn-sm', 'Cancelar edição')
+    cancelEditBtn.type = 'button'
+    editBanner.append(editBannerText, cancelEditBtn)
+    composeBody.append(editBanner)
 
     const moldeOptions = Object.entries(MOLDES_REGISTRO).map(([id, m]) => ({ id, label: m.label, disabled: !m.disponivel }))
     const temaWrap = el('div')
@@ -1253,6 +1440,7 @@ function buildActivitiesPanel(cycle, state, onSaved) {
 
     let temaChoice = null
     let controlFields = []
+    let editingId = null
 
     function currentConfig() {
       const molde = MOLDES_REGISTRO[moldeChoice.getValue()]
@@ -1267,7 +1455,7 @@ function buildActivitiesPanel(cycle, state, onSaved) {
       const temaLabel = molde.temas.find((t) => t.id === temaChoice?.getValue())?.label || ''
       const tituloAtual = tituloInput.value.trim() || molde.tituloPadrao?.(temaLabel) || molde.label
       summary.replaceChildren(
-        document.createTextNode('Vai criar '),
+        document.createTextNode(editingId ? 'Vai atualizar ' : 'Vai criar '),
         el('strong', null, tituloAtual),
         document.createTextNode(` — ${formatConfigResumo(moldeKey, currentConfig())}.`)
       )
@@ -1334,6 +1522,74 @@ function buildActivitiesPanel(cycle, state, onSaved) {
     ;[instInput, tituloInput].forEach((input) => input.addEventListener('input', () => { updateSummary(); pushPreview() }))
     rebuildForMolde()
 
+    // Sai do modo edição preservando os campos como estão (usado depois de
+    // salvar uma alteração com sucesso — o que acabou de ser salvo continua
+    // visível, igual já acontecia ao criar). "Cancelar edição" usa
+    // cancelEdit() abaixo, que além de sair também limpa o form.
+    function exitEditMode() {
+      editingId = null
+      saveBtn.textContent = 'Salvar atividade'
+      editBanner.hidden = true
+    }
+
+    function cancelEdit() {
+      exitEditMode()
+      rebuildForMolde()
+    }
+    cancelEditBtn.addEventListener('click', cancelEdit)
+
+    // Duplicar e Editar convergem aqui: os dois pré-preenchem o mesmo form
+    // com os dados de uma atividade já salva — a diferença é só se ficam em
+    // modo criação (gera linha nova, título ganha "(cópia)") ou em modo
+    // edição (atualiza a linha de origem).
+    function prefillCompose(row, { asEdit = false } = {}) {
+      const molde = MOLDES_REGISTRO[row.molde]
+      const temaLabel = molde?.temas.find((t) => t.id === row.tema)?.label || row.tema
+
+      moldeChoice.setValue(row.molde)
+      temaChoice.setValue(row.tema)
+      molde?.campos.forEach((campo, i) => {
+        const v = row.config?.[campo.key]
+        if (v != null) controlFields[i]?.setValue(v)
+      })
+
+      instInput.value = row.instrucao || ''
+      const baseTitulo = row.titulo || molde?.tituloPadrao?.(temaLabel) || molde?.label || ''
+      tituloInput.value = asEdit ? baseTitulo : `${baseTitulo} (cópia)`.trim()
+
+      editingId = asEdit ? row.id : null
+      saveBtn.textContent = asEdit ? 'Salvar alterações' : 'Salvar atividade'
+      editBanner.hidden = !asEdit
+      if (asEdit) editBannerText.textContent = `Editando: ${baseTitulo}`
+
+      updateSummary()
+      pushPreview()
+
+      composeCard.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      tituloInput.focus()
+      tituloInput.select()
+    }
+
+    async function onArchive(row) {
+      const titulo = row.titulo || MOLDES_REGISTRO[row.molde]?.tituloPadrao?.(row.tema) || 'esta atividade'
+      const ok = window.confirm(`Arquivar "${titulo}"? Ela sai da lista de atividades preparadas, mas o histórico de execuções e sessões continua guardado.`)
+      if (!ok) return
+
+      const { error } = await archiveChildActivity(row.id)
+      if (error) {
+        window.alert('Não conseguimos arquivar agora. Tente de novo em instantes.')
+        return
+      }
+      if (editingId === row.id) cancelEdit()
+      await onSaved?.()
+    }
+
+    rowCallbacks = {
+      onDuplicate: (row) => prefillCompose(row, { asEdit: false }),
+      onEdit: (row) => prefillCompose(row, { asEdit: true }),
+      onArchive,
+    }
+
     saveBtn.addEventListener('click', async () => {
       errorBox.hidden = true; okBox.hidden = true
 
@@ -1350,19 +1606,23 @@ function buildActivitiesPanel(cycle, state, onSaved) {
       const temaId = temaChoice.getValue()
       const temaLabel = molde.temas.find((t) => t.id === temaId)?.label || ''
       const config = currentConfig()
+      const titulo = tituloInput.value.trim() || molde.tituloPadrao?.(temaLabel) || molde.label
+      const wasEditing = editingId
 
       saveBtn.disabled = true; saveBtn.textContent = 'Salvando…'
-      const { error } = await createChildActivity({
-        childId: cycle.child_id,
-        createdBy: session.user.id,
-        cycleId: cycle.id,
-        molde: moldeKey,
-        tema: temaId,
-        config,
-        instrucao,
-        titulo: tituloInput.value.trim() || molde.tituloPadrao?.(temaLabel) || molde.label,
-      })
-      saveBtn.disabled = false; saveBtn.textContent = 'Salvar atividade'
+      const { error } = wasEditing
+        ? await updateChildActivity(wasEditing, { molde: moldeKey, tema: temaId, config, instrucao, titulo })
+        : await createChildActivity({
+            childId: cycle.child_id,
+            createdBy: session.user.id,
+            cycleId: cycle.id,
+            molde: moldeKey,
+            tema: temaId,
+            config,
+            instrucao,
+            titulo,
+          })
+      saveBtn.disabled = false; saveBtn.textContent = wasEditing ? 'Salvar alterações' : 'Salvar atividade'
 
       if (error) {
         errorBox.textContent = 'Não conseguimos salvar agora. Seu texto continua aqui para você tentar de novo.'
@@ -1370,8 +1630,9 @@ function buildActivitiesPanel(cycle, state, onSaved) {
         return
       }
 
-      okBox.textContent = 'Atividade preparada. Já aparece na lista abaixo.'
+      okBox.textContent = wasEditing ? 'Atividade atualizada.' : 'Atividade preparada. Já aparece na lista abaixo.'
       okBox.hidden = false
+      if (wasEditing) exitEditMode()
       await onSaved?.()
     })
 
@@ -1401,6 +1662,7 @@ function buildActivitiesPanel(cycle, state, onSaved) {
     stack.append(cols)
   }
 
+  stack.append(el('div', 'lvl', '2 · Atividades salvas'))
   const historyCard = el('div', 'card')
   const bar = el('div', 'tbl-bar')
   bar.append(el('h3', null, `Atividades preparadas para ${childName}`))
@@ -1419,16 +1681,40 @@ function buildActivitiesPanel(cycle, state, onSaved) {
   empty.append(
     img,
     el('strong', null, 'Nenhuma atividade preparada ainda.'),
-    el('span', null, 'Componha a primeira acima — ela aparece aqui na hora, pronta para fazer com a criança.')
+    el('span', null, `Crie uma atividade simples para começar com ${childName} — ela aparece aqui assim que for salva.`)
   )
   emptyWrap.append(empty)
   emptyWrap.hidden = true
 
-  historyCard.append(table, emptyWrap)
+  const errorWrap = el('div', 'card-b')
+  const errorInner = el('div', 'error-card')
+  errorInner.append(
+    el('strong', null, 'Não conseguimos carregar as atividades agora.'),
+    el('p', null, 'Tente atualizar a página.')
+  )
+  const retryBtn = el('button', 'btn btn-ghost', 'Tentar novamente')
+  retryBtn.type = 'button'
+  retryBtn.addEventListener('click', () => panel.loadTable())
+  errorInner.append(retryBtn)
+  errorWrap.append(errorInner)
+  errorWrap.hidden = true
+
+  historyCard.append(table, emptyWrap, errorWrap)
   stack.append(historyCard)
+
+  stack.append(el('div', 'lvl', '3 · Últimas execuções'))
+  const recentCard = el('div', 'card')
+  recentCard.append(simpleHead('Últimas execuções no Modo Criança'))
+  const recentBody = el('div', 'card-b')
+  const recentList = el('div', 'recent-execucoes-list')
+  recentBody.append(recentList)
+  recentCard.append(recentBody)
+  stack.append(recentCard)
+
   panel.append(stack)
 
-  panel.loadTable = () => loadChildActivitiesTable(cycle.child_id, tbody, emptyWrap, table)
+  panel.loadTable = () => loadChildActivitiesTable(cycle.child_id, tbody, emptyWrap, errorWrap, table, rowCallbacks)
+  panel.loadRecentExecucoes = () => loadRecentExecucoes(cycle.child_id, recentList)
   return panel
 }
 
@@ -2067,6 +2353,7 @@ function renderRecord(state, cycle, initialTab) {
     const rows = await activitiesPanel.loadTable()
     const badge = tabs.querySelector('[data-tab="activities"] .badge')
     if (badge) badge.textContent = String(rows.length)
+    await activitiesPanel.loadRecentExecucoes?.()
   }
 
   const openForm = () => {
