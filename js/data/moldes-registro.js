@@ -34,7 +34,37 @@ export const MOLDES_REGISTRO = {
     // "vez"/"vezes" já concordado — ver render() em modo-crianca.js.
     encerramentoResumo: 'Vocês contaram até {quantidade} {tema}, {rodadas} {vezes}.',
   },
-  identificar: { label: 'Identificar', disponivel: false, temas: [], campos: [] },
+  identificar: {
+    label: 'Identificar',
+    disponivel: true,
+    temas: [{ id: 'numeros', label: 'Números', disponivel: true }],
+    // maiorNumero/opcoes moldam o sorteio (alvo + distratores, sempre entre
+    // 1 e maiorNumero) — ver js/pages/moldes/identificar.js. nivel/rodadas
+    // seguem o mesmo papel genérico que já têm no molde contar.
+    campos: [
+      { key: 'maiorNumero', label: 'Maior número', control: 'pills', unidade: null, min: 3, max: 5, default: 5 },
+      { key: 'opcoes', label: 'Quantidade de opções', control: 'pills', unidade: null, min: 3, max: 5, default: 4 },
+      { key: 'nivel', label: 'Nível', control: 'pills', unidade: null, min: 1, max: 5, default: 1 },
+      { key: 'rodadas', label: 'Rodadas', control: 'pills', unidade: 'rodadas', min: 1, max: 5, default: 3 },
+    ],
+    // Só um placeholder pro form/revisão do tutor — o texto de verdade que a
+    // criança vê muda a cada rodada (o alvo é sorteado na hora) e vem do
+    // próprio molde via activeMold.instrucao, não deste campo. Ver
+    // render()/montarMolde() em modo-crianca.js.
+    instrucaoPadrao: 'Toque no número que eu disser.',
+    tituloPadrao: (temaLabel) => `Identificar ${temaLabel.toLowerCase()}`,
+    acolhimentoFala: 'Eu adoro encontrar números. Bora começar?',
+    feedbackAcerto: [
+      'Isso mesmo! Você encontrou certinho.',
+      'Boa! Esse número está certo.',
+      'Muito bem, você achou rapidinho.',
+    ],
+    feedbackDificuldade: [
+      'Quase lá. Vamos tentar de novo, com calma.',
+      'Sem problema. Olha bem os números — de novo?',
+    ],
+    encerramentoResumo: 'Vocês encontraram os números certos, {rodadas} {vezes}.',
+  },
   comparar: { label: 'Comparar', disponivel: false, temas: [], campos: [] },
   associar: { label: 'Associar', disponivel: false, temas: [], campos: [] },
 }

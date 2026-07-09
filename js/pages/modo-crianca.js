@@ -4,11 +4,13 @@ import { createAtividadeExecucao } from '../data/atividade-execucao.js'
 import { buildContractFromParts } from '../data/moldes-registro.js'
 import { getStubActivityContract } from '../data/modo-crianca-stub.js'
 import { mount as montarContar } from './moldes/contar.js'
+import { mount as montarIdentificar } from './moldes/identificar.js'
 
 // Registro dos moldes conhecidos pela casca — só o nome, o resto é opaco
 // (a casca nunca importa nada específico de dentro de um molde).
 const MOLDES = {
   contar: montarContar,
+  identificar: montarIdentificar,
 }
 
 // Contrato a partir de uma child_activity real. buildContractFromParts é
@@ -371,8 +373,14 @@ class ModoCrianca {
     this.el.btnPrincipal.textContent = this.proximoPasso().label
 
     // A instrução ocupa sempre a mesma posição (previsibilidade espacial);
-    // some de conteúdo, não de layout.
-    this.el.instruction.textContent = this.state === 'atividade' ? this.contract.instrucao : ''
+    // some de conteúdo, não de layout. Moldes com alvo sorteado por rodada
+    // (ex.: identificar) devolvem sua própria instrução via montarMolde() —
+    // ela tem prioridade sobre o contract.instrucao estático. Moldes que não
+    // devolvem nada (contar) continuam usando o texto do contrato, igual
+    // sempre foi.
+    this.el.instruction.textContent = this.state === 'atividade'
+      ? (this.activeMold?.instrucao || this.contract.instrucao)
+      : ''
 
     // Missão X de Y — só um rótulo de progresso da rodada atual (prepara a
     // linguagem visual pra uma trilha futura, sem virar mapa navegável).

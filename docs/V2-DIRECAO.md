@@ -369,3 +369,71 @@ exemplo vivo.
 atividades arquivadas"/desarquivar (arquivar é só pra sair da lista ativa —
 reverter isso não foi pedido), qualquer coisa em `internal.css`/`styles.css`
 do hub adulto.
+
+## 10. Sprint 3 — segundo molde: `identificar` (2026-07-09)
+
+Prova que faltava: a arquitetura de "casca + molde" aguenta mais de uma
+atividade sem tocar o resto do sistema. `identificar` saiu de
+`disponivel: false` e roda de ponta a ponta no mesmo ciclo que `contar` —
+mesmo tutor, mesma criança, mesma tela de registro, mesmo `get_family_sessions`.
+
+**Nada de Supabase/RLS mudou.** `child_activities.molde` já tinha
+`identificar` no `check` constraint desde a Fase 4B
+(`check (molde in ('identificar', 'contar', 'comparar', 'associar'))`) —
+zero migração necessária, só código.
+
+**Arquivos tocados:** `js/data/moldes-registro.js` (registro do molde),
+`js/pages/moldes/identificar.js` (novo — o molde em si), e duas linhas em
+`js/pages/modo-crianca.js` (registrar o molde em `MOLDES`, e uma extensão de
+contrato — ver abaixo). **`js/pages/tutor.js` não precisou de nenhuma
+mudança** — o form de composição, a tabela de atividades preparadas, "Usar
+esta execução" e "Últimas execuções" (Sprint 2.5) já eram genéricos o
+suficiente pra funcionar com qualquer entrada de `MOLDES_REGISTRO`. Esse é o
+payoff de ter feito a Sprint 2.5 antes: o segundo molde não teve que abrir
+essas telas de novo.
+
+**Interação:** "Toque no número 3." — a criança vê de 3 a 5 números grandes
+(config `opcoes`, ajustado pelo `nível` genérico) e toca no que bate com a
+instrução. Alvo e distratores são sorteados a cada rodada dentre 1 e
+`maiorNumero`. Errar não avança nem encerra nada — só um tremor calmo de
+300ms no botão errado, e a criança tenta de novo na mesma rodada (mesma
+decisão pedagógica do `contar`: só acerto conta pra rodada).
+
+**Extensão de contrato (pequena, aditiva, não quebra `contar`):** `mount()`
+agora pode devolver `{ avaliar, instrucao }` em vez de só `{ avaliar }`. Isso
+existe porque o `identificar` sorteia o alvo a cada rodada — a instrução que
+a criança lê muda toda vez ("Toque no número 3" → "Toque no número 1"...),
+então não dá pra ser um texto estático do `child_activities.instrucao` como
+no `contar`. `render()` em `modo-crianca.js` agora prioriza
+`activeMold?.instrucao` sobre `contract.instrucao` quando o molde devolve
+algo; `contar` nunca devolve, então continua lendo do contrato exatamente
+como sempre. O campo `instrucaoPadrao` do `identificar` no registro
+(`"Toque no número que eu disser."`) é só o texto que aparece no form do
+tutor pra revisar/editar — não é o que a criança vê de verdade.
+
+**Verificação ao vivo (2026-07-09):** criada "Identificar números — teste
+Sprint 3" (maior número 5, 4 opções, nível 1, 3 rodadas) contra o Supabase
+real. Prévia no iframe já mostrou a instrução dinâmica certa antes mesmo de
+salvar. No Modo Criança real: acolhimento com "Missão: Identificar números",
+rodada 1 pedindo "Toque no número 2" — toquei errado (1) primeiro de
+propósito e confirmei que o estado **não avançou** (`atividade` intacto,
+sem perder a rodada), depois toquei certo e o feedback avançou normalmente
+("Missão 2 de 3"). Completadas as 3 rodadas, "Missão concluída!", resumo
+"Vocês encontraram os números certos, 3 vezes.", "Voltar para o tutor"
+navegou de volta pra `tutor.html?view=record&tab=sessions`. A execução
+apareceu em "Usar esta execução" com o mesmo formato rico da Sprint 2.5
+("Identificar números — teste Sprint 3 · Nível 1 · 3 rodadas · Feita hoje às
+17:46 · Concluída · 6s" — sem "itens", porque `identificar` não tem esse
+campo de config, e a tela lida bem com isso sem hardcode). Registrei a
+sessão vinculando essa execução; logado como responsável, "Sessões de
+Mateus" mostrou "Última atividade: Identificar números" e o resumo exato
+escrito — sem nota interna. **Nenhum erro de console em nenhuma etapa.**
+
+**Não fizemos (fora do escopo combinado):** trilha, ranking/pontos/streak/
+loja/login infantil, temas de `identificar` além de números (cores/formas/
+letras ficam pra quando fizerem falta), qualquer coisa em
+`internal.css`/`styles.css` do hub adulto.
+
+Com `contar` e `identificar` funcionando lado a lado no mesmo ciclo, o
+Cognita deixou de ser "uma demo de uma atividade só" — a arquitetura de
+moldes está provada.
