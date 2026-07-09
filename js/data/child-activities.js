@@ -8,6 +8,8 @@ import { supabase } from '../lib/supabase.js'
 export async function createChildActivity({
   childId,
   createdBy,
+  cycleId = null,
+  templateId = null,
   molde,
   tema,
   config,
@@ -19,6 +21,8 @@ export async function createChildActivity({
     .insert({
       child_id: childId,
       created_by: createdBy,
+      cycle_id: cycleId,
+      template_id: templateId,
       molde,
       tema,
       config,

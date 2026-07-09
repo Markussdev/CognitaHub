@@ -1138,9 +1138,9 @@ function buildSessionsPanel(cycle, state, sessionForm) {
 
 // ── Painel: Atividades preparadas (autoria do tutor pro Modo Criança) ───────
 // O que este form salva é a instância child_activities — ver
-// docs/supabase-fase-4b-corrente.sql. Ligar o Modo Criança nela (trocar
-// getStubActivityContract() por um select via ?activity=<id>) é a etapa
-// seguinte, não esta: "Fazer com a criança" já aponta pro protótipo.
+// docs/supabase-fase-4b-corrente.sql. "Fazer com a criança" já abre o Modo
+// Criança com a atividade real (getChildActivityById via ?activity=<id>) —
+// ver docs/V2-DIRECAO.md para o mapeamento completo da jornada.
 
 function renderChildActivityRow(row) {
   const tr = document.createElement('tr')
@@ -1160,7 +1160,10 @@ function renderChildActivityRow(row) {
 
   const actionTd = document.createElement('td')
   const link = el('a', 'btn btn-ghost btn-sm', 'Fazer com a criança')
-  link.href = `modo-crianca.html?${new URLSearchParams({ activity: row.id, return: 'tutor.html' })}`
+  // return aponta direto pra aba Sessões: é lá que a execução recém-gravada
+  // aparece em "Usar esta execução", fechando o loop sem o tutor ter que
+  // procurar onde continuar.
+  link.href = `modo-crianca.html?${new URLSearchParams({ activity: row.id, return: 'tutor.html?view=record&tab=sessions' })}`
   actionTd.append(link)
 
   tr.append(titleTd, detailsTd, dateTd, actionTd)
@@ -1352,6 +1355,7 @@ function buildActivitiesPanel(cycle, state, onSaved) {
       const { error } = await createChildActivity({
         childId: cycle.child_id,
         createdBy: session.user.id,
+        cycleId: cycle.id,
         molde: moldeKey,
         tema: temaId,
         config,
@@ -2449,12 +2453,19 @@ async function bootstrap() {
   currentDerived = deriveTutorState(session.profile.status, cycles)
   const hasRecord = RECORD_STATES.includes(currentDerived.state)
   renderRail(hasRecord, hasRecord ? firstName(currentDerived.cycle.children?.name) : '')
-  const _viewParam = new URLSearchParams(location.search).get('view')
+  const _urlParams = new URLSearchParams(location.search)
+  const _viewParam = _urlParams.get('view')
   if (_viewParam === 'profile') {
     currentView = 'profile'
   } else if (pendingActivity && hasRecord) {
     currentView = 'record'
     pendingTab = 'sessions'
+  } else if (_viewParam === 'record' && hasRecord) {
+    // Volta do Modo Criança (?view=record&tab=sessions) — pousa direto na
+    // aba pedida em vez de Início, pra "tutor registra a sessão" ser um
+    // passo visível, não uma navegação escondida.
+    currentView = 'record'
+    pendingTab = _urlParams.get('tab') || null
   } else {
     currentView = 'home'
   }
