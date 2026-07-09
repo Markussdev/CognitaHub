@@ -18,7 +18,7 @@
       --bad: #a3123a; --bad-soft: rgba(163,18,58,.08);
       --font-body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
       --font-display: "Baloo 2", var(--font-body);
-      --hold-ms: 550ms; 
+      --hold-ms: 550ms;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
@@ -39,16 +39,26 @@
       *, *::before, *::after { transition: none !important; animation: none !important; }
     }
 
-    /* ── Palco (casca) ── */
+    /* ── Palco (casca) ──
+       "Missão calma": glow bem sutil e estático (sem estrelas piscando, sem
+       gradiente animado) — a referência é o clima espacial de apps tipo
+       Duolingo, mas contido pela mesma trava sensorial de sempre (claro,
+       baixa saturação, zero ruído visual, zero movimento fora de foco). */
     .stage {
+      position: relative;
       min-height: 100vh;
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
-      background: var(--paper); /* trava sensorial: sempre claro, nunca escuro de alto contraste */
+      background:
+        radial-gradient(circle at 14% 16%, rgba(122,108,255,.11), transparent 42%),
+        radial-gradient(circle at 88% 20%, rgba(122,108,255,.07), transparent 34%),
+        radial-gradient(circle at 82% 86%, rgba(255,168,0,.07), transparent 38%),
+        var(--paper); /* trava sensorial: sempre claro, nunca escuro de alto contraste */
     }
 
     .stage-top {
+      position: relative;
       flex-shrink: 0;
       display: flex;
       align-items: center;
@@ -57,6 +67,24 @@
     }
     .mascote-mini { width: 52px; height: 52px; }
     .mascote-mini img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 3px 8px rgba(20,17,98,.18)); }
+
+    /* Missão X de Y — só a etiqueta de progresso da rodada atual (prepara a
+       linguagem visual de "missão" pra uma trilha futura, sem virar mapa). */
+    .mission-badge {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: .82rem;
+      color: var(--brand);
+      background: #fff;
+      border: 1px solid rgba(20,17,98,.12);
+      border-radius: 999px;
+      padding: 6px 16px;
+      white-space: nowrap;
+    }
 
     .adult-btn {
       position: relative;
@@ -108,15 +136,34 @@
       padding: 12px 24px;
     }
 
-    .panel { display: none; flex-direction: column; align-items: center; text-align: center; gap: 16px; max-width: 560px; width: 100%; }
+    .panel { display: none; flex-direction: column; align-items: center; text-align: center; gap: 14px; max-width: 560px; width: 100%; }
     .panel[data-active] { display: flex; }
 
-    .panel-mascote { width: 112px; height: 112px; }
+    .panel-mascote { width: 112px; height: 112px; animation: mascote-entra .4s ease; }
     .panel-mascote img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(20,17,98,.18)); }
     .panel-mascote-rest img { opacity: .82; }
-    .panel-title { font-family: var(--font-display); font-weight: 800; font-size: 1.6rem; color: var(--brand-deep); line-height: 1.2; }
-    .panel-title-sm { font-size: 1.3rem; }
+    @keyframes mascote-entra {
+      from { transform: translateY(6px) scale(.94); opacity: 0; }
+      to { transform: none; opacity: 1; }
+    }
+    .panel-title { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.3rem, 5vw, 1.7rem); color: var(--brand-deep); line-height: 1.25; }
+    .panel-title-sm { font-size: clamp(1.1rem, 4.4vw, 1.3rem); }
     .panel-fala { font-size: 1rem; color: var(--ink-soft); line-height: 1.55; max-width: 42ch; }
+    .panel-fala-sm { font-size: .86rem; max-width: 34ch; }
+
+    /* Missão: {nome} — etiqueta curta dentro do acolhimento, junto do
+       cumprimento genérico da casca. É o que muda por atividade; o resto do
+       texto de boas-vindas fica igual pra toda missão. */
+    .mission-pill {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: .95rem;
+      color: var(--brand-deep);
+      background: rgba(122,108,255,.10);
+      border: 1px solid rgba(20,17,98,.12);
+      border-radius: 999px;
+      padding: 8px 18px;
+    }
 
     /* trava sensorial: a área do molde é o único espaço que o molde controla */
     .mold-slot {
@@ -141,10 +188,14 @@
       letter-spacing: .01em;
     }
 
-    .feedback-icon { width: 68px; height: 68px; border-radius: 50%; display: grid; place-items: center; }
-    .feedback-icon svg { width: 34px; height: 34px; }
+    .feedback-icon { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; animation: feedback-pop .32s ease; }
+    .feedback-icon svg { width: 36px; height: 36px; }
     .feedback-icon.acerto { background: var(--ok-soft); color: var(--ok); }
     .feedback-icon.dificuldade { background: var(--warn-soft); color: var(--warn); }
+    @keyframes feedback-pop {
+      from { transform: scale(.6); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
 
     .stage-footer {
       flex-shrink: 0;
@@ -157,7 +208,7 @@
       min-height: 60px;
       min-width: 140px;
       padding: 0 30px;
-      border-radius: 20px;
+      border-radius: 999px;
       font-family: var(--font-display);
       font-weight: 700;
       font-size: 1.05rem;
@@ -167,7 +218,7 @@
     .btn-primary { background: var(--accent); color: #3a2400; box-shadow: 0 4px 14px rgba(255,168,0,.32); }
     .btn-secondary { background: #fff; color: var(--ink-soft); border: 1px solid rgba(20,17,98,.16); }
 
-    /* ── Folha do adulto (item 3 — escondida, aberta só por toque longo) ── */
+    /* ── Folha do adulto (escondida, aberta só por toque longo) ── */
     .sheet-backdrop {
       position: fixed; inset: 0; background: rgba(35,2,32,.32);
       opacity: 0; pointer-events: none; transition: opacity .18s ease; z-index: 40;
@@ -212,6 +263,16 @@
       background: none; border: none; color: var(--ink-soft);
       font-weight: 700; cursor: pointer;
     }
+
+    /* Confirmação de "Encerrar atividade" — segundo passo dentro da mesma
+       folha, pra reduzir saída acidental sem exigir senha. */
+    .sheet-confirm { padding-top: 4px; }
+    .sheet-confirm-title { font-family: var(--font-display); font-weight: 800; font-size: 1rem; color: var(--brand-deep); text-align: center; }
+    .sheet-confirm-sub { font-size: .86rem; color: var(--ink-soft); text-align: center; line-height: 1.5; margin-top: 8px; }
+    .sheet-confirm-actions { display: flex; gap: 10px; margin-top: 18px; }
+    .sheet-confirm-actions .btn-secondary,
+    .sheet-confirm-actions .btn-primary { flex: 1; min-height: 52px; min-width: 0; padding: 0 12px; font-size: .95rem; }
+    .sheet-confirm-danger { background: var(--bad); color: #fff; box-shadow: none; }
   </style>
 </head>
 <body>
@@ -222,6 +283,7 @@
       <div class="mascote-mini" aria-hidden="true">
         <img src="../assets/gato-plaquinha.png" alt="" />
       </div>
+      <p class="mission-badge" id="mission-badge" hidden></p>
       <button type="button" class="adult-btn" id="adult-btn" aria-label="Controles do adulto. Toque e segure para abrir.">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>
         <svg class="adult-btn-ring" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="19"/></svg>
@@ -235,7 +297,8 @@
       <section class="panel" data-panel="acolhimento">
         <div class="panel-mascote"><img src="../assets/gatomatematico-sem-fundo.png" alt="" /></div>
         <h1 class="panel-title" id="acolhimento-titulo"></h1>
-        <p class="panel-fala" id="acolhimento-fala"></p>
+        <p class="mission-pill" id="acolhimento-missao"></p>
+        <p class="panel-fala panel-fala-sm" id="acolhimento-fala"></p>
       </section>
 
       <section class="panel" data-panel="atividade">
@@ -273,7 +336,8 @@
     <div class="sheet-handle" aria-hidden="true"></div>
     <h2 class="sheet-title">Controles do adulto</h2>
     <p class="sheet-sub" id="sheet-sub"></p>
-    <div class="sheet-actions">
+
+    <div class="sheet-actions" id="sheet-actions">
       <button type="button" class="sheet-action" data-adult-action="mais-facil">
         <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
         Mais fácil
@@ -296,6 +360,16 @@
         Encerrar atividade
       </button>
     </div>
+
+    <div class="sheet-confirm" id="sheet-confirm" hidden>
+      <p class="sheet-confirm-title">Essa parte é para o adulto.</p>
+      <p class="sheet-confirm-sub">Deseja encerrar a atividade agora? O progresso da rodada atual não fica salvo.</p>
+      <div class="sheet-confirm-actions">
+        <button type="button" class="btn-secondary" id="sheet-confirm-cancel">Cancelar</button>
+        <button type="button" class="btn-primary sheet-confirm-danger" id="sheet-confirm-ok">Sim, encerrar</button>
+      </div>
+    </div>
+
     <button type="button" class="sheet-close" id="sheet-close">Fechar</button>
   </aside>
 

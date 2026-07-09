@@ -15,8 +15,9 @@ export function getStubActivityContract() {
       rodadas: 3,
     },
     instrucao: 'Toque em cada dinossauro para contar.',
+    missao: 'Contar dinossauros',
     acolhimento: {
-      titulo: 'Vamos contar os dinossauros?',
+      titulo: 'Oi! Vamos fazer uma missão curtinha?',
       fala: 'Eu adoro contar coisas. Bora começar?',
     },
     feedback_acerto: [
@@ -29,8 +30,8 @@ export function getStubActivityContract() {
       'Sem problema. Contar leva um tempinho — de novo?',
     ],
     encerramento: {
-      titulo: 'Atividade concluída!',
-      resumo: 'Vocês contaram até {quantidade} dinossauros, {rodadas} vezes.',
+      titulo: 'Missão concluída!',
+      resumo: 'Vocês contaram até {quantidade} dinossauros, {rodadas} {vezes}.',
     },
   }
 }

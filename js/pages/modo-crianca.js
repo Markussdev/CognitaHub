@@ -49,16 +49,19 @@ class ModoCrianca {
     this.comoEncerrou = null
     this.pendingFeedbackKind = 'acerto'
     this.sheetAberta = false
+    this.confirmandoEncerrar = false
     this.activeMold = null
 
     this.el = {
       stage: document.getElementById('stage'),
       instruction: document.getElementById('stage-instruction'),
+      missionBadge: document.getElementById('mission-badge'),
       btnPausar: document.getElementById('btn-pausar'),
       btnPrincipal: document.getElementById('btn-principal'),
       panels: document.querySelectorAll('.panel'),
       moldSlot: document.getElementById('mold-slot'),
       acolhimentoTitulo: document.getElementById('acolhimento-titulo'),
+      acolhimentoMissao: document.getElementById('acolhimento-missao'),
       acolhimentoFala: document.getElementById('acolhimento-fala'),
       feedbackIcon: document.getElementById('feedback-icon'),
       feedbackTexto: document.getElementById('feedback-texto'),
@@ -69,6 +72,10 @@ class ModoCrianca {
       sheetBackdrop: document.getElementById('sheet-backdrop'),
       sheetSub: document.getElementById('sheet-sub'),
       sheetClose: document.getElementById('sheet-close'),
+      sheetActions: document.getElementById('sheet-actions'),
+      sheetConfirm: document.getElementById('sheet-confirm'),
+      sheetConfirmCancel: document.getElementById('sheet-confirm-cancel'),
+      sheetConfirmOk: document.getElementById('sheet-confirm-ok'),
     }
 
     this.bindEvents()
@@ -102,6 +109,11 @@ class ModoCrianca {
     this.el.sheetClose.addEventListener('click', () => this.fecharSheet())
     this.el.sheet.querySelectorAll('[data-adult-action]').forEach((btn) => {
       btn.addEventListener('click', () => this.onAdultAction(btn.dataset.adultAction))
+    })
+    this.el.sheetConfirmCancel.addEventListener('click', () => this.cancelarConfirmEncerrar())
+    this.el.sheetConfirmOk.addEventListener('click', () => {
+      this.fecharSheet()
+      this.encerrar('adulto_encerrou')
     })
 
     document.addEventListener('keydown', (e) => {
@@ -157,10 +169,17 @@ class ModoCrianca {
       case 'pausado':
         return { label: 'Retomar', acao: () => this.retomar() }
       case 'encerramento':
-        return { label: 'Voltar', acao: () => this.sair() }
+        return { label: this.rotuloVoltar(), acao: () => this.sair() }
       default:
         return { label: '', acao: () => {} }
     }
+  }
+
+  // Quem abriu o Modo Criança (tutor.js hoje; responsável ainda não tem
+  // entrada na UI, mas a RLS já permite — ver docs/V2-DIRECAO.md §5). Sem
+  // sessão (modo stub/demonstração), cai no rótulo padrão.
+  rotuloVoltar() {
+    return this.authSession?.profile?.role === 'guardian' ? 'Voltar para o responsável' : 'Voltar para o tutor'
   }
 
   onPrincipal() {
@@ -236,9 +255,24 @@ class ModoCrianca {
       this.fecharSheet()
       this.pausar()
     } else if (action === 'encerrar') {
-      this.fecharSheet()
-      this.encerrar('adulto_encerrou')
+      // Não encerra na hora — pede confirmação primeiro (reduz saída
+      // acidental sem exigir senha do adulto).
+      this.abrirConfirmEncerrar()
     }
+  }
+
+  abrirConfirmEncerrar() {
+    this.confirmandoEncerrar = true
+    this.el.sheetActions.hidden = true
+    this.el.sheetConfirm.hidden = false
+    this.el.sheetSub.hidden = true // "Nível atual: X de 5" não importa nessa pergunta
+  }
+
+  cancelarConfirmEncerrar() {
+    this.confirmandoEncerrar = false
+    this.el.sheetActions.hidden = false
+    this.el.sheetConfirm.hidden = true
+    this.el.sheetSub.hidden = false
   }
 
   encerrar(motivo) {
@@ -295,6 +329,7 @@ class ModoCrianca {
 
   abrirSheet() {
     this.sheetAberta = true
+    this.cancelarConfirmEncerrar() // sempre abre na visão normal, nunca na confirmação da vez passada
     this.el.sheetSub.textContent = `Nível atual: ${this.config.nivel} de 5`
     this.el.sheet.classList.add('open')
     this.el.sheet.setAttribute('aria-hidden', 'false')
@@ -303,6 +338,7 @@ class ModoCrianca {
 
   fecharSheet() {
     this.sheetAberta = false
+    this.cancelarConfirmEncerrar()
     this.el.sheet.classList.remove('open')
     this.el.sheet.setAttribute('aria-hidden', 'true')
     this.el.sheetBackdrop.classList.remove('open')
@@ -338,8 +374,20 @@ class ModoCrianca {
     // some de conteúdo, não de layout.
     this.el.instruction.textContent = this.state === 'atividade' ? this.contract.instrucao : ''
 
+    // Missão X de Y — só um rótulo de progresso da rodada atual (prepara a
+    // linguagem visual pra uma trilha futura, sem virar mapa navegável).
+    // Visível durante a atividade e o feedback dela; some no resto.
+    const rodadas = this.config.rodadas || 3
+    const mostrarMissao = this.state === 'atividade' || this.state === 'feedback'
+    this.el.missionBadge.hidden = !mostrarMissao
+    if (mostrarMissao) {
+      const atual = Math.min(this.round + 1, rodadas)
+      this.el.missionBadge.textContent = `Missão ${atual} de ${rodadas}`
+    }
+
     if (this.state === 'acolhimento') {
       this.el.acolhimentoTitulo.textContent = this.contract.acolhimento.titulo
+      this.el.acolhimentoMissao.textContent = `Missão: ${this.contract.missao || this.contract.tema || ''}`
       this.el.acolhimentoFala.textContent = this.contract.acolhimento.fala
     }
 
@@ -355,7 +403,8 @@ class ModoCrianca {
 
     if (this.state === 'encerramento') {
       this.el.encerramentoTitulo.textContent = this.contract.encerramento.titulo
-      this.el.encerramentoResumo.textContent = formatTemplate(this.contract.encerramento.resumo, this.config)
+      const vezes = this.config.rodadas === 1 ? 'vez' : 'vezes'
+      this.el.encerramentoResumo.textContent = formatTemplate(this.contract.encerramento.resumo, { ...this.config, vezes })
     }
 
     this.el.adultBtn.hidden = this.state === 'encerramento'

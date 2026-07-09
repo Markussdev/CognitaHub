@@ -44,18 +44,24 @@ function injetarEstilos() {
     .molde-contar-contador {
       font-family: var(--font-display); font-weight: 800; font-size: 1.1rem;
       color: var(--brand-deep); background: #fff; border: 1px solid rgba(20,17,98,.14);
-      border-radius: 999px; padding: 6px 18px;
+      border-radius: 999px; padding: 7px 20px;
     }
     .molde-contar-contador.completo { color: var(--ok); border-color: rgba(28,124,84,.3); background: var(--ok-soft); }
-    .molde-contar-grade { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; max-width: 440px; }
+    .molde-contar-grade { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; max-width: 460px; }
     .molde-contar-item {
-      position: relative; width: 84px; height: 84px; border-radius: 20px;
+      position: relative; width: 92px; height: 92px; border-radius: 24px;
       background: #fff; border: 2px solid rgba(20,17,98,.12);
       display: grid; place-items: center; cursor: pointer; padding: 10px;
-      font: inherit;
+      font: inherit; transition: transform .12s ease, border-color .12s ease, background .12s ease;
     }
+    .molde-contar-item:active { transform: scale(.94); }
     .molde-contar-item img { width: 100%; height: 100%; object-fit: contain; }
-    .molde-contar-item.contado { border-color: var(--ok); background: var(--ok-soft); }
+    .molde-contar-item.contado { border-color: var(--ok); background: var(--ok-soft); animation: molde-contar-pop .3s ease; }
+    @keyframes molde-contar-pop {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
     .molde-contar-badge {
       position: absolute; top: -8px; right: -8px; width: 26px; height: 26px; border-radius: 50%;
       background: var(--ok); color: #fff; font-family: var(--font-display); font-weight: 800;

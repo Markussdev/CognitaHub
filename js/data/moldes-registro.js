@@ -18,7 +18,6 @@ export const MOLDES_REGISTRO = {
     ],
     instrucaoPadrao: 'Toque em cada dinossauro para contar.',
     tituloPadrao: (temaLabel) => `Contar ${temaLabel.toLowerCase()}`,
-    acolhimentoTitulo: (temaLabel) => `Vamos contar ${temaLabel.toLowerCase()}?`,
     acolhimentoFala: 'Eu adoro contar coisas. Bora começar?',
     feedbackAcerto: [
       'Isso mesmo! Você contou certinho.',
@@ -30,9 +29,10 @@ export const MOLDES_REGISTRO = {
       'Sem problema. Contar leva um tempinho — de novo?',
     ],
     // {tema} é resolvido na hora de montar o contrato (não muda durante a
-    // sessão); {quantidade}/{rodadas} ficam para o formatTemplate do casca,
-    // porque podem mudar via "mais fácil"/"mais difícil".
-    encerramentoResumo: 'Vocês contaram até {quantidade} {tema}, {rodadas} vezes.',
+    // sessão); {quantidade}/{rodadas}/{vezes} ficam para o formatTemplate do
+    // casca, porque podem mudar via "mais fácil"/"mais difícil". {vezes} é
+    // "vez"/"vezes" já concordado — ver render() em modo-crianca.js.
+    encerramentoResumo: 'Vocês contaram até {quantidade} {tema}, {rodadas} {vezes}.',
   },
   identificar: { label: 'Identificar', disponivel: false, temas: [], campos: [] },
   comparar: { label: 'Comparar', disponivel: false, temas: [], campos: [] },
@@ -42,21 +42,30 @@ export const MOLDES_REGISTRO = {
 // Monta o contrato completo (o formato que o Modo Criança renderiza) a partir
 // de molde+tema+config+instrucao — usado tanto pela leitura real de uma
 // child_activity (js/pages/modo-crianca.js) quanto pela prévia ao vivo do
-// form de composição (js/pages/tutor.js). Acolhimento/feedback/encerramento
+// form de composição (js/pages/tutor.js). Fala/feedback/resumo de encerramento
 // nunca vêm do banco nem do form — são o padrão do molde, sempre.
+//
+// Sprint 2 (Missão curtinha): a saudação de acolhimento passou a ser genérica
+// e da casca, não mais autorada por molde — reduz o que um molde novo precisa
+// definir. O que identifica a atividade pra criança é a etiqueta curta
+// `missao` (ex.: "Contar dinossauros"), mostrada como "Missão: {missao}".
+const SAUDACAO_ACOLHIMENTO = 'Oi! Vamos fazer uma missão curtinha?'
+
 export function buildContractFromParts({ molde: moldeKey, tema, config, instrucao, titulo }) {
   const molde = MOLDES_REGISTRO[moldeKey]
   const temaLabel = molde?.temas.find((t) => t.id === tema)?.label || tema || ''
   const resumoTemplate = (molde?.encerramentoResumo || 'Atividade concluída.')
     .replace('{tema}', temaLabel.toLowerCase())
+  const missao = molde?.tituloPadrao?.(temaLabel) || titulo || molde?.label || ''
 
   return {
     molde: moldeKey,
     tema,
     config: config || {},
     instrucao,
+    missao,
     acolhimento: {
-      titulo: molde?.acolhimentoTitulo?.(temaLabel) || titulo || 'Vamos começar?',
+      titulo: SAUDACAO_ACOLHIMENTO,
       fala: molde?.acolhimentoFala || 'Bora fazer essa atividade juntos?',
     },
     feedback_acerto: molde?.feedbackAcerto?.length ? molde.feedbackAcerto : ['Muito bem!'],
@@ -64,7 +73,7 @@ export function buildContractFromParts({ molde: moldeKey, tema, config, instruca
       ? molde.feedbackDificuldade
       : ['Vamos tentar de novo, com calma.'],
     encerramento: {
-      titulo: 'Atividade concluída!',
+      titulo: 'Missão concluída!',
       resumo: resumoTemplate,
     },
   }

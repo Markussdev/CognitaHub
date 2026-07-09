@@ -197,3 +197,87 @@ observador. Navegador dirigido via Playwright headless contra
 **Nenhum erro de console/JS apareceu em nenhuma etapa.** Os dados de teste
 ("Contar dinossauros — teste E2E" e a sessão de 08/07/2026) ficaram no projeto
 Supabase real — perguntar a Marcus se quer manter como exemplo vivo ou limpar.
+
+## 8. Sprint 2 — Modo Criança bonito (2026-07-08/09)
+
+Decisão de ordem confirmada por Marcus antes de começar: **nenhum trabalho
+visual até a corrente ponta a ponta estar fechada e testada com dado real**
+(§7 já cobria isso). Com a Sprint 1 fechada, esta rodada tocou **só**
+`pages/modo-crianca.html`, `js/pages/modo-crianca.js`,
+`js/data/moldes-registro.js`, `js/data/modo-crianca-stub.js` e
+`js/pages/moldes/contar.js` — nada em Supabase/Auth/RLS/`sessions`/
+`child_activities`/`atividade_execucao`, e nada no hub adulto além do que já
+estava (o retorno pra aba Sessões é da Sprint 1).
+
+**O que mudou:**
+
+- **Acolhimento curto e genérico.** A saudação deixou de ser autorada por
+  molde (`acolhimentoTitulo` foi removida de `MOLDES_REGISTRO`) e virou uma
+  constante da casca: "Oi! Vamos fazer uma missão curtinha?". O que muda por
+  atividade é só a etiqueta `missao` (novo campo no contrato, ex.: "Missão:
+  Contar dinossauros"), derivada de `molde.tituloPadrao(temaLabel)`.
+- **"Missão X de Y".** Um badge no topo do palco mostra a rodada atual contra
+  o total configurado pelo tutor (`config.rodadas`) durante os estados
+  `atividade`/`feedback`. É a mesma ideia visual da trilha futura (Sprint 4),
+  mas usando um dado que já existe (rodadas de uma atividade), sem inventar
+  estrutura de trilha nenhuma.
+- **Encerramento.** Título trocou de "Atividade concluída!" para "Missão
+  concluída!"; o botão final ficou "Voltar para o tutor" (ou "Voltar para o
+  responsável", calculado por `authSession.profile.role` — hoje sempre
+  tutor, já que o responsável ainda não tem entrada na UI, ver §5).
+- **Confirmação antes de encerrar.** "Encerrar atividade" no menu do adulto
+  não encerra mais na hora — abre uma segunda tela na mesma folha ("Essa
+  parte é para o adulto. Deseja encerrar a atividade agora?" + Cancelar/Sim,
+  encerrar), reduzindo saída acidental sem exigir senha. Cancelar/fechar a
+  folha sempre volta pro estado normal (nunca reabre já em confirmação).
+- **Visual "espacial calmo".** Fundo com glow sutil e **estático** (radial-
+  gradient em roxo/dourado bem discreto), botões mais arredondados (pill),
+  itens do molde `contar` maiores (92px) com uma micro-animação de "pop" ao
+  marcar, ícone de feedback com entrada suave, título com `clamp()` pra
+  mobile-first. Tudo dentro do `<style>` inline de `modo-crianca.html`
+  (isolado do hub adulto, como já era).
+
+**Decisão deliberada sobre o "clima espacial" (vale saber):** a referência
+que o Marcus deu foi Duolingo (estrelas, planetas, movimento). O `CLAUDE.md`
+§11 e os comentários de "trava sensorial" já no arquivo (`sempre claro, nunca
+escuro de alto contraste`, `prefers-reduced-motion` zera toda animação) são
+guia de acessibilidade cognitiva pro público autista — o usuário direto do
+Modo Criança. Por isso a versão implementada é **sem** estrelas piscando,
+sem gradiente animado, sem parallax: o "espacial" vira só um glow estático e
+de baixa saturação. Se depois disso ainda parecer "sem graça" pertinho do
+Duolingo de verdade, é uma conversa de produto (quanto de estímulo é
+aceitável), não um ajuste técnico — sinalizar antes de adicionar movimento.
+
+**Verificação ao vivo (2026-07-09):** dev server caiu junto com um desligamento
+de PC no meio da Sprint 2 (arquivos já estavam salvos em disco, sobreviveram
+normalmente — só o processo do `npm run dev` e a sessão logada no navegador
+precisaram ser refeitos). Religado o servidor, testado de novo contra o
+Supabase real com uma atividade nova ("Contar dinossauros — Sprint 2 visual",
+2 itens, 2 rodadas):
+
+- Acolhimento renderizou exatamente "Oi! Vamos fazer uma missão curtinha?" +
+  "Missão: Contar dinossauros" + fala pequena, sobre o novo fundo.
+- Badge mudou corretamente "Missão 1 de 2" → "Missão 2 de 2" entre as rodadas.
+- Sheet do adulto → "Encerrar atividade" → tela de confirmação → "Cancelar"
+  voltou ao normal sem encerrar nada (testado explicitamente).
+- Encerramento mostrou "Missão concluída!", resumo com plural certo ("2
+  vezes"), botão "Voltar para o tutor".
+- Voltar navegou pra `tutor.html?view=record&tab=sessions` de novo, e a nova
+  execução apareceu em "Usar esta execução" — a ponte com a Sprint 1 continua
+  intacta.
+- **Nenhum erro de console em nenhuma etapa.**
+
+**Observação de higiene de dados (não é bug da Sprint 2):** a lista de
+execuções pendentes de Mateus mostrou **2** itens idênticos na tela
+("Contar · Dinossauros · nível 1") depois deste teste, quando o esperado era
+1 (a nova). A UI não mostra id/timestamp pra diferenciar, e não há acesso
+direto ao SQL Editor nesta sessão pra investigar a fundo — pode ser só
+acúmulo de dado de teste das duas rodadas de teste (Sprint 1 + Sprint 2)
+sobre a mesma criança fictícia. Vale conferir com uma query em
+`atividade_execucao` (`where child_id = '<id do Mateus>' and session_id is
+null`) na próxima vez que estiver no SQL Editor — não bloqueia a Sprint 2
+(a lógica de gravação em si já está reprovada como correta desde a Sprint 1).
+
+**Não fizemos (fora do escopo combinado):** segundo molde (`identificar`),
+qualquer trilha navegável, login/ranking/pontos/loja pra criança, mudança em
+`internal.css`/`styles.css` do hub adulto.
