@@ -1375,6 +1375,7 @@ function buildActivitiesPanel(cycle, state, onSaved) {
   // estados bloqueados (renderChildActivityRow aí só mostra "Fazer com a
   // criança", que não depende do form).
   let rowCallbacks
+  let prefillFromPlanoRef
 
   if (LOCKED[state]) {
     const lockedCard = el('div', 'card')
@@ -1542,7 +1543,11 @@ function buildActivitiesPanel(cycle, state, onSaved) {
     // com os dados de uma atividade já salva — a diferença é só se ficam em
     // modo criação (gera linha nova, título ganha "(cópia)") ou em modo
     // edição (atualiza a linha de origem).
-    function prefillCompose(row, { asEdit = false } = {}) {
+    // asEdit: atualiza a linha de origem (Editar). asCopy: cria linha nova
+    // com "(cópia)" no título (Duplicar). Nenhum dos dois (ex.: vindo do
+    // Plano): cria linha nova com o título como veio, sem sufixo — não é
+    // cópia de nada, é uma atividade nova sugerida pela etapa.
+    function prefillCompose(row, { asEdit = false, asCopy = false } = {}) {
       const molde = MOLDES_REGISTRO[row.molde]
       const temaLabel = molde?.temas.find((t) => t.id === row.tema)?.label || row.tema
 
@@ -1555,7 +1560,7 @@ function buildActivitiesPanel(cycle, state, onSaved) {
 
       instInput.value = row.instrucao || ''
       const baseTitulo = row.titulo || molde?.tituloPadrao?.(temaLabel) || molde?.label || ''
-      tituloInput.value = asEdit ? baseTitulo : `${baseTitulo} (cópia)`.trim()
+      tituloInput.value = asEdit ? baseTitulo : asCopy ? `${baseTitulo} (cópia)`.trim() : baseTitulo
 
       editingId = asEdit ? row.id : null
       saveBtn.textContent = asEdit ? 'Salvar alterações' : 'Salvar atividade'
@@ -1585,10 +1590,16 @@ function buildActivitiesPanel(cycle, state, onSaved) {
     }
 
     rowCallbacks = {
-      onDuplicate: (row) => prefillCompose(row, { asEdit: false }),
+      onDuplicate: (row) => prefillCompose(row, { asCopy: true }),
       onEdit: (row) => prefillCompose(row, { asEdit: true }),
       onArchive,
     }
+
+    // Ponte com a aba Plano (buildPlanPanel): "Preparar atividade desta
+    // etapa" chama isto com { titulo, molde, tema, config, instrucao } —
+    // mesmo formato de uma linha de child_activities, então o mesmo
+    // prefillCompose serve sem duplicar lógica.
+    prefillFromPlanoRef = (etapa) => prefillCompose(etapa, {})
 
     saveBtn.addEventListener('click', async () => {
       errorBox.hidden = true; okBox.hidden = true
@@ -1715,66 +1726,173 @@ function buildActivitiesPanel(cycle, state, onSaved) {
 
   panel.loadTable = () => loadChildActivitiesTable(cycle.child_id, tbody, emptyWrap, errorWrap, table, rowCallbacks)
   panel.loadRecentExecucoes = () => loadRecentExecucoes(cycle.child_id, recentList)
+  // undefined nos estados bloqueados (sem form de composição pra receber);
+  // o chamador (onPrepararEtapa em renderRecord) já não deveria conseguir
+  // chegar aqui nesses estados, mas o encadeamento opcional protege mesmo assim.
+  panel.prefillFromPlano = (etapa) => prefillFromPlanoRef?.(etapa)
   return panel
 }
 
-// ── Painel: Plano ──────────────────────────────────────────────────────────────
+// ── Painel: Plano — trilha "Primeiros Números" ───────────────────────────────
+// Não é navegação livre da criança — é o tutor decidindo a próxima etapa.
+// Trilha fixa em JS (sem tabela nova ainda): cada etapa sugere molde+tema+
+// config, e "Preparar atividade desta etapa" só joga esses valores no form
+// de composição da aba Atividades preparadas (mesmo prefillCompose que
+// Duplicar/Editar já usam) — o tutor ainda revisa e decide salvar.
 
-function buildPlanPanel(cycle) {
+const PRIMEIROS_NUMEROS = [
+  {
+    titulo: 'Identificar números de 1 a 5',
+    objetivo: 'Reconhecer e apontar números de 1 a 5.',
+    molde: 'identificar',
+    tema: 'numeros',
+    config: { maiorNumero: 5, opcoes: 4, nivel: 1, rodadas: 3 },
+    instrucao: 'Toque no número que eu disser.',
+  },
+  {
+    titulo: 'Contar objetos até 5',
+    objetivo: 'Contar de 1 a 5 itens com apoio visual.',
+    molde: 'contar',
+    tema: 'dinossauros',
+    config: { quantidade: 5, nivel: 1, rodadas: 3 },
+    instrucao: 'Toque em cada dinossauro para contar.',
+  },
+  {
+    titulo: 'Identificar números de 1 a 10',
+    objetivo: 'Reconhecer números um pouco maiores, até 10.',
+    molde: 'identificar',
+    tema: 'numeros',
+    config: { maiorNumero: 10, opcoes: 5, nivel: 1, rodadas: 3 },
+    instrucao: 'Toque no número que eu disser.',
+  },
+  {
+    titulo: 'Contar objetos até 10',
+    objetivo: 'Contar até 10 itens, aumentando aos poucos.',
+    molde: 'contar',
+    tema: 'dinossauros',
+    config: { quantidade: 10, nivel: 1, rodadas: 3 },
+    instrucao: 'Toque em cada dinossauro para contar.',
+  },
+  {
+    titulo: 'Revisão calma',
+    objetivo: 'Revisar contagem e identificação, sem conteúdo novo.',
+    molde: 'contar',
+    tema: 'dinossauros',
+    config: { quantidade: 3, nivel: 1, rodadas: 2 },
+    instrucao: 'Toque em cada dinossauro para contar, sem pressa.',
+  },
+]
+
+const STATUS_ETAPA = {
+  concluida: { label: 'Concluída', cls: 'done', pill: 'pill-ok' },
+  em_andamento: { label: 'Em andamento', cls: 'now', pill: 'pill-mid' },
+  a_fazer: { label: null, cls: '', pill: null },
+}
+
+// Reconhece se uma child_activity já preparada corresponde a uma etapa da
+// trilha — por molde+tema e um "número-chave" da config (o que muda entre
+// "até 5" e "até 10" pra cada molde). Aproximado de propósito: não há
+// vínculo formal plano↔atividade ainda, é inferência sobre dado existente.
+function etapaBateComAtividade(row, etapa) {
+  if (row.molde !== etapa.molde || row.tema !== etapa.tema) return false
+  if (etapa.molde === 'identificar') return Number(row.config?.maiorNumero) === Number(etapa.config.maiorNumero)
+  if (etapa.molde === 'contar') return Number(row.config?.quantidade) === Number(etapa.config.quantidade)
+  return true
+}
+
+// Cruza child_activities (o que já foi preparado) com sessions.child_activity_id
+// (o que já virou registro) — sem query nova, as duas já existem pra outras
+// telas. "Em andamento" também cobre a primeira etapa ainda não concluída
+// mesmo sem nada preparado, pra sempre haver um "próximo passo" visível.
+async function computeStatusEtapas(childId, cycleId) {
+  const [{ data: atividades, error: e1 }, { data: sessoes, error: e2 }] = await Promise.all([
+    listChildActivities(childId),
+    getCycleSessions(cycleId),
+  ])
+  if (e1 || e2) return null
+
+  const idsComSessao = new Set((sessoes ?? []).map((s) => s.child_activity_id).filter(Boolean))
+
+  const bruto = PRIMEIROS_NUMEROS.map((etapa) => {
+    const match = (atividades ?? []).find((row) => etapaBateComAtividade(row, etapa))
+    if (match && idsComSessao.has(match.id)) return 'concluida'
+    if (match) return 'em_andamento'
+    return 'a_fazer'
+  })
+
+  const primeiraNaoConcluidaIdx = bruto.findIndex((s) => s !== 'concluida')
+  return bruto.map((s, i) => (i === primeiraNaoConcluidaIdx && s === 'a_fazer' ? 'em_andamento' : s))
+}
+
+function buildPlanPanel(cycle, state, onPrepararEtapa) {
   const panel = el('section', 'panel')
   panel.dataset.panel = 'plan'
   panel.hidden = true
 
-  const cols = el('div', 'cols')
+  const podePreparar = state === 'cycle_active'
+  const bloqueadoMsg = {
+    cycle_planned: 'Preparar atividades libera quando a equipe ativar o ciclo — a trilha abaixo já mostra o que vem a seguir.',
+    cycle_paused: 'Preparar atividades fica bloqueado enquanto o ciclo estiver pausado.',
+    cycle_completed: 'Este ciclo já foi concluído — a trilha abaixo fica só como histórico.',
+  }[state]
 
-  const planCard = el('div', 'card')
-  const planHead = el('div', 'card-h')
-  planHead.append(el('h3', null, 'Plano da semana — definido pela equipe'))
-  const suggestBtn = el('button', 'btn btn-ghost btn-sm', 'Sugerir ajuste')
-  suggestBtn.type = 'button'
-  planHead.append(suggestBtn)
+  const card = el('div', 'card')
+  const head = el('div', 'card-h')
+  head.append(el('h3', null, 'Plano: Primeiros Números'))
+  card.append(head)
 
-  const planBody = el('div', 'card-b')
-  const kv = el('dl', 'kv')
-  ;[
-    ['Objetivo', cycle.main_goal || 'Fortalecer contagem até 10 com apoio visual.'],
-    ['Etapa atual', cycle.current_plan || 'Sessão inicial com blocos, imagens ou objetos concretos.'],
-    ['Critério de avanço', 'Avançar quando a criança contar até 10 com menos apoio em 2 sessões seguidas.'],
-    ['Observação', 'Usar instruções curtas e evitar atividades longas sem pausa.'],
-  ].forEach(([k, v]) => {
-    kv.append(el('dt', null, k), el('dd', null, v))
-  })
-  planBody.append(kv)
+  const body = el('div', 'card-b')
+  body.append(el('p', 'card-copy', 'Sequência simples pra conduzir o começo do acompanhamento — o tutor decide quando avançar; a criança não escolhe a etapa.'))
 
-  const suggestNote = el('p', 'card-copy', 'Em breve você poderá sugerir ajustes ao plano por aqui — por enquanto, fale com a equipe.')
-  suggestNote.hidden = true
-  suggestNote.style.marginTop = '10px'
-  suggestBtn.addEventListener('click', () => { suggestNote.hidden = false })
-  planBody.append(suggestNote)
-  planCard.append(planHead, planBody)
+  if (bloqueadoMsg) {
+    const note = el('div', 'locked-note')
+    note.innerHTML = `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
+    note.append(document.createTextNode(bloqueadoMsg))
+    note.style.marginTop = '10px'
+    body.append(note)
+  }
 
-  const stepsCard = el('div', 'card')
-  stepsCard.append(simpleHead('Etapas do ciclo'))
-  const stepsBody = el('div', 'card-b')
-  const steps = el('div', 'steps')
-  ;[
-    { label: 'Reconhecer e contar 1 a 5', desc: 'Etapa atual — grupos pequenos com objetos concretos.', cls: 'now' },
-    { label: 'Contar até 10', desc: 'Aumentar a sequência com apoio visual.', cls: '' },
-    { label: 'Comparar quantidades', desc: 'Qual grupo tem mais? Mais ou menos.', cls: '' },
-    { label: 'Adição simples', desc: 'Juntar dois grupos pequenos.', cls: '' },
-  ].forEach(({ label, desc, cls }, i) => {
-    const step = el('div', `step${cls ? ` ${cls}` : ''}`)
-    step.append(el('div', 'step-n', String(i + 1)))
-    const copy = el('div')
-    copy.append(el('b', null, label), el('p', null, desc))
-    step.append(copy)
-    steps.append(step)
-  })
-  stepsBody.append(steps)
-  stepsCard.append(stepsBody)
+  const stepsWrap = el('div', 'steps')
+  stepsWrap.style.marginTop = '14px'
+  body.append(stepsWrap)
+  card.append(body)
+  panel.append(card)
 
-  cols.append(planCard, stepsCard)
-  panel.append(cols)
+  function renderEtapas(statusList) {
+    stepsWrap.replaceChildren()
+    PRIMEIROS_NUMEROS.forEach((etapa, i) => {
+      const status = statusList?.[i] || (i === 0 ? 'em_andamento' : 'a_fazer')
+      const info = STATUS_ETAPA[status]
+
+      const step = el('div', `step${info.cls ? ` ${info.cls}` : ''}`)
+      step.append(el('div', 'step-n', String(i + 1)))
+
+      const copy = el('div', 'plan-step-copy')
+      const headRow = el('div', 'plan-step-head')
+      headRow.append(el('b', null, etapa.titulo))
+      if (info.label) headRow.append(el('span', `pill ${info.pill}`, info.label))
+      copy.append(headRow, el('p', null, etapa.objetivo))
+
+      if (podePreparar) {
+        const prepararBtn = el('button', 'btn btn-ghost btn-sm', 'Preparar atividade desta etapa')
+        prepararBtn.type = 'button'
+        prepararBtn.style.marginTop = '8px'
+        prepararBtn.addEventListener('click', () => onPrepararEtapa?.(etapa))
+        copy.append(prepararBtn)
+      }
+
+      step.append(copy)
+      stepsWrap.append(step)
+    })
+  }
+
+  renderEtapas(null)
+
+  panel.loadStatus = async () => {
+    const statusList = await computeStatusEtapas(cycle.child_id, cycle.id)
+    if (statusList) renderEtapas(statusList)
+  }
+
   return panel
 }
 
@@ -2380,7 +2498,13 @@ function renderRecord(state, cycle, initialTab) {
   const overviewPanel = buildOverviewPanel(cycle, state, openForm, useSuggestedActivity)
   const sessionsPanel = buildSessionsPanel(cycle, state, sessionForm)
   const activitiesPanel = buildActivitiesPanel(cycle, state, refreshActivities)
-  const planPanel = buildPlanPanel(cycle)
+  // Plano → Atividades preparadas: troca de aba primeiro (o form precisa
+  // estar visível antes do scrollIntoView do prefill rodar de verdade).
+  const onPrepararEtapa = (etapa) => {
+    switchTab('activities')
+    activitiesPanel.prefillFromPlano?.(etapa)
+  }
+  const planPanel = buildPlanPanel(cycle, state, onPrepararEtapa)
   const reportsPanel = buildReportsPanel(cycle)
   const orientationsPanel = buildOrientationsPanel(cycle, childName)
 
@@ -2390,6 +2514,7 @@ function renderRecord(state, cycle, initialTab) {
     wireTabs()
     refreshSessions()
     refreshActivities()
+    planPanel.loadStatus?.()
     if (initialTab && initialTab !== 'overview') switchTab(initialTab)
     if (pendingActivity && sessionForm) {
       const act = pendingActivity

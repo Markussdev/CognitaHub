@@ -437,3 +437,76 @@ letras ficam pra quando fizerem falta), qualquer coisa em
 Com `contar` e `identificar` funcionando lado a lado no mesmo ciclo, o
 Cognita deixou de ser "uma demo de uma atividade só" — a arquitetura de
 moldes está provada.
+
+## 11. Sprint 4 — Plano do Tutor / trilha simples (2026-07-09)
+
+Objetivo: a aba Plano deixa de ser um placeholder genérico ("Objetivo /
+Etapa atual / Critério de avanço" com texto fixo e um botão "Sugerir ajuste"
+que só revelava uma nota de "em breve") e passa a mostrar uma trilha real —
+**do tutor, não da criança**. A criança nunca escolhe fase; no Modo Criança,
+no máximo aparece "Missão X de Y" (Sprint 2), que já é rodada dentro de UMA
+atividade, não navegação entre etapas do plano.
+
+**Trilha fixa em JS, sem tabela nova ainda** (`PRIMEIROS_NUMEROS` em
+`tutor.js`), 5 etapas usando só os dois moldes que já existem:
+
+1. Identificar números de 1 a 5 (`identificar`)
+2. Contar objetos até 5 (`contar`)
+3. Identificar números de 1 a 10 (`identificar`)
+4. Contar objetos até 10 (`contar`)
+5. Revisão calma (`contar`, config mais leve)
+
+Cada etapa carrega título + objetivo curto + molde/tema/config/instrução
+sugeridos — os mesmos campos de uma `child_activity`.
+
+**Status sem tabela nova.** Cruza dado que já existia: `listChildActivities`
+(o que já foi preparado) com `getCycleSessions` (quais `child_activity_id`
+já viraram sessão registrada). Bate por molde+tema+"número-chave" da config
+(`maiorNumero` pro identificar, `quantidade` pro contar) — aproximado de
+propósito, não é vínculo formal ainda. Resultado: **concluída** (preparada e
+já com sessão), **em andamento** (preparada, aguardando sessão — ou a
+primeira etapa ainda não concluída, mesmo sem nada preparado, pra sempre
+haver um "próximo passo" visível), ou **a fazer**.
+
+**"Preparar atividade desta etapa"** troca pra aba Atividades preparadas e
+pré-preenche o form de composição com os dados da etapa — reaproveitando o
+MESMO `prefillCompose` que já existia pra Duplicar/Editar (Sprint 2.5). Único
+ajuste: `prefillCompose` ganhou um terceiro modo. Antes só distinguia
+`asEdit` (Editar, atualiza a linha de origem) de "não-edit" (Duplicar,
+sempre com "(cópia)" no título). Agora tem `asCopy` separado: Duplicar usa
+`{ asCopy: true }` (mantém o sufixo), vindo do Plano usa `{}` (nem edit nem
+cópia — título como veio, sem sufixo, porque não é cópia de nada). O tutor
+sempre revisa e decide salvar; nada é criado sozinho.
+
+**Ajuste necessário para a etapa "1 a 10":** o campo `maiorNumero` do
+`identificar` (Sprint 3) tinha `max: 5` — escopo deliberado da Sprint 3 ("só
+números de 1 a 5"). Subiu pra `max: 10` só no registro
+(`js/data/moldes-registro.js`); `identificar.js` já era genérico o
+suficiente (sorteia entre 1 e `maiorNumero`, o que quer que seja) e não
+precisou de nenhuma mudança de lógica. Efeito colateral pequeno: o seletor de
+pills passou a ter até 8 botões numa linha só, então `.pill-select-row`
+ganhou `flex-wrap: wrap` (não tinha antes) — beneficia esse campo e qualquer
+outro parecido no futuro.
+
+**Verificação ao vivo (2026-07-09):** a trilha carregou contra o Supabase
+real e o cálculo de status **acertou usando dado de teste que já existia**,
+sem eu montar cenário nenhum pra isso: "Identificar números de 1 a 5"
+apareceu **Concluída** (tinha uma atividade da Sprint 3 com `maiorNumero: 5`
+já registrada em sessão) e "Contar objetos até 5" apareceu **Em andamento**
+(tinha uma atividade com `quantidade: 5` preparada, mas sem sessão ainda) —
+as outras três, sem match, "a fazer". Cliquei "Preparar atividade desta
+etapa" em "Identificar números de 1 a 10": trocou pra aba Atividades
+preparadas, pré-preencheu molde/tema/config/instrução/título certos (prévia
+no iframe já mostrando "Maior número: 10" funcionando), salvei, badge foi de
+5 pra 6. Abri a atividade recém-criada no Modo Criança de verdade: alvo
+sorteado (7) e as 5 opções ([7,9,5,10,4]) todas dentro do intervalo 1–10,
+confirmando que o range estendido funciona ponta a ponta. Não repeti o
+resto do ciclo (execução → registro → responsável) pra essa atividade
+específica porque é o mesmo mecanismo já provado nas Sprints 1 e 3, sem
+nenhum caminho novo de código no meio. **Nenhum erro de console em nenhuma
+etapa.**
+
+**Não fizemos (fora do escopo combinado):** trilha navegável pela criança,
+molde `comparar`/`associar`, abertura pelo responsável, IA adaptativa,
+dashboard com gráficos, redesign geral, tabela nova de plano/progresso
+(fica pra quando a inferência por molde+tema+config não bastar mais).

@@ -314,7 +314,7 @@
     }
 
     /* ── Pills numeradas (config do molde — faixas curtas) ── */
-    .pill-select-row { display: flex; gap: 6px; }
+    .pill-select-row { display: flex; gap: 6px; flex-wrap: wrap; }
     .pill-num {
       width: 32px; height: 32px; border-radius: var(--r-sm); border: 1px solid var(--line-2);
       background: var(--canvas); color: var(--ink-soft); font-family: var(--font);
@@ -376,6 +376,8 @@
     .step.now .step-n  { background: var(--brand); border-color: var(--brand); color: #fff; }
     .step b { font-size: .88rem; }
     .step p { font-size: .82rem; color: var(--ink-soft); margin-top: 2px; }
+    .plan-step-copy { flex: 1; }
+    .plan-step-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
     .muted { color: var(--muted); }
     .card-copy { font-size: .87rem; color: var(--ink-soft); line-height: 1.5; }

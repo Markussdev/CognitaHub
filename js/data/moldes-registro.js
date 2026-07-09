@@ -42,7 +42,10 @@ export const MOLDES_REGISTRO = {
     // 1 e maiorNumero) — ver js/pages/moldes/identificar.js. nivel/rodadas
     // seguem o mesmo papel genérico que já têm no molde contar.
     campos: [
-      { key: 'maiorNumero', label: 'Maior número', control: 'pills', unidade: null, min: 3, max: 5, default: 5 },
+      // max 10 (não só 5) pra caber a etapa "Identificar números de 1 a 10"
+      // do Plano — o molde em si (identificar.js) já era genérico o
+      // suficiente pra não precisar de nenhuma mudança de lógica.
+      { key: 'maiorNumero', label: 'Maior número', control: 'pills', unidade: null, min: 3, max: 10, default: 5 },
       { key: 'opcoes', label: 'Quantidade de opções', control: 'pills', unidade: null, min: 3, max: 5, default: 4 },
       { key: 'nivel', label: 'Nível', control: 'pills', unidade: null, min: 1, max: 5, default: 1 },
       { key: 'rodadas', label: 'Rodadas', control: 'pills', unidade: 'rodadas', min: 1, max: 5, default: 3 },
