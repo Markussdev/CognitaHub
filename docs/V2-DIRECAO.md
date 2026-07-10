@@ -1,5 +1,11 @@
 # Cognita Hub — Direção da V2 (Hub adulto + Modo Criança)
 
+> **Status: V2 Core fechada — RC1 (2026-07-09).** O ciclo de aprendizagem
+> guiada (Plano → preparar → Modo Criança → execução → sessão → família)
+> está funcional de ponta a ponta e testado ao vivo. Ver §12 pro fechamento
+> e §13 pro roteiro de demo. Próxima fase é visual (Sprint 5), não feature
+> nova — ver `docs/ROTEIRO-DEMO.md` pra apresentar isso em 3 minutos.
+
 Revisão feita em 2026-07-08. Este documento registra a decisão de produto da V2, o
 estado real (verificado no código, não suposto) da jornada ponta a ponta que ela
 prioriza, e o que ficou pendente para as próximas etapas.
@@ -510,3 +516,74 @@ etapa.**
 molde `comparar`/`associar`, abertura pelo responsável, IA adaptativa,
 dashboard com gráficos, redesign geral, tabela nova de plano/progresso
 (fica pra quando a inferência por molde+tema+config não bastar mais).
+
+## 12. Fechamento — V2 Core RC1 (2026-07-09)
+
+Com a Sprint 4, o Cognita fechou o que vale chamar de **ciclo de
+aprendizagem guiada**, não só "atividade solta → criança faz → tutor
+registra":
+
+```
+Plano do tutor → preparar atividade sugerida → Modo Criança → execução salva
+→ sessão registrada → família acompanha
+```
+
+Antes desta fase o produto tinha ferramentas soltas (hub, Modo Criança,
+atividades). Agora tem uma lógica que se sustenta sozinha: **tutor conduz,
+criança executa, sistema registra, família entende.**
+
+### Checklist de fechamento
+
+- [x] Sprint 4 commitada (Marcus, `ee27006 Ajustando 4.0 fase`) — sem tag
+  própria, incorporada na tag `v2-core-rc1` desta seção.
+- [x] Fluxo completo re-testado do zero contra o Supabase real, reusando
+  Mateus: Plano → "Revisão calma" (etapa até então intocada) → preparar →
+  salvar → Modo Criança de verdade → concluir → voltar → registrar sessão →
+  responsável vê o resumo. Todos os elos passaram.
+- [x] Console sem erro confirmado em cada etapa — só um "Failed to fetch"
+  transitório durante um refresh automático de token do Supabase no
+  primeiro login do teste (rede, não código; as chamadas seguintes e o
+  resto do fluxo rodaram limpos).
+- [x] Mobile do Modo Criança conferido (emulação iPhone 13): acolhimento,
+  badge de missão, molde `contar` — tudo bem proporcionado, sem estouro
+  horizontal, botões grandes o bastante pro dedo.
+- [x] Mobile das abas Atividades/Plano conferido — **achado real, registrado
+  como limitação conhecida, não corrigido agora** (decisão consciente,
+  Marcus escolheu adiar pra Sprint 5): em telas ≤940px o `.rail` (menu
+  lateral) já tinha uma regra CSS pra sumir da tela
+  (`position:fixed; left:-260px`), mas **nunca existiu um botão/hambúrguer
+  nem JS pra reabri-lo**. Um usuário real no celular fica preso na tela
+  "Início", sem conseguir alcançar o registro de uma criança, Atividades ou
+  Plano pela interface — só reproduzi essas telas no teste porque acessei
+  via URL direta (`?view=record&tab=plan`), o que um usuário real não faria.
+  Essa lacuna é anterior a esta rodada (não foi introduzida pela Sprint 4);
+  fica para a Sprint 5 resolver (um toggle simples já resolveria). O
+  conteúdo em si, quando alcançado, se comporta razoavelmente em mobile
+  (cards empilham, pills quebram linha) — o problema é só a navegação.
+- [x] Decisão sobre dado de teste em Mateus: **mantido como está**, vira a
+  base do roteiro de demo (§13) — histórico real com os dois moldes,
+  sessões, e etapas do Plano em três status diferentes (concluída/em
+  andamento/a fazer) ao vivo, sem precisar montar cenário nenhum.
+- [x] `V2-DIRECAO.md` atualizado com este status (aqui) e a limitação
+  consciente do Plano (abaixo).
+- [x] Roteiro de demo criado — ver `docs/ROTEIRO-DEMO.md`.
+
+### Limitação consciente registrada (Plano)
+
+O progresso da trilha "Primeiros Números" ainda é **inferido** — cruza
+`child_activities` (molde+tema+um número-chave da config) com
+`sessions.child_activity_id`, sem nenhum vínculo formal entre etapa do
+plano, atividade e sessão. Isso é aceitável pra um plano fixo e só dois
+moldes. **Quando existir mais de um plano, personalização real de trilha por
+criança, ou histórico longo o bastante pra a inferência ficar ambígua, vai
+precisar de um vínculo formal** (provavelmente uma coluna
+`plano_etapa_id`/tabela de progresso) — não é urgente agora, só registrado
+pra não ser esquecido.
+
+### O que fica pra depois do visual (Sprint 5) — sem exceção
+
+`comparar`/`associar`, trilha navegável pela criança, responsável abrindo o
+Modo Criança, IA adaptativa, dashboard com gráficos, e o toggle de menu
+mobile encontrado acima. A Sprint 5 é só acabamento (consistência do hub,
+Plano/Atividades mais limpos, Modo Criança mais encantador, responsividade,
+microcopy) — nenhuma feature nova entra no meio dela.
