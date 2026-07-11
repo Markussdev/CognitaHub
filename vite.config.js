@@ -13,6 +13,7 @@ module.exports = {
 
         admin: resolve(__dirname, 'pages/admin.html'),
         tutor: resolve(__dirname, 'pages/tutor.html'),
+        trilha: resolve(__dirname, 'pages/trilha.html'),
         responsavel: resolve(__dirname, 'pages/responsavel.html'),
 
         atividades: resolve(__dirname, 'pages/atividades.html'),

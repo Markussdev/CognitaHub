@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../css/trilha-plano.css" />
   <style>
     :root {
       --ink: #2d1739; --ink-soft: #5b4a58;
@@ -403,8 +402,7 @@
     .locked-note { display: flex; align-items: flex-start; gap: 10px; padding: 13px 16px; font-size: .85rem; color: var(--ink-soft); line-height: 1.5; }
     .locked-note svg { width: 17px; height: 17px; color: var(--muted); flex-shrink: 0; margin-top: 1px; }
 
-    /* Passos de status (onboarding/orientação pendente) — não é mais usado
-       pelo Plano, que agora é a trilha visual em css/trilha-plano.css */
+    /* Passos de status (onboarding/orientação pendente) */
     .steps { display: grid; gap: 8px; }
     .step { display: flex; gap: 11px; align-items: flex-start; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-sm); }
     .step.done { background: var(--ok-soft); border-color: transparent; }
@@ -414,6 +412,19 @@
     .step.now .step-n  { background: var(--brand); border-color: var(--brand); color: #fff; }
     .step b { font-size: .88rem; }
     .step p { font-size: .82rem; color: var(--ink-soft); margin-top: 2px; }
+
+    /* Plano — resumo compacto (o mapa grande vive em trilha.html/css/trilha.css) */
+    .plan-progress-label { font-size: var(--label-sm-size); letter-spacing: var(--label-sm-tracking); text-transform: uppercase; font-weight: 700; color: var(--brand); }
+    .plan-next { margin-top: 12px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--rail); }
+    .plan-next-label { display: block; font-size: var(--label-sm-size); letter-spacing: var(--label-sm-tracking); text-transform: uppercase; font-weight: 700; color: var(--muted); }
+    .plan-next b { display: block; margin-top: 2px; font-size: .92rem; color: var(--ink); }
+    .plan-dots { display: flex; align-items: center; margin-top: 14px; }
+    .plan-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; border: 2px solid var(--line-2); background: var(--card); }
+    .plan-dot--concluida { background: var(--ok); border-color: var(--ok); }
+    .plan-dot--current { width: 17px; height: 17px; background: var(--accent); border-color: var(--accent); }
+    .plan-dot-line { flex: 1; height: 2px; background: var(--line-2); margin: 0 3px; }
+    .plan-dot-line--done { background: var(--ok); opacity: .5; }
+    .plan-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
 
     .muted { color: var(--muted); }
     .card-copy { font-size: .87rem; color: var(--ink-soft); line-height: 1.5; }

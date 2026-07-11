@@ -9,7 +9,6 @@ import { createChildActivity, listChildActivities, updateChildActivity, archiveC
 import { listPendingExecucoes, listRecentExecucoes } from '../data/atividade-execucao.js'
 import { MOLDES_REGISTRO, buildContractFromParts, formatConfigResumo } from '../data/moldes-registro.js'
 import { PLANOS_REGISTRO, computeStatusEtapas } from '../data/planos-registro.js'
-import { renderTrilhaPlano } from '../components/trilha-plano.js'
 
 const session = await requireRole('tutor')
 const stateBox = document.querySelector('[data-tutor-state]')
@@ -17,6 +16,8 @@ const profileReturn = new URLSearchParams(location.search).get('return') || ''
 
 // Detecta ?activity=<uuid> e pré-busca a atividade (vem da Biblioteca via "Usar no registro")
 let pendingActivity = null
+// Detecta ?plan=<id>&step=<id> (volta de trilha.html) — consumido em renderRecord
+let pendingEtapaParams = null
 {
   const _actParam = new URLSearchParams(location.search).get('activity')
   if (session && _actParam) {
@@ -1771,42 +1772,101 @@ function buildActivitiesPanel(cycle, state, onSaved) {
   return panel
 }
 
-// ── Painel: Plano — trilha "Primeiros Números" ───────────────────────────────
+// ── Painel: Plano — resumo compacto (o mapa grande mora em trilha.html) ─────
 // Não é navegação livre da criança — é o tutor decidindo a próxima etapa.
-// Dado pedagógico e cálculo de status moram em data/planos-registro.js; o
-// desenho do mapa mora em components/trilha-plano.js (componente puro).
-// buildPlanPanel só orquestra: busca status real e liga "Preparar atividade"
-// à mesma ponte de sempre (prefillCompose, via onPrepararEtapa).
+// Dado pedagógico e cálculo de status moram em data/planos-registro.js.
+// Esta aba não tenta mais mostrar o mapa inteiro (isso sufocava a trilha
+// num card de ~420px de altura, ver docs/V2-DIRECAO.md) — responde rápido
+// "qual é o plano, quanto já foi feito, qual a próxima ação", com um botão
+// pra abrir a exploração de verdade em tela própria.
 
-function buildPlanPanel(cycle, state, onPrepararEtapa) {
+function statusDaEtapa(statusList, i) {
+  return statusList?.[i] || (i === 0 ? 'em_andamento' : 'a_fazer')
+}
+
+function buildPlanPanel(cycle, state, onPrepararEtapa, onExplorarTrilha) {
   const panel = el('section', 'panel')
   panel.dataset.panel = 'plan'
   panel.hidden = true
 
   const podePreparar = state === 'cycle_active'
   const bloqueadoMsg = {
-    cycle_planned: 'Preparar atividades libera quando a equipe ativar o ciclo — a trilha abaixo já mostra o que vem a seguir.',
+    cycle_planned: 'Preparar atividades libera quando a equipe ativar o ciclo.',
     cycle_paused: 'Preparar atividades fica bloqueado enquanto o ciclo estiver pausado.',
-    cycle_completed: 'Este ciclo já foi concluído — a trilha abaixo fica só como histórico.',
+    cycle_completed: 'Este ciclo já foi concluído — o plano abaixo fica só como histórico.',
   }[state]
 
+  const plano = PLANOS_REGISTRO.primeiros_numeros
+
   const card = el('div', 'card')
+  const head = el('div', 'card-h')
+  head.append(el('h3', null, plano.titulo))
+  const progressLabel = el('span', 'plan-progress-label')
+  head.append(progressLabel)
+  card.append(head)
+
+  const body = el('div', 'card-b')
+  body.append(el('p', 'card-copy', plano.descricao))
 
   if (bloqueadoMsg) {
     const note = el('div', 'locked-note')
     note.innerHTML = `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
     note.append(document.createTextNode(bloqueadoMsg))
-    card.append(note)
+    body.append(note)
   }
 
-  const plano = PLANOS_REGISTRO.primeiros_numeros
-  const trilha = renderTrilhaPlano({ plano, statuses: null, podePreparar, onPrepararEtapa })
-  card.append(trilha)
+  const proximaWrap = el('div', 'plan-next')
+  proximaWrap.append(el('span', 'plan-next-label', 'Próxima etapa'))
+  const proximaTitulo = el('b', null, '—')
+  proximaWrap.append(proximaTitulo)
+  body.append(proximaWrap)
+
+  const dotsWrap = el('div', 'plan-dots')
+  body.append(dotsWrap)
+
+  const actions = el('div', 'plan-actions')
+  const explorarBtn = el('button', 'btn btn-ghost btn-sm', 'Explorar trilha completa')
+  explorarBtn.type = 'button'
+  explorarBtn.addEventListener('click', () => onExplorarTrilha?.())
+  actions.append(explorarBtn)
+
+  let prepararBtn
+  if (podePreparar) {
+    prepararBtn = el('button', 'btn btn-accent btn-sm', 'Preparar próxima atividade')
+    prepararBtn.type = 'button'
+    actions.append(prepararBtn)
+  }
+  body.append(actions)
+
+  card.append(body)
   panel.append(card)
+
+  function render(statusList) {
+    const total = plano.etapas.length
+    const done = plano.etapas.reduce((n, _, i) => n + (statusDaEtapa(statusList, i) === 'concluida' ? 1 : 0), 0)
+    progressLabel.textContent = `${done} de ${total}`
+
+    const currentIdx = plano.etapas.findIndex((_, i) => statusDaEtapa(statusList, i) !== 'concluida')
+    const proxima = plano.etapas[currentIdx >= 0 ? currentIdx : plano.etapas.length - 1]
+    proximaTitulo.textContent = proxima.titulo
+    if (prepararBtn) prepararBtn.onclick = () => onPrepararEtapa?.(proxima)
+
+    dotsWrap.replaceChildren()
+    plano.etapas.forEach((_, i) => {
+      const status = statusDaEtapa(statusList, i)
+      const dot = el('span', `plan-dot plan-dot--${status}${i === currentIdx ? ' plan-dot--current' : ''}`)
+      dotsWrap.append(dot)
+      if (i < plano.etapas.length - 1) {
+        dotsWrap.append(el('span', `plan-dot-line${status === 'concluida' ? ' plan-dot-line--done' : ''}`))
+      }
+    })
+  }
+
+  render(null)
 
   panel.loadStatus = async () => {
     const statusList = await computeStatusEtapas(plano, cycle.child_id, cycle.id)
-    if (statusList) trilha.updateStatuses(statusList)
+    if (statusList) render(statusList)
   }
 
   return panel
@@ -2420,7 +2480,10 @@ function renderRecord(state, cycle, initialTab) {
     switchTab('activities')
     activitiesPanel.prefillFromPlano?.(etapa)
   }
-  const planPanel = buildPlanPanel(cycle, state, onPrepararEtapa)
+  const onExplorarTrilha = () => {
+    window.location.href = `trilha.html?cycle_id=${encodeURIComponent(cycle.id)}`
+  }
+  const planPanel = buildPlanPanel(cycle, state, onPrepararEtapa, onExplorarTrilha)
   const reportsPanel = buildReportsPanel(cycle)
   const orientationsPanel = buildOrientationsPanel(cycle, childName)
 
@@ -2437,6 +2500,16 @@ function renderRecord(state, cycle, initialTab) {
       pendingActivity = null
       sessionForm.fillSuggestedActivity(act)
       requestAnimationFrame(() => sessionForm.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+    }
+    // Volta de trilha.html (?plan=&step=): mesma ponte que "Preparar
+    // atividade desta etapa" sempre usou, só que a etapa veio por query
+    // string em vez de já estar em memória (a trilha grande vive numa
+    // página separada, não pode passar o objeto direto).
+    if (pendingEtapaParams) {
+      const { planId, stepId } = pendingEtapaParams
+      pendingEtapaParams = null
+      const etapa = PLANOS_REGISTRO[planId]?.etapas.find((e) => e.id === stepId)
+      if (etapa) activitiesPanel.prefillFromPlano?.(etapa)
     }
   })
 
@@ -2794,6 +2867,11 @@ async function bootstrap() {
     // passo visível, não uma navegação escondida.
     currentView = 'record'
     pendingTab = _urlParams.get('tab') || null
+    // Volta de trilha.html (?plan=<id>&step=<id>) — mesma ideia, mas pra
+    // pré-preencher o form de "Preparar atividade" (ver renderRecord).
+    const _planParam = _urlParams.get('plan')
+    const _stepParam = _urlParams.get('step')
+    if (_planParam && _stepParam) pendingEtapaParams = { planId: _planParam, stepId: _stepParam }
   } else {
     currentView = 'home'
   }
