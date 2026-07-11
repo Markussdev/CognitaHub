@@ -8,9 +8,6 @@
   --trail-node-border: rgba(20, 17, 98, 0.16);
   --trail-node-done-bg: #ece8f8;
   --trail-node-now-ring: var(--accent, #ffa800);
-  --trail-emblem-bg: #efe9f7;
-  --trail-emblem-fg: #5b4a7a;
-  --trail-emblem-star: #ffd68a;
 }
 
 .trail {
@@ -29,6 +26,10 @@
   gap: var(--sp-4, 16px);
   flex-wrap: wrap;
 }
+
+.trail-header-main { display: flex; align-items: center; gap: var(--sp-3, 12px); min-width: 0; }
+
+.trail-mascot-planejar { width: 56px; height: 56px; object-fit: contain; flex-shrink: 0; }
 
 .trail-header-copy { min-width: 0; }
 
@@ -93,7 +94,11 @@
 
 .trail-path { position: absolute; inset: 0; width: 100%; height: 100%; color: var(--trail-path); }
 
-.trail-nodes { position: absolute; inset: 0; }
+/* Decoração espacial estática (Fase C) — atrás dos nós, nunca captura clique */
+.trail-deco-layer { position: absolute; inset: 0; z-index: 1; }
+.trail-deco { position: absolute; opacity: 0.5; pointer-events: none; object-fit: contain; }
+
+.trail-nodes { position: absolute; inset: 0; z-index: 2; }
 
 /* ── Nós da trilha ── */
 
@@ -122,6 +127,20 @@
 
 .trail-step-badge { width: 32px; height: 32px; display: grid; place-items: center; }
 .trail-step-badge svg { width: 100%; height: 100%; }
+.trail-emblem-img { width: 100%; height: 100%; object-fit: contain; }
+
+/* Mascote-guia encostado no nó "em andamento" — cresce um pouco pra fora do
+   nó, sempre pro lado com mais espaço no mapa (ver DECORACAO_ESPACIAL/render). */
+.trail-guia {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  transform: translate(-18%, -55%);
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  pointer-events: none;
+}
 
 .trail-step--concluida { background: var(--trail-node-done-bg); border-color: transparent; opacity: 0.88; }
 .trail-step--concluida .trail-step-badge { width: 26px; height: 26px; border-radius: 50%; background: var(--ok, #1c7c54); }
@@ -140,6 +159,7 @@
 /* ── Painel de detalhes da etapa ── */
 
 .trail-details {
+  position: relative;
   border: 1px solid var(--line);
   border-radius: var(--r, 14px);
   padding: var(--sp-4, 16px);
@@ -147,6 +167,16 @@
   flex-direction: column;
   gap: var(--sp-2, 8px);
   background: var(--card);
+}
+
+.trail-mascot-comemorar {
+  position: absolute;
+  top: -34px;
+  right: -10px;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  pointer-events: none;
 }
 
 .trail-details-head {

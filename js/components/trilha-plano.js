@@ -7,17 +7,34 @@ import { STATUS_ETAPA } from '../data/planos-registro.js'
 // decide quando "Preparar atividade" bloqueia (podePreparar) e o que fazer
 // com a etapa escolhida (onPrepararEtapa → prefillFromPlano em tutor.js).
 
-const EMBLEMAS = {
-  identificar: `<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="6" width="24" height="20" rx="4" fill="var(--trail-emblem-bg)"/><text x="16" y="21" text-anchor="middle" font-size="11" font-weight="700" fill="var(--trail-emblem-fg)">123</text></svg>`,
-  contar: `<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="8" cy="22" r="4" fill="var(--trail-emblem-fg)" opacity=".55"/><circle cx="17" cy="19" r="5" fill="var(--trail-emblem-fg)" opacity=".75"/><circle cx="26" cy="15" r="5.5" fill="var(--trail-emblem-fg)"/></svg>`,
-  revisar: `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 5l3.1 6.6 7 .9-5.1 4.9 1.3 7L16 21l-6.3 3.4 1.3-7L5.9 12.5l7-.9L16 5z" fill="var(--trail-emblem-star)" stroke="var(--trail-emblem-fg)" stroke-width="1.5" stroke-linejoin="round"/></svg>`,
-}
+// Caminhos relativos a pages/tutor.html (único lugar que carrega este
+// componente) — mesmo padrão de `img.src = '../assets/...'` já usado em
+// tutor.js, não import de módulo Vite.
+const MASCOTE_BASE = '../assets/trilha/mascote/'
+const EMBLEMA_BASE = '../assets/trilha/emblemas/'
+const ESPACO_BASE = '../assets/trilha/espaco/'
 
 const CHECK_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`
 
 // Caminho fixo pra 5 etapas — desenhado à mão pro viewBox 400x800.
 // Algoritmo dinâmico só quando existir plano de tamanho variável (ver §9 do plano).
 const TRAIL_PATH_D = 'M200 60 C90 150 310 230 200 320 C90 410 310 490 200 580 C110 650 200 720 200 770'
+
+// Decoração espacial estática (Fase C) — posições fixas nas margens do mapa,
+// longe da faixa 32%–68% onde os nós ficam. Puramente decorativo: aria-hidden
+// + pointer-events:none, sem nenhuma animação (isso é Fase D, sob
+// prefers-reduced-motion).
+const DECORACAO_ESPACIAL = [
+  { src: 'planeta-roxo', x: '9%', y: '5%', size: 60 },
+  { src: 'estrelas-3', x: '46%', y: '3%', size: 30 },
+  { src: 'estrelas-1', x: '89%', y: '15%', size: 38 },
+  { src: 'cometa', x: '7%', y: '36%', size: 66 },
+  { src: 'planeta-azul', x: '91%', y: '43%', size: 52 },
+  { src: 'orbita', x: '10%', y: '60%', size: 58 },
+  { src: 'estrelas-2', x: '86%', y: '64%', size: 34 },
+  { src: 'lua', x: '89%', y: '84%', size: 46 },
+  { src: 'planeta-amarelo', x: '12%', y: '95%', size: 72 },
+]
 
 export function renderTrilhaPlano({ plano, statuses, podePreparar, onPrepararEtapa }) {
   let currentStatuses = statuses
@@ -32,9 +49,15 @@ export function renderTrilhaPlano({ plano, statuses, podePreparar, onPrepararEta
   const wrap = el('div', 'trail')
 
   const header = el('div', 'trail-header')
+  const headMain = el('div', 'trail-header-main')
+  const headerMascot = el('img', 'trail-mascot-planejar')
+  headerMascot.src = `${MASCOTE_BASE}planejar.webp`
+  headerMascot.alt = ''
+  headerMascot.setAttribute('aria-hidden', 'true')
   const headCopy = el('div', 'trail-header-copy')
   headCopy.append(el('h3', 'trail-title', plano.titulo), el('p', 'trail-desc', plano.descricao))
-  header.append(headCopy)
+  headMain.append(headerMascot, headCopy)
+  header.append(headMain)
 
   const progressWrap = el('div', 'trail-progress')
   const progressLabel = el('span', 'trail-progress-label')
@@ -51,6 +74,11 @@ export function renderTrilhaPlano({ plano, statuses, podePreparar, onPrepararEta
   mapWrap.innerHTML = `<svg class="trail-path" viewBox="0 0 400 800" preserveAspectRatio="none" aria-hidden="true">
     <path d="${TRAIL_PATH_D}" fill="none" stroke="var(--trail-path)" stroke-width="6" stroke-linecap="round" stroke-dasharray="1 16"/>
   </svg>`
+  const decoLayer = el('div', 'trail-deco-layer')
+  decoLayer.innerHTML = DECORACAO_ESPACIAL.map(({ src, x, y, size }) => (
+    `<img class="trail-deco" src="${ESPACO_BASE}${src}.webp" alt="" aria-hidden="true" style="left:${x};top:${y};width:${size}px;height:${size}px;" />`
+  )).join('')
+  mapWrap.append(decoLayer)
   const nodesLayer = el('div', 'trail-nodes')
   mapWrap.append(nodesLayer)
 
@@ -82,8 +110,23 @@ export function renderTrilhaPlano({ plano, statuses, podePreparar, onPrepararEta
       btn.setAttribute('aria-label', `Etapa ${i + 1}: ${etapa.titulo} — ${STATUS_ETAPA[status].label}`)
 
       const badge = el('span', 'trail-step-badge')
-      badge.innerHTML = status === 'concluida' ? CHECK_SVG : (EMBLEMAS[etapa.emblema] || '')
+      if (status === 'concluida') {
+        badge.innerHTML = CHECK_SVG
+      } else {
+        const emblemImg = el('img', 'trail-emblem-img')
+        emblemImg.src = `${EMBLEMA_BASE}${etapa.emblema}.webp`
+        emblemImg.alt = ''
+        badge.append(emblemImg)
+      }
       btn.append(badge)
+
+      if (status === 'em_andamento') {
+        const guia = el('img', 'trail-guia')
+        guia.src = `${MASCOTE_BASE}guia.webp`
+        guia.alt = ''
+        guia.setAttribute('aria-hidden', 'true')
+        btn.append(guia)
+      }
 
       btn.addEventListener('click', () => selectEtapa(etapa.id, { porUsuario: true }))
       nodesLayer.append(btn)
@@ -97,6 +140,14 @@ export function renderTrilhaPlano({ plano, statuses, podePreparar, onPrepararEta
     const i = plano.etapas.findIndex((e) => e.id === etapa.id)
     const status = statusFor(i)
     const info = STATUS_ETAPA[status]
+
+    if (status === 'concluida') {
+      const comemora = el('img', 'trail-mascot-comemorar')
+      comemora.src = `${MASCOTE_BASE}comemorar.webp`
+      comemora.alt = ''
+      comemora.setAttribute('aria-hidden', 'true')
+      details.append(comemora)
+    }
 
     const head = el('div', 'trail-details-head')
     head.append(el('h4', null, etapa.titulo))
