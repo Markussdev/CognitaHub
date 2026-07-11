@@ -56,12 +56,48 @@ document.querySelector('[data-rail-team]')?.addEventListener('click', (e) => {
 })
 document.querySelector('[data-rail-profile]')?.addEventListener('click', (e) => { e.preventDefault(); goProfile() })
 
+// ── Drawer mobile do menu (rail) — Sprint 5A ─────────────────────────────────
+// O CSS (@media em tutor.html) já escondia o rail fora da tela em ≤940px,
+// mas não existia como reabri-lo — o tutor no celular ficava preso na tela
+// Início. É só um toggle: no desktop o botão nem aparece (display:none fora
+// da media query), então .open nunca é aplicada lá e o menu não muda.
+function openRailDrawer() {
+  document.querySelector('[data-rail]')?.classList.add('open')
+  document.querySelector('[data-rail-backdrop]')?.classList.add('open')
+  document.querySelector('[data-rail-toggle]')?.setAttribute('aria-expanded', 'true')
+  document.body.classList.add('rail-drawer-open')
+  document.querySelector('[data-rail] .rail-link')?.focus()
+}
+
+// returnFocus:false quando fecha por ter escolhido um link/botão de verdade
+// (a ação clicada já vai levar o foco pra outro lugar); true nos outros casos
+// (backdrop, Escape, toggle) — aí faz sentido devolver o foco pro hambúrguer.
+function closeRailDrawer({ returnFocus = true } = {}) {
+  document.querySelector('[data-rail]')?.classList.remove('open')
+  document.querySelector('[data-rail-backdrop]')?.classList.remove('open')
+  document.querySelector('[data-rail-toggle]')?.setAttribute('aria-expanded', 'false')
+  document.body.classList.remove('rail-drawer-open')
+  if (returnFocus) document.querySelector('[data-rail-toggle]')?.focus()
+}
+
+document.querySelector('[data-rail-toggle]')?.addEventListener('click', () => {
+  const rail = document.querySelector('[data-rail]')
+  if (rail?.classList.contains('open')) closeRailDrawer()
+  else openRailDrawer()
+})
+document.querySelector('[data-rail-backdrop]')?.addEventListener('click', () => closeRailDrawer())
+// Delegado: qualquer link/botão dentro do rail fecha o drawer, sem precisar
+// tocar nos handlers de Início/criança/Biblioteca/Sessões/equipe/perfil.
+document.querySelector('[data-rail]')?.addEventListener('click', (e) => {
+  if (e.target.closest('a, button')) closeRailDrawer({ returnFocus: false })
+})
+
 document.querySelector('[data-cmdk-trigger]')?.addEventListener('click', openCommandPalette)
 document.querySelector('[data-cmdk-backdrop]')?.addEventListener('click', closeCommandPalette)
 document.querySelector('[data-cmdk-input]')?.addEventListener('input', (e) => renderCommandResults(e.target.value))
 document.addEventListener('keydown', (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openCommandPalette(); return }
-  if (e.key === 'Escape') { closeSupportDrawer(); closeCommandPalette() }
+  if (e.key === 'Escape') { closeSupportDrawer(); closeCommandPalette(); closeRailDrawer() }
 })
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

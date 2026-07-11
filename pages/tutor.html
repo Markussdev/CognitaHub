@@ -72,6 +72,25 @@
     .search svg { width: 15px; height: 15px; flex-shrink: 0; }
     .search .kbd { margin-left: auto; font-size: .72rem; font-weight: 700; color: var(--muted); border: 1px solid var(--line-2); border-radius: 5px; padding: 1px 6px; }
     .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+    /* Hambúrguer do menu mobile — escondido no desktop (só aparece via
+       @media dentro do bloco de 940px, junto do resto do responsivo). */
+    .rail-toggle {
+      display: none; align-items: center; justify-content: center;
+      width: 34px; height: 34px; border-radius: var(--r-sm); flex-shrink: 0;
+      border: 1px solid var(--line-2); background: var(--card); color: var(--ink);
+      cursor: pointer;
+    }
+    .rail-toggle svg { width: 18px; height: 18px; }
+    .rail-toggle:hover { border-color: var(--brand); color: var(--brand); }
+
+    /* Backdrop próprio do rail (não reusa .drawer-backdrop do suporte —
+       são drawers independentes, cada um com seu z-index). */
+    .rail-backdrop {
+      position: fixed; inset: 0; background: rgba(45,23,57,.32);
+      z-index: 68; opacity: 0; pointer-events: none; transition: opacity .2s ease;
+    }
+    .rail-backdrop.open { opacity: 1; pointer-events: auto; }
     .icon-btn { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line-2); background: var(--card); color: var(--ink-soft); cursor: pointer; }
     .icon-btn svg { width: 15px; height: 15px; }
     .icon-btn:hover { border-color: var(--brand); color: var(--brand); }
@@ -465,7 +484,20 @@
 
 @media (max-width: 940px) {
       .app { grid-template-columns: 1fr; }
-      .rail { position: fixed; left: -260px; z-index: 50; }
+      /* Rail vira drawer: fora da tela por padrão, desliza pra left:0 via
+         .open (JS em tutor.js). width explícito porque position:fixed tira
+         o rail do grid — sem isso ele encolheria pro conteúdo. */
+      .rail {
+        position: fixed; top: 0; left: -280px; width: min(280px, 84vw);
+        z-index: 69; transition: left .25s ease;
+        box-shadow: 16px 0 36px rgba(45,23,57,.18);
+      }
+      .rail.open { left: 0; }
+      .rail-toggle { display: inline-flex; }
+      /* Trava o scroll do conteúdo por trás enquanto o drawer está aberto —
+         body já é overflow:hidden por padrão (ver regra base), quem rola de
+         verdade é #main-content. */
+      body.rail-drawer-open #main-content { overflow: hidden; }
       .cols { grid-template-columns: 1fr; }
       .rec-top { flex-direction: column; }
       .tabs { overflow-x: auto; }
@@ -479,7 +511,7 @@
 <body>
 <div class="app">
 
-  <nav class="rail thin-scroll" data-rail aria-label="Navegação do tutor">
+  <nav class="rail thin-scroll" data-rail id="tutor-rail" aria-label="Navegação do tutor">
     <a class="rail-brand" href="../index.html">
       <div class="rail-mark"><img src="../assets/logo-icon-transparent.png" alt="" /></div>
       <div><b>Cognita Hub</b><small>Tutor</small></div>
@@ -521,8 +553,13 @@
     </div>
   </nav>
 
+  <div class="rail-backdrop" data-rail-backdrop></div>
+
   <div class="shell">
     <div class="topbar">
+      <button type="button" class="rail-toggle" data-rail-toggle aria-label="Abrir menu" aria-expanded="false" aria-controls="tutor-rail">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+      </button>
       <div class="crumb" data-crumb>Painel do tutor</div>
       <button type="button" class="search" data-cmdk-trigger aria-haspopup="dialog">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>

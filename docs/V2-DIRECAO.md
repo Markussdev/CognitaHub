@@ -1,10 +1,12 @@
 # Cognita Hub — Direção da V2 (Hub adulto + Modo Criança)
 
-> **Status: V2 Core fechada — RC1 (2026-07-09).** O ciclo de aprendizagem
-> guiada (Plano → preparar → Modo Criança → execução → sessão → família)
-> está funcional de ponta a ponta e testado ao vivo. Ver §12 pro fechamento
-> e §13 pro roteiro de demo. Próxima fase é visual (Sprint 5), não feature
-> nova — ver `docs/ROTEIRO-DEMO.md` pra apresentar isso em 3 minutos.
+> **Status: V2 Core fechada — RC1 (2026-07-09), Sprint 5A (nav mobile) já
+> entregue.** O ciclo de aprendizagem guiada (Plano → preparar → Modo
+> Criança → execução → sessão → família) está funcional de ponta a ponta e
+> testado ao vivo. Ver §12 pro fechamento do RC1, §13 pra navegação mobile
+> do hub, e `docs/ROTEIRO-DEMO.md` pro roteiro de demo de 3 minutos. Próxima:
+> Sprint 5.2 (consolidação visual — tokens de tipografia/espaçamento/
+> componentes), ainda não iniciada.
 
 Revisão feita em 2026-07-08. Este documento registra a decisão de produto da V2, o
 estado real (verificado no código, não suposto) da jornada ponta a ponta que ela
@@ -583,7 +585,65 @@ pra não ser esquecido.
 ### O que fica pra depois do visual (Sprint 5) — sem exceção
 
 `comparar`/`associar`, trilha navegável pela criança, responsável abrindo o
-Modo Criança, IA adaptativa, dashboard com gráficos, e o toggle de menu
-mobile encontrado acima. A Sprint 5 é só acabamento (consistência do hub,
-Plano/Atividades mais limpos, Modo Criança mais encantador, responsividade,
-microcopy) — nenhuma feature nova entra no meio dela.
+Modo Criança, IA adaptativa, dashboard com gráficos. A Sprint 5 é só
+acabamento (consistência do hub, Plano/Atividades mais limpos, Modo Criança
+mais encantador, responsividade, microcopy) — nenhuma feature nova entra no
+meio dela. O toggle de menu mobile, listado aqui como pendência do RC1, virou
+a Sprint 5A abaixo — a única peça de "acabamento" tratada como prioridade 1
+por ser o único bloqueio real de uso, não só estética.
+
+## 13. Sprint 5A — Navegação responsiva do Hub (2026-07-09)
+
+Primeiro trabalho da fase visual, e o único tratado como "sem discussão": o
+menu lateral (`.rail`) já tinha uma regra CSS pra sumir da tela em ≤940px
+(achado do RC1, §12), mas não existia como reabri-lo — o tutor no celular
+ficava preso na tela Início. Fechado com um drawer padrão: hambúrguer no
+topbar, `.rail` desliza de `left:-280px` pra `left:0`, backdrop escurecido
+atrás, fecha ao tocar fora, no Escape, ou ao escolher qualquer link/botão do
+menu.
+
+**Só tocou `pages/tutor.html`** (CSS do drawer + a marcação do botão e do
+backdrop) **e `js/pages/tutor.js`** (abrir/fechar). Nada de Supabase, nada
+de Modo Criança, nada nos outros paineis (Sessões/Atividades/Plano) — eles já
+se comportavam bem em mobile, só não eram alcançáveis pela navegação.
+
+**Decisões de implementação:**
+
+- **Backdrop dedicado** (`.rail-backdrop`, não reusa o `.drawer-backdrop` do
+  drawer de suporte "Falar com equipe") — são dois overlays independentes,
+  cada um com seu próprio z-index, pra não acoplar o estado de um ao do
+  outro.
+- **`width` explícito no `.rail` em mobile** (`min(280px, 84vw)`) — antes,
+  fora do fluxo do grid (`position:fixed`), o rail encolheria pro conteúdo em
+  vez de manter uma largura de drawer consistente.
+- **Fechar ao escolher uma página é um único listener delegado** no próprio
+  `.rail` (`click` em qualquer `a`/`button` dentro dele fecha o drawer) — não
+  precisou tocar nos handlers já existentes de Início/criança/Biblioteca/
+  Sessões/equipe/perfil, cada um continua fazendo exatamente o que já fazia.
+- **Foco:** abrir o drawer manda o foco pro primeiro link do menu; fechar por
+  Escape/backdrop/toggle devolve o foco pro botão hambúrguer; fechar por ter
+  escolhido um link não força o foco de volta (a navegação escolhida já leva
+  o foco pra outro lugar sozinha).
+- **Scroll travado atrás do drawer:** `body.rail-drawer-open #main-content {
+  overflow: hidden }` — o body já era `overflow:hidden` por padrão (quem rola
+  de verdade é `#main-content`), então travar o conteúdo era só isso.
+- **Desktop:** o botão hambúrguer é `display:none` fora da media query de
+  940px — em telas largas ele nem existe visualmente, `.rail` continua
+  `position:static` dentro do grid, exatamente como antes.
+
+**Verificação ao vivo (2026-07-09):** testado com emulação de iPhone 13.
+Abrir o menu, entrar em Mateus (drawer fecha sozinho), navegar por Plano →
+Atividades preparadas → Sessões (todas alcançáveis agora, antes só via URL
+direta), Escape fecha o drawer, clique no backdrop fecha o drawer — tudo
+confirmado via bounding box do rail (`x:0` aberto, `x:-280` fechado) e não só
+por screenshot. Sem estouro horizontal (`body.scrollWidth === innerWidth`
+em todos os casos). Testado também em 1440px: `aria-expanded`/toggle
+`display:none`, `.rail` `position:static`, grid `212px 1fr` — desktop
+bit-a-bit igual a antes.
+
+**Não corrigido nesta rodada (fica pra Sprint 5.2 — consolidação visual):**
+algumas fileiras horizontais (a barra de abas, a linha de botões de ação do
+cabeçalho) continuam roláveis sem indicação visual de que há mais conteúdo
+pro lado — não travam a página (cada uma rola só dentro de si), mas não
+"convidam" o dedo a arrastar. É acabamento, não bloqueio, por isso ficou de
+fora do escopo "só navegação" desta entrega.
