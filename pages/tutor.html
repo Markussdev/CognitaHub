@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/trilha-plano.css" />
   <style>
     :root {
       --ink: #2d1739; --ink-soft: #5b4a58;
@@ -402,7 +403,8 @@
     .locked-note { display: flex; align-items: flex-start; gap: 10px; padding: 13px 16px; font-size: .85rem; color: var(--ink-soft); line-height: 1.5; }
     .locked-note svg { width: 17px; height: 17px; color: var(--muted); flex-shrink: 0; margin-top: 1px; }
 
-    /* Plano */
+    /* Passos de status (onboarding/orientação pendente) — não é mais usado
+       pelo Plano, que agora é a trilha visual em css/trilha-plano.css */
     .steps { display: grid; gap: 8px; }
     .step { display: flex; gap: 11px; align-items: flex-start; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-sm); }
     .step.done { background: var(--ok-soft); border-color: transparent; }
@@ -412,8 +414,6 @@
     .step.now .step-n  { background: var(--brand); border-color: var(--brand); color: #fff; }
     .step b { font-size: .88rem; }
     .step p { font-size: .82rem; color: var(--ink-soft); margin-top: 2px; }
-    .plan-step-copy { flex: 1; }
-    .plan-step-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
     .muted { color: var(--muted); }
     .card-copy { font-size: .87rem; color: var(--ink-soft); line-height: 1.5; }

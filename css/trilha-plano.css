@@ -1,0 +1,205 @@
+/* Trilha do Plano do tutor — mapa de missões estilo "Constelação dos
+   Primeiros Números". Escopo: só .trail-* e .trail-details*. Nada aqui entra
+   em internal.css; importado só por pages/tutor.html (ver PLANO-SPRINT-4-TRILHA.md). */
+
+:root {
+  --trail-path: #d8cfe8;
+  --trail-node-bg: #fffefc;
+  --trail-node-border: rgba(20, 17, 98, 0.16);
+  --trail-node-done-bg: #ece8f8;
+  --trail-node-now-ring: var(--accent, #ffa800);
+  --trail-emblem-bg: #efe9f7;
+  --trail-emblem-fg: #5b4a7a;
+  --trail-emblem-star: #ffd68a;
+}
+
+.trail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6, 24px);
+  padding: var(--sp-4, 16px) var(--sp-6, 24px) var(--sp-6, 24px);
+}
+
+/* ── Cabeçalho: título, descrição, progresso ── */
+
+.trail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4, 16px);
+  flex-wrap: wrap;
+}
+
+.trail-header-copy { min-width: 0; }
+
+.trail-title { font-size: 1.05rem; font-weight: 800; color: var(--ink); }
+
+.trail-desc {
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  max-width: 46ch;
+}
+
+.trail-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.trail-progress-label {
+  font-size: var(--label-sm-size, 0.7rem);
+  letter-spacing: var(--label-sm-tracking, 0.07em);
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--brand);
+  white-space: nowrap;
+}
+
+.trail-progress-bar {
+  width: 120px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line-2, rgba(32, 26, 102, 0.18));
+  overflow: hidden;
+}
+
+.trail-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent, #ffa800);
+  transition: width 0.3s ease;
+}
+
+/* ── Corpo: mapa + detalhes ── */
+
+.trail-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-6, 24px);
+  align-items: start;
+}
+
+.trail-map {
+  position: relative;
+  width: 100%;
+  min-height: 420px;
+  border-radius: var(--r-lg, 20px);
+  background: radial-gradient(120% 90% at 50% 0%, #f4f0fb 0%, #f7f4ee 70%);
+  overflow: hidden;
+}
+
+.trail-path { position: absolute; inset: 0; width: 100%; height: 100%; color: var(--trail-path); }
+
+.trail-nodes { position: absolute; inset: 0; }
+
+/* ── Nós da trilha ── */
+
+.trail-step {
+  position: absolute;
+  left: var(--trail-x, 50%);
+  top: var(--trail-y, 50%);
+  transform: translate(-50%, -50%);
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--trail-node-bg);
+  border: 2px solid var(--trail-node-border);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.trail-step:nth-child(1) { --trail-x: 50%; --trail-y: 9%; }
+.trail-step:nth-child(2) { --trail-x: 68%; --trail-y: 29%; }
+.trail-step:nth-child(3) { --trail-x: 32%; --trail-y: 49%; }
+.trail-step:nth-child(4) { --trail-x: 68%; --trail-y: 69%; }
+.trail-step:nth-child(5) { --trail-x: 50%; --trail-y: 91%; }
+
+.trail-step-badge { width: 32px; height: 32px; display: grid; place-items: center; }
+.trail-step-badge svg { width: 100%; height: 100%; }
+
+.trail-step--concluida { background: var(--trail-node-done-bg); border-color: transparent; opacity: 0.88; }
+.trail-step--concluida .trail-step-badge { width: 26px; height: 26px; border-radius: 50%; background: var(--ok, #1c7c54); }
+
+.trail-step--em_andamento {
+  border-color: var(--trail-node-now-ring);
+  box-shadow: 0 0 0 4px rgba(255, 168, 0, 0.16);
+}
+
+.trail-step--a_fazer { border-color: var(--trail-node-border); }
+
+.trail-step.is-selected { transform: translate(-50%, -50%) scale(1.06); }
+
+.trail-step:hover { border-color: var(--brand); }
+
+/* ── Painel de detalhes da etapa ── */
+
+.trail-details {
+  border: 1px solid var(--line);
+  border-radius: var(--r, 14px);
+  padding: var(--sp-4, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2, 8px);
+  background: var(--card);
+}
+
+.trail-details-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2, 8px);
+  flex-wrap: wrap;
+}
+
+.trail-details-head h4 { font-size: 0.95rem; font-weight: 800; color: var(--ink); }
+
+.trail-status-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 21px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.trail-status-pill--concluida { background: var(--ok-soft); color: var(--ok); }
+.trail-status-pill--em_andamento { background: var(--warn-soft); color: var(--warn); }
+.trail-status-pill--a_fazer { background: var(--rail); color: var(--muted); }
+
+.trail-details-objetivo { font-size: 0.85rem; color: var(--ink-soft); line-height: 1.5; }
+
+.trail-details-config {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-2, 8px) var(--sp-3, 12px);
+  border-radius: var(--r-sm, 10px);
+  background: var(--rail);
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+.trail-details-config b { color: var(--ink); font-size: 0.82rem; }
+
+.trail-details .btn { align-self: flex-start; margin-top: 4px; }
+
+/* ── Layout: desktop em duas colunas ── */
+
+@media (min-width: 860px) {
+  .trail-body { grid-template-columns: minmax(0, 1.1fr) minmax(260px, 320px); }
+  .trail-details { position: sticky; top: var(--sp-4, 16px); }
+}
+
+/* ── Redução de movimento (Fase D usa isto como guarda) ── */
+
+@media (prefers-reduced-motion: reduce) {
+  .trail-step, .trail-progress-fill { transition: none; }
+}

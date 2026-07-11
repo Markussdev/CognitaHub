@@ -8,6 +8,8 @@ import { getActivityById } from '../data/activities.js'
 import { createChildActivity, listChildActivities, updateChildActivity, archiveChildActivity } from '../data/child-activities.js'
 import { listPendingExecucoes, listRecentExecucoes } from '../data/atividade-execucao.js'
 import { MOLDES_REGISTRO, buildContractFromParts, formatConfigResumo } from '../data/moldes-registro.js'
+import { PLANOS_REGISTRO, computeStatusEtapas } from '../data/planos-registro.js'
+import { renderTrilhaPlano } from '../components/trilha-plano.js'
 
 const session = await requireRole('tutor')
 const stateBox = document.querySelector('[data-tutor-state]')
@@ -1771,94 +1773,10 @@ function buildActivitiesPanel(cycle, state, onSaved) {
 
 // ── Painel: Plano — trilha "Primeiros Números" ───────────────────────────────
 // Não é navegação livre da criança — é o tutor decidindo a próxima etapa.
-// Trilha fixa em JS (sem tabela nova ainda): cada etapa sugere molde+tema+
-// config, e "Preparar atividade desta etapa" só joga esses valores no form
-// de composição da aba Atividades preparadas (mesmo prefillCompose que
-// Duplicar/Editar já usam) — o tutor ainda revisa e decide salvar.
-
-const PRIMEIROS_NUMEROS = [
-  {
-    titulo: 'Identificar números de 1 a 5',
-    objetivo: 'Reconhecer e apontar números de 1 a 5.',
-    molde: 'identificar',
-    tema: 'numeros',
-    config: { maiorNumero: 5, opcoes: 4, nivel: 1, rodadas: 3 },
-    instrucao: 'Toque no número que eu disser.',
-  },
-  {
-    titulo: 'Contar objetos até 5',
-    objetivo: 'Contar de 1 a 5 itens com apoio visual.',
-    molde: 'contar',
-    tema: 'dinossauros',
-    config: { quantidade: 5, nivel: 1, rodadas: 3 },
-    instrucao: 'Toque em cada dinossauro para contar.',
-  },
-  {
-    titulo: 'Identificar números de 1 a 10',
-    objetivo: 'Reconhecer números um pouco maiores, até 10.',
-    molde: 'identificar',
-    tema: 'numeros',
-    config: { maiorNumero: 10, opcoes: 5, nivel: 1, rodadas: 3 },
-    instrucao: 'Toque no número que eu disser.',
-  },
-  {
-    titulo: 'Contar objetos até 10',
-    objetivo: 'Contar até 10 itens, aumentando aos poucos.',
-    molde: 'contar',
-    tema: 'dinossauros',
-    config: { quantidade: 10, nivel: 1, rodadas: 3 },
-    instrucao: 'Toque em cada dinossauro para contar.',
-  },
-  {
-    titulo: 'Revisão calma',
-    objetivo: 'Revisar contagem e identificação, sem conteúdo novo.',
-    molde: 'contar',
-    tema: 'dinossauros',
-    config: { quantidade: 3, nivel: 1, rodadas: 2 },
-    instrucao: 'Toque em cada dinossauro para contar, sem pressa.',
-  },
-]
-
-const STATUS_ETAPA = {
-  concluida: { label: 'Concluída', cls: 'done', pill: 'pill-ok' },
-  em_andamento: { label: 'Em andamento', cls: 'now', pill: 'pill-mid' },
-  a_fazer: { label: null, cls: '', pill: null },
-}
-
-// Reconhece se uma child_activity já preparada corresponde a uma etapa da
-// trilha — por molde+tema e um "número-chave" da config (o que muda entre
-// "até 5" e "até 10" pra cada molde). Aproximado de propósito: não há
-// vínculo formal plano↔atividade ainda, é inferência sobre dado existente.
-function etapaBateComAtividade(row, etapa) {
-  if (row.molde !== etapa.molde || row.tema !== etapa.tema) return false
-  if (etapa.molde === 'identificar') return Number(row.config?.maiorNumero) === Number(etapa.config.maiorNumero)
-  if (etapa.molde === 'contar') return Number(row.config?.quantidade) === Number(etapa.config.quantidade)
-  return true
-}
-
-// Cruza child_activities (o que já foi preparado) com sessions.child_activity_id
-// (o que já virou registro) — sem query nova, as duas já existem pra outras
-// telas. "Em andamento" também cobre a primeira etapa ainda não concluída
-// mesmo sem nada preparado, pra sempre haver um "próximo passo" visível.
-async function computeStatusEtapas(childId, cycleId) {
-  const [{ data: atividades, error: e1 }, { data: sessoes, error: e2 }] = await Promise.all([
-    listChildActivities(childId),
-    getCycleSessions(cycleId),
-  ])
-  if (e1 || e2) return null
-
-  const idsComSessao = new Set((sessoes ?? []).map((s) => s.child_activity_id).filter(Boolean))
-
-  const bruto = PRIMEIROS_NUMEROS.map((etapa) => {
-    const match = (atividades ?? []).find((row) => etapaBateComAtividade(row, etapa))
-    if (match && idsComSessao.has(match.id)) return 'concluida'
-    if (match) return 'em_andamento'
-    return 'a_fazer'
-  })
-
-  const primeiraNaoConcluidaIdx = bruto.findIndex((s) => s !== 'concluida')
-  return bruto.map((s, i) => (i === primeiraNaoConcluidaIdx && s === 'a_fazer' ? 'em_andamento' : s))
-}
+// Dado pedagógico e cálculo de status moram em data/planos-registro.js; o
+// desenho do mapa mora em components/trilha-plano.js (componente puro).
+// buildPlanPanel só orquestra: busca status real e liga "Preparar atividade"
+// à mesma ponte de sempre (prefillCompose, via onPrepararEtapa).
 
 function buildPlanPanel(cycle, state, onPrepararEtapa) {
   const panel = el('section', 'panel')
@@ -1873,60 +1791,22 @@ function buildPlanPanel(cycle, state, onPrepararEtapa) {
   }[state]
 
   const card = el('div', 'card')
-  const head = el('div', 'card-h')
-  head.append(el('h3', null, 'Plano: Primeiros Números'))
-  card.append(head)
-
-  const body = el('div', 'card-b')
-  body.append(el('p', 'card-copy', 'Sequência simples pra conduzir o começo do acompanhamento — o tutor decide quando avançar; a criança não escolhe a etapa.'))
 
   if (bloqueadoMsg) {
     const note = el('div', 'locked-note')
     note.innerHTML = `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
     note.append(document.createTextNode(bloqueadoMsg))
-    note.style.marginTop = '10px'
-    body.append(note)
+    card.append(note)
   }
 
-  const stepsWrap = el('div', 'steps')
-  stepsWrap.style.marginTop = '14px'
-  body.append(stepsWrap)
-  card.append(body)
+  const plano = PLANOS_REGISTRO.primeiros_numeros
+  const trilha = renderTrilhaPlano({ plano, statuses: null, podePreparar, onPrepararEtapa })
+  card.append(trilha)
   panel.append(card)
 
-  function renderEtapas(statusList) {
-    stepsWrap.replaceChildren()
-    PRIMEIROS_NUMEROS.forEach((etapa, i) => {
-      const status = statusList?.[i] || (i === 0 ? 'em_andamento' : 'a_fazer')
-      const info = STATUS_ETAPA[status]
-
-      const step = el('div', `step${info.cls ? ` ${info.cls}` : ''}`)
-      step.append(el('div', 'step-n', String(i + 1)))
-
-      const copy = el('div', 'plan-step-copy')
-      const headRow = el('div', 'plan-step-head')
-      headRow.append(el('b', null, etapa.titulo))
-      if (info.label) headRow.append(el('span', `pill ${info.pill}`, info.label))
-      copy.append(headRow, el('p', null, etapa.objetivo))
-
-      if (podePreparar) {
-        const prepararBtn = el('button', 'btn btn-ghost btn-sm', 'Preparar atividade desta etapa')
-        prepararBtn.type = 'button'
-        prepararBtn.style.marginTop = '8px'
-        prepararBtn.addEventListener('click', () => onPrepararEtapa?.(etapa))
-        copy.append(prepararBtn)
-      }
-
-      step.append(copy)
-      stepsWrap.append(step)
-    })
-  }
-
-  renderEtapas(null)
-
   panel.loadStatus = async () => {
-    const statusList = await computeStatusEtapas(cycle.child_id, cycle.id)
-    if (statusList) renderEtapas(statusList)
+    const statusList = await computeStatusEtapas(plano, cycle.child_id, cycle.id)
+    if (statusList) trilha.updateStatuses(statusList)
   }
 
   return panel
