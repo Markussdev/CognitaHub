@@ -12,7 +12,6 @@ import { STATUS_ETAPA } from '../data/planos-registro.js'
 // Caminhos relativos a pages/trilha.html (único lugar que carrega este
 // componente) — mesmo padrão de `img.src = '../assets/...'` já usado em
 // tutor.js, não import de módulo Vite.
-const MASCOTE_BASE = '../assets/trilha/mascote/'
 const EMBLEMA_BASE = '../assets/trilha/emblemas/'
 const ESPACO_BASE = '../assets/trilha/espaco/'
 
@@ -112,8 +111,8 @@ export function renderTrilhaPlano({ plano, statuses, podePreparar, onPrepararEta
     return currentStatuses?.[i] || (i === 0 ? 'em_andamento' : 'a_fazer')
   }
 
-  // "Atual" = a primeira etapa ainda não concluída — no máximo UM gato
-  // visível no mapa, mesmo quando duas etapas estão tecnicamente
+  // "Atual" = a primeira etapa ainda não concluída — decide o nó maior
+  // (trail-step--current) mesmo quando duas etapas estão tecnicamente
   // "em_andamento" ao mesmo tempo (o tutor preparou mais de uma adiantado).
   function currentIndex() {
     const idx = plano.etapas.findIndex((_, i) => statusFor(i) !== 'concluida')
@@ -157,23 +156,6 @@ export function renderTrilhaPlano({ plano, statuses, podePreparar, onPrepararEta
         const check = el('span', 'trail-step-check')
         check.innerHTML = CHECK_SVG
         btn.append(check)
-      }
-
-      // Só um mascote no mapa: o guia fica com a etapa atual; quando tudo
-      // termina (currentIdx === -1), o comemorar substitui o guia na última
-      // etapa — nunca os dois ao mesmo tempo, nunca em mais de um nó.
-      if (isCurrent) {
-        const guia = el('img', 'trail-guia')
-        guia.src = `${MASCOTE_BASE}guia.webp`
-        guia.alt = ''
-        guia.setAttribute('aria-hidden', 'true')
-        btn.append(guia)
-      } else if (currentIdx === -1 && i === plano.etapas.length - 1) {
-        const comemora = el('img', 'trail-guia trail-guia--comemorar')
-        comemora.src = `${MASCOTE_BASE}comemorar.webp`
-        comemora.alt = ''
-        comemora.setAttribute('aria-hidden', 'true')
-        btn.append(comemora)
       }
 
       btn.addEventListener('click', () => selectEtapa(etapa.id, { porUsuario: true }))
