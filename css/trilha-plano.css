@@ -228,7 +228,31 @@
   .trail-details { position: sticky; top: var(--sp-4, 16px); }
 }
 
-/* ── Redução de movimento (Fase D usa isto como guarda) ── */
+.trail-step.is-selected { box-shadow: 0 0 0 3px rgba(20, 17, 98, 0.14); }
+
+/* ── Microinterações (Fase D) — só com prefers-reduced-motion:no-preference.
+   Sem isso, o app fica idêntico ao da Fase C: hover só troca cor de borda,
+   check/mascote aparecem direto, sem fade. ── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .trail-step:hover { transform: translate(-50%, -50%) translateY(-2px); }
+  .trail-step.is-selected:hover { transform: translate(-50%, -50%) scale(1.06) translateY(-2px); }
+
+  @keyframes trail-fade-scale-in {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes trail-guia-in {
+    from { opacity: 0; transform: translate(-18%, -55%) scale(0.7); }
+    to { opacity: 1; transform: translate(-18%, -55%) scale(1); }
+  }
+
+  .trail-step--concluida .trail-step-badge { animation: trail-fade-scale-in 0.3s ease; }
+  .trail-mascot-comemorar { animation: trail-fade-scale-in 0.35s ease 0.05s backwards; }
+  .trail-guia { animation: trail-guia-in 0.35s ease; }
+}
+
+/* ── Redução de movimento — trava as transições declaradas acima ── */
 
 @media (prefers-reduced-motion: reduce) {
   .trail-step, .trail-progress-fill { transition: none; }
