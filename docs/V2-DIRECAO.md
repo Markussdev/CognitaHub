@@ -984,3 +984,11 @@ registrada em `vite.config.js`.
   desenhadas à mão pro novo viewBox (`0 0 400 1000`) — se o plano crescer
   além de 5 etapas, isso precisa de um gerador de curvas, não mais 4
   segmentos fixos.
+
+**Ajuste final (mesmo dia):** o mascote foi removido do mapa por completo.
+Mesmo só um por trilha e bem menor que a versão original, ele ainda quebrava
+a leitura do caminho entre os nós — Marcus viu a tela renderizada e cortou
+na hora ("ele quebra o ciclo"). O mapa fica só path segmentado + nós +
+decoração espacial; os webp de `assets/trilha/mascote/` foram removidos por
+não terem mais uso. Personagem/narrativa visual fica pra outra hora, se
+fizer sentido.
