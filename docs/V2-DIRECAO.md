@@ -1,19 +1,21 @@
 # Cognita Hub — Direção da V2 (Hub adulto + Modo Criança)
 
 > **Status: V2 Core fechada — RC1 (2026-07-09); Sprint 5A (nav mobile),
-> Sprint 5.2 (consolidação visual) e a trilha visual do Plano (§15,
-> 2026-07-11) já entregues.** O ciclo de aprendizagem guiada (Plano →
-> preparar → Modo Criança → execução → sessão → família) está funcional de
-> ponta a ponta e testado ao vivo — a aba Plano agora é um mapa de missões
-> ("Constelação dos Primeiros Números"), não mais uma lista. Ver §12 pro
-> fechamento do RC1, §13 pra navegação mobile, §14 pra consolidação visual,
-> §15 pra trilha do Plano, e `docs/ROTEIRO-DEMO.md` pro roteiro de demo de 3
-> minutos. **Direção de produto mais ampla (2026-07-11, ver §15):** a
-> experiência de trilha navegável da criança (estilo Duolingo ABC) vai viver
-> num app mobile futuro — este site é a ferramenta do tutor pra prever e
-> ministrar essa trilha, não o lugar onde a criança navega sozinha. Sprint
-> 5.3 (base visual do Modo Criança) segue não iniciada, aguardando escopo
-> mais detalhado do Marcus.
+> Sprint 5.2 (consolidação visual) e a trilha do Plano (§15+§16, 2026-07-11)
+> já entregues.** O ciclo de aprendizagem guiada (Plano → preparar → Modo
+> Criança → execução → sessão → família) está funcional de ponta a ponta e
+> testado ao vivo. A trilha "Constelação dos Primeiros Números" passou por
+> uma correção de rumo no mesmo dia: o mapa não cabia num card de dashboard
+> (§15, versão descontinuada) e virou página própria, `pages/trilha.html`
+> (§16) — a aba Plano no painel do tutor agora é só um resumo compacto que
+> aponta pra lá. Ver §12 pro fechamento do RC1, §13 pra navegação mobile,
+> §14 pra consolidação visual, §16 pro estado atual da trilha, e
+> `docs/ROTEIRO-DEMO.md` pro roteiro de demo de 3 minutos. **Direção de
+> produto mais ampla (ver §15):** a experiência de trilha navegável da
+> criança (estilo Duolingo ABC) vai viver num app mobile futuro — este site
+> é a ferramenta do tutor pra prever e ministrar essa trilha, não o lugar
+> onde a criança navega sozinha. Sprint 5.3 (base visual do Modo Criança)
+> segue não iniciada, aguardando escopo mais detalhado do Marcus.
 
 Revisão feita em 2026-07-08. Este documento registra a decisão de produto da V2, o
 estado real (verificado no código, não suposto) da jornada ponta a ponta que ela
@@ -892,3 +894,93 @@ ausente do `transform` computado) e `animationName` do mascote guia vira
 **Commits:** wireframe funcional (Fase A), assets reais (Fase C),
 microinterações (Fase D), fix de contraste (Fase E) — um commit por fase,
 seguindo a spec ("uma fase por commit").
+
+---
+
+## 16. Correção — a trilha virou página própria, não card de dashboard (2026-07-11)
+
+**O §15 acima descreve uma versão que não sobreviveu ao primeiro olhar real.**
+Marcus testou a entrega da Sprint (mapa dentro da aba Plano, `.trail-map`
+com `min-height: 420px`, nós entre 9%-91% da altura) e o diagnóstico foi
+direto: *"você não desenhou uma trilha ruim; você colocou uma trilha
+potencialmente boa dentro do recipiente errado."* Nós a menos de 100px de
+distância vertical, três mascotes disputando atenção ao mesmo tempo
+(cabeçalho, nó atual, card de etapa concluída), emblemas detalhados de 32px
+dentro de nós de 72px virando miniatura sem função, decoração espacial como
+9 figurinhas uniformes — tudo sintoma do mesmo problema: **jornada dentro de
+um card baixo**.
+
+**Correção estrutural (feedback completo do Marcus, 2026-07-11):**
+
+1. **Separação de responsabilidade.** A aba Plano (painel do tutor) deixou
+   de tentar mostrar o mapa inteiro — agora é um resumo de leitura rápida:
+   título, "X de Y concluídas", próxima etapa, 5 marcadores
+   `✓─✓─●─○─○` e dois botões ("Explorar trilha completa" / "Preparar
+   próxima atividade"). O mapa de verdade virou **`pages/trilha.html`**, uma
+   tela própria do tutor (`?cycle_id=<uuid>`), shell mínimo — sem rail, sem
+   as 7 abas do painel, só voltar + título + progresso no topo.
+2. **Escala.** Mapa com `min-height: 1250px` (era 420px), 5 nós com ~220px
+   de distância vertical entre eles — "o Duolingo funciona porque a trilha
+   é uma página que você percorre, não um diagrama que precisa caber
+   inteiro." Nós de 96px (112px na etapa "atual"), emblema ocupando 70% do
+   nó (antes 32px soltos, agora 64-78px de verdade).
+3. **Concluída mantém o emblema.** Em vez de substituir a ilustração por um
+   check genérico, a etapa concluída dessatura o emblema original + aro
+   verde + check pequeno no canto — o tutor não perde a referência de qual
+   missão é qual.
+4. **Caminho segmentado.** 4 trechos de SVG (não 1 path de cor única), cada
+   um colorido pelo estado do nó de destino: roxo suave = concluído, dourado
+   = leva à etapa atual, lavanda pontilhada = futuro. Comunica progresso de
+   verdade, não só a cor dos nós.
+5. **Um só gato.** "O gato não é decoração. Ele é um personagem." Regra
+   nova: no máximo um mascote visível no mapa inteiro. `trilha-plano.js`
+   calcula a "etapa atual" (1ª não concluída, mesmo quando 2 etapas estão
+   tecnicamente `em_andamento` ao mesmo tempo nos dados reais — acontece
+   quando o tutor prepara mais de uma atividade adiantado) e só ela ganha o
+   mascote-guia; quando tudo termina, o mascote-comemorar substitui o guia
+   na última etapa. Removido o mascote do cabeçalho e o mascote extra no
+   card ao selecionar uma etapa concluída — o card só muda de conteúdo.
+6. **Decoração hierárquica.** 1 planeta grande parcialmente cortado no topo,
+   elementos médios/pequenos no meio (lua, estrelas, cometa), 1 planeta
+   médio-grande cortado perto da etapa final — não mais 9 figurinhas
+   uniformes de 30-72px com a mesma opacidade.
+7. **Mobile.** O painel de detalhes vira bottom sheet (mesmo padrão do
+   `.support-drawer` que já existia em `tutor.html` pro "Falar com equipe",
+   só que ancorado embaixo em vez do lado) — abre só num toque de verdade
+   no nó, fecha via backdrop ou botão ✕. Nunca painel lateral apertado.
+
+**Arquitetura:** `css/trilha-plano.css` foi descontinuado —
+**`css/trilha.css`** é o único CSS novo que `pages/trilha.html` carrega
+(Marcus pediu esse arquivo especificamente). `js/components/trilha-plano.js`
+continua um componente puro (não sabe de Supabase, não navega sozinho), só
+que agora sem cabeçalho próprio (título/progresso/voltar são do shell da
+página) e com a lógica de "etapa atual" nova.
+
+**Ponte "Preparar atividade" entre páginas:** como `trilha.html` é uma
+página separada, não dá pra passar o objeto da etapa direto em memória.
+Solução: `onPrepararEtapa` navega pra
+`tutor.html?view=record&tab=activities&plan=<id>&step=<id>`; `bootstrap()`
+em `tutor.js` lê esses dois parâmetros (mesmo padrão de `?view=&tab=` que já
+existia pra volta do Modo Criança) e `renderRecord()` procura a etapa em
+`PLANOS_REGISTRO` pelo id, chamando a mesma ponte `prefillFromPlano` de
+sempre.
+
+**Verificado ao vivo (Playwright):** resumo compacto com 5 pontos e
+"próxima etapa" corretos; "Explorar trilha completa" abre `trilha.html` com
+o `cycle_id` certo; mapa renderiza com exatamente 1 nó `--current` e 1
+mascote, mesmo com 2 etapas `em_andamento` nos dados reais do Mateus; altura
+do mapa 1250px; "Preparar atividade" na trilha volta pro painel com o form
+pré-preenchido certo (`plan=primeiros_numeros&step=contar-1-5` → "Vai criar
+Contar objetos até 5 — 5 itens, nível 1, 3 rodadas"); mobile sem overflow
+horizontal, bottom sheet abre/fecha via toque e via backdrop; zero erro de
+console em qualquer tela; `npx vite build` passa limpo com a página nova
+registrada em `vite.config.js`.
+
+**Pendências (continuam as mesmas do §15, mais uma):**
+
+- Pose "comemorando" de verdade e `plano_etapa` formal — ver §15.
+- Mapa navegável da criança fica pro app mobile futuro — ver §15.
+- **Nova:** os 4 segmentos do caminho em `trilha-plano.js` têm coordenadas
+  desenhadas à mão pro novo viewBox (`0 0 400 1000`) — se o plano crescer
+  além de 5 etapas, isso precisa de um gerador de curvas, não mais 4
+  segmentos fixos.
