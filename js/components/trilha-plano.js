@@ -3,37 +3,53 @@ import { MOLDES_REGISTRO, formatConfigResumo } from '../data/moldes-registro.js'
 import { STATUS_ETAPA } from '../data/planos-registro.js'
 
 // Componente puro: não importa supabase, não conhece ciclo, não navega.
-// Recebe o plano + status já calculados e devolve um elemento; quem chama
-// decide quando "Preparar atividade" bloqueia (podePreparar) e o que fazer
-// com a etapa escolhida (onPrepararEtapa → prefillFromPlano em tutor.js).
+// Recebe o plano + status já calculados e devolve um elemento (só mapa +
+// painel de detalhes — título/progresso/voltar são do shell da página que
+// usa isto, ver js/pages/trilha.js). Quem chama decide quando "Preparar
+// atividade" bloqueia (podePreparar) e o que fazer com a etapa escolhida
+// (onPrepararEtapa → prefillFromPlano/bridge de URL em tutor.js).
 
-// Caminhos relativos a pages/tutor.html (único lugar que carrega este
+// Caminhos relativos a pages/trilha.html (único lugar que carrega este
 // componente) — mesmo padrão de `img.src = '../assets/...'` já usado em
 // tutor.js, não import de módulo Vite.
 const MASCOTE_BASE = '../assets/trilha/mascote/'
 const EMBLEMA_BASE = '../assets/trilha/emblemas/'
 const ESPACO_BASE = '../assets/trilha/espaco/'
 
-const CHECK_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+const CHECK_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`
 
-// Caminho fixo pra 5 etapas — desenhado à mão pro viewBox 400x800.
-// Algoritmo dinâmico só quando existir plano de tamanho variável (ver §9 do plano).
-const TRAIL_PATH_D = 'M200 60 C90 150 310 230 200 320 C90 410 310 490 200 580 C110 650 200 720 200 770'
+// Posições dos 5 nós — espelha os seletores :nth-child em css/trilha.css.
+// Mapa alto (~1250px) de propósito: a trilha é uma página que se percorre,
+// não um diagrama que precisa caber inteiro na viewport (ver feedback do
+// Marcus, 2026-07-11 — "o Duolingo funciona porque é uma página, não um
+// diagrama espremido").
+const NODE_POSICOES = [
+  { x: 50, y: 8 },
+  { x: 68, y: 27 },
+  { x: 32, y: 46 },
+  { x: 68, y: 64 },
+  { x: 50, y: 80 },
+]
 
-// Decoração espacial estática (Fase C) — posições fixas nas margens do mapa,
-// longe da faixa 32%–68% onde os nós ficam. Puramente decorativo: aria-hidden
-// + pointer-events:none, sem nenhuma animação (isso é Fase D, sob
-// prefers-reduced-motion).
+// 4 segmentos (não um path único) pra poder colorir cada trecho por estado
+// — concluído / atual / futuro — em vez de um caminho de cor única.
+const SEGMENTOS_D = [
+  'M200,80 C100,170 320,220 272,290',
+  'M272,290 C220,380 60,420 128,500',
+  'M128,500 C200,580 340,640 272,710',
+  'M272,710 C220,800 120,860 200,920',
+]
+
+// Decoração espacial (Fase C→revisão) — composição hierárquica, não 9
+// stickers uniformes: 1 planeta grande cortado no topo, elementos médios/
+// pequenos no meio, 1 planeta médio-grande cortado perto da etapa final.
 const DECORACAO_ESPACIAL = [
-  { src: 'planeta-roxo', x: '9%', y: '5%', size: 60 },
-  { src: 'estrelas-3', x: '46%', y: '3%', size: 30 },
-  { src: 'estrelas-1', x: '89%', y: '15%', size: 38 },
-  { src: 'cometa', x: '7%', y: '36%', size: 66 },
-  { src: 'planeta-azul', x: '91%', y: '43%', size: 52 },
-  { src: 'orbita', x: '10%', y: '60%', size: 58 },
-  { src: 'estrelas-2', x: '86%', y: '64%', size: 34 },
-  { src: 'lua', x: '89%', y: '84%', size: 46 },
-  { src: 'planeta-amarelo', x: '12%', y: '95%', size: 72 },
+  { src: 'planeta-roxo', x: '-10%', y: '-5%', size: 210, opacity: 0.3 },
+  { src: 'estrelas-2', x: '80%', y: '10%', size: 34, opacity: 0.55 },
+  { src: 'lua', x: '88%', y: '34%', size: 58, opacity: 0.4 },
+  { src: 'cometa', x: '2%', y: '42%', size: 74, opacity: 0.4 },
+  { src: 'estrelas-3', x: '8%', y: '62%', size: 30, opacity: 0.5 },
+  { src: 'planeta-amarelo', x: '82%', y: '88%', size: 170, opacity: 0.35 },
 ]
 
 export function renderTrilhaPlano({ plano, statuses, podePreparar, onPrepararEtapa }) {
@@ -41,91 +57,123 @@ export function renderTrilhaPlano({ plano, statuses, podePreparar, onPrepararEta
   let etapaSelecionadaId = null
   // Só trava a seleção do tutor depois de um clique real — enquanto isso,
   // cada render() (inclusive quando o status real chega do Supabase) pode
-  // reapontar pra etapa "em_andamento" de verdade, em vez de ficar preso
-  // na 1ª etapa (seleção-padrão antes do status carregar).
+  // reapontar pra etapa certa, em vez de ficar preso na 1ª etapa (seleção-
+  // padrão antes do status carregar).
   let selecaoManual = false
   const nodeButtons = new Map()
 
-  const wrap = el('div', 'trail')
-
-  const header = el('div', 'trail-header')
-  const headMain = el('div', 'trail-header-main')
-  const headerMascot = el('img', 'trail-mascot-planejar')
-  headerMascot.src = `${MASCOTE_BASE}planejar.webp`
-  headerMascot.alt = ''
-  headerMascot.setAttribute('aria-hidden', 'true')
-  const headCopy = el('div', 'trail-header-copy')
-  headCopy.append(el('h3', 'trail-title', plano.titulo), el('p', 'trail-desc', plano.descricao))
-  headMain.append(headerMascot, headCopy)
-  header.append(headMain)
-
-  const progressWrap = el('div', 'trail-progress')
-  const progressLabel = el('span', 'trail-progress-label')
-  const progressBar = el('div', 'trail-progress-bar')
-  const progressFill = el('div', 'trail-progress-fill')
-  progressBar.append(progressFill)
-  progressWrap.append(progressLabel, progressBar)
-  header.append(progressWrap)
-  wrap.append(header)
-
-  const body = el('div', 'trail-body')
+  const wrap = el('div', 'trail-body')
 
   const mapWrap = el('div', 'trail-map')
-  mapWrap.innerHTML = `<svg class="trail-path" viewBox="0 0 400 800" preserveAspectRatio="none" aria-hidden="true">
-    <path d="${TRAIL_PATH_D}" fill="none" stroke="var(--trail-path)" stroke-width="6" stroke-linecap="round" stroke-dasharray="1 16"/>
-  </svg>`
+
+  const pathSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  pathSvg.setAttribute('class', 'trail-path')
+  pathSvg.setAttribute('viewBox', '0 0 400 1000')
+  pathSvg.setAttribute('preserveAspectRatio', 'none')
+  pathSvg.setAttribute('aria-hidden', 'true')
+  const segmentPaths = SEGMENTOS_D.map((d) => {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    path.setAttribute('d', d)
+    path.setAttribute('fill', 'none')
+    path.setAttribute('class', 'trail-path-seg')
+    pathSvg.append(path)
+    return path
+  })
+  mapWrap.append(pathSvg)
+
   const decoLayer = el('div', 'trail-deco-layer')
-  decoLayer.innerHTML = DECORACAO_ESPACIAL.map(({ src, x, y, size }) => (
-    `<img class="trail-deco" src="${ESPACO_BASE}${src}.webp" alt="" aria-hidden="true" style="left:${x};top:${y};width:${size}px;height:${size}px;" />`
+  decoLayer.innerHTML = DECORACAO_ESPACIAL.map(({ src, x, y, size, opacity }) => (
+    `<img class="trail-deco" src="${ESPACO_BASE}${src}.webp" alt="" aria-hidden="true" style="left:${x};top:${y};width:${size}px;height:${size}px;opacity:${opacity};" />`
   )).join('')
   mapWrap.append(decoLayer)
+
   const nodesLayer = el('div', 'trail-nodes')
   mapWrap.append(nodesLayer)
 
   const details = el('div', 'trail-details')
+  // Backdrop só é visível/clicável no mobile (ver css/trilha.css) — no
+  // desktop o painel de detalhes já fica estático ao lado do mapa, "abrir"/
+  // "fechar" não faz sentido lá.
+  const detailsBackdrop = el('div', 'trail-details-backdrop')
+  detailsBackdrop.addEventListener('click', () => closeSheet())
 
-  body.append(mapWrap, details)
-  wrap.append(body)
+  wrap.append(mapWrap, details, detailsBackdrop)
+
+  function openSheet() {
+    details.classList.add('is-open')
+    detailsBackdrop.classList.add('is-open')
+  }
+  function closeSheet() {
+    details.classList.remove('is-open')
+    detailsBackdrop.classList.remove('is-open')
+  }
 
   function statusFor(i) {
     return currentStatuses?.[i] || (i === 0 ? 'em_andamento' : 'a_fazer')
   }
 
-  function updateProgress() {
-    const total = plano.etapas.length
-    const done = plano.etapas.reduce((n, _, i) => n + (statusFor(i) === 'concluida' ? 1 : 0), 0)
-    progressLabel.textContent = `${done} de ${total} etapas concluídas`
-    progressFill.style.width = `${total ? Math.round((done / total) * 100) : 0}%`
+  // "Atual" = a primeira etapa ainda não concluída — no máximo UM gato
+  // visível no mapa, mesmo quando duas etapas estão tecnicamente
+  // "em_andamento" ao mesmo tempo (o tutor preparou mais de uma adiantado).
+  function currentIndex() {
+    const idx = plano.etapas.findIndex((_, i) => statusFor(i) !== 'concluida')
+    return idx
   }
 
-  function renderNodes() {
+  function renderPath(currentIdx) {
+    segmentPaths.forEach((path, i) => {
+      // segmento i liga o nó i ao nó i+1 — o estado do segmento segue o nó
+      // de destino (i+1): concluído se o destino já foi concluído, atual se
+      // o destino é a etapa em foco, futuro nos demais casos.
+      const destStatus = statusFor(i + 1)
+      const state = destStatus === 'concluida' ? 'concluida' : (i + 1 === currentIdx ? 'atual' : 'futuro')
+      path.setAttribute('class', `trail-path-seg trail-path-seg--${state}`)
+    })
+  }
+
+  function renderNodes(currentIdx) {
     nodesLayer.replaceChildren()
     nodeButtons.clear()
     plano.etapas.forEach((etapa, i) => {
       const status = statusFor(i)
-      const btn = el('button', `trail-step trail-step--${status}`)
+      const isCurrent = i === currentIdx
+      const pos = NODE_POSICOES[i] || NODE_POSICOES[NODE_POSICOES.length - 1]
+      const cls = `trail-step trail-step--${status}${isCurrent ? ' trail-step--current' : ''}`
+      const btn = el('button', cls)
       btn.type = 'button'
-      btn.style.setProperty('--trail-i', String(i))
+      btn.style.setProperty('--trail-x', `${pos.x}%`)
+      btn.style.setProperty('--trail-y', `${pos.y}%`)
       btn.dataset.etapaId = etapa.id
       btn.setAttribute('aria-label', `Etapa ${i + 1}: ${etapa.titulo} — ${STATUS_ETAPA[status].label}`)
 
       const badge = el('span', 'trail-step-badge')
-      if (status === 'concluida') {
-        badge.innerHTML = CHECK_SVG
-      } else {
-        const emblemImg = el('img', 'trail-emblem-img')
-        emblemImg.src = `${EMBLEMA_BASE}${etapa.emblema}.webp`
-        emblemImg.alt = ''
-        badge.append(emblemImg)
-      }
+      const emblemImg = el('img', 'trail-emblem-img')
+      emblemImg.src = `${EMBLEMA_BASE}${etapa.emblema}.webp`
+      emblemImg.alt = ''
+      badge.append(emblemImg)
       btn.append(badge)
 
-      if (status === 'em_andamento') {
+      if (status === 'concluida') {
+        const check = el('span', 'trail-step-check')
+        check.innerHTML = CHECK_SVG
+        btn.append(check)
+      }
+
+      // Só um mascote no mapa: o guia fica com a etapa atual; quando tudo
+      // termina (currentIdx === -1), o comemorar substitui o guia na última
+      // etapa — nunca os dois ao mesmo tempo, nunca em mais de um nó.
+      if (isCurrent) {
         const guia = el('img', 'trail-guia')
         guia.src = `${MASCOTE_BASE}guia.webp`
         guia.alt = ''
         guia.setAttribute('aria-hidden', 'true')
         btn.append(guia)
+      } else if (currentIdx === -1 && i === plano.etapas.length - 1) {
+        const comemora = el('img', 'trail-guia trail-guia--comemorar')
+        comemora.src = `${MASCOTE_BASE}comemorar.webp`
+        comemora.alt = ''
+        comemora.setAttribute('aria-hidden', 'true')
+        btn.append(comemora)
       }
 
       btn.addEventListener('click', () => selectEtapa(etapa.id, { porUsuario: true }))
@@ -141,13 +189,11 @@ export function renderTrilhaPlano({ plano, statuses, podePreparar, onPrepararEta
     const status = statusFor(i)
     const info = STATUS_ETAPA[status]
 
-    if (status === 'concluida') {
-      const comemora = el('img', 'trail-mascot-comemorar')
-      comemora.src = `${MASCOTE_BASE}comemorar.webp`
-      comemora.alt = ''
-      comemora.setAttribute('aria-hidden', 'true')
-      details.append(comemora)
-    }
+    const closeBtn = el('button', 'trail-details-close', '✕')
+    closeBtn.type = 'button'
+    closeBtn.setAttribute('aria-label', 'Fechar detalhes da etapa')
+    closeBtn.addEventListener('click', () => closeSheet())
+    details.append(closeBtn)
 
     const head = el('div', 'trail-details-head')
     head.append(el('h4', null, etapa.titulo))
@@ -165,7 +211,7 @@ export function renderTrilhaPlano({ plano, statuses, podePreparar, onPrepararEta
     details.append(configBox)
 
     if (podePreparar) {
-      const btn = el('button', `btn btn-sm ${status === 'em_andamento' ? 'btn-accent' : 'btn-ghost'}`, 'Preparar atividade')
+      const btn = el('button', `btn btn-sm ${status !== 'concluida' ? 'btn-accent' : 'btn-ghost'}`, 'Preparar atividade')
       btn.type = 'button'
       btn.addEventListener('click', () => onPrepararEtapa?.(etapa))
       details.append(btn)
@@ -177,13 +223,17 @@ export function renderTrilhaPlano({ plano, statuses, podePreparar, onPrepararEta
     if (porUsuario) selecaoManual = true
     nodeButtons.forEach((btn, btnId) => btn.classList.toggle('is-selected', btnId === id))
     renderDetails(plano.etapas.find((e) => e.id === id))
+    // Só abre o bottom sheet (mobile) numa escolha de verdade do tutor — a
+    // seleção automática inicial não deve empurrar um sheet na cara de quem
+    // acabou de abrir a página.
+    if (porUsuario) openSheet()
   }
 
   function render() {
-    updateProgress()
-    renderNodes()
-    const emAndamentoIdx = plano.etapas.findIndex((_, i) => statusFor(i) === 'em_andamento')
-    const fallbackId = plano.etapas[emAndamentoIdx >= 0 ? emAndamentoIdx : 0]?.id
+    const currentIdx = currentIndex()
+    renderPath(currentIdx)
+    renderNodes(currentIdx)
+    const fallbackId = plano.etapas[currentIdx >= 0 ? currentIdx : plano.etapas.length - 1]?.id
     const preferida = selecaoManual && etapaSelecionadaId && nodeButtons.has(etapaSelecionadaId)
       ? etapaSelecionadaId
       : fallbackId

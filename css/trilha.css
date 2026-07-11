@@ -1,0 +1,241 @@
+/* Mapa da trilha "Constelação dos Primeiros Números" — componente usado só
+   por pages/trilha.html (tela própria de exploração do tutor). Escopo: só
+   `.trail-*`. O shell da página (topbar, voltar, bottom sheet mobile) vive
+   inline em trilha.html, no mesmo padrão self-contained de tutor.html.
+   Ver docs/V2-DIRECAO.md pro histórico da revisão (mapa não cabe mais
+   espremido num card — virou página própria, mais alta, um só mascote). */
+
+:root {
+  --trail-path: #d8cfe8;
+  --trail-path-done: #b9a8d9;
+  --trail-node-bg: #fffefc;
+  --trail-node-border: rgba(20, 17, 98, 0.16);
+  --trail-node-done-bg: #ece8f8;
+  --trail-node-now-ring: var(--accent, #ffa800);
+}
+
+.trail-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-6, 24px);
+  align-items: start;
+}
+
+.trail-map {
+  position: relative;
+  width: 100%;
+  min-height: 1250px;
+  border-radius: var(--r-lg, 20px);
+  background: radial-gradient(120% 60% at 50% 0%, #f4f0fb 0%, #f7f4ee 55%);
+  overflow: hidden;
+}
+
+.trail-path { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.trail-path-seg { stroke-width: 6; stroke-linecap: round; fill: none; }
+.trail-path-seg--concluida { stroke: var(--trail-path-done); opacity: 0.55; }
+.trail-path-seg--atual { stroke: var(--accent, #ffa800); opacity: 0.6; stroke-width: 7; }
+.trail-path-seg--futuro { stroke: var(--trail-path); opacity: 0.9; stroke-dasharray: 1 16; }
+
+/* Decoração espacial — composição hierárquica (1 planeta grande cortado no
+   topo, elementos médios/pequenos no meio, 1 planeta médio-grande cortado
+   perto da etapa final), não figurinhas uniformes espalhadas. Sempre atrás
+   dos nós, nunca captura clique, zero animação. */
+.trail-deco-layer { position: absolute; inset: 0; z-index: 1; }
+.trail-deco { position: absolute; pointer-events: none; object-fit: contain; }
+
+.trail-nodes { position: absolute; inset: 0; z-index: 2; }
+
+/* ── Nós da trilha ── */
+
+.trail-step {
+  position: absolute;
+  left: var(--trail-x, 50%);
+  top: var(--trail-y, 50%);
+  transform: translate(-50%, -50%);
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--trail-node-bg);
+  border: 2px solid var(--trail-node-border);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+/* Nó "atual" (a próxima etapa não concluída) ganha destaque de tamanho —
+   no máximo um por trilha, é onde o mascote-guia fica. */
+.trail-step--current { width: 112px; height: 112px; }
+
+.trail-step-badge { width: 70%; height: 70%; display: grid; place-items: center; }
+.trail-emblem-img { width: 100%; height: 100%; object-fit: contain; }
+
+/* Etapa concluída MANTÉM o emblema (só dessaturado) — não vira um check
+   genérico, senão o tutor perde a referência de qual missão é qual. */
+.trail-step--concluida { background: var(--trail-node-done-bg); border-color: transparent; }
+.trail-step--concluida .trail-emblem-img { filter: grayscale(0.55) opacity(0.82); }
+
+.trail-step-check {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--ok, #1c7c54);
+  border: 2px solid var(--trail-node-done-bg);
+  display: grid;
+  place-items: center;
+}
+.trail-step-check svg { width: 14px; height: 14px; }
+
+.trail-step--em_andamento {
+  border-color: var(--trail-node-now-ring);
+  box-shadow: 0 0 0 4px rgba(255, 168, 0, 0.16);
+}
+
+.trail-step--a_fazer { border-color: var(--trail-node-border); opacity: 0.92; }
+
+.trail-step.is-selected { box-shadow: 0 0 0 3px rgba(20, 17, 98, 0.16); }
+
+.trail-step:hover { border-color: var(--brand); }
+
+/* Mascote — só um por mapa, sempre na etapa "atual" (guia) ou, quando tudo
+   concluído, na última etapa (comemorar). Fica abaixo do nó: espaço vertical
+   sobra (gaps de ~220px entre nós), espaço horizontal não — por isso nunca
+   ao lado, pra não estourar a largura do mapa em telas estreitas. */
+.trail-guia {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, -10%);
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* ── Painel de detalhes da etapa ── */
+
+.trail-details {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--r, 14px);
+  padding: var(--sp-4, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2, 8px);
+  background: var(--card);
+}
+
+.trail-details-close { display: none; }
+
+.trail-details-backdrop { display: none; }
+
+.trail-details-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2, 8px);
+  flex-wrap: wrap;
+}
+
+.trail-details-head h4 { font-size: 0.95rem; font-weight: 800; color: var(--ink); }
+
+.trail-status-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 21px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.trail-status-pill--concluida { background: var(--ok-soft); color: var(--ok); }
+.trail-status-pill--em_andamento { background: var(--warn-soft); color: var(--warn); }
+.trail-status-pill--a_fazer { background: var(--rail); color: var(--ink-soft); }
+
+.trail-details-objetivo { font-size: 0.85rem; color: var(--ink-soft); line-height: 1.5; }
+
+.trail-details-config {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-2, 8px) var(--sp-3, 12px);
+  border-radius: var(--r-sm, 10px);
+  background: var(--rail);
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+.trail-details-config b { color: var(--ink); font-size: 0.82rem; }
+
+.trail-details .btn { align-self: flex-start; margin-top: 4px; }
+
+/* ── Layout: desktop em duas colunas, painel fixo ── */
+
+@media (min-width: 860px) {
+  .trail-body { grid-template-columns: minmax(0, 1.15fr) minmax(280px, 340px); }
+  .trail-details { position: sticky; top: var(--sp-4, 16px); }
+}
+
+/* ── Mobile: nó um pouco menor, mascote reduzido, detalhes viram bottom sheet
+   (mesmo padrão do .support-drawer de tutor.html, só que ancorado embaixo) ── */
+
+@media (max-width: 859px) {
+  .trail-step { width: 84px; height: 84px; }
+  .trail-step--current { width: 100px; height: 100px; }
+  .trail-guia { width: 108px; height: 108px; }
+  .trail-map { min-height: 1000px; }
+
+  .trail-details-backdrop {
+    display: block;
+    position: fixed; inset: 0; background: rgba(45, 23, 57, 0.32);
+    z-index: 60; opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+  }
+  .trail-details-backdrop.is-open { opacity: 1; pointer-events: auto; }
+
+  .trail-details {
+    position: fixed; left: 0; right: 0; bottom: 0; max-height: 80vh;
+    border-radius: var(--r-lg, 20px) var(--r-lg, 20px) 0 0;
+    box-shadow: 0 -16px 36px rgba(45, 23, 57, 0.16);
+    z-index: 61; overflow-y: auto;
+    transform: translateY(100%); transition: transform 0.25s ease;
+  }
+  .trail-details.is-open { transform: translateY(0); }
+
+  .trail-details-close {
+    display: grid; place-items: center;
+    position: absolute; top: 10px; right: 10px;
+    width: 30px; height: 30px; border-radius: 50%;
+    border: none; background: var(--rail); color: var(--ink-soft);
+    font-size: 0.9rem; cursor: pointer;
+  }
+}
+
+/* ── Microinterações — só com prefers-reduced-motion:no-preference ── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .trail-step:hover { transform: translate(-50%, -50%) translateY(-2px); }
+  .trail-step.is-selected:hover { transform: translate(-50%, -50%) scale(1.04) translateY(-2px); }
+
+  @keyframes trail-fade-scale-in {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes trail-guia-in {
+    from { opacity: 0; transform: translate(-50%, -10%) scale(0.7); }
+    to { opacity: 1; transform: translate(-50%, -10%) scale(1); }
+  }
+
+  .trail-step-check { animation: trail-fade-scale-in 0.3s ease; }
+  .trail-guia { animation: trail-guia-in 0.35s ease; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trail-step, .trail-details, .trail-details-backdrop { transition: none; }
+}
