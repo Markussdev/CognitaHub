@@ -202,7 +202,10 @@
 
 .trail-status-pill--concluida { background: var(--ok-soft); color: var(--ok); }
 .trail-status-pill--em_andamento { background: var(--warn-soft); color: var(--warn); }
-.trail-status-pill--a_fazer { background: var(--rail); color: var(--muted); }
+/* ink-soft, não muted: contra --rail o muted fica em ~4.44:1, abaixo do
+   mínimo de 4.5:1 do WCAG AA pra texto normal (ver Sprint 5.2 no
+   V2-DIRECAO.md pro mesmo tipo de ajuste) */
+.trail-status-pill--a_fazer { background: var(--rail); color: var(--ink-soft); }
 
 .trail-details-objetivo { font-size: 0.85rem; color: var(--ink-soft); line-height: 1.5; }
 
