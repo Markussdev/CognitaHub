@@ -1,12 +1,12 @@
 # Cognita Hub — Direção da V2 (Hub adulto + Modo Criança)
 
-> **Status: V2 Core fechada — RC1 (2026-07-09), Sprint 5A (nav mobile) já
-> entregue.** O ciclo de aprendizagem guiada (Plano → preparar → Modo
-> Criança → execução → sessão → família) está funcional de ponta a ponta e
-> testado ao vivo. Ver §12 pro fechamento do RC1, §13 pra navegação mobile
-> do hub, e `docs/ROTEIRO-DEMO.md` pro roteiro de demo de 3 minutos. Próxima:
-> Sprint 5.2 (consolidação visual — tokens de tipografia/espaçamento/
-> componentes), ainda não iniciada.
+> **Status: V2 Core fechada — RC1 (2026-07-09); Sprint 5A (nav mobile) e
+> Sprint 5.2 (consolidação visual) já entregues.** O ciclo de aprendizagem
+> guiada (Plano → preparar → Modo Criança → execução → sessão → família)
+> está funcional de ponta a ponta e testado ao vivo. Ver §12 pro fechamento
+> do RC1, §13 pra navegação mobile, §14 pra consolidação visual, e
+> `docs/ROTEIRO-DEMO.md` pro roteiro de demo de 3 minutos. Próxima: Sprint
+> 5.3 — base visual do Modo Criança (telas da criança), ainda não iniciada.
 
 Revisão feita em 2026-07-08. Este documento registra a decisão de produto da V2, o
 estado real (verificado no código, não suposto) da jornada ponta a ponta que ela
@@ -641,9 +641,125 @@ em todos os casos). Testado também em 1440px: `aria-expanded`/toggle
 `display:none`, `.rail` `position:static`, grid `212px 1fr` — desktop
 bit-a-bit igual a antes.
 
-**Não corrigido nesta rodada (fica pra Sprint 5.2 — consolidação visual):**
-algumas fileiras horizontais (a barra de abas, a linha de botões de ação do
-cabeçalho) continuam roláveis sem indicação visual de que há mais conteúdo
-pro lado — não travam a página (cada uma rola só dentro de si), mas não
-"convidam" o dedo a arrastar. É acabamento, não bloqueio, por isso ficou de
-fora do escopo "só navegação" desta entrega.
+**Não corrigido nesta rodada (ficaria pra depois — ver §14 sobre o que foi e
+não foi coberto):** algumas fileiras horizontais (a barra de abas, a linha
+de botões de ação do cabeçalho) continuam roláveis sem indicação visual de
+que há mais conteúdo pro lado — não travam a página (cada uma rola só
+dentro de si), mas não "convidam" o dedo a arrastar. É acabamento, não
+bloqueio.
+
+## 14. Sprint 5.2 — Consolidação visual do hub (2026-07-09/10)
+
+Objetivo: "fazer tudo parecer parte do mesmo produto" sem criar um design
+system novo — centralizar tokens que já existiam de fato (espalhados,
+quase-iguais) e reduzir exceções, não inventar camada nova. **Escopo: só
+`pages/tutor.html` + os pontos de `js/pages/tutor.js` que precisaram mudar
+junto** (o `.btn-bad` novo). `responsavel.html`, `admin.html`,
+`perfil-crianca.html`, `atividades.html` e o site público **não foram
+tocados** — a conversa inteira desta fase girou em torno de `tutor.html`
+(é onde viveram as Sprints 1-5A), então é onde a inconsistência acumulada
+de verdade estava. Se a intenção era um escopo maior, sinalizar.
+
+**Achado que valeu a pena procurar: um bug de verdade, não só estética.**
+`.pending-execucao-item` estava definido **duas vezes** no CSS — a versão
+nova (Sprint 2.5, `display:grid`, pensada pra empilhar título/detalhes/
+rodapé/botão em linhas separadas) e uma versão **morta**, sobrevivente de
+antes da Sprint 2.5 (`display:flex`), mais abaixo no arquivo. Como as duas
+regras têm a mesma especificidade, a que vem depois no arquivo ganha —
+então o card de execução pendente estava renderizando **em uma única linha
+com `justify-content:space-between`**, não empilhado como o design pretendia
+e como eu tinha reportado nas Sprints 2.5/3/4 (o texto cabia numa linha só
+por coincidência de largura, então passou despercebido nos screenshots
+anteriores). Removida a regra morta; conferido via `getComputedStyle` antes
+e depois (`display: flex` → `display: grid`) e visualmente — agora empilha
+título → detalhes → rodapé → botão, como sempre devia ter sido.
+
+**Tokens novos em `:root`, todos aditivos (nada que já existia mudou de
+nome):**
+
+- `--sp-1` a `--sp-8` (4/8/12/16/24/32px) — escala de espaçamento. Aplicada
+  nos contêineres estruturais de maior repetição (`.record`, `.panel`,
+  `.tabs`, `.card-h`, `.card-b`, `.cols`, `.stack`, `.row`/`.row3`,
+  `.form-body`). **Não reescrevi cada padding do arquivo** — paddings
+  pequenos e pontuais em torno de ícones (7px, 9px, 11px) ficaram como
+  estavam, porque são ajuste óptico fino, não "ritmo de layout"; forçar
+  tudo pra escala aí só trocaria uma arbitrariedade por outra.
+- `--label-sm-size` (.7rem) / `--label-sm-tracking` (.07em) — a tier
+  "label pequena" que Marcus pediu. Existiam **7 variações** quase-iguais
+  do mesmo papel visual (eyebrow/kicker/rótulo maiúsculo, peso 700): .62,
+  .64, .66, .68, .69, .7, .71, .8rem espalhadas em `.rail-group`,
+  `.home-head/.profile-head .kicker`, `.home-stat .lbl`, `.lvl`,
+  `.status-kicker`, `.quote-eyebrow`, `.pending-execucoes-label`,
+  `.internal-note-label`. Convergidas todas nos dois tokens (cor e
+  `text-transform` continuam por conta de cada seletor — `.quote-eyebrow`
+  continua com `--accent`, os outros com `--muted`).
+  **Exceção deliberada:** `.internal-note-label` ganhou o tamanho mas
+  **não** ganhou `uppercase` — o texto ali é a frase inteira "A família
+  nunca tem acesso a esta nota", não um rótulo de 1-2 palavras, e maiúsculo
+  numa frase inteira piora a leitura (label pequena ≠ frase em caixa alta).
+- **`--muted` escurecido** de `#8a8391` para `#756c7d` — o original tinha
+  contraste ~3.3:1 contra `--canvas`/`--card`, abaixo do mínimo de 4.5:1 do
+  WCAG AA pra texto normal (e é usado em texto de .7-.86rem, bem abaixo do
+  piso de "texto grande" que aceitaria 3:1). Novo valor: ~4.6:1. Um token
+  só, corrige em todo canto que já usava `var(--muted)` — é exatamente o
+  tipo de correção que só vale a pena fazer centralizada.
+
+**Título de página unificado:** `.home-head h1` (era 1.55rem) e
+`.profile-head h1` (era 1.35rem) — mesmo papel conceitual ("título da
+página"), agora ambos 1.5rem. `.rec-name` (nome da criança no cabeçalho do
+registro) **ficou intencionalmente maior** (1.7rem) — é tratado como
+identidade/hero da tela, não só título, então não faz sentido igualar aos
+outros dois. `.card-h h3` (título de card, .8rem maiúsculo) já era uma
+única definição usada em todo canto via `card-h`/`simpleHead()` — não
+precisou de ajuste, era o tier "título de card" já funcionando certo.
+
+**Componente novo: `.btn-bad`.** Não existia uma variante de botão
+destrutivo/atenção — "Arquivar" usava `.btn-ghost`, visualmente idêntico a
+"Duplicar"/"Editar" na mesma linha, apesar de ser uma ação diferente
+(tira a atividade da lista ativa). Adicionado `.btn-bad` (ghost tingido de
+`--bad`/`--bad-soft`, não sólido — ainda é uma ação secundária na
+hierarquia da linha, só sinaliza cuidado) e aplicado só em "Arquivar" —
+"Fazer com a criança"/"Duplicar"/"Editar" continuam `.btn-ghost` neutro.
+
+**O que foi auditado e considerado já correto (não mexido):**
+
+- **Laranja (`--accent`):** só dois usos fora do botão primário — a "prévia
+  pra família" no perfil do tutor (um card específico, não repetido) e seu
+  eyebrow. Nenhum "5 cards iguais com laranja" pra corrigir.
+- **Alturas de botão equivalente:** `.rail-toggle` e `.search` já eram os
+  dois 34px (convivem lado a lado no topbar) — a leitura inicial de que
+  `.rail-toggle` estava desalinhado era falsa, os dois já batiam.
+  `.icon-btn` (32px) é usado só no fechar do drawer de suporte, um contexto
+  isolado que não fica ao lado de nada em 34px — não é uma inconsistência
+  visível, deixado como está.
+- **Sombras:** já seguem um padrão implícito razoável (cor tingida de
+  brand/ink pra a maioria, tingida de accent só no botão de accent) —
+  proporcional ao tamanho do elemento flutuante (drawer > modal cmdk >
+  botão). Não é uma "escala de elevação" formal, mas também não é caótico;
+  formalizar isso agora seria começar a construir o tal design system
+  grande que não era o objetivo.
+- **Estado vazio (`.empty-state`) vs `.execucoes-msg`:** são dois
+  tratamentos diferentes de propósito, não uma inconsistência — `.empty-
+  state` (com mascote ilustrado) é pra área grande/principal vazia (ex.:
+  nenhuma atividade preparada ainda); `.execucoes-msg` é texto simples pra
+  dentro de uma lista já pequena (execuções pendentes/recentes), onde um
+  estado ilustrado ficaria pesado demais pro espaço.
+- **Input/textarea:** `.field input/textarea` é o padrão; `.internal-note
+  textarea` não tem borda própria de propósito (já vive dentro do
+  contêiner com borda de `.internal-note` — não é um campo "solto").
+
+**Verificação visual (2026-07-10):** desktop (1440px) e mobile (iPhone 13)
+conferidos em Início, Visão geral, Sessões (com a lista de pendentes já
+empilhada corretamente), Atividades preparadas (com "Arquivar" agora visualmente
+distinto), Plano e Meu perfil. `getComputedStyle` confirmou o fix do bug
+(`display: grid`, `padding: 10px 12px`). Sem estouro horizontal no mobile,
+sem erro de console em nenhuma tela.
+
+**Não fizemos:** consolidação de `responsavel.html`/`admin.html`/
+`perfil-crianca.html`/`atividades.html`/site público (fora do escopo desta
+rodada), unificação exaustiva de todo texto "normal"/"auxiliar" do arquivo
+(dezenas de tamanhos entre .74rem-.92rem — os piores casos de repetição
+(label pequena) foram resolvidos; ir atrás de cada parágrafo individual
+teria custo alto pra ganho marginal), e nenhuma escala de "elevação"/sombra
+formal. Próxima: Sprint 5.3, base visual do Modo Criança — Marcus já sinalizou
+que essa vai precisar de mais atenção.

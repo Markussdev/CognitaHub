@@ -1309,7 +1309,7 @@ function renderChildActivityRow(row, callbacks) {
     editBtn.addEventListener('click', () => callbacks.onEdit(row))
     actionsWrap.append(editBtn)
 
-    const archiveBtn = el('button', 'btn btn-ghost btn-sm', 'Arquivar')
+    const archiveBtn = el('button', 'btn btn-bad btn-sm', 'Arquivar')
     archiveBtn.type = 'button'
     archiveBtn.addEventListener('click', () => callbacks.onArchive(row))
     actionsWrap.append(archiveBtn)
