@@ -1,12 +1,19 @@
 # Cognita Hub — Direção da V2 (Hub adulto + Modo Criança)
 
-> **Status: V2 Core fechada — RC1 (2026-07-09); Sprint 5A (nav mobile) e
-> Sprint 5.2 (consolidação visual) já entregues.** O ciclo de aprendizagem
-> guiada (Plano → preparar → Modo Criança → execução → sessão → família)
-> está funcional de ponta a ponta e testado ao vivo. Ver §12 pro fechamento
-> do RC1, §13 pra navegação mobile, §14 pra consolidação visual, e
-> `docs/ROTEIRO-DEMO.md` pro roteiro de demo de 3 minutos. Próxima: Sprint
-> 5.3 — base visual do Modo Criança (telas da criança), ainda não iniciada.
+> **Status: V2 Core fechada — RC1 (2026-07-09); Sprint 5A (nav mobile),
+> Sprint 5.2 (consolidação visual) e a trilha visual do Plano (§15,
+> 2026-07-11) já entregues.** O ciclo de aprendizagem guiada (Plano →
+> preparar → Modo Criança → execução → sessão → família) está funcional de
+> ponta a ponta e testado ao vivo — a aba Plano agora é um mapa de missões
+> ("Constelação dos Primeiros Números"), não mais uma lista. Ver §12 pro
+> fechamento do RC1, §13 pra navegação mobile, §14 pra consolidação visual,
+> §15 pra trilha do Plano, e `docs/ROTEIRO-DEMO.md` pro roteiro de demo de 3
+> minutos. **Direção de produto mais ampla (2026-07-11, ver §15):** a
+> experiência de trilha navegável da criança (estilo Duolingo ABC) vai viver
+> num app mobile futuro — este site é a ferramenta do tutor pra prever e
+> ministrar essa trilha, não o lugar onde a criança navega sozinha. Sprint
+> 5.3 (base visual do Modo Criança) segue não iniciada, aguardando escopo
+> mais detalhado do Marcus.
 
 Revisão feita em 2026-07-08. Este documento registra a decisão de produto da V2, o
 estado real (verificado no código, não suposto) da jornada ponta a ponta que ela
@@ -763,3 +770,125 @@ rodada), unificação exaustiva de todo texto "normal"/"auxiliar" do arquivo
 teria custo alto pra ganho marginal), e nenhuma escala de "elevação"/sombra
 formal. Próxima: Sprint 5.3, base visual do Modo Criança — Marcus já sinalizou
 que essa vai precisar de mais atenção.
+
+---
+
+## 15. Trilha visual do Plano — "Constelação dos Primeiros Números" (2026-07-11)
+
+**Importante — isto NÃO é a Sprint 5.3.** Antes da 5.3 (base visual do Modo
+Criança) começar, Marcus trouxe uma direção de produto mais ampla: a
+experiência de trilha navegável da criança (estilo Duolingo ABC — mapa de
+missões, mascote andando pelo caminho) vai viver num **app mobile futuro**,
+ainda não construído. Este site continua sendo a ferramenta do tutor: prever
+visualmente as atividades, ministrar a trilha e validar como ela funciona na
+prática antes de existir no app. Ver nota de direção equivalente também fora
+deste documento (memória de projeto). Esta sprint transforma a aba **Plano**
+do painel do tutor — que desde a Sprint 4 já era uma trilha fixa de 5 etapas,
+só que em formato de lista — num mapa visual real, seguindo
+`docs/PLANO-SPRINT-4-TRILHA.md` (spec enviada por Marcus com arquitetura,
+SVG do caminho, mapeamento de assets e ordem de fases). Escopo: só
+`pages/tutor.html` (novo `<link>`), `js/pages/tutor.js` (só o
+`buildPlanPanel`), e 3 arquivos novos.
+
+**Arquitetura (fiel à spec):**
+
+- `js/data/planos-registro.js` — dado pedagógico. `PRIMEIROS_NUMEROS`,
+  `STATUS_ETAPA`, `etapaBateComAtividade` e `computeStatusEtapas` saíram do
+  `tutor.js` pra cá; o plano agora é `PLANOS_REGISTRO.primeiros_numeros`
+  (objeto com `id`/`titulo`/`descricao`/`etapas[]`, cada etapa com `id`,
+  `resumo` e `emblema` novos, além dos campos que já existiam). Inferência de
+  status **não mudou** — mesma aproximação por molde+tema+"número-chave" da
+  Sprint 4, só que `computeStatusEtapas` agora recebe o `plano` como
+  argumento em vez de ler uma constante fixa.
+- `js/components/trilha-plano.js` — componente puro (`renderTrilhaPlano`):
+  não importa Supabase, não conhece ciclo, não navega. Recebe
+  `{ plano, statuses, podePreparar, onPrepararEtapa }`, devolve o elemento.
+  Estado interno: etapa selecionada. `buildPlanPanel` virou orquestrador
+  fino — busca status real e liga "Preparar atividade" na mesma ponte de
+  sempre (`prefillCompose`, via `onPrepararEtapa`) — nada mudou no fluxo
+  Plano → Atividades preparadas → Modo Criança → execução → sessão.
+- `css/trilha-plano.css` — só `.trail-*`, tokens `--trail-*` próprios no
+  topo (derivando de `--accent`/`--ok` etc. quando existem). Importado só
+  em `tutor.html`, nada entra em `internal.css`.
+
+**Achado real durante o teste ao vivo (não só estética):** a seleção do nó
+ficava **presa na 1ª etapa** mesmo depois do status real do Supabase
+chegar. Causa: antes do `computeStatusEtapas` responder, o componente já
+fazia uma seleção automática de fallback (etapa 1, tratada como
+"em_andamento" por padrão); quando o status real chegava e apontava outra
+etapa como a verdadeira "em andamento", o código tratava a seleção antiga
+como se fosse escolha do tutor e não a atualizava. Corrigido separando
+"seleção automática" de "seleção manual" (`selecaoManual`, só vira `true`
+num clique de verdade) — agora cada atualização de status pode reapontar
+pra etapa certa até o tutor escolher outra com um clique. Verificado via
+Playwright: antes do fix a etapa selecionada por padrão era sempre
+"Identificar 1-5" (índice 0) mesmo com Mateus tendo "Contar até 5" como
+verdadeira etapa em andamento; depois do fix, seleciona a certa.
+
+**Assets reais (Fase C) — auditados visualmente antes de mapear, não só por
+nome de arquivo:**
+
+- **Mascote:** `assets/gat-map.png` (gato com mapa/prancheta, sentado) →
+  `planejar`, no cabeçalho. `assets/mascot-hero-wave.png` (acenando, já
+  usado como hero em outras telas) → `guia`, encostado em cada nó
+  `em_andamento`. `assets/sticker.png` (acenando, versão sticker) →
+  `comemorar`, no painel de detalhes quando a etapa está concluída —
+  **substituto temporário** até existir uma pose "comemorando de verdade"
+  (braços pra cima), registrado como pendência.
+- **Emblemas:** `assets - emblemas/counter.png` ("123") → `identificar`;
+  `dinossaur.png` (3 dinossauros coloridos 1/2/3) → `contar` (bate com o
+  tema real do molde, dinossauros); `star.png` (estrela+coração+setas
+  circulares) → `revisar`. Substituem os SVGs inline em bloco/pontos/estrela
+  usados como placeholder na Fase A.
+- **Decoração espacial:** `assets - space/` tinha nomes em português e
+  inglês trocados na prática — `comet.png` é visualmente uma **lua/asteroide**
+  (rocha cheia de crateras) e `cometa.png` é o cometa de verdade (esfera +
+  cauda). Mapeado pelo conteúdo real, não pelo nome do arquivo:
+  `planet.png`/`planet2.png`/`planet1.png` → planeta roxo/azul/amarelo,
+  `circular.png` → órbita decorativa, `luz.png`/`luzes.png`/`stars.png` →
+  3 aglomerados de estrelas em densidades diferentes. 9 imagens no total,
+  posicionadas em posições fixas nas margens do mapa (longe da faixa
+  32%-68% onde ficam os nós), `aria-hidden` + `pointer-events:none`.
+- **Otimização:** originais são todos 1254×1254px RGBA, 100KB-1.3MB **cada**
+  (~10MB só de mascote+emblema+espaço somados). Instalado `sharp` como
+  devDependency (só usado no script de conversão, não roda no navegador) e
+  gerado `assets/trilha/{mascote,emblemas,espaco}/*.webp` — mascotes em
+  480px/~25KB, espaço em 240px/~7KB, emblemas em 160px/~9KB. Pasta final:
+  168KB pros 15 arquivos.
+
+**Microinterações (Fase D)** — tudo dentro de
+`@media (prefers-reduced-motion: no-preference)`: hover levanta o nó 2px,
+seleção ganha um anel sutil (`box-shadow`, esse não é animado — aparece
+instantâneo mesmo sob redução de movimento, só a transição é que se
+desliga), check e mascotes (`guia`/`comemorar`) entram com fade+scale curto.
+Verificado emulando as duas preferências via Playwright
+(`page.emulateMedia`): sob `reduce`, o hover não desloca (`translateY`
+ausente do `transform` computado) e `animationName` do mascote guia vira
+`none`.
+
+**QA (Fase E):**
+
+- Prefill das 5 etapas conferido uma a uma via `.compose-summary` — cada
+  uma joga molde/tema/config exatos no form (inclusive a etapa 5, que reusa
+  molde `contar`+tema `dinossauros` das etapas 2/4 mas com config diferente
+  — não houve confusão entre elas).
+- Contraste: achado e corrigido — `.trail-status-pill--a_fazer` usava
+  `--muted` sobre `--rail` (~4.44:1, abaixo do mínimo de 4.5:1 do WCAG AA).
+  Trocado por `--ink-soft` (~7.27:1).
+- Regressão: "Fazer com a criança" (link, não botão — `renderChildActivityRow`
+  não foi tocado) continua abrindo `modo-crianca.html` com a atividade certa,
+  zero erro de console em qualquer aba testada, desktop e mobile.
+
+**Pendências registradas (não resolvidas agora):**
+
+- Pose "comemorando" de verdade (braços pra cima) — `sticker.png` é
+  substituto temporário, mesmo apontado já na spec original.
+- `plano_etapa` formal em `child_activities` — a inferência de status ainda
+  quebra se o tutor editar o número-chave da config depois de preparar a
+  etapa (mesma limitação documentada desde a Sprint 4, não nova).
+- Mapa navegável da criança — combinado que fica pro **app mobile futuro**,
+  não pro site. O que existe aqui é só a versão do tutor.
+
+**Commits:** wireframe funcional (Fase A), assets reais (Fase C),
+microinterações (Fase D), fix de contraste (Fase E) — um commit por fase,
+seguindo a spec ("uma fase por commit").
