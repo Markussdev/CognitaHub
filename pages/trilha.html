@@ -60,6 +60,14 @@
       flex-shrink: 0; font-size: var(--label-sm-size); letter-spacing: var(--label-sm-tracking);
       text-transform: uppercase; font-weight: 700; color: var(--brand);
     }
+    [data-trilha-testar-crianca] { flex-shrink: 0; }
+    /* "Testar como criança" é uma conveniência de dev/demo, não faz parte da
+       experiência do tutor de verdade — em vez de brigar por espaço no
+       topbar estreito, some abaixo de 700px. Quem for abrir no celular
+       recebe o link direto de app-crianca.html, não precisa do botão. */
+    @media (max-width: 699px) {
+      [data-trilha-testar-crianca] { display: none; }
+    }
 
     .trilha-main { max-width: 1440px; margin: 0 auto; padding: var(--sp-6); }
 
@@ -90,6 +98,7 @@
     <div class="trilha-topbar-title">
       <h1 data-trilha-title>Trilha</h1>
     </div>
+    <a class="btn btn-ghost btn-sm" data-trilha-testar-crianca hidden>Testar como criança</a>
     <div class="trilha-topbar-progress" data-trilha-progress hidden></div>
   </div>
 

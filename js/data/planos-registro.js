@@ -1,5 +1,6 @@
 import { getCycleSessions } from './sessions.js'
 import { listChildActivities } from './child-activities.js'
+import { listRecentExecucoes } from './atividade-execucao.js'
 
 // Dado pedagógico da trilha do tutor — não é navegação livre da criança, é o
 // tutor decidindo a próxima etapa. Trilha fixa em JS (sem tabela nova ainda):
@@ -111,4 +112,39 @@ export async function computeStatusEtapas(plano, childId, cycleId) {
 
   const primeiraNaoConcluidaIdx = bruto.findIndex((s) => s !== 'concluida')
   return bruto.map((s, i) => (i === primeiraNaoConcluidaIdx && s === 'a_fazer' ? 'em_andamento' : s))
+}
+
+// Progresso "da criança" — diferente do progresso do tutor acima. Pro tutor,
+// uma etapa só fica "concluída" quando existe uma SESSÃO registrada (o
+// tutor revisou e escreveu o resumo). Pra criança, isso é tarde demais: ela
+// terminou a missão na hora que fechou o Modo Criança, muito antes do tutor
+// sentar pra registrar a sessão (que pode ser só à noite). Aqui "concluída"
+// é sobre existir um `atividade_execucao` (o sinal de saída do Modo
+// Criança), não uma sessão.
+// Também difere na regra de bloqueio: o tutor pode preparar várias etapas
+// adiantado, mas a criança só pode agir numa de cada vez, na ordem — mesmo
+// que a etapa seguinte já tenha atividade preparada, ela fica "bloqueada"
+// até a atual ser concluída.
+export async function computeStatusCrianca(plano, childId) {
+  const [{ data: atividades, error: e1 }, { data: execucoes, error: e2 }] = await Promise.all([
+    listChildActivities(childId),
+    listRecentExecucoes(childId, 50),
+  ])
+  if (e1 || e2) return null
+
+  const idsComExecucao = new Set((execucoes ?? []).map((ex) => ex.child_activity_id).filter(Boolean))
+
+  const brutos = plano.etapas.map((etapa) => {
+    const match = (atividades ?? []).find((row) => etapaBateComAtividade(row, etapa))
+    return { match, concluida: Boolean(match && idsComExecucao.has(match.id)) }
+  })
+
+  const atualIdx = brutos.findIndex((b) => !b.concluida)
+
+  return plano.etapas.map((etapa, i) => {
+    const { match, concluida } = brutos[i]
+    if (concluida) return { status: 'concluida', childActivityId: match.id }
+    if (i === atualIdx && match) return { status: 'disponivel', childActivityId: match.id }
+    return { status: 'bloqueada', childActivityId: match?.id ?? null }
+  })
 }

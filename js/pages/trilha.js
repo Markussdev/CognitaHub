@@ -15,6 +15,7 @@ const backLink = document.querySelector('[data-trilha-back]')
 const backLabel = document.querySelector('[data-trilha-back-label]')
 const titleEl = document.querySelector('[data-trilha-title]')
 const progressEl = document.querySelector('[data-trilha-progress]')
+const testarCriancaLink = document.querySelector('[data-trilha-testar-crianca]')
 
 function firstName(fullName) {
   return (fullName || '').trim().split(/\s+/)[0] || ''
@@ -59,6 +60,10 @@ async function init() {
   const plano = PLANOS_REGISTRO.primeiros_numeros
   titleEl.textContent = plano.titulo
   document.title = `Trilha: ${plano.titulo} | Cognita Hub`
+
+  // Sprint 6A — modo demonstração infantil (ver docs/V2-DIRECAO.md).
+  testarCriancaLink.href = `app-crianca.html?${new URLSearchParams({ cycle_id: cycle.id, demo: '1' }).toString()}`
+  testarCriancaLink.hidden = false
 
   const podePreparar = cycle.status === 'active'
   const bloqueadoMsg = {

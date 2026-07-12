@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Cognita | Minha jornada</title>
+  <link rel="icon" type="image/png" href="../assets/logo-icon-transparent.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/app-crianca.css" />
+  <style>
+    :root {
+      --ink: #2d1739; --ink-soft: #5b4a58; --muted: #756c7d;
+      --canvas: #f7f4ee; --card: #fffefc; --rail: #f4f0f6;
+      --brand: #141162; --brand-deep: #3b0a35; --accent: #ffa800;
+      --ok: #1c7c54; --ok-soft: #e8f2ed;
+      --line: rgba(32,26,102,.10); --line-2: rgba(32,26,102,.18);
+      --r: 14px; --r-sm: 10px; --r-lg: 20px;
+      --font: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+      --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-6: 24px; --sp-8: 32px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+    body { font-family: var(--font); color: var(--ink); background: var(--canvas); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    svg { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    :focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; border-radius: 6px; }
+    [hidden] { display: none !important; }
+
+    .btn-grande {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      height: 56px; padding: 0 28px; border-radius: var(--r-lg);
+      font-family: var(--font); font-size: 1.05rem; font-weight: 800;
+      background: var(--accent); color: var(--ink); border: none; cursor: pointer;
+      box-shadow: 0 4px 16px rgba(255,168,0,.32);
+    }
+    .btn-grande:hover { filter: brightness(.97); }
+
+    .app-crianca-shell { min-height: 100vh; display: flex; flex-direction: column; }
+  </style>
+</head>
+<body>
+  <div class="app-crianca-shell" data-app-root>
+    <div class="crianca-loading" data-crianca-loading>
+      <div class="crianca-skel-block" style="width:80%;height:32px;margin-bottom:16px;"></div>
+      <div class="crianca-skel-block" style="width:60%;height:20px;"></div>
+    </div>
+  </div>
+
+  <script type="module" src="../js/pages/app-crianca.js"></script>
+</body>
+</html>

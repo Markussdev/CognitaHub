@@ -21,8 +21,9 @@ const CHECK_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 
 // Mapa alto (~1250px) de propósito: a trilha é uma página que se percorre,
 // não um diagrama que precisa caber inteiro na viewport (ver feedback do
 // Marcus, 2026-07-11 — "o Duolingo funciona porque é uma página, não um
-// diagrama espremido").
-const NODE_POSICOES = [
+// diagrama espremido"). Exportadas pra js/components/trilha-crianca.js
+// reusar a mesma geometria (mesmo plano, duas representações).
+export const NODE_POSICOES = [
   { x: 50, y: 8 },
   { x: 68, y: 27 },
   { x: 32, y: 46 },
@@ -32,7 +33,7 @@ const NODE_POSICOES = [
 
 // 4 segmentos (não um path único) pra poder colorir cada trecho por estado
 // — concluído / atual / futuro — em vez de um caminho de cor única.
-const SEGMENTOS_D = [
+export const SEGMENTOS_D = [
   'M200,80 C100,170 320,220 272,290',
   'M272,290 C220,380 60,420 128,500',
   'M128,500 C200,580 340,640 272,710',
@@ -42,7 +43,8 @@ const SEGMENTOS_D = [
 // Decoração espacial (Fase C→revisão) — composição hierárquica, não 9
 // stickers uniformes: 1 planeta grande cortado no topo, elementos médios/
 // pequenos no meio, 1 planeta médio-grande cortado perto da etapa final.
-const DECORACAO_ESPACIAL = [
+// Exportada pro app infantil reusar a mesma composição.
+export const DECORACAO_ESPACIAL = [
   { src: 'planeta-roxo', x: '-10%', y: '-5%', size: 210, opacity: 0.3 },
   { src: 'estrelas-2', x: '80%', y: '10%', size: 34, opacity: 0.55 },
   { src: 'lua', x: '88%', y: '34%', size: 58, opacity: 0.4 },
