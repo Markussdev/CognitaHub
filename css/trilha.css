@@ -21,6 +21,14 @@
   align-items: start;
 }
 
+/* min-width:0 nos dois filhos do grid — sem isso, um item de flex (o header
+   de detalhes com título+pill) pode forçar seu min-content acima da coluna
+   de 300-360px, "estourando" a grid inteira pra fora do container (grid
+   blowout clássico). Foi o que cortava o painel de detalhes na direita
+   antes de qualquer breakpoint específico existir — ver feedback do Marcus,
+   2026-07-11. */
+.trail-map, .trail-details { min-width: 0; }
+
 .trail-map {
   position: relative;
   width: 100%;
@@ -126,7 +134,7 @@
   flex-wrap: wrap;
 }
 
-.trail-details-head h4 { font-size: 0.95rem; font-weight: 800; color: var(--ink); }
+.trail-details-head h4 { min-width: 0; font-size: 0.95rem; font-weight: 800; color: var(--ink); }
 
 .trail-status-pill {
   display: inline-flex;
@@ -160,17 +168,21 @@
 
 .trail-details .btn { align-self: flex-start; margin-top: 4px; }
 
-/* ── Layout: desktop em duas colunas, painel fixo ── */
+/* ── Layout: 3 níveis (não 2) ──
+   >1100px  → mapa + coluna de detalhes lado a lado, sticky.
+   720-1100 → mapa ocupa a largura toda, detalhes embaixo, bloco estático
+              normal (não é bottom sheet — ainda cabe leitura direta).
+   <720px   → mobile: nó menor, detalhes viram bottom sheet.          */
 
-@media (min-width: 860px) {
-  .trail-body { grid-template-columns: minmax(0, 1.15fr) minmax(280px, 340px); }
+@media (min-width: 1100px) {
+  .trail-body { grid-template-columns: minmax(0, 1fr) minmax(300px, 360px); }
   .trail-details { position: sticky; top: var(--sp-4, 16px); }
 }
 
-/* ── Mobile: nó um pouco menor, detalhes viram bottom sheet (mesmo padrão
-   do .support-drawer de tutor.html, só que ancorado embaixo) ── */
+/* ── Mobile (<720px): nó um pouco menor, detalhes viram bottom sheet (mesmo
+   padrão do .support-drawer de tutor.html, só que ancorado embaixo) ── */
 
-@media (max-width: 859px) {
+@media (max-width: 719px) {
   .trail-step { width: 84px; height: 84px; }
   .trail-step--current { width: 100px; height: 100px; }
   .trail-map { min-height: 1000px; }
