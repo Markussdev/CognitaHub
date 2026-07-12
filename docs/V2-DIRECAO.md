@@ -1,21 +1,21 @@
 # Cognita Hub — Direção da V2 (Hub adulto + Modo Criança)
 
-> **Status: V2 Core fechada — RC1 (2026-07-09); Sprint 5A (nav mobile),
-> Sprint 5.2 (consolidação visual) e a trilha do Plano (§15+§16, 2026-07-11)
-> já entregues.** O ciclo de aprendizagem guiada (Plano → preparar → Modo
-> Criança → execução → sessão → família) está funcional de ponta a ponta e
-> testado ao vivo. A trilha "Constelação dos Primeiros Números" passou por
-> uma correção de rumo no mesmo dia: o mapa não cabia num card de dashboard
-> (§15, versão descontinuada) e virou página própria, `pages/trilha.html`
-> (§16) — a aba Plano no painel do tutor agora é só um resumo compacto que
-> aponta pra lá. Ver §12 pro fechamento do RC1, §13 pra navegação mobile,
-> §14 pra consolidação visual, §16 pro estado atual da trilha, e
-> `docs/ROTEIRO-DEMO.md` pro roteiro de demo de 3 minutos. **Direção de
-> produto mais ampla (ver §15):** a experiência de trilha navegável da
-> criança (estilo Duolingo ABC) vai viver num app mobile futuro — este site
-> é a ferramenta do tutor pra prever e ministrar essa trilha, não o lugar
-> onde a criança navega sozinha. Sprint 5.3 (base visual do Modo Criança)
-> segue não iniciada, aguardando escopo mais detalhado do Marcus.
+> **Status: V2 Core fechada — RC1 (2026-07-09); Sprint 5A, Sprint 5.2, a
+> trilha do Plano (§15+§16) e o protótipo do app infantil — Sprint 6A (§18)
+> — já entregues (2026-07-11).** O ciclo de aprendizagem guiada (Plano →
+> preparar → Modo Criança → execução → sessão → família) está funcional de
+> ponta a ponta e testado ao vivo. A arquitetura de produto agora tem 3
+> camadas confirmadas: **hub web** (`pages/tutor.html` + `pages/trilha.html`
+> — responsável/tutor planejam e acompanham), **app infantil**
+> (`pages/app-crianca.html`, hoje em "modo demonstração" reusando a sessão
+> do tutor — ver §18) e **backend compartilhado** (mesmo Supabase, sem
+> tabela nova). Ver §12 pro fechamento do RC1, §16 pro estado da trilha do
+> tutor, §17 pra responsividade dela, §18 pro app infantil, e
+> `docs/ROTEIRO-DEMO.md` pro roteiro de demo de 3 minutos. **Pendências
+> conhecidas:** Sprint 5.3 (base visual do Modo Criança) segue não iniciada;
+> Sprint 6B (pareamento sem login, progresso formal, PWA instalável) só
+> depois do protótipo infantil ser validado com a criança de verdade — ver
+> §18.
 
 Revisão feita em 2026-07-08. Este documento registra a decisão de produto da V2, o
 estado real (verificado no código, não suposto) da jornada ponta a ponta que ela
@@ -990,5 +990,135 @@ Mesmo só um por trilha e bem menor que a versão original, ele ainda quebrava
 a leitura do caminho entre os nós — Marcus viu a tela renderizada e cortou
 na hora ("ele quebra o ciclo"). O mapa fica só path segmentado + nós +
 decoração espacial; os webp de `assets/trilha/mascote/` foram removidos por
-não terem mais uso. Personagem/narrativa visual fica pra outra hora, se
-fizer sentido.
+não terem mais uso (**depois recriados na Sprint 6A**, ver §18 — o app
+infantil quis o mascote de volta, contexto diferente).
+
+---
+
+## 17. Responsividade da trilha do tutor (2026-07-11)
+
+Marcus testou em largura intermediária e o painel de detalhes cortava na
+direita — não era um breakpoint faltando, era **grid blowout**: `.trail-
+details` sem `min-width: 0` deixava o header interno (título + pill de
+status) forçar seu min-content acima da coluna de 340px, estourando a grid
+inteira pra fora do container. Corrigido com `min-width: 0` no mapa e nos
+detalhes (mesmo diagnóstico que o próprio Marcus já tinha feito, com o fix
+certo).
+
+Layout virou 3 níveis (era 2, cortando direto de "lado a lado" pra "bottom
+sheet" sem nada no meio):
+
+- **>1100px:** mapa + coluna de detalhes lado a lado, `sticky`.
+- **720-1100px:** mapa ocupa a largura toda, detalhes empilhados embaixo —
+  bloco estático normal, não é bottom sheet (ainda cabe leitura direta
+  nessa largura).
+- **<720px:** mobile — nó menor, detalhes viram bottom sheet.
+
+`.trilha-main` também alargou de 1080px pra 1440px (mais respiro pro mapa).
+Testado em 1440/1024/768/390/320px via Playwright: zero overflow horizontal
+em qualquer largura, `grid-template-columns` e `position` do painel batem
+com o nível esperado em cada uma.
+
+---
+
+## 18. Protótipo do app infantil — Sprint 6A "modo demonstração" (2026-07-11)
+
+**Direção de produto confirmada por Marcus:** o Cognita vira 3 camadas —
+**hub web** (responsável/tutor planejam, liberam, acompanham, interpretam),
+**app infantil** (a criança vê a trilha simplificada e executa só a missão
+liberada) e **backend compartilhado** (plano, atividade preparada,
+execução, progresso, sessão). O hub do tutor já existe; esta sprint tira o
+app infantil do papel — sem exigir autenticação/pareamento novo, sem parar
+o resto do projeto pra isso.
+
+**Por que "modo demonstração" e não o app de verdade ainda:** pareamento
+seguro (QR/PIN, token de dispositivo, RLS específico), progresso formal
+(tabela `child_plan_progress`) e PWA instalável ficam pra uma Sprint 6B
+futura — combinado explicitamente **não** implementar isso antes do
+protótipo visual/UX funcionar e ser validado com a criança de verdade.
+Por ora, `app-crianca.html` reusa a sessão autenticada do TUTOR (mesmo
+`requireRole('tutor')`), acessível só via botão **"Testar como criança"**
+na trilha do tutor (`?cycle_id=<uuid>&demo=1`) — documentado como
+temporário, não é a credencial final do app.
+
+**Arquitetura (arquivos novos):**
+
+- `pages/app-crianca.html` + `js/pages/app-crianca.js` + `css/app-crianca.css`
+  — casca mobile-first. Duas telas: **abertura** ("Olá, {nome}! Sua próxima
+  missão está pronta." + um botão único, "Continuar jornada" — sem menu,
+  busca, abas ou dado pedagógico) e a **trilha infantil**.
+- `js/components/trilha-crianca.js` — segunda representação do MESMO plano
+  que a trilha do tutor usa, não uma recriação: reusa `NODE_POSICOES`,
+  `SEGMENTOS_D` e `DECORACAO_ESPACIAL` exportados de `trilha-plano.js`
+  (mesma geometria, mesma decoração espacial). O que muda é a UX:
+  - só a missão **disponível** é clicável (`<button disabled>` nas outras,
+    semântica de acessibilidade correta pro estado bloqueado);
+  - sem painel técnico — nada de "molde", "configuração", "5 opções";
+  - **mascote com função narrativa aqui** — guia na missão atual, comemora
+    quando tudo concluído. Isso não contradiz a decisão do §16 (tirar o
+    mascote do mapa do TUTOR): são contextos diferentes, o app infantil é
+    onde o personagem faz sentido. Mesma regra de "só um por mapa" dos dois
+    componentes.
+  - auto-scroll (`scrollIntoView({block:'center'})`) pra missão atual ao
+    carregar — a criança não deve procurar onde parou.
+
+**`computeStatusCrianca` (planos-registro.js) — um conceito de progresso
+diferente do `computeStatusEtapas` do tutor, de propósito:**
+
+| | Tutor | Criança |
+|---|---|---|
+| "Concluída" quando | existe `sessions` vinculada (tutor revisou/registrou) | existe `atividade_execucao` (criança terminou o Modo Criança) |
+| Etapas simultâneas | várias podem estar preparadas/"em andamento" ao mesmo tempo | só uma "disponível" por vez, na ordem, mesmo que outras já tenham atividade preparada |
+| Estados | `concluida` / `em_andamento` / `a_fazer` | `concluida` / `disponivel` / `bloqueada` |
+
+A criança termina a missão às 14h; o tutor só senta pra registrar a sessão
+à noite. Se o check da criança dependesse de `sessions` (como o do tutor),
+ela ficaria horas sem ver o resultado do que acabou de fazer — daí o
+conceito separado, mesma tabela-fonte (`child_activities` +
+`atividade_execucao`), sem tabela nova.
+
+**Bridge com o Modo Criança real** (não duplica `contar`/`identificar`):
+clicar na missão disponível monta
+`modo-crianca.html?activity=<id>&return=app-crianca.html?cycle_id=...&demo=1&voltou=1`
+— o `modo-crianca.js` existente já lê `?return=` e navega pra lá ao sair,
+sem mudança nenhuma nele. O `&voltou=1` é o que faltou na primeira versão:
+sem ele, o retorno caía na tela de **abertura** de novo (bug real, achado
+testando o loop completo) em vez de ir direto pra trilha com o check novo
+— corrigido: `voltou=1` pula a abertura, mostra a trilha com o status
+recém-calculado (já reflete a `atividade_execucao` nova) e um banner curto
+("Missão concluída! Muito bem! 🎉").
+
+**Fix de responsividade encontrado nesta sprint:** o botão "Testar como
+criança" no topbar da trilha do tutor estourava a largura em mobile (é uma
+conveniência de dev/demo, não faz parte da experiência real do tutor) —
+escondido abaixo de 700px; quem for testar no celular recebe o link direto
+de `app-crianca.html`, não precisa do botão.
+
+**Verificado ao vivo (Playwright):** loop completo abertura → trilha →
+"Testar como criança" → Modo Criança → completar atividade (rodadas de
+verdade, não mock) → voltar → check aparece imediatamente (sem sessão do
+tutor) → próxima missão desbloqueada, mesma ordem; estados bloqueada/
+disponível/concluída corretos com dado real do Mateus; mobile sem overflow
+em nenhuma das duas telas; zero erro de console em qualquer ponto do fluxo.
+
+**Como testar num celular de verdade (ainda não feito nesta sessão — precisa
+do Marcus rodar, não dá pra automatizar um telefone físico):**
+
+```bash
+npm run dev -- --host 0.0.0.0
+```
+
+depois abrir `http://<IP-do-computador>:5173/pages/app-crianca.html?cycle_id=<uuid>&demo=1`
+no navegador do celular, na mesma rede Wi-Fi. O servidor atual só escuta em
+`localhost` — precisa reiniciar com `--host` pra ficar acessível de outro
+aparelho.
+
+**Pendências (Sprint 6B, explicitamente não fazer ainda):**
+
+- Pareamento sem login (QR/PIN, token de dispositivo, revogação).
+- `child_plan_progress` formal (a inferência por `atividade_execucao`/
+  `child_activities` basta pro protótipo).
+- PWA instalável (manifest, ícones, splash, cache da casca).
+- RLS/RPC específicos pro dispositivo pareado (hoje o app de demonstração
+  ainda usa a sessão do tutor — aceitável só pra piloto acompanhado, nunca
+  pro celular real da criança).
