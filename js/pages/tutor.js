@@ -10,7 +10,7 @@ import { listPendingExecucoes, listRecentExecucoes } from '../data/atividade-exe
 import { MOLDES_REGISTRO, buildContractFromParts, formatConfigResumo } from '../data/moldes-registro.js'
 import { PLANOS_REGISTRO } from '../data/planos-registro.js'
 import {
-  listPublishedTrailTemplates, getTrailTemplateWithModules, getActiveChildTrail,
+  listPublishedTrailTemplates, getTrailTemplateWithModules, getLatestChildTrail,
   getChildTrailModules, getChildTrailMissions, assignChildTrail, releaseChildModule,
   advanceChildTrailModule,
 } from '../data/trilha-formal.js'
@@ -1299,12 +1299,23 @@ function renderChildActivityRow(row, callbacks) {
   const actionTd = document.createElement('td')
   const actionsWrap = el('div', 'activity-actions')
 
-  const link = el('a', 'btn btn-ghost btn-sm', 'Fazer com a criança')
-  // return aponta direto pra aba Sessões: é lá que a execução recém-gravada
-  // aparece em "Usar esta execução", fechando o loop sem o tutor ter que
-  // procurar onde continuar.
-  link.href = `modo-crianca.html?${new URLSearchParams({ activity: row.id, return: 'tutor.html?view=record&tab=sessions' })}`
-  actionsWrap.append(link)
+  // Atividade avulsa (child_trail_mission_id null) sempre pode ser feita.
+  // Atividade de missão de trilha só quando a missão está 'disponivel' —
+  // liberar um módulo já cria as child_activities das 3 missões de uma vez
+  // (docs/supabase-fase-7-liberar-modulo.sql), mas só a 1ª deve ser
+  // executável; sem esta checagem a criança conseguiria pular pra missão
+  // 2/3 antes de terminar a 1ª.
+  const missaoStatus = row.child_trail_mission_id ? pickEmbedded(row.child_trail_missions)?.status : null
+  if (missaoStatus && missaoStatus !== 'disponivel' && missaoStatus !== 'concluida') {
+    actionsWrap.append(el('span', 'trilha-blocked-pill', 'Bloqueada pela trilha'))
+  } else {
+    const link = el('a', 'btn btn-ghost btn-sm', 'Fazer com a criança')
+    // return aponta direto pra aba Sessões: é lá que a execução recém-gravada
+    // aparece em "Usar esta execução", fechando o loop sem o tutor ter que
+    // procurar onde continuar.
+    link.href = `modo-crianca.html?${new URLSearchParams({ activity: row.id, return: 'tutor.html?view=record&tab=sessions' })}`
+    actionsWrap.append(link)
+  }
 
   if (callbacks) {
     const dupBtn = el('button', 'btn btn-ghost btn-sm', 'Duplicar')
@@ -1894,48 +1905,71 @@ function buildPlanPanel(cycle, state) {
     }
   }
 
+  // Lista só os módulos CONCLUÍDOS como histórico compacto; o módulo atual
+  // ganha um card próprio, único (antes o mesmo módulo aparecia duas vezes
+  // — uma na lista "achatada" de todos os módulos, outra no card de
+  // detalhe — o que ficava especialmente estranho quando só existe 1
+  // módulo materializado, ex.: criança que começou direto no Módulo 2).
   async function renderTrail(childTrail) {
-    const { data: modules, error } = await getChildTrailModules(childTrail.id)
+    const [{ data: modules, error }, { data: templateModules }] = await Promise.all([
+      getChildTrailModules(childTrail.id),
+      getTrailTemplateWithModules(childTrail.trail_template_id),
+    ])
     if (error) {
       body.replaceChildren(el('p', 'card-copy', 'Não foi possível carregar os módulos.'))
       return
     }
 
+    const totalModulos = templateModules?.length || modules.length
+
     body.replaceChildren()
-    body.append(el('p', 'card-copy', childTrail.trail_templates?.title || 'Trilha'))
+    body.append(el('p', 'trilha-summary', childTrail.trail_templates?.title || 'Trilha'))
     renderBlockedNote()
 
     if (childTrail.status === 'concluida') {
-      body.append(el('p', 'card-copy', 'Trilha concluída! 🎉'))
+      body.append(el('p', 'trilha-complete-banner', 'Trilha concluída! 🎉'))
+    } else if (childTrail.status === 'pausada') {
+      body.append(el('p', 'card-copy', 'Esta trilha está pausada.'))
     }
 
-    const list = el('div', 'trilha-formal-modules')
-    modules.forEach((cm) => {
-      const tm = cm.trail_modules
-      const row = el('div', 'trilha-formal-module-row')
-      row.append(el('span', null, `${tm.position}. ${tm.title}`))
-      row.append(el('span', 'trilha-formal-status', MODULE_STATUS_LABEL[cm.status] || cm.status))
-      list.append(row)
-    })
-    body.append(list)
+    const concluidos = modules.filter((cm) => cm.status === 'concluido')
+    if (concluidos.length) {
+      const history = el('div', 'trilha-history')
+      concluidos.forEach((cm) => {
+        const tm = cm.trail_modules
+        const row = el('div', 'trilha-history-row')
+        row.append(el('span', null, `${tm.position}. ${tm.title}`))
+        row.append(el('span', 'trilha-formal-status trilha-formal-status--concluido', 'Concluído'))
+        history.append(row)
+      })
+      body.append(history)
+    }
 
     const current = modules.find((cm) => cm.status !== 'concluido')
     if (!current) return
 
-    const detail = el('div', 'trilha-formal-current')
     const tm = current.trail_modules
-    detail.append(el('h4', null, `${tm.position}. ${tm.title}`))
-    if (tm.objective) detail.append(el('p', 'card-copy', tm.objective))
+    const currentCard = el('div', 'trilha-current-card')
+    const currentHead = el('div', 'trilha-current-head')
+    currentHead.append(el('span', 'trilha-current-kicker', `Módulo ${tm.position} de ${totalModulos}`))
+    currentHead.append(el('span', `trilha-formal-status trilha-formal-status--${current.status}`, MODULE_STATUS_LABEL[current.status] || current.status))
+    currentCard.append(currentHead)
+    currentCard.append(el('h4', null, tm.title))
+    if (tm.objective) currentCard.append(el('p', 'card-copy', tm.objective))
 
     if (current.status === 'bloqueado') {
       if (podePreparar) {
-        const rodadasField = el('div', 'field')
-        rodadasField.append(el('label', null, 'Rodadas (opcional — mantém o padrão do currículo se vazio)'))
+        const adaptRow = el('div', 'trilha-adapt-row')
+        const rodadasField = el('div', 'trilha-adapt-field')
+        rodadasField.append(el('label', null, 'Rodadas por missão'))
         const rodadasInput = el('input')
         rodadasInput.type = 'number'
         rodadasInput.min = '1'
+        rodadasInput.placeholder = 'Padrão'
         rodadasField.append(rodadasInput)
-        detail.append(rodadasField)
+        adaptRow.append(rodadasField)
+        adaptRow.append(el('span', 'trilha-adapt-hint', 'Deixe vazio pra usar o padrão do currículo'))
+        currentCard.append(adaptRow)
 
         const btn = el('button', 'btn btn-accent btn-sm', 'Liberar módulo')
         btn.type = 'button'
@@ -1946,12 +1980,12 @@ function buildPlanPanel(cycle, state) {
           const { error: releaseError } = await releaseChildModule({ childTrailModuleId: current.id, adaptations })
           if (releaseError) {
             btn.disabled = false
-            renderErrorLine(detail, releaseError.message)
+            renderErrorLine(currentCard, releaseError.message)
             return
           }
           load()
         })
-        detail.append(btn)
+        currentCard.append(btn)
       }
     } else {
       const { data: missions, error: missionsError } = await getChildTrailMissions(current.id)
@@ -1961,10 +1995,10 @@ function buildPlanPanel(cycle, state) {
           const mt = cmi.mission_templates
           const row = el('div', 'trilha-formal-mission-row')
           row.append(el('span', null, `${mt.position}. ${mt.title}`))
-          row.append(el('span', 'trilha-formal-status', MISSION_STATUS_LABEL[cmi.status] || cmi.status))
+          row.append(el('span', `trilha-formal-status trilha-formal-status--${cmi.status}`, MISSION_STATUS_LABEL[cmi.status] || cmi.status))
           missionsList.append(row)
         })
-        detail.append(missionsList)
+        currentCard.append(missionsList)
       }
 
       if (current.status === 'aguardando_revisao' && podePreparar) {
@@ -1975,21 +2009,21 @@ function buildPlanPanel(cycle, state) {
           const { error: advanceError } = await advanceChildTrailModule({ childTrailModuleId: current.id })
           if (advanceError) {
             btn.disabled = false
-            renderErrorLine(detail, advanceError.message)
+            renderErrorLine(currentCard, advanceError.message)
             return
           }
           load()
         })
-        detail.append(btn)
+        currentCard.append(btn)
       }
     }
 
-    body.append(detail)
+    body.append(currentCard)
   }
 
   async function load() {
     body.replaceChildren(el('p', 'card-copy', 'Carregando…'))
-    const { data: childTrail, error } = await getActiveChildTrail(cycle.child_id)
+    const { data: childTrail, error } = await getLatestChildTrail(cycle.child_id)
     if (error) {
       body.replaceChildren(el('p', 'card-copy', 'Não foi possível carregar a trilha agora.'))
       return

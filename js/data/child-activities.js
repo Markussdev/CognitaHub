@@ -34,10 +34,16 @@ export async function createChildActivity({
     .single()
 }
 
+// child_trail_missions ( status ) vem junto pra quem lista poder distinguir
+// atividade avulsa (child_trail_mission_id null, sempre executável) de
+// atividade de missão de trilha — que só deve virar "Fazer com a criança"
+// quando a missão estiver 'disponivel' (a criança não pode pular pra uma
+// missão 2/3 só porque o tutor liberou o módulo em lote, ver
+// docs/supabase-fase-7-liberar-modulo.sql).
 export async function listChildActivities(childId) {
   return supabase
     .from('child_activities')
-    .select('id, molde, tema, config, instrucao, titulo, status, created_at')
+    .select('id, molde, tema, config, instrucao, titulo, status, created_at, child_trail_mission_id, child_trail_missions ( status )')
     .eq('child_id', childId)
     .neq('status', 'archived')
     .order('created_at', { ascending: false })
@@ -71,10 +77,15 @@ export async function archiveChildActivity(id) {
 // Usado pelo Modo Criança ao abrir com ?activity=<id> — troca o
 // getStubActivityContract() por esta linha real. child_id vem junto porque
 // o casca precisa dele pra gravar o atividade_execucao no encerramento.
+// child_trail_mission_id + status vêm junto pra modo-crianca.js poder
+// recusar abrir uma missão que a trilha ainda não liberou pra criança,
+// mesmo que o tutor (ou qualquer um) tente acessar direto pela URL —
+// a lista de "Atividades preparadas" já esconde o link, mas isso sozinho
+// não impede navegação direta.
 export async function getChildActivityById(id) {
   return supabase
     .from('child_activities')
-    .select('id, child_id, molde, tema, config, instrucao, titulo, status, created_at')
+    .select('id, child_id, molde, tema, config, instrucao, titulo, status, created_at, child_trail_mission_id, child_trail_missions ( status )')
     .eq('id', id)
     .single()
 }

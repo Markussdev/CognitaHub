@@ -447,16 +447,40 @@ if (isPreview) {
 
   if (!activityId || authSession) {
     let contract = null
+    let missaoBloqueada = false
     if (activityId && authSession) {
       const { data: row, error } = await getChildActivityById(activityId)
-      if (!error && row) contract = buildContractFromRow(row)
-      else console.warn('[modo-crianca] não achou a atividade — caindo no stub de demonstração', error)
+      if (error || !row) {
+        console.warn('[modo-crianca] não achou a atividade — caindo no stub de demonstração', error)
+      } else {
+        // A lista "Atividades preparadas" já esconde "Fazer com a criança"
+        // pra missão de trilha ainda bloqueada (ver tutor.js), mas isso
+        // sozinho não impede acesso direto pela URL — confere de novo aqui,
+        // é a última linha de defesa antes de abrir a atividade de verdade.
+        const missao = Array.isArray(row.child_trail_missions) ? row.child_trail_missions[0] : row.child_trail_missions
+        if (row.child_trail_mission_id && missao?.status === 'bloqueada') {
+          missaoBloqueada = true
+        } else {
+          contract = buildContractFromRow(row)
+        }
+      }
     }
-    if (!contract) contract = getStubActivityContract()
 
-    const instance = new ModoCrianca(contract, authSession)
-    window.CognitaModoCrianca = {
-      reportarResultado: (kind) => instance.reportarResultado(kind),
+    if (missaoBloqueada) {
+      document.body.innerHTML = `
+        <div style="display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px;text-align:center;font-family:'Atkinson Hyperlegible',sans-serif;">
+          <div style="max-width:360px;">
+            <p style="font-size:1.1rem;font-weight:700;margin:0 0 8px;">Esta missão ainda não foi liberada.</p>
+            <p style="margin:0 0 16px;color:#5b4a58;">A criança precisa concluir as missões anteriores da trilha primeiro.</p>
+            <a href="tutor.html?view=record&tab=plan" style="color:#141162;font-weight:700;">Voltar para o painel</a>
+          </div>
+        </div>`
+    } else {
+      if (!contract) contract = getStubActivityContract()
+      const instance = new ModoCrianca(contract, authSession)
+      window.CognitaModoCrianca = {
+        reportarResultado: (kind) => instance.reportarResultado(kind),
+      }
     }
   }
 }

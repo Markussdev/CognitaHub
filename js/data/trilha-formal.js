@@ -25,14 +25,18 @@ export async function getTrailTemplateWithModules(trailTemplateId) {
 
 // ── Instância (progresso real de uma criança) ──────────────────────────────
 
-// A criança só pode ter 1 child_trail 'ativa' por vez (garantido também na
-// RPC assign_child_trail) — null quando ainda não foi atribuída nenhuma.
-export async function getActiveChildTrail(childId) {
+// A mais recente, não só a 'ativa' — senão uma trilha 'concluida' vira
+// invisível pra UI (parece "nunca atribuída" de novo, escondendo que a
+// criança acabou de terminar tudo). Quem chama decide o que fazer com
+// cada status (ativa/concluida/pausada); null só quando não existe
+// nenhuma linha ainda (nunca foi atribuída).
+export async function getLatestChildTrail(childId) {
   return supabase
     .from('child_trails')
     .select('id, trail_template_id, template_version, starting_module_id, status, created_at, trail_templates ( title, description )')
     .eq('child_id', childId)
-    .eq('status', 'ativa')
+    .order('created_at', { ascending: false })
+    .limit(1)
     .maybeSingle()
 }
 

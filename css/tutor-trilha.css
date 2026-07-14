@@ -1,0 +1,133 @@
+/* ============================================================
+   Trilha formal (aba Plano) — pages/tutor.html
+   Escopado em [data-panel="plan"] de propósito: tutor.html não carrega
+   internal.css (tokens diferentes — --line/--r aqui, não --border/--r-*
+   de internal.css), e este painel não deve vazar estilo pro resto do
+   hub. Passagem funcional, não o mapa de módulo→missão de verdade —
+   isso fica pra quando o dado real estiver provado ponta a ponta.
+   ============================================================ */
+
+[data-panel="plan"] .trilha-summary {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: var(--sp-3);
+}
+
+[data-panel="plan"] .trilha-complete-banner {
+  margin: 0 0 var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--ok-soft);
+  color: var(--ok);
+  border-radius: var(--r-sm);
+  font-weight: 700;
+}
+
+[data-panel="plan"] .trilha-history {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
+
+[data-panel="plan"] .trilha-history-row,
+[data-panel="plan"] .trilha-formal-mission-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font-size: 0.86rem;
+  color: var(--ink);
+}
+
+[data-panel="plan"] .trilha-formal-missions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: var(--sp-3) 0;
+}
+
+[data-panel="plan"] .trilha-current-card {
+  padding: var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--canvas);
+}
+
+[data-panel="plan"] .trilha-current-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-2);
+}
+
+[data-panel="plan"] .trilha-current-kicker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+[data-panel="plan"] .trilha-current-card h4 {
+  margin: 0 0 var(--sp-2);
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+
+[data-panel="plan"] .trilha-formal-status {
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  padding: 2px 9px;
+  border-radius: var(--pill);
+  color: var(--ink-soft);
+  background: var(--rail);
+}
+[data-panel="plan"] .trilha-formal-status--liberado,
+[data-panel="plan"] .trilha-formal-status--disponivel { color: var(--brand); background: var(--brand-soft); }
+[data-panel="plan"] .trilha-formal-status--aguardando_revisao { color: var(--warn); background: var(--warn-soft); }
+[data-panel="plan"] .trilha-formal-status--concluido,
+[data-panel="plan"] .trilha-formal-status--concluida { color: var(--ok); background: var(--ok-soft); }
+
+[data-panel="plan"] .trilha-adapt-row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-3);
+  margin: var(--sp-3) 0;
+  flex-wrap: wrap;
+}
+
+[data-panel="plan"] .trilha-adapt-field { display: grid; gap: 6px; }
+[data-panel="plan"] .trilha-adapt-field label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+[data-panel="plan"] .trilha-adapt-field input {
+  width: 90px;
+  padding: 9px 11px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  background: var(--card);
+  color: var(--ink);
+  font-size: 0.88rem;
+}
+[data-panel="plan"] .trilha-adapt-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  padding-bottom: 10px;
+}
+
+/* Usado na aba Atividades preparadas (não escopado ao Plano): substitui
+   "Fazer com a criança" quando a missão de trilha ainda está bloqueada. */
+.trilha-blocked-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+}
