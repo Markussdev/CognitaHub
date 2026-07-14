@@ -47,6 +47,33 @@
   text-align: center;
 }
 .crianca-topo h2 { font-size: 1.2rem; font-weight: 800; color: var(--ink); }
+.crianca-trilha-titulo { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.crianca-modulo-legenda { font-size: .82rem; color: var(--ink-soft); margin-top: 2px; }
+
+/* Fase 12 — indicador de módulos: só orientação, nada clicável. */
+.crianca-modulos-indicador {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: var(--sp-3);
+}
+.crianca-modulo-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: .7rem;
+  font-weight: 800;
+  color: #fff;
+  background: var(--line-2);
+}
+.crianca-modulo-dot--concluido { background: var(--ok); }
+.crianca-modulo-dot--atual { background: var(--accent); color: var(--ink); box-shadow: 0 0 0 3px rgba(255,168,0,.25); }
+.crianca-modulo-dot--futuro { background: var(--line-2); }
+.crianca-modulo-linha { width: 18px; height: 2px; background: var(--line-2); }
 
 .crianca-map {
   position: relative;

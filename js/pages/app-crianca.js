@@ -1,7 +1,7 @@
 import { requireRole } from '../lib/auth.js'
 import { el } from '../lib/ui.js'
 import { getTutorCycles } from '../data/tutor.js'
-import { getLatestChildTrail, getChildTrailModules, getChildTrailMissionsWithActivity } from '../data/trilha-formal.js'
+import { getLatestChildTrail, getChildTrailModules, getChildTrailMissionsWithActivity, getTrailTemplateWithModules } from '../data/trilha-formal.js'
 import { renderTrilhaCrianca } from '../components/trilha-crianca.js'
 
 // Sprint 6A — "modo demonstração infantil": protótipo da experiência que um
@@ -63,6 +63,25 @@ function renderAbertura({ childName, onContinuar }) {
   return wrap
 }
 
+// Fase 12 (enxuta): só orientação espacial ("onde eu estou"), nada
+// clicável — a criança não escolhe módulo, isso continua sendo decisão do
+// tutor. Só os módulos MATERIALIZADOS pra essa criança viram ponto (não
+// desenha módulos anteriores ao início dela como "bloqueados" — eles
+// simplesmente não existem no caminho dela, não são uma trava futura).
+function renderModulosIndicador(modules, currentId) {
+  const wrap = el('div', 'crianca-modulos-indicador')
+  modules.forEach((cm, i) => {
+    if (i > 0) wrap.append(el('span', 'crianca-modulo-linha'))
+    const estado = cm.status === 'concluido' ? 'concluido' : (cm.id === currentId ? 'atual' : 'futuro')
+    const dot = el('span', `crianca-modulo-dot crianca-modulo-dot--${estado}`, estado === 'concluido' ? '✓' : '')
+    dot.setAttribute('aria-label', `Módulo ${cm.trail_modules?.position}: ${
+      estado === 'concluido' ? 'concluído' : estado === 'atual' ? 'módulo atual' : 'ainda não chegou aqui'
+    }`)
+    wrap.append(dot)
+  })
+  return wrap
+}
+
 function normalizarMissao(row) {
   const mt = row.mission_templates
   const atividade = Array.isArray(row.child_activities) ? row.child_activities[0] : row.child_activities
@@ -103,7 +122,7 @@ async function init() {
   async function mostrarTrilha() {
     root.replaceChildren()
 
-    const { data: childTrail, error: trailError } = await getLatestChildTrail(cycle.child_id)
+    const { data: childTrail, error: trailError } = await getLatestChildTrail(cycle.child_id, cycle.id)
     if (trailError) {
       renderErro('Não conseguimos carregar sua jornada agora.')
       return
@@ -137,17 +156,27 @@ async function init() {
       return
     }
 
-    const { data: missionRows, error: missionsError } = await getChildTrailMissionsWithActivity(current.id)
+    const [{ data: missionRows, error: missionsError }, { data: templateModules }] = await Promise.all([
+      getChildTrailMissionsWithActivity(current.id),
+      getTrailTemplateWithModules(childTrail.trail_template_id),
+    ])
     if (missionsError || !missionRows) {
       renderErro('Não conseguimos carregar sua jornada agora.')
       return
     }
     const missoes = missionRows.map(normalizarMissao)
+    const totalModulos = templateModules?.length || modules.length
 
     renderSairLink(cycle.id)
 
+    const tm = current.trail_modules
     const topo = el('div', 'crianca-topo')
-    topo.append(el('h2', null, current.trail_modules?.title || 'Sua missão'))
+    if (childTrail.trail_templates?.title) {
+      topo.append(el('p', 'crianca-trilha-titulo', childTrail.trail_templates.title))
+    }
+    topo.append(el('h2', null, tm ? `Módulo ${tm.position} — ${tm.title}` : 'Sua missão'))
+    if (tm) topo.append(el('p', 'crianca-modulo-legenda', `Módulo ${tm.position} de ${totalModulos}`))
+    topo.append(renderModulosIndicador(modules, current.id))
     root.append(topo)
 
     const moduloCompleto = current.status === 'aguardando_revisao'

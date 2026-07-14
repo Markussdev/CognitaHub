@@ -1,6 +1,7 @@
 import { el } from '../lib/ui.js'
 import { MOLDES_REGISTRO, formatConfigResumo } from '../data/moldes-registro.js'
 import { STATUS_ETAPA } from '../data/planos-registro.js'
+import { NODE_POSICOES, SEGMENTOS_D, DECORACAO_ESPACIAL } from './trilha-visual-config.js'
 
 // Componente puro: não importa supabase, não conhece ciclo, não navega.
 // Recebe o plano + status já calculados e devolve um elemento (só mapa +
@@ -17,41 +18,9 @@ const ESPACO_BASE = '../assets/trilha/espaco/'
 
 const CHECK_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`
 
-// Posições dos 5 nós — espelha os seletores :nth-child em css/trilha.css.
-// Mapa alto (~1250px) de propósito: a trilha é uma página que se percorre,
-// não um diagrama que precisa caber inteiro na viewport (ver feedback do
-// Marcus, 2026-07-11 — "o Duolingo funciona porque é uma página, não um
-// diagrama espremido"). Exportadas pra js/components/trilha-crianca.js
-// reusar a mesma geometria (mesmo plano, duas representações).
-export const NODE_POSICOES = [
-  { x: 50, y: 8 },
-  { x: 68, y: 27 },
-  { x: 32, y: 46 },
-  { x: 68, y: 64 },
-  { x: 50, y: 80 },
-]
-
-// 4 segmentos (não um path único) pra poder colorir cada trecho por estado
-// — concluído / atual / futuro — em vez de um caminho de cor única.
-export const SEGMENTOS_D = [
-  'M200,80 C100,170 320,220 272,290',
-  'M272,290 C220,380 60,420 128,500',
-  'M128,500 C200,580 340,640 272,710',
-  'M272,710 C220,800 120,860 200,920',
-]
-
-// Decoração espacial (Fase C→revisão) — composição hierárquica, não 9
-// stickers uniformes: 1 planeta grande cortado no topo, elementos médios/
-// pequenos no meio, 1 planeta médio-grande cortado perto da etapa final.
-// Exportada pro app infantil reusar a mesma composição.
-export const DECORACAO_ESPACIAL = [
-  { src: 'planeta-roxo', x: '-10%', y: '-5%', size: 210, opacity: 0.3 },
-  { src: 'estrelas-2', x: '80%', y: '10%', size: 34, opacity: 0.55 },
-  { src: 'lua', x: '88%', y: '34%', size: 58, opacity: 0.4 },
-  { src: 'cometa', x: '2%', y: '42%', size: 74, opacity: 0.4 },
-  { src: 'estrelas-3', x: '8%', y: '62%', size: 30, opacity: 0.5 },
-  { src: 'planeta-amarelo', x: '82%', y: '88%', size: 170, opacity: 0.35 },
-]
+// Posições dos 5 nós, segmentos do caminho e decoração espacial agora
+// vivem em trilha-visual-config.js (compartilhado com trilha-crianca.js,
+// sem depender de planos-registro.js — ver comentário lá).
 
 export function renderTrilhaPlano({ plano, statuses, podePreparar, onPrepararEtapa }) {
   let currentStatuses = statuses

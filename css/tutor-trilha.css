@@ -123,6 +123,25 @@
   padding-bottom: 10px;
 }
 
+[data-panel="plan"] .trilha-formal-mission-row--selecionavel {
+  cursor: pointer;
+}
+[data-panel="plan"] .trilha-formal-mission-row--selecionavel:hover,
+[data-panel="plan"] .trilha-formal-mission-row--selecionavel:focus-visible {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+}
+
+[data-panel="plan"] .trilha-reopen-panel {
+  margin-top: var(--sp-3);
+  padding: var(--sp-3);
+  border: 1px dashed var(--line-2);
+  border-radius: var(--r-sm);
+}
+[data-panel="plan"] .trilha-reopen-panel .trilha-adapt-row:last-child {
+  margin-bottom: 0;
+}
+
 /* Usado na aba Atividades preparadas (não escopado ao Plano): substitui
    "Fazer com a criança" quando a missão de trilha ainda está bloqueada. */
 .trilha-blocked-pill {

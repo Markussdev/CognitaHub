@@ -1,5 +1,5 @@
 import { el } from '../lib/ui.js'
-import { DECORACAO_ESPACIAL } from './trilha-plano.js'
+import { DECORACAO_ESPACIAL } from './trilha-visual-config.js'
 
 // Componente puro (mesmo espírito do trilha-plano.js): não fala com
 // Supabase, não navega sozinho, não conhece PLANOS_REGISTRO. Recebe as

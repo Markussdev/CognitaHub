@@ -12,7 +12,7 @@ import { PLANOS_REGISTRO } from '../data/planos-registro.js'
 import {
   listPublishedTrailTemplates, getTrailTemplateWithModules, getLatestChildTrail,
   getChildTrailModules, getChildTrailMissions, assignChildTrail, releaseChildModule,
-  advanceChildTrailModule,
+  advanceChildTrailModule, reopenChildTrailMission,
 } from '../data/trilha-formal.js'
 
 const session = await requireRole('tutor')
@@ -1815,6 +1815,15 @@ const MISSION_STATUS_LABEL = {
   concluida: 'Concluída',
 }
 
+// Sprint 6A ("modo demonstração") — reusa a sessão do tutor, sem
+// pareamento próprio ainda. Sem ?demo=1 o app.js do app-crianca não teria
+// como saber que é um teste do tutor, não a credencial final da criança.
+function appendChildAppLink(container, cycle, label) {
+  const link = el('a', 'btn btn-ghost btn-sm', label)
+  link.href = `app-crianca.html?${new URLSearchParams({ cycle_id: cycle.id, demo: '1' }).toString()}`
+  container.append(link)
+}
+
 // Currículo formal (Trilha → Módulo → Missão) — ver docs/supabase-fase-5
 // em diante. Passagem funcional, sem redesenhar o mapa visual ainda (isso
 // é a "Fase 6 — mapa de mundos" do roadmap, só depois de provar o dado
@@ -1934,6 +1943,7 @@ function buildPlanPanel(cycle, state) {
 
     if (childTrail.status === 'concluida') {
       body.append(el('p', 'trilha-complete-banner', 'Trilha concluída! 🎉'))
+      appendChildAppLink(body, cycle, 'Ver jornada concluída')
     } else if (childTrail.status === 'pausada') {
       body.append(el('p', 'card-copy', 'Esta trilha está pausada.'))
     }
@@ -2006,6 +2016,8 @@ function buildPlanPanel(cycle, state) {
       }
     } else {
       const { data: missions, error: missionsError } = await getChildTrailMissions(current.id)
+      const podeReabrir = current.status === 'aguardando_revisao' && podePreparar
+      let reopenPanel
       if (!missionsError && missions) {
         const missionsList = el('div', 'trilha-formal-missions')
         missions.forEach((cmi) => {
@@ -2013,9 +2025,86 @@ function buildPlanPanel(cycle, state) {
           const row = el('div', 'trilha-formal-mission-row')
           row.append(el('span', null, `${mt.position}. ${mt.title}`))
           row.append(el('span', `trilha-formal-status trilha-formal-status--${cmi.status}`, MISSION_STATUS_LABEL[cmi.status] || cmi.status))
+          // Só faz sentido escolher uma missão pra repetir/adaptar quando o
+          // módulo inteiro está em revisão (todas concluídas) — não durante
+          // o módulo ainda em andamento.
+          if (podeReabrir && cmi.status === 'concluida') {
+            row.classList.add('trilha-formal-mission-row--selecionavel')
+            row.tabIndex = 0
+            row.setAttribute('role', 'button')
+            row.addEventListener('click', () => abrirReopenPanel(cmi))
+            row.addEventListener('keydown', (event) => {
+              if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); abrirReopenPanel(cmi) }
+            })
+          }
           missionsList.append(row)
         })
         currentCard.append(missionsList)
+      }
+
+      // Painel de repetir/adaptar — some até o tutor clicar numa missão
+      // concluída da lista acima. Repetir/adaptar não são o caminho
+      // principal (isso é "Avançar"); por isso ficam escondidos até
+      // pedidos, não expostos por padrão.
+      function abrirReopenPanel(missao) {
+        reopenPanel.hidden = false
+        reopenPanel.replaceChildren()
+        reopenPanel.append(el('p', 'card-copy', `Repetir: ${missao.mission_templates.title}`))
+
+        const adaptRow = el('div', 'trilha-adapt-row')
+        const rodadasField = el('div', 'trilha-adapt-field')
+        rodadasField.append(el('label', null, 'Rodadas'))
+        const rodadasInput = el('input')
+        rodadasInput.type = 'number'
+        rodadasInput.min = '1'
+        rodadasInput.placeholder = 'Padrão'
+        rodadasField.append(rodadasInput)
+        adaptRow.append(rodadasField)
+
+        const nivelField = el('div', 'trilha-adapt-field')
+        nivelField.append(el('label', null, 'Nível'))
+        const nivelInput = el('input')
+        nivelInput.type = 'number'
+        nivelInput.min = '1'
+        nivelInput.placeholder = 'Padrão'
+        nivelField.append(nivelInput)
+        adaptRow.append(nivelField)
+        reopenPanel.append(adaptRow)
+
+        const actionsRow = el('div', 'trilha-adapt-row')
+        const repetirBtn = el('button', 'btn btn-ghost btn-sm', 'Repetir igual')
+        repetirBtn.type = 'button'
+        const adaptarBtn = el('button', 'btn btn-accent btn-sm', 'Adaptar e repetir')
+        adaptarBtn.type = 'button'
+
+        async function reabrir(adaptations) {
+          repetirBtn.disabled = true
+          adaptarBtn.disabled = true
+          const { error: reopenError } = await reopenChildTrailMission({ missionId: missao.id, adaptations })
+          if (reopenError) {
+            repetirBtn.disabled = false
+            adaptarBtn.disabled = false
+            renderErrorLine(reopenPanel, reopenError.message)
+            return
+          }
+          load()
+        }
+
+        repetirBtn.addEventListener('click', () => reabrir({}))
+        adaptarBtn.addEventListener('click', () => {
+          const adaptations = {}
+          if (rodadasInput.value) adaptations.rodadas = Number(rodadasInput.value)
+          if (nivelInput.value) adaptations.nivel = Number(nivelInput.value)
+          reabrir(adaptations)
+        })
+        actionsRow.append(repetirBtn, adaptarBtn)
+        reopenPanel.append(actionsRow)
+      }
+
+      if (podeReabrir) {
+        reopenPanel = el('div', 'trilha-reopen-panel')
+        reopenPanel.hidden = true
+        currentCard.append(reopenPanel)
       }
 
       if (current.status === 'aguardando_revisao' && podePreparar) {
@@ -2035,12 +2124,13 @@ function buildPlanPanel(cycle, state) {
       }
     }
 
+    appendChildAppLink(currentCard, cycle, 'Testar como criança')
     body.append(currentCard)
   }
 
   async function load() {
     body.replaceChildren(el('p', 'card-copy', 'Carregando…'))
-    const { data: childTrail, error } = await getLatestChildTrail(cycle.child_id)
+    const { data: childTrail, error } = await getLatestChildTrail(cycle.child_id, cycle.id)
     if (error) {
       body.replaceChildren(el('p', 'card-copy', 'Não foi possível carregar a trilha agora.'))
       return
