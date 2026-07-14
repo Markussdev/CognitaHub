@@ -8,7 +8,12 @@ import { getActivityById } from '../data/activities.js'
 import { createChildActivity, listChildActivities, updateChildActivity, archiveChildActivity } from '../data/child-activities.js'
 import { listPendingExecucoes, listRecentExecucoes } from '../data/atividade-execucao.js'
 import { MOLDES_REGISTRO, buildContractFromParts, formatConfigResumo } from '../data/moldes-registro.js'
-import { PLANOS_REGISTRO, computeStatusEtapas } from '../data/planos-registro.js'
+import { PLANOS_REGISTRO } from '../data/planos-registro.js'
+import {
+  listPublishedTrailTemplates, getTrailTemplateWithModules, getActiveChildTrail,
+  getChildTrailModules, getChildTrailMissions, assignChildTrail, releaseChildModule,
+  advanceChildTrailModule,
+} from '../data/trilha-formal.js'
 
 const session = await requireRole('tutor')
 const stateBox = document.querySelector('[data-tutor-state]')
@@ -1765,9 +1770,10 @@ function buildActivitiesPanel(cycle, state, onSaved) {
 
   panel.loadTable = () => loadChildActivitiesTable(cycle.child_id, tbody, emptyWrap, errorWrap, table, rowCallbacks)
   panel.loadRecentExecucoes = () => loadRecentExecucoes(cycle.child_id, recentList)
-  // undefined nos estados bloqueados (sem form de composição pra receber);
-  // o chamador (onPrepararEtapa em renderRecord) já não deveria conseguir
-  // chegar aqui nesses estados, mas o encadeamento opcional protege mesmo assim.
+  // undefined nos estados bloqueados (sem form de composição pra receber).
+  // Único chamador restante: a ponte pendingEtapaParams em bootstrap() (volta
+  // de trilha.html com ?plan=&step=) — buildPlanPanel não usa mais isso, a
+  // trilha formal libera módulo inteiro via RPC, não prefill de form.
   panel.prefillFromPlano = (etapa) => prefillFromPlanoRef?.(etapa)
   return panel
 }
@@ -1780,94 +1786,222 @@ function buildActivitiesPanel(cycle, state, onSaved) {
 // "qual é o plano, quanto já foi feito, qual a próxima ação", com um botão
 // pra abrir a exploração de verdade em tela própria.
 
-function statusDaEtapa(statusList, i) {
-  return statusList?.[i] || (i === 0 ? 'em_andamento' : 'a_fazer')
+const MODULE_STATUS_LABEL = {
+  bloqueado: 'Bloqueado',
+  liberado: 'Liberado',
+  aguardando_revisao: 'Aguardando revisão',
+  concluido: 'Concluído',
+}
+const MISSION_STATUS_LABEL = {
+  bloqueada: 'Bloqueada',
+  disponivel: 'Disponível',
+  concluida: 'Concluída',
 }
 
-function buildPlanPanel(cycle, state, onPrepararEtapa, onExplorarTrilha) {
+// Currículo formal (Trilha → Módulo → Missão) — ver docs/supabase-fase-5
+// em diante. Passagem funcional, sem redesenhar o mapa visual ainda (isso
+// é a "Fase 6 — mapa de mundos" do roadmap, só depois de provar o dado
+// real ponta a ponta). PLANOS_REGISTRO/trilha-plano.js/trilha.html
+// continuam existindo mas não são mais alimentados por este painel.
+function buildPlanPanel(cycle, state) {
   const panel = el('section', 'panel')
   panel.dataset.panel = 'plan'
   panel.hidden = true
 
   const podePreparar = state === 'cycle_active'
   const bloqueadoMsg = {
-    cycle_planned: 'Preparar atividades libera quando a equipe ativar o ciclo.',
-    cycle_paused: 'Preparar atividades fica bloqueado enquanto o ciclo estiver pausado.',
-    cycle_completed: 'Este ciclo já foi concluído — o plano abaixo fica só como histórico.',
+    cycle_planned: 'A trilha libera quando a equipe ativar o ciclo.',
+    cycle_paused: 'A trilha fica bloqueada enquanto o ciclo estiver pausado.',
+    cycle_completed: 'Este ciclo já foi concluído — a trilha abaixo fica só como histórico.',
   }[state]
-
-  const plano = PLANOS_REGISTRO.primeiros_numeros
 
   const card = el('div', 'card')
   const head = el('div', 'card-h')
-  head.append(el('h3', null, plano.titulo))
-  const progressLabel = el('span', 'plan-progress-label')
-  head.append(progressLabel)
+  head.append(el('h3', null, 'Trilha'))
   card.append(head)
 
   const body = el('div', 'card-b')
-  body.append(el('p', 'card-copy', plano.descricao))
+  card.append(body)
+  panel.append(card)
 
-  if (bloqueadoMsg) {
+  function renderBlockedNote() {
+    if (!bloqueadoMsg) return
     const note = el('div', 'locked-note')
     note.innerHTML = `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
     note.append(document.createTextNode(bloqueadoMsg))
     body.append(note)
   }
 
-  const proximaWrap = el('div', 'plan-next')
-  proximaWrap.append(el('span', 'plan-next-label', 'Próxima etapa'))
-  const proximaTitulo = el('b', null, '—')
-  proximaWrap.append(proximaTitulo)
-  body.append(proximaWrap)
-
-  const dotsWrap = el('div', 'plan-dots')
-  body.append(dotsWrap)
-
-  const actions = el('div', 'plan-actions')
-  const explorarBtn = el('button', 'btn btn-ghost btn-sm', 'Explorar trilha completa')
-  explorarBtn.type = 'button'
-  explorarBtn.addEventListener('click', () => onExplorarTrilha?.())
-  actions.append(explorarBtn)
-
-  let prepararBtn
-  if (podePreparar) {
-    prepararBtn = el('button', 'btn btn-accent btn-sm', 'Preparar próxima atividade')
-    prepararBtn.type = 'button'
-    actions.append(prepararBtn)
+  function renderErrorLine(container, message) {
+    const err = el('p', 'card-copy', message)
+    err.style.color = 'var(--bad)'
+    container.append(err)
   }
-  body.append(actions)
 
-  card.append(body)
-  panel.append(card)
+  async function renderAssign() {
+    body.replaceChildren(el('p', 'card-copy', 'Carregando trilhas disponíveis…'))
+    const { data: templates, error } = await listPublishedTrailTemplates()
+    if (error) {
+      body.replaceChildren(el('p', 'card-copy', 'Não foi possível carregar as trilhas agora.'))
+      return
+    }
+    if (!templates?.length) {
+      body.replaceChildren(el('p', 'card-copy', 'Nenhuma trilha publicada ainda.'))
+      return
+    }
 
-  function render(statusList) {
-    const total = plano.etapas.length
-    const done = plano.etapas.reduce((n, _, i) => n + (statusDaEtapa(statusList, i) === 'concluida' ? 1 : 0), 0)
-    progressLabel.textContent = `${done} de ${total}`
+    const template = templates[0]
+    const { data: modules, error: modulesError } = await getTrailTemplateWithModules(template.id)
+    if (modulesError || !modules?.length) {
+      body.replaceChildren(el('p', 'card-copy', 'Não foi possível carregar os módulos desta trilha.'))
+      return
+    }
 
-    const currentIdx = plano.etapas.findIndex((_, i) => statusDaEtapa(statusList, i) !== 'concluida')
-    const proxima = plano.etapas[currentIdx >= 0 ? currentIdx : plano.etapas.length - 1]
-    proximaTitulo.textContent = proxima.titulo
-    if (prepararBtn) prepararBtn.onclick = () => onPrepararEtapa?.(proxima)
+    body.replaceChildren()
+    body.append(el('p', 'card-copy', template.description || ''))
+    renderBlockedNote()
 
-    dotsWrap.replaceChildren()
-    plano.etapas.forEach((_, i) => {
-      const status = statusDaEtapa(statusList, i)
-      const dot = el('span', `plan-dot plan-dot--${status}${i === currentIdx ? ' plan-dot--current' : ''}`)
-      dotsWrap.append(dot)
-      if (i < plano.etapas.length - 1) {
-        dotsWrap.append(el('span', `plan-dot-line${status === 'concluida' ? ' plan-dot-line--done' : ''}`))
-      }
+    const field = el('div', 'field')
+    field.append(el('label', null, 'Começar em'))
+    const select = el('select')
+    modules.forEach((m) => {
+      const opt = el('option', null, `Módulo ${m.position} — ${m.title}`)
+      opt.value = m.id
+      select.append(opt)
     })
+    field.append(select)
+    body.append(field)
+
+    if (podePreparar) {
+      const btn = el('button', 'btn btn-accent btn-sm', `Atribuir "${template.title}"`)
+      btn.type = 'button'
+      btn.addEventListener('click', async () => {
+        btn.disabled = true
+        const { error: assignError } = await assignChildTrail({
+          childId: cycle.child_id,
+          cycleId: cycle.id,
+          trailTemplateId: template.id,
+          startingModuleId: select.value,
+        })
+        if (assignError) {
+          btn.disabled = false
+          renderErrorLine(body, assignError.message)
+          return
+        }
+        load()
+      })
+      body.append(btn)
+    }
   }
 
-  render(null)
+  async function renderTrail(childTrail) {
+    const { data: modules, error } = await getChildTrailModules(childTrail.id)
+    if (error) {
+      body.replaceChildren(el('p', 'card-copy', 'Não foi possível carregar os módulos.'))
+      return
+    }
 
-  panel.loadStatus = async () => {
-    const statusList = await computeStatusEtapas(plano, cycle.child_id, cycle.id)
-    if (statusList) render(statusList)
+    body.replaceChildren()
+    body.append(el('p', 'card-copy', childTrail.trail_templates?.title || 'Trilha'))
+    renderBlockedNote()
+
+    if (childTrail.status === 'concluida') {
+      body.append(el('p', 'card-copy', 'Trilha concluída! 🎉'))
+    }
+
+    const list = el('div', 'trilha-formal-modules')
+    modules.forEach((cm) => {
+      const tm = cm.trail_modules
+      const row = el('div', 'trilha-formal-module-row')
+      row.append(el('span', null, `${tm.position}. ${tm.title}`))
+      row.append(el('span', 'trilha-formal-status', MODULE_STATUS_LABEL[cm.status] || cm.status))
+      list.append(row)
+    })
+    body.append(list)
+
+    const current = modules.find((cm) => cm.status !== 'concluido')
+    if (!current) return
+
+    const detail = el('div', 'trilha-formal-current')
+    const tm = current.trail_modules
+    detail.append(el('h4', null, `${tm.position}. ${tm.title}`))
+    if (tm.objective) detail.append(el('p', 'card-copy', tm.objective))
+
+    if (current.status === 'bloqueado') {
+      if (podePreparar) {
+        const rodadasField = el('div', 'field')
+        rodadasField.append(el('label', null, 'Rodadas (opcional — mantém o padrão do currículo se vazio)'))
+        const rodadasInput = el('input')
+        rodadasInput.type = 'number'
+        rodadasInput.min = '1'
+        rodadasField.append(rodadasInput)
+        detail.append(rodadasField)
+
+        const btn = el('button', 'btn btn-accent btn-sm', 'Liberar módulo')
+        btn.type = 'button'
+        btn.addEventListener('click', async () => {
+          btn.disabled = true
+          const adaptations = {}
+          if (rodadasInput.value) adaptations.rodadas = Number(rodadasInput.value)
+          const { error: releaseError } = await releaseChildModule({ childTrailModuleId: current.id, adaptations })
+          if (releaseError) {
+            btn.disabled = false
+            renderErrorLine(detail, releaseError.message)
+            return
+          }
+          load()
+        })
+        detail.append(btn)
+      }
+    } else {
+      const { data: missions, error: missionsError } = await getChildTrailMissions(current.id)
+      if (!missionsError && missions) {
+        const missionsList = el('div', 'trilha-formal-missions')
+        missions.forEach((cmi) => {
+          const mt = cmi.mission_templates
+          const row = el('div', 'trilha-formal-mission-row')
+          row.append(el('span', null, `${mt.position}. ${mt.title}`))
+          row.append(el('span', 'trilha-formal-status', MISSION_STATUS_LABEL[cmi.status] || cmi.status))
+          missionsList.append(row)
+        })
+        detail.append(missionsList)
+      }
+
+      if (current.status === 'aguardando_revisao' && podePreparar) {
+        const btn = el('button', 'btn btn-accent btn-sm', 'Avançar módulo')
+        btn.type = 'button'
+        btn.addEventListener('click', async () => {
+          btn.disabled = true
+          const { error: advanceError } = await advanceChildTrailModule({ childTrailModuleId: current.id })
+          if (advanceError) {
+            btn.disabled = false
+            renderErrorLine(detail, advanceError.message)
+            return
+          }
+          load()
+        })
+        detail.append(btn)
+      }
+    }
+
+    body.append(detail)
   }
+
+  async function load() {
+    body.replaceChildren(el('p', 'card-copy', 'Carregando…'))
+    const { data: childTrail, error } = await getActiveChildTrail(cycle.child_id)
+    if (error) {
+      body.replaceChildren(el('p', 'card-copy', 'Não foi possível carregar a trilha agora.'))
+      return
+    }
+    if (!childTrail) {
+      await renderAssign()
+      return
+    }
+    await renderTrail(childTrail)
+  }
+
+  panel.loadStatus = load
 
   return panel
 }
@@ -2474,16 +2608,7 @@ function renderRecord(state, cycle, initialTab) {
   const overviewPanel = buildOverviewPanel(cycle, state, openForm, useSuggestedActivity)
   const sessionsPanel = buildSessionsPanel(cycle, state, sessionForm)
   const activitiesPanel = buildActivitiesPanel(cycle, state, refreshActivities)
-  // Plano → Atividades preparadas: troca de aba primeiro (o form precisa
-  // estar visível antes do scrollIntoView do prefill rodar de verdade).
-  const onPrepararEtapa = (etapa) => {
-    switchTab('activities')
-    activitiesPanel.prefillFromPlano?.(etapa)
-  }
-  const onExplorarTrilha = () => {
-    window.location.href = `trilha.html?cycle_id=${encodeURIComponent(cycle.id)}`
-  }
-  const planPanel = buildPlanPanel(cycle, state, onPrepararEtapa, onExplorarTrilha)
+  const planPanel = buildPlanPanel(cycle, state)
   const reportsPanel = buildReportsPanel(cycle)
   const orientationsPanel = buildOrientationsPanel(cycle, childName)
 

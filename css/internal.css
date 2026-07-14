@@ -2044,3 +2044,45 @@
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
+
+/* ---------- Trilha formal (aba Plano) — passagem funcional, sem visual
+   novo ainda; o mapa de verdade (módulo→missão) fica pra quando a trilha
+   estiver provada ponta a ponta (ver docs/V2-DIRECAO.md e supabase-fase-5
+   em diante). Só lista + status por texto. ---------- */
+
+.trilha-formal-modules,
+.trilha-formal-missions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: var(--sp-3) 0;
+}
+
+.trilha-formal-module-row,
+.trilha-formal-mission-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border: var(--border);
+  border-radius: var(--r-sm);
+  font-size: 0.86rem;
+}
+
+.trilha-formal-status {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.trilha-formal-current {
+  margin-top: var(--sp-4);
+  padding-top: var(--sp-4);
+  border-top: var(--border);
+}
+
+.trilha-formal-current .field {
+  margin: var(--sp-3) 0;
+}
