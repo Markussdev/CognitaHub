@@ -448,17 +448,27 @@ if (isPreview) {
   if (!activityId || authSession) {
     let contract = null
     let missaoBloqueada = false
+    let erroCarregar = false
+    // Só entra aqui quando ?activity= foi passado de propósito (com sessão
+    // válida) — o stub de demonstração continua existindo só pra quando
+    // NÃO há ?activity= nenhum (teste isolado da casca). Erro/bloqueio com
+    // ?activity= presente nunca deve degradar pro stub: a criança pareceria
+    // ter feito a missão de verdade, sem nenhuma atividade_execucao vinculada
+    // e sem a trilha avançar — silencioso e enganoso.
     if (activityId && authSession) {
       const { data: row, error } = await getChildActivityById(activityId)
       if (error || !row) {
-        console.warn('[modo-crianca] não achou a atividade — caindo no stub de demonstração', error)
+        erroCarregar = true
+        console.warn('[modo-crianca] não achou a atividade', error)
       } else {
         // A lista "Atividades preparadas" já esconde "Fazer com a criança"
-        // pra missão de trilha ainda bloqueada (ver tutor.js), mas isso
-        // sozinho não impede acesso direto pela URL — confere de novo aqui,
-        // é a última linha de defesa antes de abrir a atividade de verdade.
+        // pra missão de trilha que não está 'disponivel' (ver tutor.js), mas
+        // isso sozinho não impede acesso direto pela URL — confere de novo
+        // aqui, última linha de defesa. Falha fechado: qualquer coisa que
+        // não seja explicitamente 'disponivel' (bloqueada, concluída, ou o
+        // relacionamento vindo ausente/estranho) bloqueia, não libera.
         const missao = Array.isArray(row.child_trail_missions) ? row.child_trail_missions[0] : row.child_trail_missions
-        if (row.child_trail_mission_id && missao?.status === 'bloqueada') {
+        if (row.child_trail_mission_id && missao?.status !== 'disponivel') {
           missaoBloqueada = true
         } else {
           contract = buildContractFromRow(row)
@@ -466,7 +476,16 @@ if (isPreview) {
       }
     }
 
-    if (missaoBloqueada) {
+    if (erroCarregar) {
+      document.body.innerHTML = `
+        <div style="display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px;text-align:center;font-family:'Atkinson Hyperlegible',sans-serif;">
+          <div style="max-width:360px;">
+            <p style="font-size:1.1rem;font-weight:700;margin:0 0 8px;">Não foi possível carregar esta atividade.</p>
+            <p style="margin:0 0 16px;color:#5b4a58;">Tente de novo em instantes, ou volte para o painel.</p>
+            <a href="tutor.html?view=record&tab=activities" style="color:#141162;font-weight:700;">Voltar para o painel</a>
+          </div>
+        </div>`
+    } else if (missaoBloqueada) {
       document.body.innerHTML = `
         <div style="display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px;text-align:center;font-family:'Atkinson Hyperlegible',sans-serif;">
           <div style="max-width:360px;">

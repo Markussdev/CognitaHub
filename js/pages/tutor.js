@@ -1301,12 +1301,12 @@ function renderChildActivityRow(row, callbacks) {
 
   // Atividade avulsa (child_trail_mission_id null) sempre pode ser feita.
   // Atividade de missão de trilha só quando a missão está 'disponivel' —
-  // liberar um módulo já cria as child_activities das 3 missões de uma vez
-  // (docs/supabase-fase-7-liberar-modulo.sql), mas só a 1ª deve ser
-  // executável; sem esta checagem a criança conseguiria pular pra missão
-  // 2/3 antes de terminar a 1ª.
+  // 'concluida' NÃO conta: repetir é uma decisão de produto ainda não
+  // desenhada (ver docs/PLANO-SPRINT-4-TRILHA.md / roadmap "repetir/
+  // adaptar"), então o botão padrão não pode virar repetição sem querer.
   const missaoStatus = row.child_trail_mission_id ? pickEmbedded(row.child_trail_missions)?.status : null
-  if (missaoStatus && missaoStatus !== 'disponivel' && missaoStatus !== 'concluida') {
+  const podeExecutar = !row.child_trail_mission_id || missaoStatus === 'disponivel'
+  if (!podeExecutar) {
     actionsWrap.append(el('span', 'trilha-blocked-pill', 'Bloqueada pela trilha'))
   } else {
     const link = el('a', 'btn btn-ghost btn-sm', 'Fazer com a criança')
@@ -1317,7 +1317,13 @@ function renderChildActivityRow(row, callbacks) {
     actionsWrap.append(link)
   }
 
-  if (callbacks) {
+  // Duplicar/Editar/Arquivar só fazem sentido pra atividade avulsa. Uma
+  // atividade de missão de trilha é administrada pela trilha (liberar/
+  // avançar): Arquivar deixaria a missão apontando pra uma child_activity
+  // inexistente, sem caminho de recriação (release_child_module recusa
+  // liberar um módulo já liberado); Editar deixaria o tutor reescrever o
+  // currículo por fora do allowlist que a RPC já impõe.
+  if (callbacks && !row.child_trail_mission_id) {
     const dupBtn = el('button', 'btn btn-ghost btn-sm', 'Duplicar')
     dupBtn.type = 'button'
     dupBtn.addEventListener('click', () => callbacks.onDuplicate(row))
@@ -1968,6 +1974,16 @@ function buildPlanPanel(cycle, state) {
         rodadasInput.placeholder = 'Padrão'
         rodadasField.append(rodadasInput)
         adaptRow.append(rodadasField)
+
+        const nivelField = el('div', 'trilha-adapt-field')
+        nivelField.append(el('label', null, 'Nível'))
+        const nivelInput = el('input')
+        nivelInput.type = 'number'
+        nivelInput.min = '1'
+        nivelInput.placeholder = 'Padrão'
+        nivelField.append(nivelInput)
+        adaptRow.append(nivelField)
+
         adaptRow.append(el('span', 'trilha-adapt-hint', 'Deixe vazio pra usar o padrão do currículo'))
         currentCard.append(adaptRow)
 
@@ -1977,6 +1993,7 @@ function buildPlanPanel(cycle, state) {
           btn.disabled = true
           const adaptations = {}
           if (rodadasInput.value) adaptations.rodadas = Number(rodadasInput.value)
+          if (nivelInput.value) adaptations.nivel = Number(nivelInput.value)
           const { error: releaseError } = await releaseChildModule({ childTrailModuleId: current.id, adaptations })
           if (releaseError) {
             btn.disabled = false

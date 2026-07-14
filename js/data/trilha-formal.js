@@ -56,6 +56,20 @@ export async function getChildTrailMissions(childTrailModuleId) {
     .order('position', { foreignTable: 'mission_templates' })
 }
 
+// Igual a getChildTrailMissions, mas junto com a child_activity vinculada —
+// o app infantil precisa saber exatamente qual atividade abrir quando a
+// missão está 'disponivel', sem query extra por nó. Reverse-FK
+// (child_activities.child_trail_mission_id -> child_trail_missions.id):
+// vem como array, hoje sempre 0 ou 1 item (mais de uma só quando existir
+// "repetir/adaptar", que ainda não gera child_activity nova).
+export async function getChildTrailMissionsWithActivity(childTrailModuleId) {
+  return supabase
+    .from('child_trail_missions')
+    .select('id, status, unlocked_at, completed_at, attempts_count, mission_templates ( id, position, title, molde, emblema ), child_activities ( id )')
+    .eq('child_trail_module_id', childTrailModuleId)
+    .order('position', { foreignTable: 'mission_templates' })
+}
+
 // ── Mutações (sempre via RPC — as tabelas de instância não aceitam
 // insert/update direto, ver docs/supabase-fase-5-trilha-formal.sql Passo C) ──
 

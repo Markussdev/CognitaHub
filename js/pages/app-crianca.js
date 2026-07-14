@@ -1,15 +1,18 @@
 import { requireRole } from '../lib/auth.js'
 import { el } from '../lib/ui.js'
 import { getTutorCycles } from '../data/tutor.js'
-import { PLANOS_REGISTRO, computeStatusCrianca } from '../data/planos-registro.js'
+import { getLatestChildTrail, getChildTrailModules, getChildTrailMissionsWithActivity } from '../data/trilha-formal.js'
 import { renderTrilhaCrianca } from '../components/trilha-crianca.js'
 
 // Sprint 6A — "modo demonstração infantil": protótipo da experiência que um
 // dia vai virar o app infantil de verdade (celular da criança, pareado sem
 // login próprio — ver docs/V2-DIRECAO.md). Por enquanto reusa a sessão
 // autenticada do TUTOR (mesmo requireRole('tutor') de sempre) só pra testar
-// a UX — não é a autenticação final. Chega aqui só via
-// trilha.html → "Testar como criança" → ?cycle_id=<uuid>&demo=1.
+// a UX — não é a autenticação final. Chega aqui via tutor.html → aba Plano.
+//
+// Fase 10 — migrado do currículo hardcoded (PLANOS_REGISTRO) pro currículo
+// formal (Trilha → Módulo → Missão, ver docs/supabase-fase-5 em diante).
+// Não lê mais nada de js/data/planos-registro.js.
 
 const session = await requireRole('tutor')
 const root = document.querySelector('[data-app-root]')
@@ -29,9 +32,18 @@ function renderErro(mensagem) {
   root.append(wrap)
 }
 
+function renderAviso(cycleId, titulo, mensagem) {
+  root.replaceChildren()
+  renderSairLink(cycleId)
+  const wrap = el('div', 'crianca-abertura')
+  wrap.append(el('h1', null, titulo))
+  wrap.append(el('p', null, mensagem))
+  root.append(wrap)
+}
+
 function renderSairLink(cycleId) {
   const link = el('a', 'crianca-sair', 'Sair (modo teste)')
-  link.href = `trilha.html?cycle_id=${encodeURIComponent(cycleId)}`
+  link.href = `tutor.html?view=record&tab=plan`
   root.append(link)
 }
 
@@ -49,6 +61,18 @@ function renderAbertura({ childName, onContinuar }) {
   btn.addEventListener('click', onContinuar)
   wrap.append(btn)
   return wrap
+}
+
+function normalizarMissao(row) {
+  const mt = row.mission_templates
+  const atividade = Array.isArray(row.child_activities) ? row.child_activities[0] : row.child_activities
+  return {
+    id: row.id,
+    status: row.status,
+    titulo: mt?.title || '',
+    emblema: mt?.emblema || mt?.molde || 'identificar',
+    childActivityId: atividade?.id || null,
+  }
 }
 
 async function init() {
@@ -74,47 +98,82 @@ async function init() {
   }
 
   const childName = cycle.children?.name || 'criança'
-  const plano = PLANOS_REGISTRO.primeiros_numeros
   document.title = `Cognita | Jornada de ${firstName(childName)}`
 
   async function mostrarTrilha() {
     root.replaceChildren()
-    renderSairLink(cycle.id)
 
-    const topo = el('div', 'crianca-topo')
-    topo.append(el('h2', null, plano.titulo))
-    root.append(topo)
+    const { data: childTrail, error: trailError } = await getLatestChildTrail(cycle.child_id)
+    if (trailError) {
+      renderErro('Não conseguimos carregar sua jornada agora.')
+      return
+    }
+    if (!childTrail) {
+      renderAviso(cycle.id, `Oi, ${firstName(childName)}!`, 'Sua trilha ainda está sendo preparada. Volte daqui a pouco!')
+      return
+    }
+    if (childTrail.status === 'concluida') {
+      renderAviso(cycle.id, 'Você terminou! 🎉', 'Você concluiu toda a sua jornada. Muito bem!')
+      return
+    }
+    if (childTrail.status === 'pausada') {
+      renderAviso(cycle.id, `Oi, ${firstName(childName)}!`, 'Sua jornada está pausada agora. Volte quando o tutor liberar de novo.')
+      return
+    }
 
-    const statuses = await computeStatusCrianca(plano, cycle.child_id)
-    if (!statuses) {
+    const { data: modules, error: modulesError } = await getChildTrailModules(childTrail.id)
+    if (modulesError) {
       renderErro('Não conseguimos carregar sua jornada agora.')
       return
     }
 
-    const algumaDisponivel = statuses.some((s) => s.status === 'disponivel')
-    const tudoConcluido = statuses.every((s) => s.status === 'concluida')
-    if (!algumaDisponivel && !tudoConcluido) {
-      const aviso = el('p', null, 'Sua próxima missão está sendo preparada. Volte daqui a pouco!')
+    const current = (modules ?? []).find((cm) => cm.status !== 'concluido')
+    if (!current) {
+      renderAviso(cycle.id, 'Você terminou! 🎉', 'Você concluiu toda a sua jornada. Muito bem!')
+      return
+    }
+    if (current.status === 'bloqueado') {
+      renderAviso(cycle.id, `Oi, ${firstName(childName)}!`, 'Sua próxima missão está sendo preparada. Volte daqui a pouco!')
+      return
+    }
+
+    const { data: missionRows, error: missionsError } = await getChildTrailMissionsWithActivity(current.id)
+    if (missionsError || !missionRows) {
+      renderErro('Não conseguimos carregar sua jornada agora.')
+      return
+    }
+    const missoes = missionRows.map(normalizarMissao)
+
+    renderSairLink(cycle.id)
+
+    const topo = el('div', 'crianca-topo')
+    topo.append(el('h2', null, current.trail_modules?.title || 'Sua missão'))
+    root.append(topo)
+
+    const moduloCompleto = current.status === 'aguardando_revisao'
+    if (moduloCompleto) {
+      const aviso = el('p', null, 'Módulo completo — aguardando o tutor preparar o próximo passo!')
       aviso.style.cssText = 'text-align:center;color:var(--ink-soft);padding:0 24px 16px;'
       root.append(aviso)
     }
 
     // Feedback curto ao voltar do Modo Criança (?voltou=1) — o check no
-    // mapa já reflete o atividade_execucao novo (computeStatusCrianca
-    // acabou de rodar acima), não depende do tutor ter registrado sessão.
+    // mapa já reflete o atividade_execucao novo (acabou de ser recarregado
+    // acima), não depende do tutor ter registrado sessão.
     if (params.get('voltou') === '1') {
-      const banner = el('p', null, tudoConcluido ? 'Você terminou todas as missões! 🎉' : 'Missão concluída! Muito bem! 🎉')
+      const banner = el('p', null, moduloCompleto ? 'Você terminou o módulo! 🎉' : 'Missão concluída! Muito bem! 🎉')
       banner.style.cssText = 'text-align:center;color:var(--ok);font-weight:800;padding:0 24px 16px;'
       root.append(banner)
     }
 
-    const onIniciarMissao = (etapa, childActivityId) => {
+    const onOpenMission = (missao) => {
+      if (!missao.childActivityId) return
       const voltaPara = `app-crianca.html?${new URLSearchParams({ cycle_id: cycle.id, demo: '1', voltou: '1' }).toString()}`
-      const destino = new URLSearchParams({ activity: childActivityId, return: voltaPara })
+      const destino = new URLSearchParams({ activity: missao.childActivityId, return: voltaPara })
       window.location.href = `modo-crianca.html?${destino.toString()}`
     }
 
-    const trilha = renderTrilhaCrianca({ plano, statusesCrianca: statuses, onIniciarMissao })
+    const trilha = renderTrilhaCrianca({ missoes, onOpenMission })
     root.append(trilha)
     requestAnimationFrame(() => trilha.scrollToMissaoAtual?.())
   }
