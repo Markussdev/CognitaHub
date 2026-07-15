@@ -177,11 +177,15 @@ class ModoCrianca {
     }
   }
 
-  // Quem abriu o Modo Criança (tutor.js hoje; responsável ainda não tem
-  // entrada na UI, mas a RLS já permite — ver docs/V2-DIRECAO.md §5). Sem
-  // sessão (modo stub/demonstração), cai no rótulo padrão.
+  // Quem abriu o Modo Criança: tutor/responsável (modo demonstração, reusa
+  // a sessão do adulto) ou o próprio dispositivo pareado da criança (Fase
+  // 13 — role 'child_device'). Sem sessão (modo stub/demonstração), cai no
+  // rótulo padrão.
   rotuloVoltar() {
-    return this.authSession?.profile?.role === 'guardian' ? 'Voltar para o responsável' : 'Voltar para o tutor'
+    const role = this.authSession?.profile?.role
+    if (role === 'guardian') return 'Voltar para o responsável'
+    if (role === 'child_device') return 'Voltar para o mapa'
+    return 'Voltar para o tutor'
   }
 
   onPrincipal() {
@@ -435,12 +439,12 @@ if (isPreview) {
   })
 } else {
   // Sem ?activity=: modo stub/demonstração, não exige login (a casca
-  // continua testável isolada). Com ?activity=<id>: exige tutor ou
-  // responsável autenticado, porque o encerramento grava atividade_execucao
-  // com executed_by = auth.uid().
+  // continua testável isolada). Com ?activity=<id>: exige tutor, responsável
+  // ou o dispositivo pareado da própria criança (Fase 13), porque o
+  // encerramento grava atividade_execucao com executed_by = auth.uid().
   let authSession = null
   if (activityId) {
-    authSession = await requireRole('tutor', 'guardian')
+    authSession = await requireRole('tutor', 'guardian', 'child_device')
     // requireRole já redireciona pro login quando authSession é null —
     // não monta nada nesse caso, a navegação está em andamento.
   }

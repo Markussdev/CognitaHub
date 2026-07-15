@@ -40,6 +40,30 @@
 .crianca-abertura h1 { font-size: 1.5rem; font-weight: 800; color: var(--ink); }
 .crianca-abertura p { font-size: 1rem; color: var(--ink-soft); max-width: 30ch; }
 
+/* ── Pareamento de dispositivo (Fase 13) ── */
+
+.crianca-codigo-input {
+  width: 100%;
+  max-width: 260px;
+  height: 56px;
+  padding: 0 var(--sp-4);
+  border: 2px solid var(--line-2);
+  border-radius: var(--r-lg);
+  background: var(--card);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.crianca-codigo-input:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+
+.crianca-turnstile { min-height: 65px; display: flex; justify-content: center; }
+
+.crianca-pareamento-erro { font-size: 0.9rem; color: var(--bad, #a3123a); max-width: 30ch; }
+
 /* ── Trilha infantil ── */
 
 .crianca-topo {

@@ -107,3 +107,14 @@ export async function signOut() {
   await supabase.auth.signOut()
   window.location.href = '/pages/login.html'
 }
+
+// Fase 13 — dispositivo infantil pareado (auth anônimo do Supabase, ver
+// docs/supabase-fase-13-pareamento-dispositivo.sql). Diferente de
+// requireRole: não redireciona pro login quando falha — "sem sessão
+// pareada" é o estado normal de um dispositivo novo, quem chama decide
+// mostrar a tela de pareamento, não uma tela de erro.
+export async function requirePairedDevice() {
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (error || !user || !user.is_anonymous) return null
+  return { user }
+}

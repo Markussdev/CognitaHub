@@ -14,6 +14,7 @@ import {
   getChildTrailModules, getChildTrailMissions, assignChildTrail, releaseChildModule,
   advanceChildTrailModule, reopenChildTrailMission,
 } from '../data/trilha-formal.js'
+import { createPairingCode } from '../data/pareamento.js'
 
 const session = await requireRole('tutor')
 const stateBox = document.querySelector('[data-tutor-state]')
@@ -1844,7 +1845,33 @@ function buildPlanPanel(cycle, state) {
   const card = el('div', 'card')
   const head = el('div', 'card-h')
   head.append(el('h3', null, 'Trilha'))
+
+  const pairBtn = el('button', 'btn btn-ghost btn-sm', 'Conectar dispositivo da criança')
+  pairBtn.type = 'button'
+  head.append(pairBtn)
   card.append(head)
+
+  const pairResult = el('div', 'trilha-pair-result')
+  pairResult.hidden = true
+  card.append(pairResult)
+
+  pairBtn.addEventListener('click', async () => {
+    pairBtn.disabled = true
+    pairResult.hidden = true
+    const { data: codigo, error: pairError } = await createPairingCode(cycle.child_id)
+    pairBtn.disabled = false
+    pairResult.hidden = false
+    pairResult.replaceChildren()
+    if (pairError) {
+      const err = el('p', 'card-copy', 'Não foi possível gerar o código agora.')
+      err.style.color = 'var(--bad)'
+      pairResult.append(err)
+      return
+    }
+    pairResult.append(el('p', 'trilha-pair-label', 'Código de pareamento — válido por 10 minutos'))
+    pairResult.append(el('p', 'trilha-pair-code', codigo))
+    pairResult.append(el('p', 'trilha-pair-hint', 'Digite este código na tela de pareamento do aparelho da criança.'))
+  })
 
   const body = el('div', 'card-b')
   card.append(body)

@@ -142,6 +142,30 @@
   margin-bottom: 0;
 }
 
+[data-panel="plan"] .trilha-pair-result {
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--line);
+  background: var(--brand-soft);
+}
+[data-panel="plan"] .trilha-pair-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+[data-panel="plan"] .trilha-pair-code {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--brand);
+  margin: 4px 0;
+}
+[data-panel="plan"] .trilha-pair-hint {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
 /* Usado na aba Atividades preparadas (não escopado ao Plano): substitui
    "Fazer com a criança" quando a missão de trilha ainda está bloqueada. */
 .trilha-blocked-pill {
