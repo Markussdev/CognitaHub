@@ -50,6 +50,12 @@ export async function createAtividadeExecucao({
   tempoAproximadoSegundos,
   comoEncerrou,
 }) {
+  // Sem .select() de propósito: o dispositivo pareado (Fase 13) só tem
+  // policy de INSERT em atividade_execucao (ae_device_insert), não de
+  // SELECT — ele não precisa ler execução de volta, só gravar. Encadear
+  // .select() faria o INSERT...RETURNING ser filtrado por RLS de SELECT
+  // que não existe pra esse papel, e o supabase-js reportaria erro mesmo
+  // com o insert já commitado (falso negativo).
   return supabase
     .from('atividade_execucao')
     .insert({
@@ -63,6 +69,4 @@ export async function createAtividadeExecucao({
       tempo_aproximado_segundos: tempoAproximadoSegundos,
       como_encerrou: comoEncerrou,
     })
-    .select('id')
-    .single()
 }

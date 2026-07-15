@@ -317,7 +317,11 @@ class ModoCrianca {
         tempoAproximadoSegundos: execucao.tempo_aproximado_segundos,
         comoEncerrou: execucao.como_encerrou,
       })
-      if (error) console.error('[modo-crianca] falha ao gravar atividade_execucao', error)
+      if (error) {
+        console.error('[modo-crianca] falha ao gravar atividade_execucao', error)
+        window.alert('Não conseguimos salvar esta missão. Confira a conexão e tente novamente.')
+        return
+      }
     } else {
       console.info('[modo-crianca] atividade_execucao (modo demonstração, não gravado)', execucao)
     }
