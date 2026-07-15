@@ -1971,6 +1971,16 @@ function buildPlanPanel(cycle, state) {
     if (childTrail.status === 'concluida') {
       body.append(el('p', 'trilha-complete-banner', 'Trilha concluída! 🎉'))
       appendChildAppLink(body, cycle, 'Ver jornada concluída')
+      // Só existe 1 trilha oficial hoje, então "de novo" = a mesma —
+      // decisão de currículo (variar o que a criança refaz) fica pra
+      // quando existir 2ª trilha; isso aqui só desbloqueia o CRUD que já
+      // existe (assign_child_trail não trava em 'concluida', só 'ativa').
+      if (podePreparar) {
+        const denovoBtn = el('button', 'btn btn-accent btn-sm', 'Atribuir trilha de novo')
+        denovoBtn.type = 'button'
+        denovoBtn.addEventListener('click', () => renderAssign())
+        body.append(denovoBtn)
+      }
     } else if (childTrail.status === 'pausada') {
       body.append(el('p', 'card-copy', 'Esta trilha está pausada.'))
     }

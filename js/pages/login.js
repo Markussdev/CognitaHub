@@ -73,6 +73,13 @@ async function redirectExistingSession() {
 
   if (!user) return
 
+  // Sessão anônima (dispositivo pareado da criança, Fase 13) não é "já
+  // logado" no sentido que esta tela verifica — login.html é só pra
+  // adulto com email/senha. Sem este corte, profile.role vem
+  // 'child_device' (sem entrada em HOME_BY_ROLE), redirectByRole cai no
+  // fallback... que é esta própria página — loop infinito de reload.
+  if (user.is_anonymous) return
+
   const pendingResult = await completePendingSignup(user)
 
   if (pendingResult.error) {
