@@ -15,6 +15,7 @@ import {
   advanceChildTrailModule, reopenChildTrailMission,
 } from '../data/trilha-formal.js'
 import { createPairingCode } from '../data/pareamento.js'
+import { derivarEstadoResumo, ESTADOS_RESUMO, moduloAtualDe } from './resumo-estado.js'
 
 const session = await requireRole('tutor')
 const stateBox = document.querySelector('[data-tutor-state]')
@@ -1056,162 +1057,223 @@ async function loadSessionsTable(cycleId, tbody, emptyWrap, table) {
 
 // ── Painel: Visão geral ───────────────────────────────────────────────────────
 
-function buildOverviewPanel(cycle, state, openForm, useSuggestedActivity) {
+// ── Painel: Resumo (mesa de trabalho) ─────────────────────────────────────────
+// Substitui o antigo dossiê. A tela inteira deriva de derivarEstadoResumo()
+// (js/pages/resumo-estado.js): um estado dominante, no máximo um CTA. Nada aqui
+// inventa dado — tudo vem de sessions/atividade_execucao/child_trails já
+// existentes. Ver docs/TELA-RESUMO-PAINEL-TUTOR.md.
+function buildResumoPanel(cycle, { openForm }) {
   const panel = el('section', 'panel')
-  panel.dataset.panel = 'overview'
+  panel.dataset.panel = 'overview' // id interno mantido — switchTab/tabs seguem funcionando
 
-  const cols = el('div', 'cols')
-
-  // Coluna esquerda — detalhes pedagógicos
-  const detailsCard = el('div', 'card')
-  const detailsHead = el('div', 'card-h')
-  detailsHead.append(el('h3', null, 'Detalhes pedagógicos'))
-  const profileLink = el('a', 'card-h-link', 'Ver perfil completo →')
-  profileLink.href = `perfil-crianca.html?id=${cycle.child_id ?? ''}`
-  detailsHead.append(profileLink)
+  const wrap = el('div', 'resumo')
+  wrap.append(el('p', 'card-copy', 'Carregando resumo…'))
+  panel.append(wrap)
 
   const child = cycle.children ?? {}
   const lp = child.learning_profiles ?? {}
-  const detailsBody = el('div', 'card-b')
-  const kv = el('dl', 'kv')
+  const nome = firstName(child.name) || 'a criança'
+  const E = ESTADOS_RESUMO
 
-  const addKv = (icon, label, valueNode) => {
-    const dt = el('dt')
-    if (icon) dt.innerHTML = icon
-    dt.append(document.createTextNode(label))
-    const dd = document.createElement('dd')
-    dd.append(valueNode)
-    kv.append(dt, dd)
-  }
-
-  addKv(
-    `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`,
-    'Meta do ciclo',
-    document.createTextNode(cycle.main_goal || 'Fortalecer contagem até 10 com apoio visual.')
-  )
-
-  const difficultiesList = toList(lp.math_difficulties).length ? toList(lp.math_difficulties) : toList(child.main_difficulties)
-  const focusValue = (() => {
-    if (!difficultiesList.length) return document.createTextNode('Ainda não informado pela equipe.')
-    const chips = el('div', 'chips')
-    difficultiesList.forEach((d, i) => chips.append(el('span', `chip chip--${(i % 3) + 1}`, d)))
-    return chips
-  })()
-  addKv(null, 'Foco atual', focusValue)
-
-  addKv(null, 'Preferências', document.createTextNode(
-    formatList(lp.preferred_formats, 'Apoio visual e temas concretos.')
-  ))
-  addKv(null, 'Concentração', document.createTextNode(
-    formatAttentionSpan(lp.attention_span, 'Sessões curtas, com pausas frequentes.')
-  ))
-  addKv(null, 'Motivadores', document.createTextNode(
-    formatList(lp.motivators, 'Elogio específico e atividades com manipulação de objetos.')
-  ))
-  addKv(null, 'O que dificulta', document.createTextNode(
-    formatList(lp.avoidances, 'Instruções longas e sequências extensas sem apoio.')
-  ))
-
-  detailsBody.append(kv)
-  detailsCard.append(detailsHead, detailsBody)
-
-  // Coluna direita — próxima ação, sugestão, suporte, feed
-  const side = el('div', 'stack')
-
-  const NEXTBAR = {
-    cycle_active: { tone: 'tone-default', lb: 'Próxima ação', ti: 'Registrar a sessão desta semana', ds: 'O resumo aparece para a família na hora.', btn: 'Registrar' },
-    cycle_planned: { tone: 'tone-default', lb: 'Aguardando ativação', ti: 'Ciclo ainda não começou', ds: 'A equipe Cognita avisa você assim que os registros forem liberados.' },
-    cycle_paused: { tone: 'tone-warn', lb: 'Ciclo pausado', ti: 'Registros bloqueados por enquanto', ds: 'Fale com a equipe Cognita para entender os próximos passos.' },
-    cycle_completed: { tone: 'tone-ok', lb: 'Ciclo concluído', ti: 'Acompanhamento finalizado', ds: 'Obrigado pelo cuidado com essa criança. O histórico continua na aba Sessões.' },
-  }
-  const nb = NEXTBAR[state] ?? NEXTBAR.cycle_active
-  const nextbar = el('div', `nextbar ${nb.tone}`)
-  const nbIco = el('div', 'ico')
-  nbIco.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>`
-  const nbTx = el('div', 'tx')
-  nbTx.append(el('div', 'lb', nb.lb), el('div', 'ti', nb.ti), el('div', 'ds', nb.ds))
-  nextbar.append(nbIco, nbTx)
-  if (nb.btn) {
-    const nbBtn = el('button', 'btn btn-ghost btn-sm', nb.btn)
-    nbBtn.type = 'button'
-    nbBtn.addEventListener('click', openForm)
-    nextbar.append(nbBtn)
-  }
-  side.append(nextbar)
-
-  const activity = pickSuggestedActivity(difficultiesList)
-
-  if (state === 'cycle_active' || state === 'cycle_planned') {
-    const sgCard = el('div', 'card suggestion-card')
-    sgCard.append(simpleHead('Atividade sugerida'))
-    const sgBody = el('div', 'card-b')
-    sgBody.append(
-      el('div', 'sg-title', activity.title),
-      el('div', 'sg-why', `Por que: ${activity.why}`)
-    )
-    const facts = el('div', 'sg-facts')
-    ;[activity.skill, activity.time, activity.materials].forEach((f) => facts.append(el('span', null, f)))
-    sgBody.append(facts)
-
-    const actionsRow = el('div', 'rec-actions')
-    actionsRow.style.cssText = 'margin-top:13px;gap:8px'
-    if (state === 'cycle_active') {
-      const useBtn = el('button', 'btn btn-ghost btn-sm', 'Usar no registro')
-      useBtn.type = 'button'
-      useBtn.addEventListener('click', () => useSuggestedActivity(activity))
-      actionsRow.append(useBtn)
+  // ── Bloco 2: copy da "Próxima decisão" por estado (§5). cta pode ser null. ──
+  function decisaoDe(estado, dados) {
+    switch (estado) {
+      case E.CICLO_PLANEJADO:
+        return { ti: 'O ciclo começa em breve.', ds: 'Leia o perfil pedagógico e explore a biblioteca antes da primeira sessão.',
+          cta: { label: 'Ver perfil pedagógico', href: `perfil-crianca.html?id=${cycle.child_id ?? ''}` } }
+      case E.EXECUCAO_PENDENTE: {
+        const titulo = dados.execucao?.child_activities?.titulo || 'uma atividade'
+        const quando = dados.execucao?.created_at ? formatLastSession(dados.execucao.created_at) : 'há pouco'
+        const extra = dados.total > 1 ? ` (${dados.total} no total)` : ''
+        return { ti: `${nome} completou "${titulo}" ${quando} e a execução ainda não virou registro${extra}.`,
+          ds: 'Transforme o que a criança fez numa sessão para a família acompanhar.',
+          cta: { label: `Revisar o que ${nome} fez`, onClick: openForm } }
+      }
+      case E.MODULO_EM_REVISAO:
+        return { ti: `O módulo ${dados.modulo?.trail_modules?.position} terminou. Hora de decidir como ${nome} segue.`,
+          ds: 'Avançar para o próximo, repetir ou adaptar — a decisão é sua.',
+          cta: { label: 'Decidir: avançar, repetir ou adaptar', onClick: () => switchTab('plan') } }
+      case E.MODULO_BLOQUEADO:
+        return { ti: `O módulo ${dados.modulo?.trail_modules?.position} está pronto para ser preparado e liberado para ${nome}.`,
+          ds: 'Libere o módulo para a primeira missão ficar disponível no aparelho.',
+          cta: { label: 'Preparar e liberar módulo', onClick: () => switchTab('plan') } }
+      case E.JORNADA_CONCLUIDA:
+        return { ti: `${nome} concluiu a jornada "${dados.trail?.trail_templates?.title || 'atual'}". 🎉 O histórico está guardado.`,
+          ds: 'Escolha a próxima trilha quando fizer sentido — nada se perde.',
+          cta: { label: 'Atribuir próxima jornada', onClick: () => switchTab('plan') },
+          secondary: { label: 'Ver histórico', onClick: () => switchTab('sessions') } }
+      case E.SEM_JORNADA:
+        return { ti: `${nome} ainda não tem uma jornada.`, ds: 'Escolha uma trilha da biblioteca para começar o acompanhamento.',
+          cta: { label: 'Atribuir jornada', onClick: () => switchTab('plan') } }
+      case E.MISSAO_DISPONIVEL:
+        return { ti: `Tudo preparado. ${nome} tem uma missão disponível no aparelho.`,
+          ds: 'Nada esperando decisão sua agora — é a vez da criança.',
+          cta: { label: 'Ver jornada', onClick: () => switchTab('plan'), discreto: true } }
+      case E.CICLO_PAUSADO:
+        return { ti: 'O ciclo está pausado.', ds: 'A equipe acompanha e avisa os próximos passos.', cta: null }
+      case E.CICLO_CONCLUIDO:
+        return { ti: `Ciclo concluído. Obrigado pelo cuidado com ${nome}.`, ds: 'O histórico permanece nas Sessões.',
+          cta: { label: 'Ver histórico de sessões', onClick: () => switchTab('sessions') } }
+      case E.EM_DIA:
+      default:
+        return { ti: 'Tudo em dia por aqui.', ds: 'Nada esperando decisão sua no momento.', cta: null }
     }
-    const openLink = el('a', 'btn btn-ghost btn-sm', 'Abrir biblioteca')
-    openLink.href = 'atividades.html'
-    actionsRow.append(openLink)
-    sgBody.append(actionsRow)
-    sgCard.append(sgBody)
-    side.append(sgCard)
   }
 
-  // Feed
-  const feedCard = el('div', 'card feed-card')
-  feedCard.append(simpleHead('Atividade recente'))
-  const feedBody = el('div', 'card-b')
-  const feed = el('div', 'feed')
-  feedBody.append(feed)
-  feedCard.append(feedBody)
-  side.append(feedCard)
+  function renderDecisao(estado, dados) {
+    const d = decisaoDe(estado, dados)
+    const card = el('div', 'card card--accent resumo-decisao')
+    card.append(simpleHead('Próxima decisão'))
+    const body = el('div', 'card-b')
+    body.append(el('div', 'decisao-ti', d.ti))
+    if (d.ds) body.append(el('p', 'card-copy', d.ds))
+    if (d.cta) {
+      const actions = el('div', 'decisao-actions')
+      const cls = d.cta.discreto ? 'resumo-link' : 'btn btn-accent'
+      let primary
+      if (d.cta.href) {
+        primary = el('a', cls, d.cta.label); primary.href = d.cta.href
+      } else {
+        primary = el('button', cls, d.cta.label); primary.type = 'button'
+        primary.addEventListener('click', d.cta.onClick)
+      }
+      actions.append(primary)
+      if (d.secondary) {
+        const sec = el('button', 'btn btn-ghost btn-sm', d.secondary.label)
+        sec.type = 'button'; sec.addEventListener('click', d.secondary.onClick)
+        actions.append(sec)
+      }
+      body.append(actions)
+    }
+    card.append(body)
+    return card
+  }
 
-  cols.append(detailsCard, side)
-  panel.append(cols)
+  // ── Bloco 1: Pulso — uma linha, fatos derivados ──────────────────────────
+  function renderPulso({ sessions, execucoesPendentes, trail, modules }) {
+    const parts = []
+    const last = sessions[0]
+    parts.push(last ? `Última sessão ${formatLastSession(last.date)}` : 'Nenhuma sessão registrada')
+    if (execucoesPendentes.length) {
+      parts.push(`${execucoesPendentes.length} ${execucoesPendentes.length === 1 ? 'atividade aguardando' : 'atividades aguardando'} registro`)
+    }
+    if (trail && modules.length) {
+      const pos = moduloAtualDe(modules)?.trail_modules?.position ?? modules.length
+      parts.push(`Módulo ${pos} de ${modules.length}`)
+    }
+    const pulso = el('div', 'resumo-pulso')
+    parts.forEach((p, i) => {
+      if (i) pulso.append(el('span', 'sep', '·'))
+      pulso.append(el('span', null, p))
+    })
+    return pulso
+  }
 
-  panel.renderFeed = (rows) => {
+  // ── Bloco 3: O que aconteceu — merge de sessões + execuções + atribuição ──
+  function renderTimeline({ sessions, execucoesPendentes, trail }) {
     const items = []
-    rows.slice(0, 2).forEach((r) => {
-      items.push({
-        tone: 'you',
-        icon: `<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>`,
-        html: `<b>Você</b> registrou a sessão`,
-        sub: [r.activity_title, r.focus_area ? `foco em ${r.focus_area}` : null].filter(Boolean).join(' · '),
-        time: formatLastSession(r.date),
-      })
-    })
-    if (cycle.main_goal) {
-      items.push({
-        tone: 'team',
-        icon: `<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
-        html: `<b>Equipe Cognita</b> definiu o plano do ciclo`,
-        sub: `Objetivo: ${cycle.main_goal}`,
-        time: formatDate(cycle.start_date) ?? '',
-      })
-    }
-    items.push({
+    sessions.forEach((s) => items.push({
+      _t: new Date(s.created_at || s.date).getTime(),
+      tone: 'you',
+      icon: `<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>`,
+      html: '<b>Você</b> registrou a sessão',
+      sub: [s.activity_title, s.focus_area ? `foco em ${s.focus_area}` : null].filter(Boolean).join(' · '),
+      time: formatLastSession(s.date),
+    }))
+    execucoesPendentes.forEach((e) => items.push({
+      _t: new Date(e.created_at).getTime(),
       tone: 'team',
-      icon: `<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>`,
-      html: `<b>Você</b> foi vinculado a ${firstName(child.name)}`,
-      sub: 'Ciclo de 6 meses iniciado',
-      time: formatDate(cycle.start_date) ?? '',
+      icon: `<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/></svg>`,
+      html: `<b>${nome}</b> concluiu ${e.child_activities?.titulo ? `"${e.child_activities.titulo}"` : 'uma atividade'}`,
+      sub: 'Aguardando você registrar a sessão',
+      time: formatLastSession(e.created_at),
+    }))
+    if (trail) items.push({
+      _t: new Date(trail.created_at).getTime(),
+      tone: 'team',
+      icon: `<svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.6.6-5 4.4 1.5 6.5L12 17l-6 3.3 1.5-6.5-5-4.4 6.6-.6z"/></svg>`,
+      html: `<b>Jornada</b> ${trail.trail_templates?.title ? `"${trail.trail_templates.title}"` : ''} atribuída`,
+      sub: '',
+      time: formatDate(trail.created_at) ?? '',
     })
+    items.sort((a, b) => b._t - a._t)
 
-    renderFeedItems(feed, items)
+    const card = el('div', 'card')
+    card.append(simpleHead('O que aconteceu'))
+    const cbody = el('div', 'card-b')
+    if (!items.length) {
+      cbody.append(el('p', 'card-copy', 'Nada por aqui ainda — o histórico aparece assim que a criança fizer uma atividade ou você registrar uma sessão.'))
+    } else {
+      const feed = el('div', 'feed')
+      renderFeedItems(feed, items.slice(0, 5))
+      cbody.append(feed)
+    }
+    card.append(cbody)
+    return card
   }
 
+  // ── Bloco 4: Contexto — 3 chips + link + meta (só se existir) ─────────────
+  function renderContexto() {
+    const card = el('div', 'card')
+    card.append(simpleHead(`Contexto de ${nome}`))
+    const cbody = el('div', 'card-b')
+    const chips = el('div', 'resumo-contexto chips')
+    const difficulties = toList(lp.math_difficulties).length ? toList(lp.math_difficulties) : toList(child.main_difficulties)
+    const addChip = (label, val, cls) => { if (val) chips.append(el('span', `chip ${cls}`, `${label}: ${val}`)) }
+    addChip('foco', difficulties[0], 'chip--1')
+    addChip('prefere', toList(lp.preferred_formats)[0], 'chip--2')
+    addChip('evita', toList(lp.avoidances)[0], 'chip--3')
+    if (!chips.children.length) chips.append(el('span', 'chip chip--1', 'Perfil pedagógico ainda não detalhado'))
+    cbody.append(chips)
+    const link = el('a', 'resumo-link', 'Ver perfil pedagógico completo →')
+    link.href = `perfil-crianca.html?id=${cycle.child_id ?? ''}`
+    cbody.append(link)
+    if (cycle.main_goal) cbody.append(el('div', 'resumo-meta', `Meta do ciclo: ${cycle.main_goal}`))
+    card.append(cbody)
+    return card
+  }
+
+  async function reload() {
+    // sessions sempre (pulso/timeline/histórico). trail/módulos/missões/
+    // execuções só quando o ciclo está ativo — nos estados P/Z/F a cascata
+    // nem roda (o portão de ciclo decide antes).
+    const isActive = cycle.status === 'active'
+    const [sessRes, trailRes] = await Promise.all([
+      getCycleSessions(cycle.id),
+      isActive ? getLatestChildTrail(cycle.child_id, cycle.id) : Promise.resolve({ data: null }),
+    ])
+    const sessions = sessRes.error ? [] : (sessRes.data ?? [])
+    const trail = trailRes?.data ?? null
+
+    let modules = []
+    let missions = []
+    let execucoesPendentes = []
+    if (isActive) {
+      const [modRes, exeRes] = await Promise.all([
+        trail ? getChildTrailModules(trail.id) : Promise.resolve({ data: [] }),
+        listPendingExecucoes(cycle.child_id),
+      ])
+      modules = modRes?.data ?? []
+      execucoesPendentes = exeRes.error ? [] : (exeRes.data ?? [])
+      const mod = moduloAtualDe(modules)
+      if (mod) {
+        const misRes = await getChildTrailMissions(mod.id)
+        missions = misRes?.data ?? []
+      }
+    }
+
+    const { estado, dados } = derivarEstadoResumo({ cycle, trail, modules, missions, execucoesPendentes })
+
+    // P/Z/F reduzem para "Próxima decisão" + histórico (quando existir). §5.
+    const reduced = !isActive
+    wrap.replaceChildren()
+    if (!reduced) wrap.append(renderPulso({ sessions, execucoesPendentes, trail, modules }))
+    wrap.append(renderDecisao(estado, dados))
+    if (!reduced || sessions.length) wrap.append(renderTimeline({ sessions, execucoesPendentes, trail }))
+    if (!reduced) wrap.append(renderContexto())
+  }
+
+  panel.reload = reload
   return panel
 }
 
@@ -2184,65 +2246,6 @@ function buildPlanPanel(cycle, state) {
   return panel
 }
 
-// ── Painel: Relatórios ──────────────────────────────────────────────────────────
-
-function buildReportsPanel(cycle) {
-  const panel = el('section', 'panel')
-  panel.dataset.panel = 'reports'
-  panel.hidden = true
-
-  const currentMonth = currentCycleMonth(cycle.start_date, cycle.end_date)
-  const totalMonths = monthsBetween(cycle.start_date, cycle.end_date)
-
-  const cols = el('div', 'cols')
-
-  const reportCard = el('div', 'card')
-  const reportHead = el('div', 'card-h')
-  reportHead.append(el('h3', null, `Relatório mensal — Mês ${currentMonth}`))
-  reportHead.append(el('span', 'pill pill-mid', 'Pendente'))
-  const reportBody = el('div', 'card-b')
-  reportBody.append(el('p', 'card-copy', `Mês ${currentMonth} de ${totalMonths}. Resume evolução observada, dificuldades persistentes, próximos focos e sugestão para a família. Passa por revisão da equipe antes de chegar ao responsável.`))
-  const mini = el('ul', 'mini')
-  ;['Evolução observada', 'Dificuldades persistentes', 'Próximos focos', 'Sugestão para a família'].forEach((item) => mini.append(el('li', null, item)))
-  reportBody.append(mini)
-
-  const details = el('details', 'form')
-  details.style.marginTop = '14px'
-  const summary = document.createElement('summary')
-  summary.append(document.createTextNode(`Criar relatório do mês ${currentMonth}`))
-  const chevron = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-  chevron.setAttribute('viewBox', '0 0 24 24')
-  chevron.innerHTML = '<path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
-  summary.append(chevron)
-  const detailsBody = el('div', 'form-body')
-  const textarea = document.createElement('textarea')
-  textarea.placeholder = 'Rascunhe os pontos principais do mês...'
-  textarea.style.minHeight = '110px'
-  detailsBody.append(textarea, el('p', 'card-copy', 'Rascunho local — em breve isso vira um relatório de verdade para a equipe revisar. Por enquanto, nada aqui é salvo.'))
-  details.append(summary, detailsBody)
-  reportBody.append(details)
-  reportCard.append(reportHead, reportBody)
-
-  const historyCard = el('div', 'card')
-  historyCard.append(simpleHead('Histórico de relatórios'))
-  const historyBody = el('div', 'card-b')
-  const historyEmpty = el('div', 'empty-state')
-  const historyImg = document.createElement('img')
-  historyImg.src = '../assets/gatoprancheta-sem-fundo.png'
-  historyImg.alt = ''
-  historyEmpty.append(
-    historyImg,
-    el('strong', null, 'Nenhum relatório enviado ainda.'),
-    el('span', null, `O do mês ${currentMonth} será solicitado ao fim do mês.`)
-  )
-  historyBody.append(historyEmpty)
-  historyCard.append(historyBody)
-
-  cols.append(reportCard, historyCard)
-  panel.append(cols)
-  return panel
-}
-
 // ── Central Cognita: drawer global de suporte ─────────────────────────────────
 // Suporte é utilitário global (qualquer tela pode abrir), não um recurso do
 // acompanhamento de uma criança — por isso vive num slide-over, não numa aba.
@@ -2256,61 +2259,17 @@ function buildSupportDrawerContent(childName) {
     frag.append(ctx)
   }
 
-  frag.append(el('p', 'card-copy', 'Quando algo sair do esperado, a equipe está aqui. Escolha o tipo e descreva a situação.'))
+  // Contato honesto: sem o formulário que não persistia (o antigo "Enviar
+  // para equipe" só guardava local). Enquanto não existir fluxo de
+  // support_requests, o canal real é e-mail/WhatsApp da equipe Cognita.
+  frag.append(el('p', 'card-copy', 'Precisa de ajuda com o acompanhamento? Fale direto com a equipe Cognita. Tempo médio de resposta: até 48h.'))
 
-  const typeField = el('div', 'field')
-  typeField.append(el('label', null, 'Tipo de solicitação'))
-  const type = makeScaleGroup([
-    { label: 'Dúvida sobre atividade', val: 'activity', tone: '' },
-    { label: 'Ajuste no plano', val: 'plan', tone: '' },
-    { label: 'Questão com responsável', val: 'guardian', tone: '' },
-    { label: 'Pausa no ciclo', val: 'pause', tone: 'warn' },
-    { label: 'Situação sensível', val: 'sensitive', tone: 'warn' },
-    { label: 'Outro', val: 'other', tone: '' },
-  ])
-  typeField.append(type.group)
-  frag.append(typeField)
-
-  const msgField = el('div', 'field')
-  const msgLabel = document.createElement('label')
-  msgLabel.textContent = 'Mensagem'
-  const msgInput = document.createElement('textarea')
-  msgInput.placeholder = 'Descreva a situação com o máximo de detalhes possível...'
-  msgField.append(msgLabel, msgInput)
-  frag.append(msgField)
-
-  const errorBox = el('p', 'form-error'); errorBox.hidden = true
-  const okBox = el('p', 'form-ok'); okBox.hidden = true
-  const sendBtn = el('button', 'btn btn-accent btn-sm', 'Enviar para equipe')
-  sendBtn.type = 'button'
-
-  sendBtn.addEventListener('click', () => {
-    errorBox.hidden = true; okBox.hidden = true
-    if (!msgInput.value.trim()) {
-      errorBox.textContent = 'Escreva uma mensagem antes de enviar.'; errorBox.hidden = false
-      msgInput.focus(); return
-    }
-    // TODO(wiring:support_requests): persistir em support_requests quando a tabela existir.
-    // Por enquanto fica só local — use e-mail/WhatsApp abaixo para contato imediato.
-    msgInput.value = ''
-    type.reset()
-    okBox.textContent = 'Mensagem registrada. Por enquanto isso fica só com você — use e-mail ou WhatsApp abaixo para falar com a equipe agora.'
-    okBox.hidden = false
-  })
-
-  const actions = el('div', 'form-actions')
-  actions.append(errorBox, okBox, sendBtn)
-  frag.append(actions)
-
-  frag.append(el('div', 'support-divider'))
-
-  frag.append(el('p', 'card-copy', 'Para algo urgente, fale direto com a equipe. Tempo médio de resposta: até 48h.'))
   const contactActions = el('div', 'rec-actions')
   contactActions.style.cssText = 'gap:8px;flex-direction:column;align-items:stretch'
-  const mail = el('a', 'btn btn-ghost btn-sm', 'Enviar e-mail')
-  mail.href = `mailto:equipecognita@email.com?subject=${encodeURIComponent(childName ? `Ajuda no ciclo de ${childName}` : 'Ajuda no Cognita Hub')}`
+  const mail = el('a', 'btn btn-accent btn-sm', 'Enviar e-mail')
+  mail.href = `mailto:cognitahub1@gmail.com?subject=${encodeURIComponent(childName ? `Ajuda no ciclo de ${childName}` : 'Ajuda no Cognita Hub')}`
   const whats = el('a', 'btn btn-ghost btn-sm', 'Chamar no WhatsApp')
-  whats.href = 'https://wa.me/5500000000000'
+  whats.href = 'https://wa.me/559182050907'
   whats.target = '_blank'; whats.rel = 'noopener'
   contactActions.append(mail, whats)
   frag.append(contactActions)
@@ -2448,89 +2407,6 @@ function closeCommandPalette() {
   document.querySelector('[data-cmdk-backdrop]')?.classList.remove('open')
 }
 
-// ── Painel: Orientações (contexto do ciclo, não suporte geral) ───────────────
-
-function buildOrientationsPanel(cycle, childName) {
-  const panel = el('section', 'panel')
-  panel.dataset.panel = 'orientations'
-  panel.hidden = true
-
-  const cols = el('div', 'cols')
-  const left = el('div', 'stack')
-
-  const planCard = el('div', 'card card--accent')
-  planCard.append(simpleHead('Última orientação da equipe'))
-  const planBody = el('div', 'card-b')
-  planBody.append(el('p', 'card-copy', cycle.main_goal
-    ? `Meta definida para o ciclo: ${cycle.main_goal}`
-    : 'A equipe ainda não registrou uma orientação específica para este ciclo.'))
-  if (cycle.current_plan) {
-    const stepP = el('p', 'card-copy', `Etapa atual: ${cycle.current_plan}`)
-    stepP.style.marginTop = '8px'
-    planBody.append(stepP)
-  }
-  planCard.append(planBody)
-  left.append(planCard)
-
-  const adjustCard = el('div', 'card')
-  adjustCard.append(simpleHead('Ajustes solicitados'))
-  const adjustBody = el('div', 'card-b')
-  adjustBody.append(el('p', 'card-copy', 'Nenhum ajuste pendente. Quando a equipe responder a uma solicitação sua sobre este ciclo, a resposta aparece aqui.'))
-  adjustCard.append(adjustBody)
-  left.append(adjustCard)
-
-  const notesCard = el('div', 'card')
-  notesCard.append(simpleHead('Observações internas liberadas ao tutor'))
-  const notesBody = el('div', 'card-b')
-  notesBody.append(el('p', 'card-copy', 'Sem observações adicionais da equipe por enquanto.'))
-  notesCard.append(notesBody)
-  left.append(notesCard)
-
-  const right = el('div', 'stack')
-
-  const historyCard = el('div', 'card')
-  historyCard.append(simpleHead('Histórico de decisões do ciclo'))
-  const historyBody = el('div', 'card-b')
-  const feed = el('div', 'feed')
-  const items = []
-  if (cycle.main_goal) {
-    items.push({
-      tone: 'team',
-      icon: `<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
-      html: '<b>Equipe Cognita</b> definiu o plano do ciclo',
-      sub: `Objetivo: ${cycle.main_goal}`,
-      time: formatDate(cycle.start_date) ?? '',
-    })
-  }
-  items.push({
-    tone: 'team',
-    icon: `<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>`,
-    html: `<b>Ciclo</b> iniciado com ${childName}`,
-    sub: 'Acompanhamento de 6 meses',
-    time: formatDate(cycle.start_date) ?? '',
-  })
-  renderFeedItems(feed, items)
-  historyBody.append(feed)
-  historyCard.append(historyBody)
-  right.append(historyCard)
-
-  const ctaCard = el('div', 'card card--warm')
-  ctaCard.append(simpleHead('Precisa falar com a equipe?'))
-  const ctaBody = el('div', 'card-b')
-  ctaBody.append(el('p', 'card-copy', `Dúvidas sobre atividade, ajustes no plano ou qualquer situação sensível com ${childName}.`))
-  const ctaBtn = el('button', 'btn btn-accent btn-sm', `Abrir solicitação sobre ${childName}`)
-  ctaBtn.type = 'button'
-  ctaBtn.style.marginTop = '12px'
-  ctaBtn.addEventListener('click', () => openSupportDrawer(childName))
-  ctaBody.append(ctaBtn)
-  ctaCard.append(ctaBody)
-  right.append(ctaCard)
-
-  cols.append(left, right)
-  panel.append(cols)
-  return panel
-}
-
 // ── Tela Início (home antes do record) ────────────────────────────────────────
 
 const HOME_SUMMARY = {
@@ -2662,7 +2538,7 @@ async function buildHomeView(state, cycle, openRecord) {
 
 // ── Record completo (estado com ciclo) ───────────────────────────────────────
 
-function renderRecordHeader(cycle, state, openForm, openActivities) {
+function renderRecordHeader(cycle, state) {
   const child = cycle.children ?? {}
   const name = child.name ?? 'Criança'
   const age = ageFrom(child.birth_date)
@@ -2692,27 +2568,10 @@ function renderRecordHeader(cycle, state, openForm, openActivities) {
   meta.append(statusChip)
   main.append(meta)
 
+  // Cabeçalho é só identidade e consulta — a ação dominante mora na mesa de
+  // trabalho do Resumo (docs/TELA-RESUMO-PAINEL-TUTOR.md §2.2). Sem "Registrar
+  // sessão"/"Preparar atividade" aqui: CTA repetido é ruído, não ênfase.
   const actions = el('div', 'rec-actions')
-  const REG_CONFIG = {
-    cycle_active: { enabled: true, text: 'Registrar sessão', action: openForm },
-    cycle_planned: { enabled: false, text: 'Ciclo não iniciado' },
-    cycle_paused: { enabled: false, text: 'Ciclo pausado' },
-    cycle_completed: { enabled: true, text: 'Ver histórico', action: () => switchTab('sessions') },
-  }
-  const cfg = REG_CONFIG[state] ?? REG_CONFIG.cycle_active
-  const regBtn = el('button', 'btn btn-accent')
-  regBtn.type = 'button'
-  regBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>`
-  regBtn.append(document.createTextNode(cfg.text))
-  regBtn.disabled = !cfg.enabled
-  if (cfg.action) regBtn.addEventListener('click', cfg.action)
-  actions.append(regBtn)
-
-  const prepareBtn = el('button', 'btn btn-ghost', 'Preparar atividade')
-  prepareBtn.type = 'button'
-  prepareBtn.addEventListener('click', openActivities)
-  actions.append(prepareBtn)
-
   const profileLink = el('a', 'btn btn-ghost', 'Ver perfil')
   profileLink.href = `perfil-crianca.html?id=${cycle.child_id ?? ''}`
   actions.append(profileLink)
@@ -2726,12 +2585,10 @@ function renderTabs(sessionCount, activitiesCount) {
   const tabs = el('div', 'tabs')
   tabs.setAttribute('role', 'tablist')
   ;[
-    { id: 'overview', label: 'Visão geral' },
+    { id: 'overview', label: 'Resumo' },
     { id: 'sessions', label: 'Sessões', badge: sessionCount },
-    { id: 'activities', label: 'Atividades preparadas', badge: activitiesCount },
-    { id: 'plan', label: 'Plano' },
-    { id: 'reports', label: 'Relatórios' },
-    { id: 'orientations', label: 'Orientações' },
+    { id: 'activities', label: 'Atividades', badge: activitiesCount },
+    { id: 'plan', label: 'Jornada' },
   ].forEach(({ id, label, badge }, i) => {
     const tab = el('button', `tab${i === 0 ? ' active' : ''}`)
     tab.type = 'button'; tab.dataset.tab = id; tab.setAttribute('role', 'tab')
@@ -2744,15 +2601,14 @@ function renderTabs(sessionCount, activitiesCount) {
 
 function renderRecord(state, cycle, initialTab) {
   const frag = document.createDocumentFragment()
-  const childName = firstName(cycle.children?.name)
 
   let sessionForm
   const refreshSessions = async () => {
     const rows = await sessionsPanel.loadTable()
     recentSessionsCache = rows
-    overviewPanel.renderFeed(rows)
     const badge = tabs.querySelector('[data-tab="sessions"] .badge')
     if (badge) badge.textContent = String(rows.length)
+    resumoPanel.reload?.()
   }
 
   const refreshActivities = async () => {
@@ -2770,27 +2626,18 @@ function renderRecord(state, cycle, initialTab) {
     }
   }
 
-  const openActivities = () => switchTab('activities')
-
   if (state === 'cycle_active') {
     sessionForm = renderSessionForm(cycle, refreshSessions)
   }
 
-  const useSuggestedActivity = (activity) => {
-    sessionForm?.fillSuggestedActivity?.(activity)
-    openForm()
-  }
-
-  const header = renderRecordHeader(cycle, state, openForm, openActivities)
+  const header = renderRecordHeader(cycle, state)
   const tabs = renderTabs(0, 0)
-  const overviewPanel = buildOverviewPanel(cycle, state, openForm, useSuggestedActivity)
+  const resumoPanel = buildResumoPanel(cycle, { openForm })
   const sessionsPanel = buildSessionsPanel(cycle, state, sessionForm)
   const activitiesPanel = buildActivitiesPanel(cycle, state, refreshActivities)
   const planPanel = buildPlanPanel(cycle, state)
-  const reportsPanel = buildReportsPanel(cycle)
-  const orientationsPanel = buildOrientationsPanel(cycle, childName)
 
-  frag.append(header, tabs, overviewPanel, sessionsPanel, activitiesPanel, planPanel, reportsPanel, orientationsPanel)
+  frag.append(header, tabs, resumoPanel, sessionsPanel, activitiesPanel, planPanel)
 
   queueMicrotask(() => {
     wireTabs()

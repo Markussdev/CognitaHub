@@ -271,6 +271,18 @@
     .feed-tx .sub { color: var(--muted); display: block; }
     .feed-time { font-size: .74rem; color: var(--muted); margin-left: auto; white-space: nowrap; flex-shrink: 0; }
 
+    /* Resumo — mesa de trabalho (docs/TELA-RESUMO-PAINEL-TUTOR.md) */
+    .resumo { display: grid; gap: var(--sp-4); }
+    .resumo-pulso { font-size: .82rem; color: var(--muted); font-feature-settings: "tnum"; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 0 2px; }
+    .resumo-pulso .sep { opacity: .45; }
+    .resumo-decisao .card-b { display: grid; gap: 10px; }
+    .resumo-decisao .decisao-ti { font-size: 1rem; font-weight: 700; line-height: 1.45; }
+    .resumo-decisao .decisao-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+    .resumo-contexto { margin-bottom: 10px; }
+    .resumo-link { font-size: .82rem; color: var(--brand); font-weight: 600; text-decoration: none; display: inline-block; }
+    .resumo-link:hover { text-decoration: underline; }
+    .resumo-meta { font-size: .82rem; color: var(--muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+
     /* Tabela leve (Sessões) */
     .tbl { width: 100%; border-collapse: collapse; font-size: .86rem; }
     .tbl th { text-align: left; font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 700; padding: 9px 12px; border-bottom: 1px solid var(--line); }
