@@ -14,7 +14,7 @@ import {
   getChildTrailModules, getChildTrailMissions, assignChildTrail, releaseChildModule,
   advanceChildTrailModule, reopenChildTrailMission,
 } from '../data/trilha-formal.js'
-import { createPairingCode } from '../data/pareamento.js'
+import { createPairingCode, listPairedDevices } from '../data/pareamento.js'
 import { derivarEstadoResumo, ESTADOS_RESUMO, moduloAtualDe } from './resumo-estado.js'
 
 const session = await requireRole('tutor')
@@ -1133,11 +1133,11 @@ function buildResumoPanel(cycle, { openForm }) {
           cta: { label: 'Preparar e liberar módulo', onClick: () => switchTab('plan') } }
       case E.JORNADA_CONCLUIDA:
         return { ti: `${nome} concluiu a jornada "${dados.trail?.trail_templates?.title || 'atual'}". 🎉 O histórico está guardado.`,
-          ds: 'Escolha a próxima trilha quando fizer sentido — nada se perde.',
+          ds: 'Escolha a próxima jornada quando fizer sentido — nada se perde.',
           cta: { label: 'Atribuir próxima jornada', onClick: () => switchTab('plan') },
           secondary: { label: 'Ver histórico', onClick: () => switchTab('sessions') } }
       case E.SEM_JORNADA:
-        return { ti: `${nome} ainda não tem uma jornada.`, ds: 'Escolha uma trilha da biblioteca para começar o acompanhamento.',
+        return { ti: `${nome} ainda não tem uma jornada.`, ds: 'Escolha uma jornada da biblioteca para começar o acompanhamento.',
           cta: { label: 'Atribuir jornada', onClick: () => switchTab('plan') } }
       case E.MISSAO_DISPONIVEL:
         return { ti: `Tudo preparado. ${nome} tem uma missão disponível no aparelho.`,
@@ -1422,7 +1422,7 @@ function renderChildActivityRow(row, callbacks) {
   const missaoStatus = row.child_trail_mission_id ? pickEmbedded(row.child_trail_missions)?.status : null
   const podeExecutar = !row.child_trail_mission_id || missaoStatus === 'disponivel'
   if (!podeExecutar) {
-    actionsWrap.append(el('span', 'trilha-blocked-pill', 'Bloqueada pela trilha'))
+    actionsWrap.append(el('span', 'trilha-blocked-pill', 'Bloqueada pela jornada'))
   } else {
     const link = el('a', 'btn btn-ghost btn-sm', 'Fazer com a criança')
     // return aponta direto pra aba Sessões: é lá que a execução recém-gravada
@@ -1963,9 +1963,15 @@ function buildPlanPanel(cycle, state) {
   // ato de atribuir jornada, é ação à parte sobre o aparelho da criança.
   const container = el('div', 'journey')
   const header = el('header', 'journey-head')
-  header.append(el('h3', 'journey-title', `Jornada de ${childFirst}`))
+  const headerText = el('div', 'journey-head-text')
+  headerText.append(el('h3', 'journey-title', `Jornada de ${childFirst}`))
   const headerSub = el('p', 'journey-sub')
-  header.append(headerSub)
+  headerText.append(headerSub)
+  const mascot = el('img', 'journey-mascot')
+  mascot.src = '../assets/trilha/mascote/planejar.webp'
+  mascot.alt = ''
+  mascot.hidden = true // só no estado vazio — dá identidade Cognita aos dois caminhos
+  header.append(headerText, mascot)
   const body = el('div', 'journey-body')
   const deviceCard = renderDeviceCard()
   container.append(header, body, deviceCard)
@@ -1976,7 +1982,17 @@ function buildPlanPanel(cycle, state) {
     const row = el('div', 'journey-device-row')
     const info = el('div', 'journey-device-info')
     info.append(el('p', 'journey-device-label', 'Dispositivo da criança'))
-    info.append(el('p', 'journey-device-status', 'Nenhum dispositivo conectado'))
+    const statusEl = el('p', 'journey-device-status', 'Verificando dispositivo…')
+    info.append(statusEl)
+    // Status REAL, não fixo: a criança pode já ter um aparelho pareado.
+    listPairedDevices(cycle.child_id).then(({ data, error }) => {
+      if (error) { statusEl.textContent = 'Conecte ou gerencie o dispositivo infantil'; return }
+      const ativos = (data ?? []).filter((d) => !d.revoked_at)
+      if (!ativos.length) { statusEl.textContent = 'Nenhum dispositivo conectado'; return }
+      statusEl.textContent = ativos.length > 1
+        ? `${ativos.length} dispositivos conectados`
+        : `${ativos[0].device_name || 'Dispositivo'} conectado`
+    })
     const pairBtn = el('button', 'btn btn-ghost btn-sm', 'Conectar dispositivo')
     pairBtn.type = 'button'
     row.append(info, pairBtn)
@@ -2035,6 +2051,7 @@ function buildPlanPanel(cycle, state) {
   }
 
   async function renderAssign() {
+    mascot.hidden = false
     headerSub.textContent = 'Escolha um percurso recomendado ou monte um plano personalizado.'
     body.replaceChildren(el('p', 'card-copy journey-loading', 'Carregando percursos…'))
 
@@ -2046,7 +2063,16 @@ function buildPlanPanel(cycle, state) {
 
     const choices = el('div', 'journey-choices')
 
-    if (!templates?.length) {
+    // Renderiza TODOS os percursos publicados (não só o primeiro) — quando
+    // existir mais de uma jornada oficial, cada uma vira um card recomendado.
+    const comModulos = await Promise.all(
+      (templates ?? []).map((t) =>
+        getTrailTemplateWithModules(t.id).then((r) => ({ template: t, modules: r.data ?? [] }))
+      )
+    )
+    const renderaveis = comModulos.filter((x) => x.modules.length)
+
+    if (!renderaveis.length) {
       const none = el('div', 'card journey-choice')
       none.append(el('h4', 'journey-choice-title', 'Nenhum percurso recomendado ainda'))
       none.append(el('p', 'journey-choice-desc', 'A equipe Cognita ainda não publicou um percurso para começar.'))
@@ -2055,14 +2081,8 @@ function buildPlanPanel(cycle, state) {
       return
     }
 
-    const template = templates[0]
-    const { data: modules, error: modulesError } = await getTrailTemplateWithModules(template.id)
-    if (modulesError || !modules?.length) {
-      body.replaceChildren(el('p', 'card-copy', 'Não foi possível carregar os módulos deste percurso.'))
-      return
-    }
-
-    choices.append(renderRecommendedJourneyCard(template, modules), renderCustomJourneyCard())
+    renderaveis.forEach(({ template, modules }) => choices.append(renderRecommendedJourneyCard(template, modules)))
+    choices.append(renderCustomJourneyCard())
     body.replaceChildren(choices)
   }
 
@@ -2087,7 +2107,7 @@ function buildPlanPanel(cycle, state) {
       const opt = el('label', 'journey-radio')
       const input = document.createElement('input')
       input.type = 'radio'
-      input.name = 'journey-start-module'
+      input.name = `journey-start-module-${template.id}`
       input.value = m.id
       if (i === 0) input.checked = true
       input.addEventListener('change', () => { selectedModuleId = m.id })
@@ -2156,6 +2176,7 @@ function buildPlanPanel(cycle, state) {
     const totalModulos = templateModules?.length || modules.length
 
     body.replaceChildren()
+    mascot.hidden = true
     headerSub.textContent = childTrail.trail_templates?.title || 'Jornada'
 
     if (childTrail.status === 'concluida') {
@@ -2368,7 +2389,7 @@ function buildPlanPanel(cycle, state) {
     body.replaceChildren(el('p', 'card-copy', 'Carregando…'))
     const { data: childTrail, error } = await getLatestChildTrail(cycle.child_id, cycle.id)
     if (error) {
-      body.replaceChildren(el('p', 'card-copy', 'Não foi possível carregar a trilha agora.'))
+      body.replaceChildren(el('p', 'card-copy', 'Não foi possível carregar a jornada agora.'))
       return
     }
     if (!childTrail) {

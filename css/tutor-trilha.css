@@ -183,9 +183,11 @@
 
 [data-panel="plan"] .journey { display: grid; gap: var(--sp-5); }
 
-[data-panel="plan"] .journey-head { display: grid; gap: 4px; }
+[data-panel="plan"] .journey-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); }
+[data-panel="plan"] .journey-head-text { display: grid; gap: 4px; min-width: 0; }
 [data-panel="plan"] .journey-title { margin: 0; font-size: 1.3rem; color: var(--ink); }
 [data-panel="plan"] .journey-sub { margin: 0; font-size: 0.88rem; color: var(--muted); }
+[data-panel="plan"] .journey-mascot { width: 72px; height: auto; flex-shrink: 0; filter: drop-shadow(0 4px 10px rgba(20, 17, 98, 0.25)); }
 
 [data-panel="plan"] .journey-body { display: grid; gap: var(--sp-4); }
 [data-panel="plan"] .journey-loading { color: var(--muted); }

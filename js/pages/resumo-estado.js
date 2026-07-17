@@ -65,11 +65,6 @@ export function derivarEstadoResumo({
     return { estado: E.MODULO_BLOQUEADO, dados: { modulo } }
   }
 
-  // 4. Jornada concluída (trilha 'concluida' e nenhuma 'ativa') → encerrar
-  //    ou atribuir a próxima.
-  //    ORDEM CRÍTICA (§3.2 nota): esta checagem vem ANTES de "sem jornada".
-  //    Trilha concluída também é "nenhuma trilha ativa" — se invertesse, o
-  //    estado de conclusão nunca dispararia e o tutor perderia o fechamento.
   if (trail?.status === 'concluida') {
     return { estado: E.JORNADA_CONCLUIDA, dados: { trail } }
   }
