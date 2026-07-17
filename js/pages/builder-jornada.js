@@ -346,7 +346,7 @@ async function onSave(btn) {
       const { data: struct } = await getPrivateJourneyStructure(id)
       state.updatedAt = struct?.updated_at ?? null
     }
-    const { data: newUpdated, error } = await saveJourneyDraft({ templateId: state.templateId, modules, expectedUpdatedAt: state.updatedAt })
+    const { data: newUpdated, error } = await saveJourneyDraft({ templateId: state.templateId, title: state.title.trim(), objective: state.objective.trim(), modules, expectedUpdatedAt: state.updatedAt })
     if (error) {
       setMsg(error.message || 'Não foi possível salvar agora.', 'err')
       return
@@ -371,7 +371,7 @@ async function onPublish(btn) {
       const { data: struct } = await getPrivateJourneyStructure(id)
       state.updatedAt = struct?.updated_at ?? null
     }
-    const { data: newUpdated, error: saveErr } = await saveJourneyDraft({ templateId: state.templateId, modules, expectedUpdatedAt: state.updatedAt })
+    const { data: newUpdated, error: saveErr } = await saveJourneyDraft({ templateId: state.templateId, title: state.title.trim(), objective: state.objective.trim(), modules, expectedUpdatedAt: state.updatedAt })
     if (saveErr) { setMsg(saveErr.message || 'Não foi possível salvar antes de publicar.', 'err'); return }
     state.updatedAt = newUpdated
 

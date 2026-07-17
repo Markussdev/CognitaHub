@@ -211,7 +211,13 @@
 }
 [data-panel="plan"] .journey-choice { padding: var(--sp-4); display: grid; gap: var(--sp-2); align-content: start; }
 [data-panel="plan"] .journey-choice--recommended { border: 1px solid var(--brand); }
-[data-panel="plan"] .journey-choice--custom { background: var(--canvas); }
+[data-panel="plan"] .journey-choice--custom {
+  grid-column: 1 / -1;
+  background: var(--canvas);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); flex-wrap: wrap;
+}
+[data-panel="plan"] .journey-custom-text { display: grid; gap: 4px; }
+[data-panel="plan"] .journey-choice--custom .journey-cta { margin-top: 0; }
 [data-panel="plan"] .journey-choice[aria-disabled="true"] { opacity: 0.7; }
 
 [data-panel="plan"] .journey-badge {

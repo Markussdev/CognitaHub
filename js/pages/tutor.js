@@ -532,37 +532,11 @@ function renderNoRecord(state, retry) {
   return wrap
 }
 
-// ── Escalas do formulário de sessão ──────────────────────────────────────────
-
-function makeScaleGroup(options) {
-  const group = el('div', 'scale')
-  group.setAttribute('role', 'radiogroup')
-  let value = ''
-  const buttons = []
-
-  options.forEach(({ label, val, tone }) => {
-    const cls = ['scale-btn', tone ? `scale-btn--${tone}` : ''].filter(Boolean).join(' ')
-    const btn = el('button', cls, label)
-    btn.type = 'button'
-    btn.addEventListener('click', () => {
-      buttons.forEach((b) => b.classList.remove('selected'))
-      btn.classList.add('selected')
-      value = val
-    })
-    buttons.push(btn)
-    group.append(btn)
-  })
-
-  return {
-    group,
-    getValue: () => value,
-    reset: () => { value = ''; buttons.forEach((b) => b.classList.remove('selected')) },
-  }
-}
+// ── Controles de formulário (choice buttons, slider, pills) ──────────────────
 
 const LOCK_SVG = '<svg class="scale-btn-lock" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" stroke-width="2"/></svg>'
 
-// Igual a makeScaleGroup, mas com suporte a opção desabilitada (cadeado +
+// Choice buttons com suporte a opção desabilitada (cadeado +
 // "em breve") — precisa disso pros moldes/temas que ainda não existem
 // aparecerem no form sem serem clicáveis. selectedId escolhe o item ativo
 // de largada.
@@ -664,383 +638,572 @@ function makePillSelector({ label, min, max, value, onChange }) {
   return { field, getValue: () => current, setValue }
 }
 
-// ── Formulário de sessão (3 níveis) ──────────────────────────────────────────
+// ── Registro de sessão — assistente em 3 passos ──────────────────────────────
+// A aba Sessões aterrissa numa linha do tempo (buildSessionsPanel); este
+// assistente só aparece ao tocar "Registrar sessão". Passo 1: o que aconteceu
+// (execuções do Modo Criança e/ou registro manual). Passo 2: como foi —
+// perguntas humanas, uma abaixo da outra. Passo 3: a devolutiva pra família,
+// COMPOSTA deterministicamente a partir das respostas (sem IA) — o tutor
+// revisa e personaliza em vez de escrever tudo duas vezes. O que persiste não
+// mudou (createSessionWithExecucoes). Contrato com o resto da tela: .open
+// (get/set), .openManual(), .fillSuggestedActivity(), .onPendingLoaded e os
+// eventos 'sw-toggle'/'sw-saved' que a linha do tempo escuta.
+// TODO(wiring:sessions): persistir participação/apoio/resultado quando o
+// schema de sessions ganhar as colunas (engagement/difficulty/result) — hoje
+// essas respostas alimentam só a composição da devolutiva.
+
+const PARTICIPACAO_OPTS = [
+  { val: 'bem', label: 'Participou bem' },
+  { val: 'oscilou', label: 'Oscilou durante a atividade' },
+  { val: 'incentivo', label: 'Precisou de incentivo' },
+  { val: 'nao_quis', label: 'Não quis participar' },
+]
+const APOIO_OPTS = [
+  { val: 'autonomia', label: 'Fez com autonomia' },
+  { val: 'pouco', label: 'Pouco apoio' },
+  { val: 'frequente', label: 'Apoio frequente' },
+  { val: 'nao_concluiu', label: 'Não foi possível concluir' },
+]
+const RESULTADO_OPTS = [
+  { val: 'avancou', label: 'Avançou' },
+  { val: 'manteve', label: 'Manteve o que já sabia' },
+  { val: 'dificuldade', label: 'Teve dificuldade' },
+  { val: 'retomar', label: 'Ficou para retomar' },
+]
+
+function fraseAtividades(titulos) {
+  if (!titulos.length) return 'da sessão de hoje'
+  if (titulos.length === 1) return `da atividade "${titulos[0]}"`
+  if (titulos.length === 2) return `das atividades "${titulos[0]}" e "${titulos[1]}"`
+  return `das ${titulos.length} atividades de hoje`
+}
+
+// Devolutiva determinística: 2-3 frases curtas montadas a partir das
+// respostas do passo 2. O próximo passo NÃO entra aqui — a família já o vê
+// como campo próprio (next_step) no painel dela; repetir duplicaria.
+function composeFamilySummary({ nome, atividadeFrase, participacao, apoio, resultado }) {
+  const primeira = {
+    bem: `${nome} participou bem ${atividadeFrase}.`,
+    oscilou: `${nome} participou ${atividadeFrase}, alternando momentos de mais e menos envolvimento.`,
+    incentivo: `${nome} precisou de incentivo para participar ${atividadeFrase}.`,
+    nao_quis: `${nome} não quis participar ${atividadeFrase} desta vez — tudo bem, isso também faz parte do processo.`,
+  }[participacao] || `${nome} participou ${atividadeFrase}.`
+
+  const segunda = participacao === 'nao_quis' ? '' : ({
+    autonomia: 'Fez as propostas com autonomia.',
+    pouco: 'Precisou de pouco apoio pelo caminho.',
+    frequente: 'Contou com apoio frequente do tutor.',
+    nao_concluiu: 'Não foi possível concluir a proposta desta vez.',
+  }[apoio] || '')
+
+  const terceira = {
+    avancou: 'Avançou no que estava sendo trabalhado.',
+    manteve: 'Manteve o que já vinha construindo.',
+    dificuldade: 'Encontrou dificuldade em alguns pontos, que vamos retomar com calma.',
+    retomar: 'A atividade ficou para ser retomada no próximo encontro.',
+  }[resultado] || ''
+
+  return [primeira, segunda, terceira].filter(Boolean).join(' ')
+}
 
 function renderSessionForm(cycle, onSaved) {
-  const details = el('details', 'card form')
+  const wrap = el('section', 'sw')
+  wrap.hidden = true
   const childName = firstName(cycle.children?.name)
-  let _selectedActivityId = null
-  let _allPending = []
 
-  const summary = document.createElement('summary')
-  summary.append(document.createTextNode('Registro guiado — sessão desta semana'))
-  const chevron = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-  chevron.setAttribute('viewBox', '0 0 24 24')
-  chevron.setAttribute('aria-hidden', 'true')
-  chevron.innerHTML = '<path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
-  summary.append(chevron)
-  details.append(summary)
+  const blank = () => ({
+    step: 1,
+    selected: new Set(), // ids de atividade_execucao incluídas na sessão
+    manualOpen: false,
+    manualTitulo: '',
+    manualFoco: '',
+    date: todayISO(),
+    duration: '',
+    durationTouched: false,
+    participacao: '',
+    apoio: '',
+    resultado: '',
+    observacao: '',
+    proximoPasso: '',
+    familyText: '',
+    familyEdited: false,
+    reviewed: false,
+    activityId: null, // vindo da Biblioteca (?activity=)
+  })
+  let s = blank()
+  let pending = []
+  let isOpen = false
+  let sideBox = null
+  let navForward = null
 
-  const body = el('div', 'form-body')
+  const tituloDe = (e) => {
+    const molde = MOLDES_REGISTRO[e.molde]
+    const temaLabel = molde?.temas.find((t) => t.id === e.tema)?.label || e.tema
+    const atividade = pickEmbedded(e.child_activities)
+    return atividade?.titulo || molde?.tituloPadrao?.(temaLabel) || `${molde?.label || e.molde} · ${temaLabel}`
+  }
 
-  body.append(el('div', 'lvl', '1 · Dados estruturados — aparecem para todos'))
+  // Fatos derivados da seleção — título/foco/duração nascem das execuções
+  // marcadas (+ o registro manual, se houver); o tutor só corrige se precisar.
+  function facts() {
+    const execs = pending.filter((e) => s.selected.has(e.id))
+    const titulos = execs.map(tituloDe)
+    if (s.manualTitulo.trim()) titulos.push(s.manualTitulo.trim())
+    const focos = [...new Set(execs.map((e) => MOLDES_REGISTRO[e.molde]?.label || e.molde))]
+    if (s.manualFoco.trim()) focos.push(s.manualFoco.trim())
+    const autoMin = Math.round(execs.reduce((sum, e) => sum + (e.tempo_aproximado_segundos || 0), 0) / 60)
+    return {
+      titulos,
+      activityTitle: titulos.length === 1 ? titulos[0] : `${titulos.length} atividades: ${titulos.join(', ')}`,
+      focusArea: focos.join(', '),
+      autoMin,
+    }
+  }
 
-  // Execuções do Modo Criança ainda sem registro (session_id nulo) — o
-  // tutor escolhe uma em vez de digitar de novo o que a casca já gravou
-  // sozinha em atividade_execucao (ver docs/supabase-fase-4c-registro-sessao.sql).
-  const pendingWrap = el('div', 'pending-execucoes')
-  pendingWrap.hidden = true
-  body.append(pendingWrap)
+  function syncDuration() {
+    if (s.durationTouched) return
+    const { autoMin } = facts()
+    s.duration = autoMin > 0 ? String(autoMin) : ''
+  }
 
-  // Cada item mostra o suficiente pra diferenciar execuções que, no molde
-  // contar/dinossauros de hoje, sempre têm a mesma cara (nível 1, mesmo
-  // tema) — sem isso o tutor não sabe se são duas execuções de verdade ou
-  // uma tela duplicada (ver docs/V2-DIRECAO.md §8, higiene de dados).
-  function renderPendingExecucaoItem(execucao, checked) {
-    const item = el('div', 'pending-execucao-item')
-    const molde = MOLDES_REGISTRO[execucao.molde]
-    const temaLabel = molde?.temas.find((t) => t.id === execucao.tema)?.label || execucao.tema
-    const atividade = pickEmbedded(execucao.child_activities)
-    const titulo = atividade?.titulo || molde?.tituloPadrao?.(temaLabel) || `${molde?.label || execucao.molde} · ${temaLabel}`
+  // Pré-marca as execuções do dia mais recente (uma "experiência").
+  function preselectCluster() {
+    s.selected.clear()
+    if (pending.length) {
+      const topDay = new Date(pending[0].created_at).toDateString()
+      pending.forEach((e) => { if (new Date(e.created_at).toDateString() === topDay) s.selected.add(e.id) })
+    }
+    syncDuration()
+  }
 
+  function setOpen(open, { manual = false } = {}) {
+    if (open && isOpen) return // já aberto: não reseta o que o tutor digitou
+    isOpen = open
+    wrap.hidden = !open
+    if (open) {
+      s = blank()
+      preselectCluster()
+      s.manualOpen = manual || !pending.length
+      render()
+    }
+    wrap.dispatchEvent(new CustomEvent('sw-toggle', { detail: { open } }))
+  }
+  Object.defineProperty(wrap, 'open', { get: () => isOpen, set: (v) => setOpen(!!v) })
+  wrap.openManual = () => setOpen(true, { manual: true })
+
+  wrap.onPendingLoaded = null
+  async function loadPending() {
+    const { data, error } = await listPendingExecucoes(cycle.child_id, cycle.id)
+    pending = error ? [] : (data ?? [])
+    wrap.onPendingLoaded?.(pending, !!error)
+  }
+  loadPending()
+  wrap.reloadPending = loadPending
+
+  wrap.fillSuggestedActivity = (activity) => {
+    setOpen(true, { manual: true })
+    s.manualTitulo = activity?.title || ''
+    s.manualFoco = activity?.focus || ''
+    s.proximoPasso = activity?.nextStep || ''
+    s.activityId = activity?.id || null
+    render()
+  }
+
+  // ── render por passo ──────────────────────────────────────────────────
+
+  const STEP_LABELS = ['O que aconteceu', 'Como foi', 'Família']
+
+  function render() {
+    wrap.replaceChildren()
+    const grid = el('div', 'sw-grid')
+    const main = el('div', 'card sw-main')
+
+    const head = el('div', 'sw-head')
+    const headTx = el('div')
+    headTx.append(el('h3', 'sw-title', `Registrar sessão de ${childName}`))
+    headTx.append(el('p', 'sw-sub', `Passo ${s.step} de 3`))
+    head.append(headTx)
+    const cancel = el('button', 'btn btn-ghost btn-sm', 'Cancelar')
+    cancel.type = 'button'
+    cancel.addEventListener('click', () => setOpen(false))
+    head.append(cancel)
+
+    const steps = el('div', 'sw-steps')
+    STEP_LABELS.forEach((lb, i) => {
+      const n = i + 1
+      const item = el('span', `sw-step${n === s.step ? ' is-current' : n < s.step ? ' is-done' : ''}`)
+      item.append(el('span', 'sw-step-dot', n < s.step ? '✓' : String(n)))
+      item.append(document.createTextNode(lb))
+      steps.append(item)
+    })
+
+    main.append(head, steps)
+    if (s.step === 1) main.append(renderStep1())
+    else if (s.step === 2) main.append(renderStep2())
+    else main.append(renderStep3())
+    main.append(renderNav())
+
+    sideBox = renderSide()
+    grid.append(main, sideBox)
+    wrap.append(grid)
+  }
+
+  function updateSide() {
+    if (!sideBox) return
+    const nb = renderSide()
+    sideBox.replaceWith(nb)
+    sideBox = nb
+  }
+
+  function canContinue() {
+    if (s.step === 1) return facts().titulos.length > 0
+    if (s.step === 2) return !!(s.participacao && s.apoio && s.resultado)
+    return !!(s.familyText.trim() && s.reviewed)
+  }
+  function updateNav() { if (navForward) navForward.disabled = !canContinue() }
+
+  function goStep(n) {
+    s.step = n
+    render()
+    requestAnimationFrame(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
+
+  function textField(labelText, value, onInput, placeholder) {
+    const f = el('div', 'field')
+    f.append(el('label', null, labelText))
+    const input = document.createElement('input')
+    input.type = 'text'
+    input.value = value
+    input.placeholder = placeholder || ''
+    input.addEventListener('input', () => onInput(input.value))
+    f.append(input)
+    return f
+  }
+
+  // ── Passo 1: o que aconteceu ──────────────────────────────────────────
+
+  function renderExecCard(e) {
+    const selected = s.selected.has(e.id)
+    const item = el('div', `pending-execucao-item sw-exec${selected ? ' is-selected' : ''}`)
+    item.setAttribute('role', 'checkbox')
+    item.setAttribute('aria-checked', String(selected))
+    item.tabIndex = 0
+
+    const molde = MOLDES_REGISTRO[e.molde]
     const detalhes = [
-      `Nível ${execucao.nivel_final ?? '—'}`,
-      atividade?.config?.quantidade ? `${atividade.config.quantidade} itens` : null,
-      atividade?.config?.rodadas ? `${atividade.config.rodadas} rodada${atividade.config.rodadas === 1 ? '' : 's'}` : null,
+      `Nível ${e.nivel_final ?? '—'}`,
+      COMO_ENCERROU_LABEL[e.como_encerrou],
+      formatDuracaoAprox(e.tempo_aproximado_segundos),
+      e.precisou_mais_facil ? 'precisou de mais fácil' : null,
     ].filter(Boolean).join(' · ')
+    const quando = formatExecucaoQuando(e.created_at)
 
-    const quando = formatExecucaoQuando(execucao.created_at)
-    const rodape = [
-      quando ? `Feita ${quando}` : null,
-      COMO_ENCERROU_LABEL[execucao.como_encerrou],
-      formatDuracaoAprox(execucao.tempo_aproximado_segundos),
-      execucao.precisou_mais_facil ? 'precisou de mais fácil' : null,
-    ].filter(Boolean).join(' · ')
-
-    // Checkbox em vez de "Usar esta execução" (singular): UMA sessão pode
-    // cobrir VÁRIAS execuções — a criança faz várias missões numa experiência
-    // e o tutor escreve uma devolutiva só. Ver docs/supabase-fase-14-*.sql.
-    const check = el('label', 'pending-execucao-check')
-    const cb = document.createElement('input')
-    cb.type = 'checkbox'; cb.checked = checked; cb.dataset.execId = execucao.id
-    cb.addEventListener('change', updateSelectionUI)
-    check.append(cb, document.createTextNode('Incluir nesta sessão'))
-
+    const stateLine = el('p', 'sw-exec-state', selected ? '✓ Incluída na sessão' : 'Tocar para incluir')
     item.append(
-      el('strong', null, titulo),
-      el('p', 'pending-execucao-detalhes', detalhes),
-      el('p', 'pending-execucao-rodape', rodape),
-      check
+      el('strong', null, tituloDe(e)),
+      el('p', 'pending-execucao-detalhes', [quando ? `Feita ${quando}` : null, detalhes].filter(Boolean).join(' · ')),
+      stateLine
     )
+
+    const toggle = () => {
+      const on = !s.selected.has(e.id)
+      if (on) s.selected.add(e.id); else s.selected.delete(e.id)
+      item.classList.toggle('is-selected', on)
+      item.setAttribute('aria-checked', String(on))
+      stateLine.textContent = on ? '✓ Incluída na sessão' : 'Tocar para incluir'
+      syncDuration()
+      updateSide()
+      updateNav()
+    }
+    item.addEventListener('click', toggle)
+    item.addEventListener('keydown', (ev) => {
+      if (ev.key === ' ' || ev.key === 'Enter') { ev.preventDefault(); toggle() }
+    })
     return item
   }
 
-  function collectCheckedExecucoes() {
-    const ids = new Set([...pendingWrap.querySelectorAll('input[data-exec-id]:checked')].map((cb) => cb.dataset.execId))
-    return _allPending.filter((e) => ids.has(e.id))
-  }
+  function renderStep1() {
+    const box = el('div', 'sw-step2')
 
-  // Preenche o Nível 1 a partir do conjunto marcado. Com 1 execução, igual ao
-  // antigo fillFromExecucao; com várias, título/foco/duração agregados.
-  function fillFromExecucoes(execucoes) {
-    if (!execucoes.length) return
-    const tituloDe = (e) => {
-      const molde = MOLDES_REGISTRO[e.molde]
-      const temaLabel = molde?.temas.find((t) => t.id === e.tema)?.label || e.tema
-      const atividade = pickEmbedded(e.child_activities)
-      return atividade?.titulo || molde?.tituloPadrao?.(temaLabel) || `${molde?.label || e.molde} · ${temaLabel}`
-    }
-    const titulos = execucoes.map(tituloDe)
-    actInput.value = execucoes.length === 1 ? titulos[0] : `${execucoes.length} atividades: ${titulos.join(', ')}`
-    focusInput.value = [...new Set(execucoes.map((e) => MOLDES_REGISTRO[e.molde]?.label || e.molde))].join(', ')
-    const totalSeg = execucoes.reduce((s, e) => s + (e.tempo_aproximado_segundos || 0), 0)
-    if (totalSeg) durInput.value = String(Math.round(totalSeg / 60))
-    _selectedActivityId = null
-    details.open = true
-    updateFamilyPreview()
-  }
-
-  const applyBtn = el('button', 'btn btn-ghost btn-sm', 'Preencher com a seleção')
-  applyBtn.type = 'button'
-  applyBtn.addEventListener('click', () => fillFromExecucoes(collectCheckedExecucoes()))
-
-  function updateSelectionUI() {
-    const n = collectCheckedExecucoes().length
-    applyBtn.textContent = n > 0 ? `Preencher com a seleção (${n})` : 'Preencher com a seleção'
-    applyBtn.disabled = n === 0
-  }
-
-  // Fica sempre visível (mesmo vazio) — estado vazio é direção, não
-  // decoração (CLAUDE.md §11): o tutor precisa saber que essa área existe
-  // antes mesmo da primeira execução aparecer nela.
-  async function loadPendingExecucoes() {
-    pendingWrap.replaceChildren()
-    pendingWrap.hidden = false
-    const { data, error } = await listPendingExecucoes(cycle.child_id, cycle.id)
-
-    if (error) {
-      pendingWrap.append(el('p', 'execucoes-msg', 'Não conseguimos carregar as execuções pendentes agora.'))
-      return
+    if (pending.length) {
+      const b = el('div', 'sw-block')
+      b.append(el('h4', 'sw-q', `O que ${childName} fez no aparelho?`))
+      b.append(el('p', 'sw-hint', 'Toque para incluir ou tirar da sessão — as do dia mais recente já vêm marcadas.'))
+      pending.forEach((e) => b.append(renderExecCard(e)))
+      box.append(b)
+      box.append(el('div', 'sw-divider', 'ou'))
     }
 
-    pendingWrap.append(el('p', 'pending-execucoes-label', 'Execuções do Modo Criança aguardando registro'))
-    _allPending = data ?? []
-    if (!_allPending.length) {
-      pendingWrap.append(el('p', 'execucoes-msg', 'Nenhuma execução pendente. Quando a criança concluir uma atividade, ela aparecerá aqui para virar registro de sessão.'))
-      return
-    }
+    const manual = document.createElement('details')
+    manual.className = 'sw-collapsible'
+    manual.open = s.manualOpen || !pending.length
+    manual.addEventListener('toggle', () => { s.manualOpen = manual.open })
+    const sum = document.createElement('summary')
+    sum.textContent = pending.length ? 'Registrar algo feito fora do Modo Criança' : 'O que foi feito na sessão?'
+    manual.append(sum)
+    const mBody = el('div', 'sw-manual-body')
+    mBody.append(textField('Atividade realizada', s.manualTitulo, (v) => { s.manualTitulo = v; syncDuration(); updateSide(); updateNav() }, 'Ex.: Soma com apoio visual — blocos de cores'))
+    mBody.append(textField('Foco trabalhado', s.manualFoco, (v) => { s.manualFoco = v; updateSide() }, 'Ex.: Contagem e correspondência 1-a-1'))
+    manual.append(mBody)
+    box.append(manual)
 
-    // Pré-marca as execuções do dia mais recente (uma "experiência"); o tutor
-    // ajusta. A lista já vem desc por created_at (listPendingExecucoes).
-    const topDay = new Date(_allPending[0].created_at).toDateString()
-    pendingWrap.append(el('p', 'execucoes-msg', 'Marque as atividades desta sessão — várias podem virar um registro só. As do dia mais recente já vêm marcadas.'))
-    _allPending.forEach((e) => {
-      const doDia = new Date(e.created_at).toDateString() === topDay
-      pendingWrap.append(renderPendingExecucaoItem(e, doDia))
+    const when = el('div', 'sw-block')
+    const row = el('div', 'sw-compact-row')
+    const dField = el('div', 'field')
+    dField.append(el('label', null, 'Data'))
+    const dInput = document.createElement('input')
+    dInput.type = 'date'
+    dInput.value = s.date
+    dInput.addEventListener('input', () => { s.date = dInput.value; updateSide() })
+    dField.append(dInput)
+    const duField = el('div', 'field')
+    duField.append(el('label', null, 'Duração (min)'))
+    const duInput = document.createElement('input')
+    duInput.type = 'number'
+    duInput.min = '0'
+    duInput.value = s.duration
+    duInput.placeholder = 'auto'
+    duInput.addEventListener('input', () => { s.duration = duInput.value; s.durationTouched = true; updateSide() })
+    duField.append(duInput)
+    row.append(dField, duField)
+    when.append(row)
+    when.append(el('p', 'sw-hint', 'Preenchidas pelas atividades marcadas — ajuste se precisar.'))
+    box.append(when)
+
+    return box
+  }
+
+  // ── Passo 2: como foi ─────────────────────────────────────────────────
+
+  function questionGroup(titulo, opts, get, set) {
+    const b = el('div', 'sw-block')
+    b.append(el('h4', 'sw-q', titulo))
+    const list = el('div', 'sw-options')
+    list.setAttribute('role', 'radiogroup')
+    list.setAttribute('aria-label', titulo)
+    const btns = []
+    opts.forEach(({ val, label }) => {
+      const on = get() === val
+      const btn = el('button', `sw-option${on ? ' is-selected' : ''}`)
+      btn.type = 'button'
+      btn.setAttribute('role', 'radio')
+      btn.setAttribute('aria-checked', String(on))
+      btn.append(el('span', 'sw-option-dot'), document.createTextNode(label))
+      btn.addEventListener('click', () => {
+        set(val)
+        btns.forEach((x) => { x.classList.remove('is-selected'); x.setAttribute('aria-checked', 'false') })
+        btn.classList.add('is-selected')
+        btn.setAttribute('aria-checked', 'true')
+        updateNav()
+      })
+      btns.push(btn)
+      list.append(btn)
     })
-    pendingWrap.append(applyBtn)
-    updateSelectionUI()
-    fillFromExecucoes(collectCheckedExecucoes()) // auto-preenche com o cluster do dia
-  }
-  loadPendingExecucoes()
-
-  const row1 = el('div', 'row')
-  const dateField = el('div', 'field')
-  const dateLabel = document.createElement('label')
-  dateLabel.textContent = 'Data da sessão'
-  const dateInput = document.createElement('input')
-  dateInput.type = 'date'; dateInput.value = todayISO(); dateInput.required = true
-  dateField.append(dateLabel, dateInput)
-
-  const durField = el('div', 'field')
-  const durLabel = document.createElement('label')
-  durLabel.textContent = 'Duração (minutos)'
-  const durInput = document.createElement('input')
-  durInput.type = 'number'; durInput.min = '0'; durInput.placeholder = 'Ex.: 45'
-  durField.append(durLabel, durInput)
-
-  row1.append(dateField, durField)
-  body.append(row1)
-
-  const actField = el('div', 'field')
-  const actLabel = document.createElement('label')
-  actLabel.textContent = 'Atividade realizada *'
-  const actInput = document.createElement('input')
-  actInput.type = 'text'; actInput.required = true
-  actInput.placeholder = 'Ex.: Soma com apoio visual — blocos de cores'
-  actField.append(actLabel, actInput)
-  body.append(actField)
-
-  const focusField = el('div', 'field')
-  const focusLabel = document.createElement('label')
-  focusLabel.textContent = 'Foco trabalhado'
-  const focusInput = document.createElement('input')
-  focusInput.type = 'text'; focusInput.placeholder = 'Ex.: Contagem e correspondência 1-a-1'
-  focusField.append(focusLabel, focusInput)
-  body.append(focusField)
-
-  const scaleRow = el('div', 'row3')
-
-  const engField = el('div', 'field')
-  engField.append(el('label', null, 'Engajamento'))
-  const eng = makeScaleGroup([
-    { label: 'Baixo', val: '1', tone: 'bad' },
-    { label: 'Médio', val: '3', tone: 'warn' },
-    { label: 'Alto', val: '5', tone: 'ok' },
-    { label: 'Oscilou', val: '2', tone: '' },
-  ])
-  engField.append(eng.group)
-
-  const diffField = el('div', 'field')
-  diffField.append(el('label', null, 'Dificuldade percebida'))
-  const diff = makeScaleGroup([
-    { label: 'Baixa', val: '1', tone: 'ok' },
-    { label: 'Média', val: '3', tone: 'warn' },
-    { label: 'Alta', val: '5', tone: 'bad' },
-    { label: 'Não foi possível', val: '0', tone: '' },
-  ])
-  diffField.append(diff.group)
-
-  const resultField = el('div', 'field')
-  resultField.append(el('label', null, 'Resultado'))
-  const result = makeScaleGroup([
-    { label: 'Avançou', val: 'improved', tone: 'ok' },
-    { label: 'Manteve', val: 'stable', tone: '' },
-    { label: 'Teve dificuldade', val: 'struggled', tone: 'bad' },
-    { label: 'Não foi possível', val: 'not_completed', tone: '' },
-  ])
-  resultField.append(result.group)
-
-  scaleRow.append(engField, diffField, resultField)
-  body.append(scaleRow)
-
-  const nextField = el('div', 'field')
-  const nextLabel = document.createElement('label')
-  nextLabel.textContent = 'Próximo passo'
-  const nextInput = document.createElement('textarea')
-  nextInput.placeholder = 'O que trabalhar na próxima sessão?'
-  nextField.append(nextLabel, nextInput)
-  body.append(nextField)
-
-  body.append(el('div', 'lvl', '2 · Resumo para a família — aparece na hora'))
-
-  const guide = el('div', 'guide')
-  guide.innerHTML = `<strong>O que você escrever aqui aparece para o responsável.</strong>
-    Descreva comportamentos observáveis — o que funcionou, o que foi difícil — em linguagem simples e respeitosa.
-    <em>Exemplo: "Ana participou com entusiasmo dos blocos de cores. Teve dificuldade com sequências acima de 3 elementos, mas conseguiu com apoio visual. Focaremos nisso na próxima sessão."</em>`
-  body.append(guide)
-
-  const familyField = el('div', 'field')
-  const familyLabel = document.createElement('label')
-  familyLabel.textContent = 'Resumo para a família *'
-  const familyInput = document.createElement('textarea')
-  familyInput.placeholder = 'Descreva o que aconteceu na sessão...'
-  familyInput.required = true; familyInput.maxLength = 800
-  familyField.append(familyLabel, familyInput)
-
-  const charCount = el('div', 'char-count', '0 / 800 caracteres')
-  familyInput.addEventListener('input', () => { charCount.textContent = `${familyInput.value.length} / 800 caracteres` })
-  familyField.append(charCount)
-  body.append(familyField)
-
-  const familyPreview = el('div', 'family-preview')
-  const previewLabel = el('div', 'family-preview-label', 'Como a família verá')
-  const previewTitle = el('strong', null, `${childName}: resumo da sessão`)
-  const previewSummary = el('p')
-  const previewNext = el('p')
-  familyPreview.append(previewLabel, previewTitle, previewSummary, previewNext)
-
-  const updateFamilyPreview = () => {
-    const activity = actInput.value.trim()
-    const focus = focusInput.value.trim()
-    const summaryText = familyInput.value.trim()
-    const next = nextInput.value.trim()
-
-    previewSummary.textContent = summaryText ||
-      `${childName} participou da atividade${activity ? ` "${activity}"` : ''}${focus ? ` com foco em ${focus}` : ''}. Escreva aqui o que funcionou, o que ficou difícil e qual apoio ajudou.`
-    previewNext.textContent = `Próximo passo: ${next || 'a definir com base na sessão de hoje'}`
+    b.append(list)
+    return b
   }
 
-  ;[actInput, focusInput, familyInput, nextInput].forEach((input) => {
-    input.addEventListener('input', updateFamilyPreview)
-  })
-  updateFamilyPreview()
-  body.append(familyPreview)
+  function renderStep2() {
+    const box = el('div', 'sw-step2')
+    box.append(questionGroup(`Como ${childName} participou?`, PARTICIPACAO_OPTS, () => s.participacao, (v) => { s.participacao = v }))
+    box.append(questionGroup('Quanto apoio foi necessário?', APOIO_OPTS, () => s.apoio, (v) => { s.apoio = v }))
+    box.append(questionGroup('Como a atividade terminou?', RESULTADO_OPTS, () => s.resultado, (v) => { s.resultado = v }))
 
-  const checklistTitle = el('p', null, 'Antes de salvar, confirme:')
-  checklistTitle.style.cssText = 'font-size:.79rem;font-weight:700;color:var(--ink-soft);'
+    const obs = el('div', 'sw-block')
+    obs.append(el('h4', 'sw-q', 'Alguma observação importante? (opcional)'))
+    const obsField = el('div', 'field')
+    const obsInput = document.createElement('textarea')
+    obsInput.value = s.observacao
+    obsInput.placeholder = 'Dúvidas técnicas, pontos para revisar com a equipe…'
+    obsInput.addEventListener('input', () => { s.observacao = obsInput.value })
+    obsField.append(obsInput)
+    obs.append(obsField)
+    const lockHint = el('p', 'sw-note-hint')
+    lockHint.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
+    lockHint.append(document.createTextNode('Nota interna — a família nunca vê o que você escrever aqui.'))
+    obs.append(lockHint)
+    box.append(obs)
 
-  const CHECKS = [
-    { id: 'chk-obs', label: 'Descrevi comportamentos observáveis (não interpretações ou rótulos)' },
-    { id: 'chk-what', label: 'Expliquei o que funcionou ou não funcionou' },
-    { id: 'chk-next', label: 'Indiquei um próximo passo claro' },
-    { id: 'chk-lang', label: 'Usei linguagem simples, respeitosa e educacional' },
-  ]
-  const checklist = el('ul', 'checklist')
-  CHECKS.forEach(({ id, label }) => {
-    const li = el('li')
-    const cb = document.createElement('input')
-    cb.type = 'checkbox'; cb.id = id
-    const lbl = document.createElement('label')
-    lbl.htmlFor = id; lbl.textContent = label
-    li.append(cb, lbl); checklist.append(li)
-  })
-  body.append(checklistTitle, checklist)
+    const plan = document.createElement('details')
+    plan.className = 'sw-collapsible'
+    plan.open = !!s.proximoPasso
+    const psum = document.createElement('summary')
+    psum.textContent = 'Adicionar planejamento (opcional)'
+    plan.append(psum)
+    const pBody = el('div', 'sw-manual-body')
+    const pField = el('div', 'field')
+    const pInput = document.createElement('textarea')
+    pInput.value = s.proximoPasso
+    pInput.placeholder = 'O que trabalhar na próxima sessão?'
+    pInput.addEventListener('input', () => { s.proximoPasso = pInput.value })
+    pField.append(pInput)
+    pBody.append(pField)
+    pBody.append(el('p', 'sw-hint', 'A família vê isso como "próximo passo".'))
+    plan.append(pBody)
+    box.append(plan)
 
-  body.append(el('div', 'lvl', '3 · Nota interna — só você e a equipe veem'))
+    return box
+  }
 
-  const internalWrap = el('div', 'internal-note')
-  const internalLabel = el('div', 'internal-note-label')
-  internalLabel.innerHTML = `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
-  internalLabel.append(document.createTextNode('A família nunca tem acesso a esta nota'))
-  const internalInput = document.createElement('textarea')
-  internalInput.placeholder = 'Dúvidas técnicas, pontos para revisar com a equipe, observações confidenciais…'
-  internalWrap.append(internalLabel, internalInput)
-  body.append(internalWrap)
+  // ── Passo 3: o que a família recebe ───────────────────────────────────
 
-  const errorBox = el('p', 'form-error'); errorBox.hidden = true
-  const okBox = el('p', 'form-ok'); okBox.hidden = true
-  const saveBtn = el('button', 'btn btn-accent btn-sm', 'Salvar registro')
-  saveBtn.type = 'button'
-
-  saveBtn.addEventListener('click', async () => {
-    errorBox.hidden = true; okBox.hidden = true
-
-    const actTitle = actInput.value.trim()
-    if (!actTitle) {
-      errorBox.textContent = 'Informe a atividade realizada.'; errorBox.hidden = false
-      actInput.focus(); return
-    }
-    const familySummary = familyInput.value.trim()
-    if (!familySummary) {
-      errorBox.textContent = 'Escreva o resumo para a família.'; errorBox.hidden = false
-      familyInput.focus(); return
-    }
-    const allChecked = CHECKS.every(({ id }) => document.getElementById(id)?.checked)
-    if (!allChecked) {
-      errorBox.textContent = 'Confirme todos os itens da lista antes de salvar.'; errorBox.hidden = false; return
+  function renderStep3() {
+    if (!s.familyEdited || !s.familyText.trim()) {
+      s.familyText = composeFamilySummary({
+        nome: childName,
+        atividadeFrase: fraseAtividades(facts().titulos),
+        participacao: s.participacao,
+        apoio: s.apoio,
+        resultado: s.resultado,
+      })
+      s.familyEdited = false
     }
 
-    saveBtn.disabled = true; saveBtn.textContent = 'Salvando…'
+    const box = el('div', 'sw-step2')
 
-    // TODO(wiring:sessions): adicionar engagement=eng.getValue(), perceived_difficulty=diff.getValue(),
-    //   result=result.getValue() quando o schema for atualizado.
+    const preview = el('div', 'family-preview')
+    preview.append(el('div', 'family-preview-label', 'Como a família verá'))
+    preview.append(el('strong', null, `${childName}: resumo da sessão`))
+    const previewSummary = el('p', null, s.familyText)
+    preview.append(previewSummary)
+    const next = s.proximoPasso.trim()
+    if (next) preview.append(el('p', null, `Próximo passo: ${next}`))
 
-    // Uma sessão a partir de N execuções marcadas, atômico (RPC): cria o
-    // registro e liga todas ao mesmo session_id, ou nada. Fim do vínculo que
-    // falhava calado. Ver docs/supabase-fase-14-sessao-multi-execucao.sql.
-    const execucoesSelecionadas = collectCheckedExecucoes()
+    const b1 = el('div', 'sw-block')
+    b1.append(el('h4', 'sw-q', 'O que a família vai receber'))
+    b1.append(el('p', 'sw-hint', 'Montamos este resumo a partir das suas respostas — revise e deixe com a sua voz.'))
+    const fField = el('div', 'field')
+    const fInput = document.createElement('textarea')
+    fInput.value = s.familyText
+    fInput.maxLength = 800
+    fInput.style.minHeight = '110px'
+    fField.append(fInput)
+    const counter = el('div', 'char-count', `${s.familyText.length} / 800 caracteres`)
+    fInput.addEventListener('input', () => {
+      s.familyText = fInput.value
+      s.familyEdited = true
+      counter.textContent = `${fInput.value.length} / 800 caracteres`
+      previewSummary.textContent = fInput.value.trim() || '…'
+      updateNav()
+    })
+    b1.append(fField, counter)
+    const regen = el('button', 'btn btn-ghost btn-sm sw-regen', '↻ Gerar sugestão novamente')
+    regen.type = 'button'
+    regen.addEventListener('click', () => { s.familyEdited = false; s.familyText = ''; render() })
+    b1.append(regen)
+
+    const rev = el('label', 'sw-review')
+    const rcb = document.createElement('input')
+    rcb.type = 'checkbox'
+    rcb.checked = s.reviewed
+    rcb.addEventListener('change', () => { s.reviewed = rcb.checked; updateNav() })
+    rev.append(rcb, document.createTextNode('Revisei a mensagem que será compartilhada com a família.'))
+
+    const err = el('p', 'form-error')
+    err.hidden = true
+    err.dataset.swErr = ''
+
+    box.append(b1, preview, el('p', 'sw-hint', 'Use linguagem simples, respeitosa e baseada no que você observou.'), rev, err)
+    return box
+  }
+
+  // ── navegação + salvar ────────────────────────────────────────────────
+
+  function renderNav() {
+    const nav = el('div', 'sw-nav')
+    const left = el('div')
+    if (s.step > 1) {
+      const back = el('button', 'btn btn-ghost', 'Voltar')
+      back.type = 'button'
+      back.addEventListener('click', () => goStep(s.step - 1))
+      left.append(back)
+    }
+    nav.append(left)
+
+    if (s.step < 3) {
+      navForward = el('button', 'btn btn-accent', 'Continuar')
+      navForward.type = 'button'
+      navForward.addEventListener('click', () => { if (canContinue()) goStep(s.step + 1) })
+    } else {
+      navForward = el('button', 'btn btn-accent', 'Salvar e compartilhar')
+      navForward.type = 'button'
+      navForward.addEventListener('click', onSave)
+    }
+    navForward.disabled = !canContinue()
+    nav.append(navForward)
+    return nav
+  }
+
+  async function onSave() {
+    const err = wrap.querySelector('[data-sw-err]')
+    if (err) err.hidden = true
+    const f = facts()
+    const familySummary = s.familyText.trim()
+    if (!familySummary || !s.reviewed) { updateNav(); return }
+
+    navForward.disabled = true
+    navForward.textContent = 'Salvando…'
+
     const { error } = await createSessionWithExecucoes({
       cycleId: cycle.id,
-      activityId: _selectedActivityId,
-      sessionDate: dateInput.value || todayISO(),
-      durationMinutes: durInput.value ? Number(durInput.value) : null,
-      activityTitle: actTitle,
-      focusArea: focusInput.value.trim(),
+      activityId: s.activityId,
+      sessionDate: s.date || todayISO(),
+      durationMinutes: s.duration ? Number(s.duration) : null,
+      activityTitle: f.activityTitle,
+      focusArea: f.focusArea,
       familySummary,
-      notes: internalInput.value.trim() || null,
-      nextStep: nextInput.value.trim(),
-      execucaoIds: execucoesSelecionadas.map((e) => e.id),
+      notes: s.observacao.trim() || null,
+      nextStep: s.proximoPasso.trim(),
+      execucaoIds: [...s.selected],
     })
 
-    saveBtn.disabled = false; saveBtn.textContent = 'Salvar registro'
+    navForward.disabled = false
+    navForward.textContent = 'Salvar e compartilhar'
 
     if (error) {
-      errorBox.textContent = 'Não conseguimos salvar agora. Seu texto continua aqui para você tentar novamente.'
-      errorBox.hidden = false
+      if (err) {
+        err.textContent = 'Não conseguimos salvar agora. Nada foi perdido — tente novamente.'
+        err.hidden = false
+      }
       return
     }
 
-    _selectedActivityId = null
-    ;[actInput, focusInput, familyInput, nextInput, internalInput].forEach((i) => { i.value = '' })
-    durInput.value = ''; dateInput.value = todayISO()
-    charCount.textContent = '0 / 800 caracteres'
-    CHECKS.forEach(({ id }) => { const cb = document.getElementById(id); if (cb) cb.checked = false })
-    eng.reset(); diff.reset(); result.reset()
-    updateFamilyPreview()
-
-    okBox.textContent = 'Sessão registrada. A família já consegue acompanhar o resumo.'; okBox.hidden = false
-    details.open = false
-    await loadPendingExecucoes()
+    setOpen(false)
+    await loadPending()
+    wrap.dispatchEvent(new CustomEvent('sw-saved'))
     await onSaved()
-  })
-
-  const actions = el('div', 'form-actions')
-  actions.append(errorBox, okBox, saveBtn)
-  body.append(actions)
-  details.append(body)
-
-  details.fillSuggestedActivity = (activity = DEFAULT_ACTIVITY) => {
-    actInput.value = activity.title
-    focusInput.value = activity.focus
-    if (!nextInput.value.trim()) nextInput.value = activity.nextStep || ''
-    _selectedActivityId = activity.id || null
-    details.open = true
-    updateFamilyPreview()
-    actInput.focus()
   }
 
-  return details
+  // ── lateral: resumo vivo da sessão ────────────────────────────────────
+
+  function renderSide() {
+    const side = document.createElement('details')
+    side.className = 'card sw-side'
+    side.open = window.matchMedia('(min-width: 941px)').matches
+    const sum = document.createElement('summary')
+    sum.textContent = 'Resumo da sessão'
+    side.append(sum)
+
+    const f = facts()
+    const dl = document.createElement('dl')
+    const add = (dt, dd) => {
+      const a = document.createElement('dt'); a.textContent = dt
+      const b = document.createElement('dd'); b.textContent = dd
+      dl.append(a, b)
+    }
+    add('Data', formatDate(s.date) ?? '—')
+    add('Duração', s.duration ? `${s.duration} min` : '—')
+    add('Atividades', f.titulos.length
+      ? (f.titulos.length <= 2 ? f.titulos.join(' · ') : `${f.titulos.length} atividades`)
+      : 'Nenhuma ainda')
+    side.append(dl)
+    side.append(el('p', 'sw-side-hint', s.step === 3
+      ? 'Ao salvar, a família já vê o resumo.'
+      : 'Nada é salvo até o passo 3.'))
+    return side
+  }
+
+  return wrap
 }
 
 // ── Sessões: tabela de histórico ─────────────────────────────────────────────
@@ -1335,15 +1498,83 @@ function buildSessionsPanel(cycle, state, sessionForm) {
   const panel = el('section', 'panel')
   panel.dataset.panel = 'sessions'
   panel.hidden = true
+  const childFirst = firstName(cycle.children?.name)
 
   const stack = el('div', 'stack')
   stack.style.maxWidth = 'none'
 
   if (state === 'cycle_active') {
-    stack.append(sessionForm)
+    // Linha do tempo: a aba aterrissa aqui (pendências + CTA + histórico) —
+    // o assistente de registro só aparece depois do clique, nunca de cara.
+    const timeline = el('div', 'card')
+    const inner = el('div', 'sw-timeline-inner')
+    const tx = el('div')
+    const titleEl = el('strong', 'sw-timeline-title', 'Carregando…')
+    const subEl = el('p', 'sw-timeline-sub', '')
+    tx.append(titleEl, subEl)
+    const cta = el('button', 'btn btn-accent', 'Registrar sessão')
+    cta.type = 'button'
+    inner.append(tx, cta)
+    timeline.append(inner)
+    const miniList = el('div', 'sw-timeline-list')
+    timeline.append(miniList)
+    const okFlash = el('p', 'form-ok sw-timeline-ok')
+    okFlash.hidden = true
+    timeline.append(okFlash)
+
+    sessionForm.onPendingLoaded = (rows, hadError) => {
+      miniList.replaceChildren()
+      if (hadError) {
+        titleEl.textContent = 'Não foi possível carregar as atividades pendentes.'
+        subEl.textContent = 'Você ainda pode registrar a sessão normalmente.'
+        cta.className = 'btn btn-accent'
+        cta.textContent = 'Registrar sessão'
+        cta.onclick = () => { sessionForm.open = true }
+        return
+      }
+      if (rows.length) {
+        titleEl.textContent = rows.length === 1
+          ? `1 atividade de ${childFirst} aguardando registro`
+          : `${rows.length} atividades de ${childFirst} aguardando registro`
+        subEl.textContent = 'Transforme o que a criança fez numa devolutiva para a família.'
+        cta.className = 'btn btn-accent'
+        cta.textContent = 'Registrar sessão'
+        cta.onclick = () => { sessionForm.open = true }
+        rows.slice(0, 3).forEach((e) => {
+          const item = el('div', 'sw-timeline-item')
+          item.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>'
+          const molde = MOLDES_REGISTRO[e.molde]
+          const temaLabel = molde?.temas.find((t) => t.id === e.tema)?.label || e.tema
+          const titulo = pickEmbedded(e.child_activities)?.titulo || molde?.tituloPadrao?.(temaLabel) || `${molde?.label || e.molde} · ${temaLabel}`
+          item.append(document.createTextNode([titulo, formatExecucaoQuando(e.created_at)].filter(Boolean).join(' · ')))
+          miniList.append(item)
+        })
+        if (rows.length > 3) miniList.append(el('div', 'sw-timeline-item sw-timeline-more', `e mais ${rows.length - 3}…`))
+      } else {
+        titleEl.textContent = 'Nenhuma atividade aguardando registro.'
+        subEl.textContent = 'Você ainda pode registrar uma sessão realizada fora do Modo Criança.'
+        cta.className = 'btn btn-ghost'
+        cta.textContent = 'Registrar manualmente'
+        cta.onclick = () => sessionForm.openManual()
+      }
+    }
+
+    // Enquanto o assistente está aberto, ele É o conteúdo da aba — linha do
+    // tempo e histórico saem de cena pra sobrar um foco só.
+    sessionForm.addEventListener('sw-toggle', (ev) => {
+      timeline.hidden = ev.detail.open
+      historyCard.hidden = ev.detail.open
+      if (ev.detail.open) okFlash.hidden = true
+    })
+    sessionForm.addEventListener('sw-saved', () => {
+      okFlash.textContent = 'Sessão registrada. A família já consegue acompanhar o resumo.'
+      okFlash.hidden = false
+    })
+
+    stack.append(timeline, sessionForm)
   } else {
     const LOCKED = {
-      cycle_planned: 'O registro de sessões libera assim que a equipe ativar o ciclo. Por enquanto, dá para conferir o perfil pedagógico na aba Visão geral.',
+      cycle_planned: 'O registro de sessões libera assim que a equipe ativar o ciclo. Por enquanto, dá para conferir o perfil pedagógico em "Ver perfil".',
       cycle_paused: 'Os registros estão bloqueados enquanto o ciclo estiver pausado. Fale com a equipe Cognita para retomar.',
       cycle_completed: 'Este ciclo já foi concluído, então não é mais possível registrar novas sessões. O histórico completo está logo abaixo.',
     }
@@ -2085,6 +2316,9 @@ function buildPlanPanel(cycle, state) {
       return
     }
 
+    // oficiais (Recomendada) antes das privadas (Sua jornada)
+    renderaveis.sort((a, b) =>
+      (a.template.visibility === 'private' ? 1 : 0) - (b.template.visibility === 'private' ? 1 : 0))
     renderaveis.forEach(({ template, modules }) => {
       const badge = template.visibility === 'private' ? 'Sua jornada' : 'Recomendada'
       choices.append(renderRecommendedJourneyCard(template, modules, badge))
@@ -2152,11 +2386,14 @@ function buildPlanPanel(cycle, state) {
     return card
   }
 
-  // Porta pro builder de jornada personalizada (Fase 15).
+  // Porta pro builder (Fase 15). Faixa full-width abaixo dos percursos — é
+  // uma AÇÃO (criar), não um percurso a atribuir, então não divide o grid.
   function renderCustomJourneyCard() {
     const card = el('div', 'card journey-choice journey-choice--custom')
-    card.append(el('h4', 'journey-choice-title', 'Criar jornada personalizada'))
-    card.append(el('p', 'journey-choice-desc', 'Organize suas atividades preparadas em módulos e missões.'))
+    const txt = el('div', 'journey-custom-text')
+    txt.append(el('h4', 'journey-choice-title', 'Criar jornada personalizada'))
+    txt.append(el('p', 'journey-choice-desc', 'Organize suas atividades preparadas em módulos e missões.'))
+    card.append(txt)
     const p = new URLSearchParams({ child_id: cycle.child_id ?? '', child_name: childFirst })
     if (cycle.id) p.set('cycle_id', cycle.id)
     const link = el('a', 'btn btn-ghost journey-cta', 'Criar jornada')

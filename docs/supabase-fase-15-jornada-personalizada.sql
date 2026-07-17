@@ -226,8 +226,14 @@ grant execute
 -- E. RPC: SALVAR ESTRUTURA DO RASCUNHO
 -- ============================================================
 
+-- Assinatura mudou (ganhou p_title/p_objective) — dropa a versão antiga de
+-- 3 args pra não deixar overload ambíguo ao re-rodar o arquivo.
+drop function if exists public.save_journey_draft(uuid, jsonb, timestamptz);
+
 create or replace function public.save_journey_draft(
   p_template_id         uuid,
+  p_title               text,
+  p_objective           text,
   p_modules             jsonb,
   p_expected_updated_at timestamptz
 )
@@ -237,6 +243,8 @@ security definer
 set search_path = pg_catalog, public
 as $$
 declare
+  v_title          text := btrim(coalesce(p_title, ''));
+  v_objective      text := nullif(btrim(coalesce(p_objective, '')), '');
   v_child_id       uuid;
   v_new_updated    timestamptz;
   v_mod            jsonb;
@@ -256,6 +264,14 @@ begin
     raise exception 'Autenticação necessária.';
   end if;
 
+  if char_length(v_title) < 1 or char_length(v_title) > 120 then
+    raise exception 'Título inválido (1 a 120 caracteres).';
+  end if;
+
+  if char_length(coalesce(v_objective, '')) > 1000 then
+    raise exception 'Objetivo muito longo (máximo de 1000 caracteres).';
+  end if;
+
   if p_modules is null or jsonb_typeof(p_modules) <> 'array' then
     raise exception 'A estrutura de módulos precisa ser uma lista.';
   end if;
@@ -272,8 +288,11 @@ begin
 
   -- Lock otimista. A atualização é revertida junto com toda a função
   -- caso qualquer validação posterior falhe.
+  -- Salva "a jornada inteira": título/objetivo também, não só a estrutura.
   update public.trail_templates
-  set updated_at = now()
+  set updated_at = now(),
+      title = v_title,
+      description = v_objective
   where id = p_template_id
     and created_by = auth.uid()
     and visibility = 'private'
@@ -427,13 +446,13 @@ end;
 $$;
 
 revoke all privileges
-  on function public.save_journey_draft(uuid, jsonb, timestamptz)
+  on function public.save_journey_draft(uuid, text, text, jsonb, timestamptz)
   from public;
 revoke all privileges
-  on function public.save_journey_draft(uuid, jsonb, timestamptz)
+  on function public.save_journey_draft(uuid, text, text, jsonb, timestamptz)
   from anon;
 grant execute
-  on function public.save_journey_draft(uuid, jsonb, timestamptz)
+  on function public.save_journey_draft(uuid, text, text, jsonb, timestamptz)
   to authenticated;
 
 

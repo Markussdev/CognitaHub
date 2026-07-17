@@ -15,10 +15,13 @@ export async function createPrivateJourney({ title, objective, childId }) {
 }
 
 // modules: [{ title, objective?, missions: [{ source_child_activity_id, title? }] }]
-// Devolve o novo updated_at (usar como expectedUpdatedAt no próximo save).
-export async function saveJourneyDraft({ templateId, modules, expectedUpdatedAt }) {
+// Salva a jornada INTEIRA (título/objetivo + estrutura). Devolve o novo
+// updated_at (usar como expectedUpdatedAt no próximo save).
+export async function saveJourneyDraft({ templateId, title, objective, modules, expectedUpdatedAt }) {
   return supabase.rpc('save_journey_draft', {
     p_template_id: templateId,
+    p_title: title,
+    p_objective: objective ?? null,
     p_modules: modules,
     p_expected_updated_at: expectedUpdatedAt,
   })
