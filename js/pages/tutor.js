@@ -3,7 +3,7 @@ import { requireRole, signOut } from '../lib/auth.js'
 import { greeting, initials, ageFrom, el } from '../lib/ui.js'
 import { getAvatarUrl, setAvatarImage } from '../lib/avatar.js'
 import { getTutorCycles } from '../data/tutor.js'
-import { getCycleSessions, createSessionRecord, linkExecucaoToSession } from '../data/sessions.js'
+import { getCycleSessions, createSessionWithExecucoes } from '../data/sessions.js'
 import { getActivityById } from '../data/activities.js'
 import { createChildActivity, listChildActivities, updateChildActivity, archiveChildActivity } from '../data/child-activities.js'
 import { listPendingExecucoes, listRecentExecucoes } from '../data/atividade-execucao.js'
@@ -670,7 +670,7 @@ function renderSessionForm(cycle, onSaved) {
   const details = el('details', 'card form')
   const childName = firstName(cycle.children?.name)
   let _selectedActivityId = null
-  let _pendingExecucao = null
+  let _allPending = []
 
   const summary = document.createElement('summary')
   summary.append(document.createTextNode('Registro guiado — sessão desta semana'))
@@ -696,7 +696,7 @@ function renderSessionForm(cycle, onSaved) {
   // contar/dinossauros de hoje, sempre têm a mesma cara (nível 1, mesmo
   // tema) — sem isso o tutor não sabe se são duas execuções de verdade ou
   // uma tela duplicada (ver docs/V2-DIRECAO.md §8, higiene de dados).
-  function renderPendingExecucaoItem(execucao) {
+  function renderPendingExecucaoItem(execucao, checked) {
     const item = el('div', 'pending-execucao-item')
     const molde = MOLDES_REGISTRO[execucao.molde]
     const temaLabel = molde?.temas.find((t) => t.id === execucao.tema)?.label || execucao.tema
@@ -717,17 +717,57 @@ function renderSessionForm(cycle, onSaved) {
       execucao.precisou_mais_facil ? 'precisou de mais fácil' : null,
     ].filter(Boolean).join(' · ')
 
-    const useBtn = el('button', 'btn btn-ghost btn-sm', 'Usar esta execução')
-    useBtn.type = 'button'
-    useBtn.addEventListener('click', () => details.fillFromExecucao(execucao))
+    // Checkbox em vez de "Usar esta execução" (singular): UMA sessão pode
+    // cobrir VÁRIAS execuções — a criança faz várias missões numa experiência
+    // e o tutor escreve uma devolutiva só. Ver docs/supabase-fase-14-*.sql.
+    const check = el('label', 'pending-execucao-check')
+    const cb = document.createElement('input')
+    cb.type = 'checkbox'; cb.checked = checked; cb.dataset.execId = execucao.id
+    cb.addEventListener('change', updateSelectionUI)
+    check.append(cb, document.createTextNode('Incluir nesta sessão'))
 
     item.append(
       el('strong', null, titulo),
       el('p', 'pending-execucao-detalhes', detalhes),
       el('p', 'pending-execucao-rodape', rodape),
-      useBtn
+      check
     )
     return item
+  }
+
+  function collectCheckedExecucoes() {
+    const ids = new Set([...pendingWrap.querySelectorAll('input[data-exec-id]:checked')].map((cb) => cb.dataset.execId))
+    return _allPending.filter((e) => ids.has(e.id))
+  }
+
+  // Preenche o Nível 1 a partir do conjunto marcado. Com 1 execução, igual ao
+  // antigo fillFromExecucao; com várias, título/foco/duração agregados.
+  function fillFromExecucoes(execucoes) {
+    if (!execucoes.length) return
+    const tituloDe = (e) => {
+      const molde = MOLDES_REGISTRO[e.molde]
+      const temaLabel = molde?.temas.find((t) => t.id === e.tema)?.label || e.tema
+      const atividade = pickEmbedded(e.child_activities)
+      return atividade?.titulo || molde?.tituloPadrao?.(temaLabel) || `${molde?.label || e.molde} · ${temaLabel}`
+    }
+    const titulos = execucoes.map(tituloDe)
+    actInput.value = execucoes.length === 1 ? titulos[0] : `${execucoes.length} atividades: ${titulos.join(', ')}`
+    focusInput.value = [...new Set(execucoes.map((e) => MOLDES_REGISTRO[e.molde]?.label || e.molde))].join(', ')
+    const totalSeg = execucoes.reduce((s, e) => s + (e.tempo_aproximado_segundos || 0), 0)
+    if (totalSeg) durInput.value = String(Math.round(totalSeg / 60))
+    _selectedActivityId = null
+    details.open = true
+    updateFamilyPreview()
+  }
+
+  const applyBtn = el('button', 'btn btn-ghost btn-sm', 'Preencher com a seleção')
+  applyBtn.type = 'button'
+  applyBtn.addEventListener('click', () => fillFromExecucoes(collectCheckedExecucoes()))
+
+  function updateSelectionUI() {
+    const n = collectCheckedExecucoes().length
+    applyBtn.textContent = n > 0 ? `Preencher com a seleção (${n})` : 'Preencher com a seleção'
+    applyBtn.disabled = n === 0
   }
 
   // Fica sempre visível (mesmo vazio) — estado vazio é direção, não
@@ -744,12 +784,23 @@ function renderSessionForm(cycle, onSaved) {
     }
 
     pendingWrap.append(el('p', 'pending-execucoes-label', 'Execuções do Modo Criança aguardando registro'))
-    const rows = data ?? []
-    if (!rows.length) {
+    _allPending = data ?? []
+    if (!_allPending.length) {
       pendingWrap.append(el('p', 'execucoes-msg', 'Nenhuma execução pendente. Quando a criança concluir uma atividade, ela aparecerá aqui para virar registro de sessão.'))
       return
     }
-    rows.forEach((execucao) => pendingWrap.append(renderPendingExecucaoItem(execucao)))
+
+    // Pré-marca as execuções do dia mais recente (uma "experiência"); o tutor
+    // ajusta. A lista já vem desc por created_at (listPendingExecucoes).
+    const topDay = new Date(_allPending[0].created_at).toDateString()
+    pendingWrap.append(el('p', 'execucoes-msg', 'Marque as atividades desta sessão — várias podem virar um registro só. As do dia mais recente já vêm marcadas.'))
+    _allPending.forEach((e) => {
+      const doDia = new Date(e.created_at).toDateString() === topDay
+      pendingWrap.append(renderPendingExecucaoItem(e, doDia))
+    })
+    pendingWrap.append(applyBtn)
+    updateSelectionUI()
+    fillFromExecucoes(collectCheckedExecucoes()) // auto-preenche com o cluster do dia
   }
   loadPendingExecucoes()
 
@@ -935,10 +986,13 @@ function renderSessionForm(cycle, onSaved) {
     // TODO(wiring:sessions): adicionar engagement=eng.getValue(), perceived_difficulty=diff.getValue(),
     //   result=result.getValue() quando o schema for atualizado.
 
-    const { data, error } = await createSessionRecord({
+    // Uma sessão a partir de N execuções marcadas, atômico (RPC): cria o
+    // registro e liga todas ao mesmo session_id, ou nada. Fim do vínculo que
+    // falhava calado. Ver docs/supabase-fase-14-sessao-multi-execucao.sql.
+    const execucoesSelecionadas = collectCheckedExecucoes()
+    const { error } = await createSessionWithExecucoes({
       cycleId: cycle.id,
       activityId: _selectedActivityId,
-      childActivityId: _pendingExecucao?.child_activity_id || null,
       sessionDate: dateInput.value || todayISO(),
       durationMinutes: durInput.value ? Number(durInput.value) : null,
       activityTitle: actTitle,
@@ -946,6 +1000,7 @@ function renderSessionForm(cycle, onSaved) {
       familySummary,
       notes: internalInput.value.trim() || null,
       nextStep: nextInput.value.trim(),
+      execucaoIds: execucoesSelecionadas.map((e) => e.id),
     })
 
     saveBtn.disabled = false; saveBtn.textContent = 'Salvar registro'
@@ -956,13 +1011,7 @@ function renderSessionForm(cycle, onSaved) {
       return
     }
 
-    if (_pendingExecucao && data?.id) {
-      const { error: linkError } = await linkExecucaoToSession(_pendingExecucao.id, data.id)
-      if (linkError) console.error('[tutor] falha ao ligar atividade_execucao à sessão', linkError)
-    }
-
     _selectedActivityId = null
-    _pendingExecucao = null
     ;[actInput, focusInput, familyInput, nextInput, internalInput].forEach((i) => { i.value = '' })
     durInput.value = ''; dateInput.value = todayISO()
     charCount.textContent = '0 / 800 caracteres'
@@ -989,23 +1038,6 @@ function renderSessionForm(cycle, onSaved) {
     details.open = true
     updateFamilyPreview()
     actInput.focus()
-  }
-
-  // Nível 1 já vem pronto do Modo Criança — o tutor não digita de novo o
-  // que atividade_execucao já gravou, só escreve os níveis 2 e 3.
-  details.fillFromExecucao = (execucao) => {
-    const molde = MOLDES_REGISTRO[execucao.molde]
-    const temaLabel = molde?.temas.find((t) => t.id === execucao.tema)?.label || execucao.tema
-    actInput.value = molde?.tituloPadrao?.(temaLabel) || `${molde?.label || execucao.molde} · ${temaLabel}`
-    focusInput.value = molde?.label || execucao.molde
-    if (execucao.tempo_aproximado_segundos) {
-      durInput.value = String(Math.round(execucao.tempo_aproximado_segundos / 60))
-    }
-    _selectedActivityId = null
-    _pendingExecucao = execucao
-    details.open = true
-    updateFamilyPreview()
-    familyInput.focus()
   }
 
   return details
@@ -1083,9 +1115,11 @@ function buildResumoPanel(cycle, { openForm }) {
           cta: { label: 'Ver perfil pedagógico', href: `perfil-crianca.html?id=${cycle.child_id ?? ''}` } }
       case E.EXECUCAO_PENDENTE: {
         const titulo = dados.execucao?.child_activities?.titulo || 'uma atividade'
-        const quando = dados.execucao?.created_at ? formatLastSession(dados.execucao.created_at) : 'há pouco'
-        const extra = dados.total > 1 ? ` (${dados.total} no total)` : ''
-        return { ti: `${nome} completou "${titulo}" ${quando} e a execução ainda não virou registro${extra}.`,
+        const quando = dados.execucao?.created_at ? formatExecucaoQuando(dados.execucao.created_at) : 'há pouco'
+        const ti = dados.total > 1
+          ? `${nome} concluiu ${dados.total} atividades que ainda não viraram registro — a mais recente foi "${titulo}" ${quando}.`
+          : `${nome} completou "${titulo}" ${quando} e a execução ainda não virou registro.`
+        return { ti,
           ds: 'Transforme o que a criança fez numa sessão para a família acompanhar.',
           cta: { label: `Revisar o que ${nome} fez`, onClick: openForm } }
       }
@@ -1186,7 +1220,7 @@ function buildResumoPanel(cycle, { openForm }) {
       icon: `<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/></svg>`,
       html: `<b>${nome}</b> concluiu ${e.child_activities?.titulo ? `"${e.child_activities.titulo}"` : 'uma atividade'}`,
       sub: 'Aguardando você registrar a sessão',
-      time: formatLastSession(e.created_at),
+      time: formatExecucaoQuando(e.created_at),
     }))
     if (trail) items.push({
       _t: new Date(trail.created_at).getTime(),
@@ -1194,7 +1228,7 @@ function buildResumoPanel(cycle, { openForm }) {
       icon: `<svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.6.6-5 4.4 1.5 6.5L12 17l-6 3.3 1.5-6.5-5-4.4 6.6-.6z"/></svg>`,
       html: `<b>Jornada</b> ${trail.trail_templates?.title ? `"${trail.trail_templates.title}"` : ''} atribuída`,
       sub: '',
-      time: formatDate(trail.created_at) ?? '',
+      time: formatDate(trail.created_at?.slice(0, 10)) ?? '',
     })
     items.sort((a, b) => b._t - a._t)
 
@@ -1233,6 +1267,18 @@ function buildResumoPanel(cycle, { openForm }) {
     return card
   }
 
+  function renderErro() {
+    const card = el('div', 'card')
+    card.append(simpleHead('Resumo'))
+    const cbody = el('div', 'card-b')
+    cbody.append(el('p', 'card-copy', 'Não foi possível carregar o resumo agora. Verifique a conexão e tente de novo.'))
+    const btn = el('button', 'btn btn-ghost btn-sm', 'Tentar novamente')
+    btn.type = 'button'; btn.addEventListener('click', reload)
+    cbody.append(btn)
+    card.append(cbody)
+    return card
+  }
+
   async function reload() {
     // sessions sempre (pulso/timeline/histórico). trail/módulos/missões/
     // execuções só quando o ciclo está ativo — nos estados P/Z/F a cascata
@@ -1240,28 +1286,34 @@ function buildResumoPanel(cycle, { openForm }) {
     const isActive = cycle.status === 'active'
     const [sessRes, trailRes] = await Promise.all([
       getCycleSessions(cycle.id),
-      isActive ? getLatestChildTrail(cycle.child_id, cycle.id) : Promise.resolve({ data: null }),
+      isActive ? getLatestChildTrail(cycle.child_id, cycle.id) : Promise.resolve({ data: null, error: null }),
     ])
-    const sessions = sessRes.error ? [] : (sessRes.data ?? [])
     const trail = trailRes?.data ?? null
 
-    let modules = []
+    let modRes = { data: [], error: null }
+    let exeRes = { data: [], error: null }
     let missions = []
-    let execucoesPendentes = []
     if (isActive) {
-      const [modRes, exeRes] = await Promise.all([
-        trail ? getChildTrailModules(trail.id) : Promise.resolve({ data: [] }),
+      ;[modRes, exeRes] = await Promise.all([
+        trail ? getChildTrailModules(trail.id) : Promise.resolve({ data: [], error: null }),
         listPendingExecucoes(cycle.child_id),
       ])
-      modules = modRes?.data ?? []
-      execucoesPendentes = exeRes.error ? [] : (exeRes.data ?? [])
-      const mod = moduloAtualDe(modules)
-      if (mod) {
-        const misRes = await getChildTrailMissions(mod.id)
-        missions = misRes?.data ?? []
-      }
+      // Erro nas missões afeta só o sinal informativo MISSAO_DISPONIVEL, não
+      // é crítico pra derivar o estado — não bloqueia o Resumo.
+      const mod = moduloAtualDe(modRes.data ?? [])
+      if (mod) missions = (await getChildTrailMissions(mod.id))?.data ?? []
     }
 
+    // Consulta crítica falhou → NÃO derivar estado de dado incompleto (erro
+    // viraria "Tudo em dia" indevido). Erro honesto + tentar novamente.
+    if (sessRes.error || trailRes?.error || modRes.error || exeRes.error) {
+      wrap.replaceChildren(renderErro())
+      return
+    }
+
+    const sessions = sessRes.data ?? []
+    const modules = modRes.data ?? []
+    const execucoesPendentes = exeRes.data ?? []
     const { estado, dados } = derivarEstadoResumo({ cycle, trail, modules, missions, execucoesPendentes })
 
     // P/Z/F reduzem para "Próxima decisão" + histórico (quando existir). §5.

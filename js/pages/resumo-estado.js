@@ -1,24 +1,7 @@
-// ── Resumo do painel do tutor: derivação de estado ───────────────────────────
-//
-// Coração da tela Resumo (ver docs/TELA-RESUMO-PAINEL-TUTOR.md). Uma função
-// PURA, sem DOM: recebe os dados já carregados e devolve UM estado dominante
-// mais os dados que o bloco "Próxima decisão" precisa pra montar a copy.
-//
-// A cascata de prioridades vive SÓ aqui, com a ordem comentada — a tela
-// inteira do Resumo deriva deste retorno. Não reordene sem ler as notas.
-//
-// Nasce por-criança (recebe o ciclo de UMA criança) de propósito: se um dia
-// o tutor tiver 2+, o Resumo vira uma lista de estados, um por criança, sem
-// mexer nesta função (ver TELA §9.4).
-
-// Estados possíveis — os 7 da cascata de ciclo ativo (§3.2) + os 3 portões
-// de ciclo (§3.1, chamados P/Z/F na spec). Exportado pra referência/teste.
 export const ESTADOS_RESUMO = Object.freeze({
-  // Portões de ciclo (§3.1) — filtram antes da cascata
   CICLO_PLANEJADO: 'CICLO_PLANEJADO', // P — cycle.status = 'planned'
   CICLO_PAUSADO: 'CICLO_PAUSADO', // Z — cycle.status = 'paused'
   CICLO_CONCLUIDO: 'CICLO_CONCLUIDO', // F — cycle.status = 'completed'
-  // Cascata de ciclo ativo (§3.2) — para no primeiro match
   EXECUCAO_PENDENTE: 'EXECUCAO_PENDENTE', // 1
   MODULO_EM_REVISAO: 'MODULO_EM_REVISAO', // 2
   MODULO_BLOQUEADO: 'MODULO_BLOQUEADO', // 3
@@ -28,12 +11,6 @@ export const ESTADOS_RESUMO = Object.freeze({
   EM_DIA: 'EM_DIA', // 7
 })
 
-// "Módulo atual" = o primeiro não-concluído por posição. Mesma noção que o
-// buildPlanPanel já usa (js/pages/tutor.js: modules.find(m => status !==
-// 'concluido')) — não duplico a regra, só a reafirmo aqui pra manter a
-// função pura/testável. Quando a trilha inteira está concluída, todos os
-// módulos são 'concluido', então isto devolve undefined — e a cascata cai
-// no estado JORNADA_CONCLUIDA (nº 4), como esperado.
 export function moduloAtualDe(modules = []) {
   return modules.find((m) => m.status !== 'concluido') ?? null
 }

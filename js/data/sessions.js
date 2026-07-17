@@ -58,8 +58,33 @@ export async function createSessionRecord({
     .single()
 }
 
+// Cria a sessão e liga N execuções pendentes ao mesmo session_id numa
+// transação (RPC create_session_with_execucoes). Substitui o par
+// createSessionRecord + linkExecucaoToSession: (1) uma devolutiva pode cobrir
+// várias execuções (a criança faz várias missões numa experiência) e (2) o
+// link antigo dependia de um UPDATE em atividade_execucao sem policy de tutor
+// — falhava calado. Ver docs/supabase-fase-14-sessao-multi-execucao.sql.
+export async function createSessionWithExecucoes({
+  cycleId, activityId, sessionDate, durationMinutes,
+  activityTitle, focusArea, familySummary, notes, nextStep, execucaoIds = [],
+}) {
+  return supabase.rpc('create_session_with_execucoes', {
+    p_cycle_id: cycleId,
+    p_date: sessionDate,
+    p_duration_minutes: durationMinutes,
+    p_activity_id: activityId || null,
+    p_activity_title: activityTitle,
+    p_focus_area: focusArea || null,
+    p_family_summary: familySummary || null,
+    p_notes: notes || null,
+    p_next_step: nextStep || null,
+    p_execucao_ids: execucaoIds,
+  })
+}
+
 // Fecha a ponte prevista em docs/supabase-fase-4b-corrente.sql (PASSO B1):
 // liga a execução do Modo Criança à sessão que acabou de nascer dela.
+// (Legado — substituída por createSessionWithExecucoes; ver nota acima.)
 export async function linkExecucaoToSession(execucaoId, sessionId) {
   return supabase
     .from('atividade_execucao')
