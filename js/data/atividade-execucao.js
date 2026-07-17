@@ -17,13 +17,24 @@ const EXECUCAO_SELECT = `
   child_activities ( titulo, config )
 `
 
-export async function listPendingExecucoes(childId) {
-  return supabase
+// Escopada por ciclo (cycleId): sem isso, uma pendência de um ciclo antigo
+// da mesma criança apareceria no ciclo novo. O vínculo execução→ciclo é via
+// child_activities.cycle_id (preenchido em autoria/release/reopen), por isso
+// o !inner — precisa filtrar pela coluna da atividade embutida. Sem cycleId,
+// comporta como antes (todas as pendentes da criança).
+export async function listPendingExecucoes(childId, cycleId) {
+  let query = supabase
     .from('atividade_execucao')
-    .select(EXECUCAO_SELECT)
+    .select(`
+      id, child_activity_id, molde, tema, nivel_final, precisou_mais_facil,
+      tempo_aproximado_segundos, como_encerrou, created_at, session_id,
+      child_activities!inner ( titulo, config, cycle_id )
+    `)
     .eq('child_id', childId)
     .is('session_id', null)
     .order('created_at', { ascending: false })
+  if (cycleId) query = query.eq('child_activities.cycle_id', cycleId)
+  return query
 }
 
 // Visão de leitura (sem ação) pra aba "Atividades preparadas" — mostra as

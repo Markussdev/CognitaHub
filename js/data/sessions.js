@@ -94,9 +94,10 @@ export async function linkExecucaoToSession(execucaoId, sessionId) {
     .single()
 }
 
-// Leitura da família — nunca a tabela sessions direto. get_family_sessions
-// é security definer e devolve só níveis 1+2, nunca `notes` (nível 3).
-// Ver docs/supabase-fase-4c-registro-sessao.sql.
+// Leitura da família — nunca a tabela sessions direto. get_family_sessions_v2
+// é security definer e devolve só níveis 1+2, nunca `notes` (nível 3). A v2
+// devolve UMA linha por sessão (a v1 duplicava quando a sessão tinha N
+// execuções) + um array `execucoes`. Ver docs/supabase-fase-14b-*.sql.
 export async function getFamilySessions(childId) {
-  return supabase.rpc('get_family_sessions', { p_child: childId })
+  return supabase.rpc('get_family_sessions_v2', { p_child: childId })
 }

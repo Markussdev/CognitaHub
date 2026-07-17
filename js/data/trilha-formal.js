@@ -56,7 +56,7 @@ export async function getChildTrailModules(childTrailId) {
 export async function getChildTrailMissions(childTrailModuleId) {
   return supabase
     .from('child_trail_missions')
-    .select('id, status, unlocked_at, completed_at, attempts_count, mission_templates ( id, position, title, molde, default_tema, default_config )')
+    .select('id, status, unlocked_at, completed_at, attempts_count, mission_templates ( id, position, title, molde, emblema, default_tema, default_config )')
     .eq('child_trail_module_id', childTrailModuleId)
     .order('position', { foreignTable: 'mission_templates' })
 }

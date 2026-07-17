@@ -776,7 +776,7 @@ function renderSessionForm(cycle, onSaved) {
   async function loadPendingExecucoes() {
     pendingWrap.replaceChildren()
     pendingWrap.hidden = false
-    const { data, error } = await listPendingExecucoes(cycle.child_id)
+    const { data, error } = await listPendingExecucoes(cycle.child_id, cycle.id)
 
     if (error) {
       pendingWrap.append(el('p', 'execucoes-msg', 'Não conseguimos carregar as execuções pendentes agora.'))
@@ -1296,7 +1296,7 @@ function buildResumoPanel(cycle, { openForm }) {
     if (isActive) {
       ;[modRes, exeRes] = await Promise.all([
         trail ? getChildTrailModules(trail.id) : Promise.resolve({ data: [], error: null }),
-        listPendingExecucoes(cycle.child_id),
+        listPendingExecucoes(cycle.child_id, cycle.id),
       ])
       // Erro nas missões afeta só o sinal informativo MISSAO_DISPONIVEL, não
       // é crítico pra derivar o estado — não bloqueia o Resumo.
@@ -1951,52 +1951,81 @@ function buildPlanPanel(cycle, state) {
 
   const podePreparar = state === 'cycle_active'
   const bloqueadoMsg = {
-    cycle_planned: 'A trilha libera quando a equipe ativar o ciclo.',
-    cycle_paused: 'A trilha fica bloqueada enquanto o ciclo estiver pausado.',
-    cycle_completed: 'Este ciclo já foi concluído — a trilha abaixo fica só como histórico.',
+    cycle_planned: 'A jornada libera quando a equipe ativar o ciclo.',
+    cycle_paused: 'A jornada fica bloqueada enquanto o ciclo estiver pausado.',
+    cycle_completed: 'Este ciclo já foi concluído — a jornada abaixo fica só como histórico.',
   }[state]
 
-  const card = el('div', 'card')
-  const head = el('div', 'card-h')
-  head.append(el('h3', null, 'Trilha'))
+  const childFirst = firstName(cycle.children?.name) || 'a criança'
 
-  const pairBtn = el('button', 'btn btn-ghost btn-sm', 'Conectar dispositivo da criança')
-  pairBtn.type = 'button'
-  head.append(pairBtn)
-  card.append(head)
+  // Cabeçalho estável (identidade da jornada) + área de conteúdo (body) +
+  // card de pareamento como utilitário SEPARADO — pareamento não pertence ao
+  // ato de atribuir jornada, é ação à parte sobre o aparelho da criança.
+  const container = el('div', 'journey')
+  const header = el('header', 'journey-head')
+  header.append(el('h3', 'journey-title', `Jornada de ${childFirst}`))
+  const headerSub = el('p', 'journey-sub')
+  header.append(headerSub)
+  const body = el('div', 'journey-body')
+  const deviceCard = renderDeviceCard()
+  container.append(header, body, deviceCard)
+  panel.append(container)
 
-  const pairResult = el('div', 'trilha-pair-result')
-  pairResult.hidden = true
-  card.append(pairResult)
+  function renderDeviceCard() {
+    const card = el('div', 'card journey-device')
+    const row = el('div', 'journey-device-row')
+    const info = el('div', 'journey-device-info')
+    info.append(el('p', 'journey-device-label', 'Dispositivo da criança'))
+    info.append(el('p', 'journey-device-status', 'Nenhum dispositivo conectado'))
+    const pairBtn = el('button', 'btn btn-ghost btn-sm', 'Conectar dispositivo')
+    pairBtn.type = 'button'
+    row.append(info, pairBtn)
+    card.append(row)
 
-  pairBtn.addEventListener('click', async () => {
-    pairBtn.disabled = true
+    const pairResult = el('div', 'trilha-pair-result')
     pairResult.hidden = true
-    const { data: codigo, error: pairError } = await createPairingCode(cycle.child_id)
-    pairBtn.disabled = false
-    pairResult.hidden = false
-    pairResult.replaceChildren()
-    if (pairError) {
-      const err = el('p', 'card-copy', 'Não foi possível gerar o código agora.')
-      err.style.color = 'var(--bad)'
-      pairResult.append(err)
-      return
-    }
-    pairResult.append(el('p', 'trilha-pair-label', 'Código de pareamento — válido por 10 minutos'))
-    pairResult.append(el('p', 'trilha-pair-code', codigo))
-    pairResult.append(el('p', 'trilha-pair-hint', 'Digite este código na tela de pareamento do aparelho da criança.'))
-  })
+    card.append(pairResult)
 
-  const body = el('div', 'card-b')
-  card.append(body)
-  panel.append(card)
+    pairBtn.addEventListener('click', async () => {
+      pairBtn.disabled = true
+      pairResult.hidden = true
+      const { data: codigo, error: pairError } = await createPairingCode(cycle.child_id)
+      pairBtn.disabled = false
+      pairResult.hidden = false
+      pairResult.replaceChildren()
+      if (pairError) {
+        const err = el('p', 'card-copy', 'Não foi possível gerar o código agora.')
+        err.style.color = 'var(--bad)'
+        pairResult.append(err)
+        return
+      }
+      pairResult.append(el('p', 'trilha-pair-label', 'Código de pareamento — válido por 10 minutos'))
+      pairResult.append(el('p', 'trilha-pair-code', codigo))
+      pairResult.append(el('p', 'trilha-pair-hint', 'Digite este código na tela de pareamento do aparelho da criança.'))
+    })
+    return card
+  }
 
-  function renderBlockedNote() {
-    if (!bloqueadoMsg) return
+  function blockedNoteEl() {
+    if (!bloqueadoMsg) return null
     const note = el('div', 'locked-note')
     note.innerHTML = `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
     note.append(document.createTextNode(bloqueadoMsg))
-    body.append(note)
+    return note
+  }
+
+  // Stepper dos módulos da criança (dado real): posição + status colorido.
+  function renderStepper(modules, currentId) {
+    const stepper = el('div', 'journey-stepper')
+    modules.forEach((cm) => {
+      const tm = cm.trail_modules
+      const isCurrent = cm.id === currentId
+      const node = el('div', `journey-step journey-step--${cm.status}${isCurrent ? ' journey-step--current' : ''}`)
+      node.append(el('span', 'journey-step-dot', cm.status === 'concluido' ? '✓' : String(tm.position)))
+      node.append(el('span', 'journey-step-label', tm.title))
+      stepper.append(node)
+    })
+    return stepper
   }
 
   function renderErrorLine(container, message) {
@@ -2006,41 +2035,75 @@ function buildPlanPanel(cycle, state) {
   }
 
   async function renderAssign() {
-    body.replaceChildren(el('p', 'card-copy', 'Carregando trilhas disponíveis…'))
+    headerSub.textContent = 'Escolha um percurso recomendado ou monte um plano personalizado.'
+    body.replaceChildren(el('p', 'card-copy journey-loading', 'Carregando percursos…'))
+
     const { data: templates, error } = await listPublishedTrailTemplates()
     if (error) {
-      body.replaceChildren(el('p', 'card-copy', 'Não foi possível carregar as trilhas agora.'))
+      body.replaceChildren(el('p', 'card-copy', 'Não foi possível carregar os percursos agora.'))
       return
     }
+
+    const choices = el('div', 'journey-choices')
+
     if (!templates?.length) {
-      body.replaceChildren(el('p', 'card-copy', 'Nenhuma trilha publicada ainda.'))
+      const none = el('div', 'card journey-choice')
+      none.append(el('h4', 'journey-choice-title', 'Nenhum percurso recomendado ainda'))
+      none.append(el('p', 'journey-choice-desc', 'A equipe Cognita ainda não publicou um percurso para começar.'))
+      choices.append(none, renderCustomJourneyCard())
+      body.replaceChildren(choices)
       return
     }
 
     const template = templates[0]
     const { data: modules, error: modulesError } = await getTrailTemplateWithModules(template.id)
     if (modulesError || !modules?.length) {
-      body.replaceChildren(el('p', 'card-copy', 'Não foi possível carregar os módulos desta trilha.'))
+      body.replaceChildren(el('p', 'card-copy', 'Não foi possível carregar os módulos deste percurso.'))
       return
     }
 
-    body.replaceChildren()
-    body.append(el('p', 'card-copy', template.description || ''))
-    renderBlockedNote()
+    choices.append(renderRecommendedJourneyCard(template, modules), renderCustomJourneyCard())
+    body.replaceChildren(choices)
+  }
 
-    const field = el('div', 'field')
-    field.append(el('label', null, 'Começar em'))
-    const select = el('select')
-    modules.forEach((m) => {
-      const opt = el('option', null, `Módulo ${m.position} — ${m.title}`)
-      opt.value = m.id
-      select.append(opt)
+  function renderRecommendedJourneyCard(template, modules) {
+    const card = el('div', 'card journey-choice journey-choice--recommended')
+    card.append(el('span', 'journey-badge', 'Recomendada'))
+    card.append(el('h4', 'journey-choice-title', template.title))
+    if (template.description) card.append(el('p', 'journey-choice-desc', template.description))
+
+    const totalMissoes = modules.reduce((s, m) => s + (m.mission_templates?.length || 0), 0)
+    const meta = [
+      `${modules.length} ${modules.length === 1 ? 'módulo' : 'módulos'}`,
+      `${totalMissoes} ${totalMissoes === 1 ? 'missão' : 'missões'}`,
+    ]
+    if (template.age_min && template.age_max) meta.push(`${template.age_min}–${template.age_max} anos`)
+    card.append(el('p', 'journey-choice-meta', meta.join(' · ')))
+
+    card.append(el('p', 'journey-field-label', 'Começar em'))
+    const radios = el('div', 'journey-radios')
+    let selectedModuleId = modules[0]?.id
+    modules.forEach((m, i) => {
+      const opt = el('label', 'journey-radio')
+      const input = document.createElement('input')
+      input.type = 'radio'
+      input.name = 'journey-start-module'
+      input.value = m.id
+      if (i === 0) input.checked = true
+      input.addEventListener('change', () => { selectedModuleId = m.id })
+      const txt = el('span', 'journey-radio-text')
+      txt.append(el('span', 'journey-radio-title', `Módulo ${m.position} — ${m.title}`))
+      if (m.objective) txt.append(el('span', 'journey-radio-sub', m.objective))
+      opt.append(input, txt)
+      radios.append(opt)
     })
-    field.append(select)
-    body.append(field)
+    card.append(radios)
+
+    const bn = blockedNoteEl()
+    if (bn) card.append(bn)
 
     if (podePreparar) {
-      const btn = el('button', 'btn btn-accent btn-sm', `Atribuir "${template.title}"`)
+      const btn = el('button', 'btn btn-accent journey-cta', `Começar jornada com ${childFirst}`)
       btn.type = 'button'
       btn.addEventListener('click', async () => {
         btn.disabled = true
@@ -2048,17 +2111,31 @@ function buildPlanPanel(cycle, state) {
           childId: cycle.child_id,
           cycleId: cycle.id,
           trailTemplateId: template.id,
-          startingModuleId: select.value,
+          startingModuleId: selectedModuleId,
         })
         if (assignError) {
           btn.disabled = false
-          renderErrorLine(body, assignError.message)
+          renderErrorLine(card, assignError.message)
           return
         }
         load()
       })
-      body.append(btn)
+      card.append(btn)
     }
+    return card
+  }
+
+  // Porta pra Fase B (jornada personalizada). Honesto: aria-disabled, sem
+  // clique, sem toast falso. Quando B existir, este card ganha o botão.
+  function renderCustomJourneyCard() {
+    const card = el('div', 'card journey-choice journey-choice--custom')
+    card.setAttribute('aria-disabled', 'true')
+    const head = el('div', 'journey-choice-customhead')
+    head.append(el('h4', 'journey-choice-title', 'Criar jornada personalizada'))
+    head.append(el('span', 'journey-soon', 'Em breve'))
+    card.append(head)
+    card.append(el('p', 'journey-choice-desc', 'Organize suas atividades preparadas em módulos e missões.'))
+    return card
   }
 
   // Lista só os módulos CONCLUÍDOS como histórico compacto; o módulo atual
@@ -2079,46 +2156,44 @@ function buildPlanPanel(cycle, state) {
     const totalModulos = templateModules?.length || modules.length
 
     body.replaceChildren()
-    body.append(el('p', 'trilha-summary', childTrail.trail_templates?.title || 'Trilha'))
-    renderBlockedNote()
+    headerSub.textContent = childTrail.trail_templates?.title || 'Jornada'
 
     if (childTrail.status === 'concluida') {
-      body.append(el('p', 'trilha-complete-banner', 'Trilha concluída! 🎉'))
+      body.append(el('p', 'trilha-complete-banner', 'Jornada concluída! 🎉'))
+    } else if (childTrail.status === 'pausada') {
+      body.append(el('p', 'card-copy', 'Esta jornada está pausada.'))
+    }
+
+    const bn = blockedNoteEl()
+    if (bn) body.append(bn)
+
+    const current = modules.find((cm) => cm.status !== 'concluido')
+
+    // Progresso + stepper. A contagem de missões ("N de M") é preenchida
+    // adiante, quando o módulo atual estiver liberado e as missões carregarem.
+    const currentPos = current?.trail_modules?.position ?? totalModulos
+    const progressEl = el('p', 'journey-progress', `Módulo ${currentPos} de ${totalModulos}`)
+    body.append(progressEl)
+    body.append(renderStepper(modules, current?.id))
+
+    if (childTrail.status === 'concluida') {
       appendChildAppLink(body, cycle, 'Ver jornada concluída')
-      // Só existe 1 trilha oficial hoje, então "de novo" = a mesma —
-      // decisão de currículo (variar o que a criança refaz) fica pra
-      // quando existir 2ª trilha; isso aqui só desbloqueia o CRUD que já
-      // existe (assign_child_trail não trava em 'concluida', só 'ativa').
+      // Só existe 1 jornada oficial hoje, então "de novo" = a mesma — variar
+      // o que a criança refaz é decisão de currículo pra quando existir 2ª.
       if (podePreparar) {
-        const denovoBtn = el('button', 'btn btn-accent btn-sm', 'Atribuir trilha de novo')
+        const denovoBtn = el('button', 'btn btn-accent btn-sm', 'Atribuir jornada de novo')
         denovoBtn.type = 'button'
         denovoBtn.addEventListener('click', () => renderAssign())
         body.append(denovoBtn)
       }
-    } else if (childTrail.status === 'pausada') {
-      body.append(el('p', 'card-copy', 'Esta trilha está pausada.'))
     }
 
-    const concluidos = modules.filter((cm) => cm.status === 'concluido')
-    if (concluidos.length) {
-      const history = el('div', 'trilha-history')
-      concluidos.forEach((cm) => {
-        const tm = cm.trail_modules
-        const row = el('div', 'trilha-history-row')
-        row.append(el('span', null, `${tm.position}. ${tm.title}`))
-        row.append(el('span', 'trilha-formal-status trilha-formal-status--concluido', 'Concluído'))
-        history.append(row)
-      })
-      body.append(history)
-    }
-
-    const current = modules.find((cm) => cm.status !== 'concluido')
     if (!current) return
 
     const tm = current.trail_modules
-    const currentCard = el('div', 'trilha-current-card')
+    const currentCard = el('div', 'trilha-current-card journey-current')
     const currentHead = el('div', 'trilha-current-head')
-    currentHead.append(el('span', 'trilha-current-kicker', `Módulo ${tm.position} de ${totalModulos}`))
+    currentHead.append(el('span', 'trilha-current-kicker', `Módulo atual · ${tm.position} de ${totalModulos}`))
     currentHead.append(el('span', `trilha-formal-status trilha-formal-status--${current.status}`, MODULE_STATUS_LABEL[current.status] || current.status))
     currentCard.append(currentHead)
     currentCard.append(el('h4', null, tm.title))
@@ -2171,10 +2246,20 @@ function buildPlanPanel(cycle, state) {
       let reopenPanel
       if (!missionsError && missions) {
         const missionsList = el('div', 'trilha-formal-missions')
+        const concluidasN = missions.filter((m) => m.status === 'concluida').length
+        progressEl.append(document.createTextNode(` · ${concluidasN} de ${missions.length} missões`))
         missions.forEach((cmi) => {
           const mt = cmi.mission_templates
           const row = el('div', 'trilha-formal-mission-row')
-          row.append(el('span', null, `${mt.position}. ${mt.title}`))
+          const left = el('span', 'trilha-formal-mission-left')
+          if (mt.emblema) {
+            const emblem = el('img', 'journey-mission-emblem')
+            emblem.src = `../assets/trilha/emblemas/${mt.emblema}.webp`
+            emblem.alt = ''
+            left.append(emblem)
+          }
+          left.append(document.createTextNode(`${mt.position}. ${mt.title}`))
+          row.append(left)
           row.append(el('span', `trilha-formal-status trilha-formal-status--${cmi.status}`, MISSION_STATUS_LABEL[cmi.status] || cmi.status))
           // Só faz sentido escolher uma missão pra repetir/adaptar quando o
           // módulo inteiro está em revisão (todas concluídas) — não durante
