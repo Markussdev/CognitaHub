@@ -165,7 +165,7 @@ function normalizarMissao(row) {
 // Núcleo compartilhado pelas duas portas de entrada — tudo daqui pra baixo
 // não sabe (nem precisa saber) se veio do modo demonstração ou de um
 // dispositivo pareado de verdade.
-async function mostrarTrilhaComum({ childId, cycleId, childName, sairHref, buildVoltarUrl }) {
+async function mostrarTrilhaComum({ childId, cycleId, childName, sairHref, buildVoltarUrl, sandbox = false }) {
   root.replaceChildren()
 
   const { data: childTrail, error: trailError } = await getLatestChildTrail(childId, cycleId)
@@ -236,14 +236,22 @@ async function mostrarTrilhaComum({ childId, cycleId, childName, sairHref, build
   // mapa já reflete o atividade_execucao novo (acabou de ser recarregado
   // acima), não depende do tutor ter registrado sessão.
   if (params.get('voltou') === '1') {
-    const banner = el('p', null, moduloCompleto ? 'Você terminou o módulo! 🎉' : 'Missão concluída! Muito bem! 🎉')
-    banner.style.cssText = 'text-align:center;color:var(--ok);font-weight:800;padding:0 24px 16px;'
+    // Em sandbox (prévia do tutor) nada foi concluído de verdade — não repetir
+    // o sinal falso de "missão concluída".
+    const banner = el('p', null,
+      sandbox ? 'Prévia encerrada — nada foi alterado.'
+        : moduloCompleto ? 'Você terminou o módulo! 🎉'
+          : 'Missão concluída! Muito bem! 🎉')
+    banner.style.cssText = sandbox
+      ? 'text-align:center;color:var(--ink-soft);font-weight:700;padding:0 24px 16px;'
+      : 'text-align:center;color:var(--ok);font-weight:800;padding:0 24px 16px;'
     root.append(banner)
   }
 
   const onOpenMission = (missao) => {
     if (!missao.childActivityId) return
     const destino = new URLSearchParams({ activity: missao.childActivityId, return: buildVoltarUrl() })
+    if (sandbox) destino.set('sandbox', '1') // prévia do tutor: modo-crianca não grava nem avança
     window.location.href = `modo-crianca.html?${destino.toString()}`
   }
 
@@ -285,6 +293,7 @@ async function iniciarModoDemo() {
     childName,
     sairHref: 'tutor.html?view=record&tab=plan',
     buildVoltarUrl: () => `app-crianca.html?${new URLSearchParams({ cycle_id: cycle.id, demo: '1', voltou: '1' }).toString()}`,
+    sandbox: true, // Porta 1 (tutor testando pelo painel) é sempre prévia — nunca grava
   })
 
   root.replaceChildren()

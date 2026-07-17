@@ -32,14 +32,25 @@ function pickRandom(list) {
   return list[Math.floor(Math.random() * list.length)]
 }
 
+// Banner fixo do modo sandbox (prévia do tutor pela Jornada). pointer-events
+// none pra não bloquear os controles da casca por baixo.
+function mostrarBannerSandbox() {
+  const banner = document.createElement('div')
+  banner.setAttribute('role', 'status')
+  banner.textContent = 'Modo de teste do tutor — respostas e progresso não serão salvos.'
+  banner.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:9999;pointer-events:none;background:rgba(20,17,98,.94);color:#fff;font-family:'Atkinson Hyperlegible',sans-serif;font-size:0.8rem;font-weight:700;text-align:center;padding:7px 16px;"
+  document.body.append(banner)
+}
+
 // A máquina de estados: um estado de cada vez, sem cadeado e sem streak
 // entre eles (guardrail da direção de design). "Adaptação" não é um estado
 // visual — é a folha do adulto mexendo em config e voltando pra 'atividade'.
 class ModoCrianca {
-  constructor(contract, authSession, { previewMode = false } = {}) {
+  constructor(contract, authSession, { previewMode = false, sandbox = false } = {}) {
     this.contract = contract
     this.authSession = authSession
     this.previewMode = previewMode
+    this.sandbox = sandbox
     this.config = { ...contract.config }
     // Modo prévia (form de composição do tutor) pula direto pra 'atividade':
     // o que importa ali é ver o palco funcionando, não o acolhimento.
@@ -305,7 +316,7 @@ class ModoCrianca {
   async sair() {
     const execucao = this.montarAtividadeExecucao()
 
-    if (this.contract._childActivityId && this.authSession) {
+    if (!this.sandbox && this.contract._childActivityId && this.authSession) {
       const { error } = await createAtividadeExecucao({
         childActivityId: this.contract._childActivityId,
         childId: this.contract._childId,
@@ -323,7 +334,7 @@ class ModoCrianca {
         return
       }
     } else {
-      console.info('[modo-crianca] atividade_execucao (modo demonstração, não gravado)', execucao)
+      console.info(`[modo-crianca] atividade_execucao NÃO gravada (${this.sandbox ? 'sandbox/prévia do tutor' : 'modo stub'})`, execucao)
     }
 
     const params = new URLSearchParams(window.location.search)
@@ -420,7 +431,9 @@ class ModoCrianca {
     if (this.state === 'encerramento') {
       this.el.encerramentoTitulo.textContent = this.contract.encerramento.titulo
       const vezes = this.config.rodadas === 1 ? 'vez' : 'vezes'
-      this.el.encerramentoResumo.textContent = formatTemplate(this.contract.encerramento.resumo, { ...this.config, vezes })
+      this.el.encerramentoResumo.textContent = this.sandbox
+        ? 'Prévia concluída. Nenhum progresso foi alterado.'
+        : formatTemplate(this.contract.encerramento.resumo, { ...this.config, vezes })
     }
 
     this.el.adultBtn.hidden = this.state === 'encerramento'
@@ -430,6 +443,7 @@ class ModoCrianca {
 const params = new URLSearchParams(window.location.search)
 const activityId = params.get('activity')
 const isPreview = params.get('preview') === '1'
+const isSandbox = params.get('sandbox') === '1'
 
 if (isPreview) {
   // Embutido como <iframe> no form de composição do tutor (tutor.js) — a
@@ -504,7 +518,8 @@ if (isPreview) {
         </div>`
     } else {
       if (!contract) contract = getStubActivityContract()
-      const instance = new ModoCrianca(contract, authSession)
+      if (isSandbox) mostrarBannerSandbox()
+      const instance = new ModoCrianca(contract, authSession, { sandbox: isSandbox })
       window.CognitaModoCrianca = {
         reportarResultado: (kind) => instance.reportarResultado(kind),
       }

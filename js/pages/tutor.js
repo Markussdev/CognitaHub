@@ -2381,7 +2381,7 @@ function buildPlanPanel(cycle, state) {
       }
     }
 
-    appendChildAppLink(currentCard, cycle, 'Testar como criança')
+    appendChildAppLink(currentCard, cycle, 'Pré-visualizar como criança')
     body.append(currentCard)
   }
 
