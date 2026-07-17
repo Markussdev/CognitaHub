@@ -2065,8 +2065,12 @@ function buildPlanPanel(cycle, state) {
 
     // Renderiza TODOS os percursos publicados (não só o primeiro) — quando
     // existir mais de uma jornada oficial, cada uma vira um card recomendado.
+    // oficiais (todas) + privadas do tutor SÓ desta criança (defensivo — a
+    // RLS já não devolve as de outra criança/outro tutor).
+    const relevantes = (templates ?? []).filter((t) =>
+      t.visibility !== 'private' || t.target_child_id === cycle.child_id)
     const comModulos = await Promise.all(
-      (templates ?? []).map((t) =>
+      relevantes.map((t) =>
         getTrailTemplateWithModules(t.id).then((r) => ({ template: t, modules: r.data ?? [] }))
       )
     )
@@ -2075,20 +2079,23 @@ function buildPlanPanel(cycle, state) {
     if (!renderaveis.length) {
       const none = el('div', 'card journey-choice')
       none.append(el('h4', 'journey-choice-title', 'Nenhum percurso recomendado ainda'))
-      none.append(el('p', 'journey-choice-desc', 'A equipe Cognita ainda não publicou um percurso para começar.'))
+      none.append(el('p', 'journey-choice-desc', 'A equipe Cognita ainda não publicou um percurso — mas você pode montar uma jornada personalizada.'))
       choices.append(none, renderCustomJourneyCard())
       body.replaceChildren(choices)
       return
     }
 
-    renderaveis.forEach(({ template, modules }) => choices.append(renderRecommendedJourneyCard(template, modules)))
+    renderaveis.forEach(({ template, modules }) => {
+      const badge = template.visibility === 'private' ? 'Sua jornada' : 'Recomendada'
+      choices.append(renderRecommendedJourneyCard(template, modules, badge))
+    })
     choices.append(renderCustomJourneyCard())
     body.replaceChildren(choices)
   }
 
-  function renderRecommendedJourneyCard(template, modules) {
+  function renderRecommendedJourneyCard(template, modules, badgeLabel = 'Recomendada') {
     const card = el('div', 'card journey-choice journey-choice--recommended')
-    card.append(el('span', 'journey-badge', 'Recomendada'))
+    card.append(el('span', 'journey-badge', badgeLabel))
     card.append(el('h4', 'journey-choice-title', template.title))
     if (template.description) card.append(el('p', 'journey-choice-desc', template.description))
 
@@ -2145,16 +2152,16 @@ function buildPlanPanel(cycle, state) {
     return card
   }
 
-  // Porta pra Fase B (jornada personalizada). Honesto: aria-disabled, sem
-  // clique, sem toast falso. Quando B existir, este card ganha o botão.
+  // Porta pro builder de jornada personalizada (Fase 15).
   function renderCustomJourneyCard() {
     const card = el('div', 'card journey-choice journey-choice--custom')
-    card.setAttribute('aria-disabled', 'true')
-    const head = el('div', 'journey-choice-customhead')
-    head.append(el('h4', 'journey-choice-title', 'Criar jornada personalizada'))
-    head.append(el('span', 'journey-soon', 'Em breve'))
-    card.append(head)
+    card.append(el('h4', 'journey-choice-title', 'Criar jornada personalizada'))
     card.append(el('p', 'journey-choice-desc', 'Organize suas atividades preparadas em módulos e missões.'))
+    const p = new URLSearchParams({ child_id: cycle.child_id ?? '', child_name: childFirst })
+    if (cycle.id) p.set('cycle_id', cycle.id)
+    const link = el('a', 'btn btn-ghost journey-cta', 'Criar jornada')
+    link.href = `builder-jornada.html?${p.toString()}`
+    card.append(link)
     return card
   }
 

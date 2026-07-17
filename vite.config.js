@@ -14,6 +14,7 @@ module.exports = {
         admin: resolve(__dirname, 'pages/admin.html'),
         tutor: resolve(__dirname, 'pages/tutor.html'),
         trilha: resolve(__dirname, 'pages/trilha.html'),
+        builderJornada: resolve(__dirname, 'pages/builder-jornada.html'),
         appCrianca: resolve(__dirname, 'pages/app-crianca.html'),
         responsavel: resolve(__dirname, 'pages/responsavel.html'),
 

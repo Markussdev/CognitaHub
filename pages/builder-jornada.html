@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cognita | Construir jornada</title>
+  <link rel="stylesheet" href="../css/tokens.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+      background: var(--paper, #fffffc);
+      color: var(--ink, #230220);
+      line-height: 1.5;
+    }
+    .bj-wrap { max-width: 860px; margin: 0 auto; padding: 24px 20px 80px; }
+
+    .bj-topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+    .bj-back { font-size: 0.86rem; font-weight: 700; color: var(--brand, #141162); text-decoration: none; }
+    .bj-back:hover { text-decoration: underline; }
+
+    .bj-title { margin: 0; font-size: 1.5rem; color: var(--brand-deep, #540042); }
+    .bj-sub { margin: 4px 0 0; font-size: 0.9rem; color: var(--ink-soft, #5b4a58); }
+
+    .bj-card {
+      background: var(--paper-raised, #fff);
+      border: 1px solid rgba(20, 17, 98, 0.12);
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(20, 17, 98, 0.06);
+      padding: 20px;
+      margin-top: 16px;
+    }
+    .bj-card h3 { margin: 0 0 12px; font-size: 1.05rem; }
+
+    .bj-field { display: grid; gap: 6px; margin-bottom: 14px; }
+    .bj-field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-soft, #5b4a58); }
+    .bj-field input, .bj-field textarea {
+      font: inherit; padding: 10px 12px; border: 1px solid rgba(20, 17, 98, 0.18);
+      border-radius: 10px; background: #fff; color: var(--ink, #230220);
+    }
+    .bj-field textarea { min-height: 64px; resize: vertical; }
+    .bj-field input:focus, .bj-field textarea:focus { outline: 2px solid var(--brand, #141162); outline-offset: 1px; }
+
+    .btn {
+      font: inherit; font-weight: 700; font-size: 0.88rem; border: 1px solid transparent;
+      border-radius: 10px; padding: 9px 16px; cursor: pointer; background: none; color: var(--ink, #230220);
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn:focus-visible { outline: 2px solid var(--brand, #141162); outline-offset: 2px; }
+    .btn-accent { background: var(--accent, #ffa800); color: #241a02; }
+    .btn-primary { background: var(--brand, #141162); color: #fff; }
+    .btn-ghost { border-color: rgba(20, 17, 98, 0.22); }
+    .btn-bad { border-color: rgba(163, 18, 58, 0.4); color: var(--bad, #a3123a); }
+    .btn-sm { padding: 6px 11px; font-size: 0.82rem; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-icon { padding: 5px 8px; font-size: 0.9rem; line-height: 1; }
+
+    .bj-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .bj-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+
+    .bj-module { border: 1px solid rgba(20, 17, 98, 0.14); border-radius: 12px; padding: 14px; margin-top: 12px; background: #fff; }
+    .bj-module-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+    .bj-module-kicker { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft, #5b4a58); }
+    .bj-module-tools { display: flex; gap: 4px; }
+
+    .bj-mission { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border: 1px solid rgba(20, 17, 98, 0.12); border-radius: 9px; margin-top: 8px; }
+    .bj-mission-pos { width: 22px; height: 22px; border-radius: 50%; background: rgba(20, 17, 98, 0.07); color: var(--brand, #141162); display: grid; place-items: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; }
+    .bj-mission-body { flex: 1; min-width: 0; }
+    .bj-mission-title { font-size: 0.9rem; font-weight: 600; }
+    .bj-mission-meta { font-size: 0.78rem; color: var(--ink-soft, #5b4a58); }
+    .bj-mission-tools { display: flex; gap: 4px; flex-shrink: 0; }
+
+    .bj-picker { margin-top: 10px; border: 1px dashed rgba(20, 17, 98, 0.25); border-radius: 9px; padding: 10px; }
+    .bj-picker-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 9px; border-radius: 8px; cursor: pointer; }
+    .bj-picker-item:hover { background: rgba(20, 17, 98, 0.05); }
+
+    .bj-badge { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 9px; border-radius: 999px; }
+    .bj-badge--draft { color: var(--warn, #b3590a); background: rgba(179, 89, 10, 0.1); }
+    .bj-badge--published { color: var(--ok, #1c7c54); background: rgba(28, 124, 84, 0.1); }
+
+    .bj-list-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid rgba(20, 17, 98, 0.1); }
+    .bj-list-item:first-child { border-top: none; }
+
+    .bj-msg { font-size: 0.85rem; padding: 10px 12px; border-radius: 9px; margin-top: 12px; }
+    .bj-msg--err { color: var(--bad, #a3123a); background: rgba(163, 18, 58, 0.08); }
+    .bj-msg--ok { color: var(--ok, #1c7c54); background: rgba(28, 124, 84, 0.08); }
+    .bj-empty { color: var(--ink-soft, #5b4a58); font-size: 0.9rem; }
+    .bj-hint { color: var(--ink-soft, #5b4a58); font-size: 0.82rem; margin: 4px 0 0; }
+  </style>
+</head>
+<body>
+  <div id="builder-root" class="bj-wrap">
+    <p class="bj-empty">Carregando…</p>
+  </div>
+  <script type="module" src="../js/pages/builder-jornada.js"></script>
+</body>
+</html>

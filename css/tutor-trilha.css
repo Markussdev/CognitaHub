@@ -181,7 +181,7 @@
    lúdico da criança (esse vive no app infantil).
    ============================================================ */
 
-[data-panel="plan"] .journey { display: grid; gap: var(--sp-5); }
+[data-panel="plan"] .journey { display: grid; gap: var(--sp-4); }
 
 [data-panel="plan"] .journey-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); }
 [data-panel="plan"] .journey-head-text { display: grid; gap: 4px; min-width: 0; }

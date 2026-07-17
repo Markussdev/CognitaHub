@@ -7,10 +7,13 @@ import { supabase } from '../lib/supabase.js'
 
 // ── Catálogo (conteúdo pedagógico, igual pra qualquer criança) ────────────
 
+// visibility + target_child_id no select pra o painel distinguir "Recomendada"
+// (oficial) de "Sua jornada" (privada do tutor) — a RLS já só devolve as
+// privadas que o tutor pode ver (as dele). Filtro por criança fica no chamador.
 export async function listPublishedTrailTemplates() {
   return supabase
     .from('trail_templates')
-    .select('id, slug, title, description, track_type, age_min, age_max')
+    .select('id, slug, title, description, track_type, age_min, age_max, visibility, target_child_id')
     .eq('status', 'published')
     .order('title')
 }
