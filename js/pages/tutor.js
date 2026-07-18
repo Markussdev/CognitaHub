@@ -16,6 +16,8 @@ import {
 } from '../data/trilha-formal.js'
 import { createPairingCode, listPairedDevices } from '../data/pareamento.js'
 import { derivarEstadoResumo, ESTADOS_RESUMO, moduloAtualDe } from './resumo-estado.js'
+import { closeRailDrawer, wireRailToggle } from '../lib/rail.js'
+import { DIGITAL_PRESETS } from '../data/digital-presets.js'
 
 const session = await requireRole('tutor')
 const stateBox = document.querySelector('[data-tutor-state]')
@@ -40,6 +42,43 @@ let pendingEtapaParams = null
   }
 }
 
+// Detecta ?preset=<slug> (vem da Biblioteca via "Personalizar para Mateus")
+// — resolvido contra o registro local (js/data/digital-presets.js), sem
+// round-trip ao banco. Consumido em renderRecord, abre o assistente de
+// Atividades já no passo 2 com molde/tema/config prontos.
+let pendingPreset = null
+{
+  const _presetSlug = new URLSearchParams(location.search).get('preset')
+  if (_presetSlug && DIGITAL_PRESETS[_presetSlug]) pendingPreset = DIGITAL_PRESETS[_presetSlug]
+}
+
+// Detecta o retorno do Modo Condução (Biblioteca, atividade "com o tutor",
+// js/pages/atividades.js) — handoff por sessionStorage, não URL: o payload
+// pode ter texto livre (observação) e é consumo único (removido na leitura).
+// Preenche o MESMO pendingActivity que "Usar no registro" já usa — só que
+// com foco/próximo passo/duração vindos do que o tutor observou ao conduzir,
+// não um fetch novo de activities.
+{
+  const _condKey = 'cognita:conducao-result'
+  const _raw = sessionStorage.getItem(_condKey)
+  if (_raw) {
+    sessionStorage.removeItem(_condKey)
+    try {
+      const payload = JSON.parse(_raw)
+      pendingActivity = {
+        id: payload.activityId || null,
+        title: payload.title || '',
+        focus: payload.focus || '',
+        nextStep: payload.nextStep || '',
+        durationMinutes: payload.durationMinutes || null,
+        observacaoInterna: payload.observacaoInterna || '',
+      }
+    } catch {
+      // payload corrompido — ignora, o tutor cai no fluxo normal de registro.
+    }
+  }
+}
+
 document.querySelectorAll('[data-logout]').forEach((btn) => {
   btn.addEventListener('click', async (e) => { e.preventDefault(); await signOut() })
 })
@@ -49,15 +88,33 @@ document.querySelectorAll('[data-logout]').forEach((btn) => {
 // ordem (currentDerived é lido só no momento do clique, já populado).
 document.querySelector('[data-rail-home]')?.addEventListener('click', (e) => { e.preventDefault(); goHome() })
 document.querySelector('[data-rail-sessions]')?.addEventListener('click', (e) => { e.preventDefault(); goRecord('sessions') })
+// Href pra Biblioteca com o contexto completo da criança — usado pelo link
+// do rail e pelo atalho "Abrir biblioteca de atividades" do ⌘K (antes cada
+// um montava um subconjunto diferente de params; child_id sozinho já
+// quebrava "Personalizar para Mateus"/recomendações se faltasse).
+function buildLibraryHref(cycle) {
+  if (!cycle) return 'atividades.html'
+  const child = cycle.children ?? {}
+  const lp = child.learning_profiles ?? {}
+  const params = new URLSearchParams()
+  const childFirst = firstName(child.name)
+  if (childFirst) params.set('child', childFirst)
+  if (child.id) params.set('child_id', child.id)
+  if (cycle.id) params.set('cycle_id', cycle.id)
+  const age = ageFrom(child.birth_date)
+  if (age != null) params.set('age', String(age))
+  // Sinais pra "Recomendadas" da Biblioteca (regra explícita, sem IA) — dado
+  // que o painel já carregou, zero query extra em atividades.js.
+  const difficulties = toList(lp.math_difficulties).length ? toList(lp.math_difficulties) : toList(child.main_difficulties)
+  if (difficulties.length) params.set('focus', difficulties.join(','))
+  const formats = toList(lp.preferred_formats)
+  if (formats.length) params.set('pref', formats.join(','))
+  return 'atividades.html?' + params.toString()
+}
+
 document.querySelector('[data-rail-library]')?.addEventListener('click', (e) => {
   e.preventDefault()
-  const cycle = currentDerived?.cycle
-  if (!cycle) { window.location.href = 'atividades.html'; return }
-  const params = new URLSearchParams()
-  const childFirst = firstName(cycle.children?.name)
-  if (childFirst) params.set('child', childFirst)
-  if (cycle.id) params.set('cycle_id', cycle.id)
-  window.location.href = 'atividades.html?' + params.toString()
+  window.location.href = buildLibraryHref(currentDerived?.cycle)
 })
 document.querySelector('[data-rail-team]')?.addEventListener('click', (e) => {
   e.preventDefault()
@@ -67,40 +124,10 @@ document.querySelector('[data-rail-team]')?.addEventListener('click', (e) => {
 document.querySelector('[data-rail-profile]')?.addEventListener('click', (e) => { e.preventDefault(); goProfile() })
 
 // ── Drawer mobile do menu (rail) — Sprint 5A ─────────────────────────────────
-// O CSS (@media em tutor.html) já escondia o rail fora da tela em ≤940px,
-// mas não existia como reabri-lo — o tutor no celular ficava preso na tela
-// Início. É só um toggle: no desktop o botão nem aparece (display:none fora
-// da media query), então .open nunca é aplicada lá e o menu não muda.
-function openRailDrawer() {
-  document.querySelector('[data-rail]')?.classList.add('open')
-  document.querySelector('[data-rail-backdrop]')?.classList.add('open')
-  document.querySelector('[data-rail-toggle]')?.setAttribute('aria-expanded', 'true')
-  document.body.classList.add('rail-drawer-open')
-  document.querySelector('[data-rail] .rail-link')?.focus()
-}
-
-// returnFocus:false quando fecha por ter escolhido um link/botão de verdade
-// (a ação clicada já vai levar o foco pra outro lugar); true nos outros casos
-// (backdrop, Escape, toggle) — aí faz sentido devolver o foco pro hambúrguer.
-function closeRailDrawer({ returnFocus = true } = {}) {
-  document.querySelector('[data-rail]')?.classList.remove('open')
-  document.querySelector('[data-rail-backdrop]')?.classList.remove('open')
-  document.querySelector('[data-rail-toggle]')?.setAttribute('aria-expanded', 'false')
-  document.body.classList.remove('rail-drawer-open')
-  if (returnFocus) document.querySelector('[data-rail-toggle]')?.focus()
-}
-
-document.querySelector('[data-rail-toggle]')?.addEventListener('click', () => {
-  const rail = document.querySelector('[data-rail]')
-  if (rail?.classList.contains('open')) closeRailDrawer()
-  else openRailDrawer()
-})
-document.querySelector('[data-rail-backdrop]')?.addEventListener('click', () => closeRailDrawer())
-// Delegado: qualquer link/botão dentro do rail fecha o drawer, sem precisar
-// tocar nos handlers de Início/criança/Biblioteca/Sessões/equipe/perfil.
-document.querySelector('[data-rail]')?.addEventListener('click', (e) => {
-  if (e.target.closest('a, button')) closeRailDrawer({ returnFocus: false })
-})
+// Drawer mobile do rail — wiring compartilhada em js/lib/rail.js (usada
+// também por atividades.js). openRailDrawer/closeRailDrawer não moram mais
+// aqui; closeRailDrawer segue importada porque o Escape abaixo precisa dela.
+wireRailToggle()
 
 document.querySelector('[data-cmdk-trigger]')?.addEventListener('click', openCommandPalette)
 document.querySelector('[data-cmdk-backdrop]')?.addEventListener('click', closeCommandPalette)
@@ -762,6 +789,15 @@ function renderSessionForm(cycle, onSaved) {
     s.manualFoco = activity?.focus || ''
     s.proximoPasso = activity?.nextStep || ''
     s.activityId = activity?.id || null
+    // Vem do Modo Condução (Biblioteca) com a duração já cronometrada — se
+    // presente, marca durationTouched pra syncDuration() não sobrescrever.
+    if (activity?.durationMinutes) {
+      s.duration = String(activity.durationMinutes)
+      s.durationTouched = true
+    }
+    // Observação livre do Modo Condução vira nota interna (tutor-only) —
+    // não é o resumo pra família, que continua composto no Passo 3.
+    if (activity?.observacaoInterna) s.observacao = activity.observacaoInterna
     render()
   }
 
@@ -1738,6 +1774,18 @@ function renderActivityWizard(cycle, onSaved) {
     })
     setOpen(true)
   }
+  // Ponte "Personalizar para Mateus" vinda da Biblioteca (?preset=<slug>,
+  // resolvido via DIGITAL_PRESETS) — abre o passo 2 (Ajustar) já com
+  // molde/tema/config prontos; o tutor só confirma. mode 'create': salva
+  // como atividade nova, não referencia a Biblioteca por id (é só o ponto
+  // de partida, não uma cópia de registro).
+  wrap.openFromPreset = (preset) => {
+    s = withMoldeDefaults({
+      step: 2, mode: 'create', editingId: null,
+      molde: preset.molde, tema: preset.tema, config: preset.config, textTouched: false,
+    })
+    setOpen(true)
+  }
 
   const STEP_LABELS = ['Experiência', 'Ajustar', 'Revisar']
 
@@ -2208,6 +2256,9 @@ function buildActivitiesPanel(cycle, state, onSaved) {
   panel.append(stack)
 
   panel.loadTable = loadAcervo
+  // undefined nos estados bloqueados (sem wizard pra receber) — mesmo padrão
+  // de prefillFromPlano. Único chamador: a ponte ?preset=<slug> em bootstrap().
+  panel.openPreset = wizard ? (preset) => wizard.openFromPreset(preset) : undefined
   return panel
 }
 
@@ -2792,10 +2843,7 @@ function getCommandGroups() {
     quick.push({ label: 'Ver perfil pedagógico', icon: CMDK_ICONS.user, action: () => { window.location.href = `perfil-crianca.html?id=${cycle.child_id ?? ''}` } })
   }
   quick.push({ label: 'Abrir biblioteca de atividades', icon: CMDK_ICONS.book, action: () => {
-    const c = hasRecord ? currentDerived.cycle : null
-    const p = new URLSearchParams()
-    if (c) { const cf = firstName(c.children?.name); if (cf) p.set('child', cf); if (c.id) p.set('cycle_id', c.id) }
-    window.location.href = 'atividades.html' + (p.toString() ? '?' + p.toString() : '')
+    window.location.href = buildLibraryHref(hasRecord ? currentDerived.cycle : null)
   } })
   quick.push({ label: 'Falar com a equipe', icon: CMDK_ICONS.team, action: () => openSupportDrawer(childName) })
 
@@ -2981,7 +3029,7 @@ async function buildHomeView(state, cycle, openRecord) {
   const shortcuts = el('div', 'shortcut-list')
 
   const biblio = el('a', 'shortcut-item')
-  biblio.href = 'atividades.html'
+  biblio.href = buildLibraryHref(cycle)
   biblio.innerHTML = `<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`
   biblio.append(document.createTextNode('Biblioteca'))
   shortcuts.append(biblio)
@@ -3121,6 +3169,12 @@ function renderRecord(state, cycle, initialTab) {
       pendingActivity = null
       sessionForm.fillSuggestedActivity(act)
       requestAnimationFrame(() => sessionForm.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+    }
+    // Vem da Biblioteca via "Personalizar para Mateus" (?preset=<slug>).
+    if (pendingPreset && activitiesPanel.openPreset) {
+      const preset = pendingPreset
+      pendingPreset = null
+      activitiesPanel.openPreset(preset)
     }
     // Volta de trilha.html (?plan=&step=): mesma ponte que "Preparar
     // atividade desta etapa" sempre usou, só que a etapa veio por query

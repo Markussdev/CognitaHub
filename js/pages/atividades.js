@@ -1,30 +1,51 @@
 import { requireRole, signOut } from '../lib/auth.js'
 import { el, initials } from '../lib/ui.js'
 import { getAvatarUrl, setAvatarImage } from '../lib/avatar.js'
+import { wireRailToggle } from '../lib/rail.js'
 import { getActivities } from '../data/activities.js'
+import { hasDigitalPreset } from '../data/digital-presets.js'
 
-// ── Dados carregados do Supabase ─────────────────────────────────────────────
-// Populados por loadActivities(); a grade não renderiza até que estejam prontos.
+// ── Papel de cada área (não duplicar responsabilidade) ───────────────────────
+// Biblioteca = conteúdo-base e inspiração da Cognita. NÃO guarda o que o
+// tutor criou (isso é Atividades/child_activities) — oferece matéria-prima:
+// "No Modo Criança" personaliza pra virar uma child_activity real (ponte
+// ?preset=<slug> pro assistente de Atividades em tutor.js); "Com o tutor"
+// conduz uma atividade guiada e devolve o observado pra Sessões.
 
-let ACTIVITIES = []
-let SKILLS = []
+// ── Humaniza o catálogo — slug nunca aparece na UI ────────────────────────
+// Client-side de propósito: garante rótulo limpo mesmo se o embed
+// activities→skills falhar por RLS (skills.label viraria null e o mapeamento
+// anterior caía pro slug cru — era isso que aparecia nos cards).
+const SKILL_LABELS = {
+  'reconhecer-numeros': 'Reconhecimento de números',
+  'contar-1-1': 'Contagem um a um',
+  'comparar-quantidades': 'Comparação de quantidades',
+  'correspondencia': 'Correspondência número-quantidade',
+}
+const SKILL_ORDER = ['reconhecer-numeros', 'contar-1-1', 'comparar-quantidades', 'correspondencia']
+const SKILL_EMOJI = {
+  'reconhecer-numeros': '🔢',
+  'contar-1-1': '🦕',
+  'comparar-quantidades': '⚖️',
+  'correspondencia': '🐠',
+}
+const FORMAT_REASON = {
+  visual: 'usa apoio visual',
+  digital: 'é digital',
+  jogo: 'tem formato de jogo',
+  manipulavel: 'usa objetos manipuláveis',
+}
 
 const FORMATS = [
-  { id: 'visual',      label: 'Visual' },
-  { id: 'digital',     label: 'Digital' },
-  { id: 'jogo',        label: 'Jogo' },
+  { id: 'visual', label: 'Visual' },
+  { id: 'digital', label: 'Digital' },
+  { id: 'jogo', label: 'Jogo' },
   { id: 'manipulavel', label: 'Manipulável' },
 ]
 
-// ── Mapeamento DB → forma interna ────────────────────────────────────────────
+// ── Dados carregados do Supabase ─────────────────────────────────────────────
 
-function buildAgeArray(min, max) {
-  const ages = []
-  if (min <= 6 && max >= 5) ages.push('5-6')
-  if (min <= 8 && max >= 7) ages.push('7-8')
-  if (max >= 9) ages.push('9')
-  return ages
-}
+let ACTIVITIES = []
 
 function buildAgeLabel(min, max) {
   if (!min && !max) return ''
@@ -33,15 +54,14 @@ function buildAgeLabel(min, max) {
 }
 
 function mapActivity(a) {
-  const skill = a.skills
   return {
     id: a.id,
     slug: a.slug,
     title: a.title,
     skill: a.skill_id,
-    skillLabel: skill?.label || a.skill_id,
-    skillSortOrder: skill?.sort_order ?? 0,
-    ages: buildAgeArray(a.age_min, a.age_max),
+    skillLabel: SKILL_LABELS[a.skill_id] || a.skill_id,
+    ageMin: a.age_min,
+    ageMax: a.age_max,
     ageLabel: buildAgeLabel(a.age_min, a.age_max),
     formats: a.formats || [],
     estimatedMinutes: a.estimated_minutes,
@@ -57,17 +77,8 @@ function mapActivity(a) {
     seFacil: a.if_easy,
     sinalSucesso: a.success_signal,
     obsTEA: a.tea_note,
+    path: hasDigitalPreset(a.slug) ? 'digital' : 'guiada',
   }
-}
-
-function deriveSkills(activities) {
-  const seen = new Map()
-  activities.forEach((a) => {
-    if (a.skill && !seen.has(a.skill)) {
-      seen.set(a.skill, { id: a.skill, label: a.skillLabel, sort_order: a.skillSortOrder })
-    }
-  })
-  return [...seen.values()].sort((a, b) => a.sort_order - b.sort_order)
 }
 
 async function loadActivities() {
@@ -77,20 +88,22 @@ async function loadActivities() {
     return
   }
   ACTIVITIES = data.map(mapActivity)
-  SKILLS = deriveSkills(ACTIVITIES)
 }
+
+// ── URL params — contexto de criança vindo do tutor ─────────────────────────
+
+const _params = new URLSearchParams(location.search)
+const CTX_CHILD    = _params.get('child') || ''
+const CTX_CHILD_ID = _params.get('child_id') || ''
+const CTX_CYCLE    = _params.get('cycle_id') || ''
+const CTX_AGE      = _params.get('age') ? Number(_params.get('age')) : null
+const CTX_FOCUS    = (_params.get('focus') || '').split(',').filter(Boolean)
+const CTX_PREF     = (_params.get('pref') || '').split(',').filter(Boolean)
+const CTX_SKILL    = _params.get('skill') || '' // legado, ainda honrado se vier
 
 // ── Estado de filtro ─────────────────────────────────────────────────────────
 
-const state = {
-  skill: null,
-  age: null,
-  format: null,
-  time: null,
-  carga: null,
-  query: '',
-}
-
+const state = { path: 'todas', skill: null, age: null, format: null, time: null, carga: null, query: '' }
 let session = null
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -103,12 +116,6 @@ function timeClass(mins) {
   return 'longa'
 }
 
-function timeLabel(mins) {
-  if (mins <= 5) return `${mins} min (curta)`
-  if (mins <= 10) return `${mins} min (média)`
-  return `${mins} min (longa)`
-}
-
 function levelBadge(level) {
   if (level === 'facil') return ['acb-ok', 'fácil']
   if (level === 'medio') return ['acb-warn', 'médio']
@@ -118,8 +125,6 @@ function levelBadge(level) {
 function cargaBadge(carga) {
   return carga === 'baixa' ? ['acb-soft', 'carga baixa'] : ['acb-warn', 'carga média']
 }
-
-// ── SVG helpers ──────────────────────────────────────────────────────────────
 
 function svgClock() {
   const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
@@ -144,13 +149,9 @@ function svgFormats(formats) {
   })
 }
 
-// ── URL params — contexto de criança vindo do tutor ─────────────────────────
-
-const _params = new URLSearchParams(location.search)
-const CTX_CHILD    = _params.get('child') || ''      // nome da criança
-const CTX_CHILD_ID = _params.get('child_id') || ''   // id da criança
-const CTX_CYCLE    = _params.get('cycle_id') || ''   // id do ciclo
-const CTX_SKILL    = _params.get('skill') || ''      // habilidade a pré-filtrar
+function buildTutorPresetUrl(slug) {
+  return `tutor.html?${new URLSearchParams({ view: 'record', tab: 'activities', preset: slug })}`
+}
 
 // ── Identidade do rail ───────────────────────────────────────────────────────
 
@@ -167,11 +168,7 @@ async function loadIdentity() {
     const role = profile.role
     const homeHref = ROLE_HOME[role] || 'login.html'
 
-    const set = (sel, val) => {
-      const n = $(sel)
-      if (n) n.textContent = val
-    }
-
+    const set = (sel, val) => { const n = $(sel); if (n) n.textContent = val }
     set('[data-account-name]', name)
     set('[data-account-role]', ROLE_LABELS[role] || role)
     set('[data-rail-role]', ROLE_LABELS[role] || role)
@@ -186,11 +183,9 @@ async function loadIdentity() {
       }
     }
 
-    // Início → home da role
     const homeLink = $('[data-rail-home]')
     if (homeLink) homeLink.href = homeHref
 
-    // Acompanhamento — mostra se há contexto de criança
     const acmpGroup = $('[data-rail-acomp-group]')
     const childSlot = $('[data-rail-child-slot]')
     if (CTX_CHILD && acmpGroup && childSlot) {
@@ -202,7 +197,6 @@ async function loadIdentity() {
       childSlot.replaceChildren(link)
     }
 
-    // Sessões → volta para tutor com tab sessions
     const sessLink = $('[data-rail-sessions]')
     if (sessLink) {
       sessLink.addEventListener('click', (e) => {
@@ -213,20 +207,17 @@ async function loadIdentity() {
       })
     }
 
-    // Meu perfil → abre a view de perfil no painel
     $('[data-rail-profile]')?.addEventListener('click', (e) => {
       e.preventDefault()
       const back = encodeURIComponent(location.pathname + location.search)
       window.location.href = `tutor.html?view=profile&return=${back}`
     })
 
-    // Suporte
     $('[data-rail-team]')?.addEventListener('click', (e) => {
       e.preventDefault()
       openSupportDrawer()
     })
 
-    // Logout
     document.querySelectorAll('[data-logout]').forEach((btn) => {
       btn.addEventListener('click', async (e) => { e.preventDefault(); await signOut() })
     })
@@ -239,13 +230,11 @@ async function loadIdentity() {
 
 function buildSupportBody() {
   const frag = document.createDocumentFragment()
-
   if (CTX_CHILD) {
     const ctx = el('div', 'support-context')
     ctx.append(document.createTextNode('Sobre: '), el('b', null, CTX_CHILD))
     frag.append(ctx)
   }
-
   frag.append(el('p', null, 'Quando algo sair do esperado, a equipe está aqui. Fale direto ou deixe uma mensagem.'))
 
   const msgField = el('div', 'field')
@@ -257,17 +246,15 @@ function buildSupportBody() {
   frag.append(msgField)
 
   frag.append(el('div', 'support-divider'))
-
   frag.append(el('p', null, 'Para algo urgente, fale direto. Tempo médio de resposta: até 48h.'))
   const actions = el('div', 'support-actions')
   const mail = el('a', 'btn-outline', 'Enviar e-mail')
-  mail.href = `mailto:equipecognita@email.com?subject=${encodeURIComponent(CTX_CHILD ? `Ajuda no ciclo de ${CTX_CHILD}` : 'Ajuda no Cognita Hub')}`
+  mail.href = `mailto:cognitahub1@gmail.com?subject=${encodeURIComponent(CTX_CHILD ? `Ajuda no ciclo de ${CTX_CHILD}` : 'Ajuda no Cognita Hub')}`
   const whats = el('a', 'btn-outline', 'WhatsApp')
-  whats.href = 'https://wa.me/5500000000000'
+  whats.href = 'https://wa.me/559182050907'
   whats.target = '_blank'; whats.rel = 'noopener'
   actions.append(mail, whats)
   frag.append(actions)
-
   return frag
 }
 
@@ -288,79 +275,155 @@ function closeSupportDrawer() {
   $('[data-support-drawer]')?.setAttribute('aria-hidden', 'true')
 }
 
-// ── Filtros ──────────────────────────────────────────────────────────────────
+// ── Recomendadas — regra explícita, sem IA ───────────────────────────────────
+// Pontua com sinais que o tutor já vê no painel (foco do ciclo, preferência
+// de formato, idade, duração, carga sensorial) e explica o motivo por
+// extenso. Nunca força recomendação sem pelo menos um motivo real — sem
+// contexto de criança (ou sem nenhum sinal batendo), a seção some.
+
+function scoreActivity(a) {
+  const reasons = []
+  let score = 0
+  if (CTX_FOCUS.includes(a.skill)) { score += 3; reasons.push(`trabalha ${a.skillLabel.toLowerCase()}`) }
+  if (CTX_AGE != null && a.ageMin != null && a.ageMax != null && CTX_AGE >= a.ageMin && CTX_AGE <= a.ageMax) score += 1
+  const prefHit = CTX_PREF.find((f) => a.formats.includes(f))
+  if (prefHit && FORMAT_REASON[prefHit]) { score += 1; reasons.push(FORMAT_REASON[prefHit]) }
+  if (a.estimatedMinutes <= 10) { score += 1; reasons.push(`dura só ${a.estimatedMinutes} min`) }
+  if (a.carga === 'baixa') { score += 1; reasons.push('tem carga sensorial baixa') }
+  return { score, reasons: reasons.slice(0, 3) }
+}
+
+function renderRecommended() {
+  const section = $('#lib-recommended')
+  const sub = $('#lib-recommended-sub')
+  const grid = $('#rec-grid')
+  if (!section || !grid) return
+
+  if (!CTX_CHILD_ID || !ACTIVITIES.length) { section.hidden = true; return }
+
+  const scored = ACTIVITIES
+    .map((a) => ({ a, ...scoreActivity(a) }))
+    .filter((x) => x.score > 0)
+    .sort((x, y) => y.score - x.score)
+    .slice(0, 3)
+
+  if (!scored.length) { section.hidden = true; return }
+
+  section.hidden = false
+  sub.textContent = CTX_CHILD ? `Combinam com o que ${CTX_CHILD} está trabalhando agora.` : 'Combinam com o perfil atual.'
+  grid.replaceChildren()
+  scored.forEach(({ a, reasons }) => {
+    const card = el('div', 'rec-card')
+    card.append(el('div', 'rec-why', `Recomendada porque ${reasons.join(', ')}.`))
+    card.append(el('div', 'rec-title', `${SKILL_EMOJI[a.skill] || '✨'} ${a.title}`))
+    card.append(el('div', 'rec-meta', `${a.ageLabel} · ${a.estimatedMinutes} min`))
+    const actions = el('div', 'rec-card-actions')
+    actions.append(buildPrimaryCta(a, 'btn-brand-sm'))
+    const roteiro = el('button', 'btn-ghost-sm', 'Ver roteiro')
+    roteiro.type = 'button'
+    roteiro.addEventListener('click', () => openDrawer(a))
+    actions.append(roteiro)
+    card.append(actions)
+    grid.append(card)
+  })
+}
+
+// ── Caminhos (Todas / No Modo Criança / Com o tutor) ─────────────────────────
+
+const PATHS = [
+  { id: 'todas', label: 'Todas' },
+  { id: 'digital', label: 'No Modo Criança' },
+  { id: 'guiada', label: 'Com o tutor' },
+]
+
+function renderPaths() {
+  const container = $('#lib-paths')
+  if (!container) return
+  container.replaceChildren()
+  PATHS.forEach(({ id, label }) => {
+    const n = id === 'todas' ? ACTIVITIES.length : ACTIVITIES.filter((a) => a.path === id).length
+    const btn = el('button', `path-tab${state.path === id ? ' on' : ''}`)
+    btn.type = 'button'
+    btn.append(document.createTextNode(label + ' '), el('span', 'n', `(${n})`))
+    btn.addEventListener('click', () => { state.path = id; update() })
+    container.append(btn)
+  })
+
+  const filtersBtn = el('button', `filters-toggle${_filtersOpen ? ' on' : ''}`)
+  filtersBtn.type = 'button'
+  filtersBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>'
+  filtersBtn.append(document.createTextNode('Filtros'))
+  filtersBtn.addEventListener('click', () => { _filtersOpen = !_filtersOpen; renderFiltersToggleState() })
+  container.append(filtersBtn)
+}
+
+let _filtersOpen = false
+function renderFiltersToggleState() {
+  $('#lib-filters')?.classList.toggle('open', _filtersOpen)
+  const btn = $('.filters-toggle')
+  btn?.classList.toggle('on', _filtersOpen)
+}
+
+// ── Filtros secundários (recolhidos por padrão) ──────────────────────────────
 
 function renderFilters() {
   const container = $('#lib-filters')
   if (!container) return
-  container.innerHTML = ''
+  container.replaceChildren()
 
-  if (!SKILLS.length) return
-
-  const chip = (label, isOn, onClick, small = false) => {
+  const chip = (label, isOn, onClick) => {
     const btn = document.createElement('button')
     btn.type = 'button'
-    btn.className = (small ? 'fchip-sm' : 'fchip') + (isOn ? ' on' : '')
+    btn.className = 'fchip-sm' + (isOn ? ' on' : '')
     btn.textContent = label
     btn.addEventListener('click', onClick)
     return btn
   }
 
-  // ── Eixo principal: Habilidade ──
-  const secLbl1 = el('span', 'filter-section-label', 'Habilidade')
-  const row1 = el('div', 'filter-row')
-  row1.append(chip('Todas', state.skill === null, () => { state.skill = null; update() }))
-  SKILLS.forEach((s) => {
-    row1.append(chip(s.label, state.skill === s.id, () => {
-      state.skill = state.skill === s.id ? null : s.id
-      update()
+  const row = el('div', 'filter-secondary-row')
+
+  const grpSkill = el('div', 'filter-sec-group')
+  SKILL_ORDER.forEach((skillId) => {
+    if (!ACTIVITIES.some((a) => a.skill === skillId)) return
+    grpSkill.append(chip(SKILL_LABELS[skillId], state.skill === skillId, () => {
+      state.skill = state.skill === skillId ? null : skillId; update()
     }))
   })
-
-  const sep = el('div', 'filter-sep')
-
-  // ── Filtros secundários ──
-  const secLbl2 = el('span', 'filter-section-label', 'Filtros')
-  const row2 = el('div', 'filter-secondary-row')
+  row.append(grpSkill, el('div', 'filter-sec-divider'))
 
   const grpIdade = el('div', 'filter-sec-group')
   ;['5-6', '7-8', '9'].forEach((age) => {
     const label = age === '9' ? '9 anos' : `${age.replace('-', '–')} anos`
-    grpIdade.append(chip(label, state.age === age, () => {
-      state.age = state.age === age ? null : age; update()
-    }, true))
+    grpIdade.append(chip(label, state.age === age, () => { state.age = state.age === age ? null : age; update() }))
   })
-
-  const div1 = el('div', 'filter-sec-divider')
+  row.append(grpIdade, el('div', 'filter-sec-divider'))
 
   const grpFmt = el('div', 'filter-sec-group')
   FORMATS.forEach((f) => {
-    grpFmt.append(chip(f.label, state.format === f.id, () => {
-      state.format = state.format === f.id ? null : f.id; update()
-    }, true))
+    grpFmt.append(chip(f.label, state.format === f.id, () => { state.format = state.format === f.id ? null : f.id; update() }))
   })
-
-  const div2 = el('div', 'filter-sec-divider')
+  row.append(grpFmt, el('div', 'filter-sec-divider'))
 
   const grpTempo = el('div', 'filter-sec-group')
   ;[['curta', '≤ 5 min'], ['media', '5–10 min'], ['longa', '> 10 min']].forEach(([id, label]) => {
-    grpTempo.append(chip(label, state.time === id, () => {
-      state.time = state.time === id ? null : id; update()
-    }, true))
+    grpTempo.append(chip(label, state.time === id, () => { state.time = state.time === id ? null : id; update() }))
   })
-
-  const div3 = el('div', 'filter-sec-divider')
+  row.append(grpTempo, el('div', 'filter-sec-divider'))
 
   const grpCarga = el('div', 'filter-sec-group')
   ;[['baixa', 'Carga baixa'], ['media', 'Carga média']].forEach(([id, label]) => {
-    grpCarga.append(chip(label, state.carga === id, () => {
-      state.carga = state.carga === id ? null : id; update()
-    }, true))
+    grpCarga.append(chip(label, state.carga === id, () => { state.carga = state.carga === id ? null : id; update() }))
   })
+  row.append(grpCarga)
 
-  row2.append(grpIdade, div1, grpFmt, div2, grpTempo, div3, grpCarga)
+  container.append(row)
+}
 
-  container.append(secLbl1, row1, sep, secLbl2, row2)
+function matchesAgeBucket(a, bucket) {
+  if (bucket === '5-6') return a.ageMin <= 6 && a.ageMax >= 5
+  if (bucket === '7-8') return a.ageMin <= 8 && a.ageMax >= 7
+  if (bucket === '9') return a.ageMax >= 9
+  return true
 }
 
 // ── Grade ────────────────────────────────────────────────────────────────────
@@ -368,8 +431,9 @@ function renderFilters() {
 function filterActivities() {
   const q = state.query.toLowerCase().trim()
   return ACTIVITIES.filter((a) => {
+    if (state.path !== 'todas' && a.path !== state.path) return false
     if (state.skill && a.skill !== state.skill) return false
-    if (state.age && !a.ages.includes(state.age)) return false
+    if (state.age && !matchesAgeBucket(a, state.age)) return false
     if (state.format && !a.formats.includes(state.format)) return false
     if (state.time && timeClass(a.estimatedMinutes) !== state.time) return false
     if (state.carga && a.carga !== state.carga) return false
@@ -378,47 +442,68 @@ function filterActivities() {
   })
 }
 
-function buildCard(a) {
-  const card = document.createElement('button')
-  card.type = 'button'
-  card.className = 'activity-card'
-  card.setAttribute('aria-label', `Abrir roteiro: ${a.title}`)
+// CTA primário — o destino muda pelo caminho da atividade, nunca "Abrir no
+// Modo Criança — em breve": o Modo Criança já existe, então a ponte é real.
+function buildPrimaryCta(a, cls) {
+  if (a.path === 'digital') {
+    const btn = el('a', cls, CTX_CHILD ? `Personalizar para ${CTX_CHILD}` : 'Personalizar')
+    if (!CTX_CHILD_ID) {
+      btn.setAttribute('aria-disabled', 'true')
+      btn.title = 'Abra a Biblioteca a partir do painel de um acompanhamento pra personalizar.'
+      btn.addEventListener('click', (e) => e.preventDefault())
+      btn.classList.add('is-disabled')
+      btn.style.opacity = '.5'; btn.style.pointerEvents = 'none'
+    } else {
+      btn.href = buildTutorPresetUrl(a.slug)
+    }
+    return btn
+  }
+  const btn = el('button', cls, CTX_CHILD ? `Conduzir com ${CTX_CHILD}` : 'Conduzir atividade')
+  btn.type = 'button'
+  btn.addEventListener('click', () => openConducao(a))
+  return btn
+}
 
-  const skill = el('span', 'ac-skill', a.skillLabel)
-  const title = el('div', 'ac-title', a.title)
-  const summary = el('p', 'ac-summary', a.resumo_curto || '')
+function buildCard(a) {
+  const card = el('div', 'activity-card')
+
+  const top = el('div', 'ac-top')
+  top.append(el('span', 'ac-emoji', SKILL_EMOJI[a.skill] || '✨'))
+  top.append(el('span', 'ac-skill', a.skillLabel))
+  card.append(top)
+
+  card.append(el('div', 'ac-title', a.title))
+  card.append(el('p', 'ac-summary', a.resumo_curto || ''))
 
   const meta = el('div', 'ac-meta')
   const clockItem = el('div', 'ac-meta-item')
   clockItem.append(svgClock())
-  clockItem.append(document.createTextNode(` ${a.estimatedMinutes} min`))
+  clockItem.append(document.createTextNode(` ${a.ageLabel} · ${a.estimatedMinutes} min`))
+  meta.append(clockItem)
   const fmtItem = el('div', 'ac-meta-item')
   svgFormats(a.formats).forEach((s) => fmtItem.append(s))
-  meta.append(clockItem, fmtItem)
+  meta.append(fmtItem)
+  card.append(meta)
 
-  const chips = el('div', 'ac-chips')
-  const [lvcls, lvlabel] = levelBadge(a.level)
-  chips.append(el('span', `acb ${lvcls}`, lvlabel))
-  const [ccls, clabel] = cargaBadge(a.carga)
-  chips.append(el('span', `acb ${ccls}`, clabel))
-  chips.append(el('span', 'acb acb-soft', a.ageLabel))
+  const pathPill = a.path === 'digital'
+    ? el('span', 'ac-path-pill digital', '● Disponível no Modo Criança')
+    : el('span', 'ac-path-pill guiada', '● Atividade com tutor')
+  card.append(pathPill)
 
   const footer = el('div', 'ac-footer')
-  const openBtn = el('button', 'btn-ghost-sm', 'Ver roteiro')
-  openBtn.type = 'button'
-  openBtn.setAttribute('aria-hidden', 'true')
-  openBtn.tabIndex = -1
-  footer.append(openBtn)
+  const roteiroBtn = el('button', 'link-roteiro', 'Ver roteiro')
+  roteiroBtn.type = 'button'
+  roteiroBtn.addEventListener('click', () => openDrawer(a))
+  footer.append(roteiroBtn, buildPrimaryCta(a, 'btn-brand-sm'))
+  card.append(footer)
 
-  card.append(skill, title, summary, meta, chips, footer)
-  card.addEventListener('click', () => openDrawer(a))
   return card
 }
 
 function renderGrid() {
   const grid = $('#lib-grid')
   if (!grid) return
-  grid.innerHTML = ''
+  grid.replaceChildren()
 
   const visible = filterActivities()
 
@@ -450,33 +535,27 @@ function renderGrid() {
 }
 
 function resetFilters() {
-  state.skill = null
-  state.age = null
-  state.format = null
-  state.time = null
-  state.carga = null
-  state.query = ''
+  state.skill = null; state.age = null; state.format = null; state.time = null; state.carga = null; state.query = ''
   const searchInput = $('#lib-search')
   if (searchInput) searchInput.value = ''
   update()
 }
 
 function update() {
+  renderPaths()
+  renderFiltersToggleState()
   renderFilters()
   renderGrid()
 }
 
-// ── Gaveta ───────────────────────────────────────────────────────────────────
+// ── Gaveta de roteiro ────────────────────────────────────────────────────────
 
 function section(labelText, ...children) {
   const wrap = el('div', 'ds')
   wrap.append(el('span', 'ds-label', labelText))
   children.forEach((c) => {
-    if (typeof c === 'string') {
-      const p = el('p'); p.textContent = c; wrap.append(p)
-    } else {
-      wrap.append(c)
-    }
+    if (typeof c === 'string') { const p = el('p'); p.textContent = c; wrap.append(p) }
+    else wrap.append(c)
   })
   return wrap
 }
@@ -485,13 +564,12 @@ function buildDrawerHead(a) {
   const wrap = document.createElement('div')
   const h2 = el('h2', null, a.title)
   const chips = el('div', 'ac-chips')
-  chips.style.marginTop = '6px'
+  chips.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;'
   const [lvcls, lvlabel] = levelBadge(a.level)
   chips.append(el('span', `acb ${lvcls}`, lvlabel))
   const [ccls, clabel] = cargaBadge(a.carga)
   chips.append(el('span', `acb ${ccls}`, clabel))
   chips.append(el('span', 'acb acb-soft', a.ageLabel))
-  chips.append(el('span', 'acb acb-soft', timeLabel(a.estimatedMinutes)))
   wrap.append(h2, chips)
   return wrap
 }
@@ -557,23 +635,11 @@ function buildDrawerBody(a) {
 
 function buildDrawerFooter(a) {
   const frag = document.createDocumentFragment()
-
-  const useBtn = el('button', 'btn-brand-sm', 'Usar no registro')
-  useBtn.type = 'button'
-  useBtn.addEventListener('click', () => {
-    // Passa o UUID real da atividade via URL param — tutor.js busca no banco
-    window.location.href = 'tutor.html?activity=' + encodeURIComponent(a.id)
-  })
-
-  const childBtn = el('button', 'btn-disabled', '')
-  childBtn.type = 'button'
-  const lockSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-  lockSvg.setAttribute('viewBox', '0 0 24 24')
-  lockSvg.innerHTML = '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'
-  childBtn.append(lockSvg, document.createTextNode('Abrir no Modo Criança — em breve'))
-  childBtn.title = 'Disponível em versão futura'
-
-  frag.append(useBtn, childBtn)
+  frag.append(buildPrimaryCta(a, 'btn-brand-sm'))
+  const closeBtn = el('button', 'btn-ghost-sm', 'Fechar')
+  closeBtn.type = 'button'
+  closeBtn.addEventListener('click', closeDrawer)
+  frag.append(closeBtn)
   return frag
 }
 
@@ -585,34 +651,217 @@ function openDrawer(a) {
   const footer = $('#ad-footer')
   if (!drawer || !backdrop || !headContent || !body || !footer) return
 
-  headContent.innerHTML = ''
-  body.innerHTML = ''
-  footer.innerHTML = ''
-
-  headContent.append(buildDrawerHead(a))
-  body.append(buildDrawerBody(a))
-  footer.append(buildDrawerFooter(a))
+  headContent.replaceChildren(buildDrawerHead(a))
+  body.replaceChildren(buildDrawerBody(a))
+  footer.replaceChildren(buildDrawerFooter(a))
 
   drawer.classList.add('open')
   backdrop.classList.add('open')
   drawer.setAttribute('aria-hidden', 'false')
-
   $('#drawer-close')?.focus()
 }
 
 function closeDrawer() {
-  const drawer = $('#act-drawer')
-  const backdrop = $('#drawer-backdrop')
-  if (!drawer || !backdrop) return
-  drawer.classList.remove('open')
-  backdrop.classList.remove('open')
-  drawer.setAttribute('aria-hidden', 'true')
+  $('#act-drawer')?.classList.remove('open')
+  $('#drawer-backdrop')?.classList.remove('open')
+  $('#act-drawer')?.setAttribute('aria-hidden', 'true')
+}
+
+// ── Modo Condução — atividade "Com o tutor" ──────────────────────────────────
+// Prepare → Conduza (passo a passo + frases, Adapte embutido como atalho não
+// sequencial) → Finalize → "Registrar como foi" leva pra Sessões com o que
+// foi observado. Handoff por sessionStorage (js/pages/tutor.js lê e some).
+
+const CND_STAGES = ['preparar', 'conduzir', 'finalizar']
+const CND_LABELS = { preparar: 'Preparar', conduzir: 'Conduzir', finalizar: 'Finalizar' }
+
+let cnd = null
+
+function openConducao(a) {
+  cnd = {
+    activity: a, stage: 'preparar', currentStep: 0,
+    startedAt: null, showHard: false, showEasy: false,
+    sinalMarcado: false, observacao: '',
+  }
+  $('#cnd-overlay').hidden = false
+  document.body.classList.add('rail-drawer-open') // reusa o travamento de scroll do body
+  renderConducao()
+}
+
+function closeConducao() {
+  cnd = null
+  $('#cnd-overlay').hidden = true
+  document.body.classList.remove('rail-drawer-open')
+}
+
+function cndGoStage(stage) {
+  cnd.stage = stage
+  if (stage === 'conduzir' && !cnd.startedAt) cnd.startedAt = Date.now()
+  renderConducao()
+}
+
+function renderConducao() {
+  const a = cnd.activity
+  $('#cnd-title').textContent = a.title
+  const stageIdx = CND_STAGES.indexOf(cnd.stage)
+  $('#cnd-sub').textContent = `Passo ${stageIdx + 1} de ${CND_STAGES.length} — ${CND_LABELS[cnd.stage]}`
+
+  const steps = $('#cnd-steps')
+  steps.replaceChildren()
+  CND_STAGES.forEach((st, i) => {
+    const item = el('span', `cnd-step${st === cnd.stage ? ' is-current' : i < stageIdx ? ' is-done' : ''}`)
+    item.append(el('span', 'cnd-step-dot', i < stageIdx ? '✓' : String(i + 1)))
+    item.append(document.createTextNode(CND_LABELS[st]))
+    steps.append(item)
+  })
+
+  const inner = $('#cnd-inner')
+  inner.replaceChildren()
+  if (cnd.stage === 'preparar') inner.append(cndRenderPreparar(a))
+  else if (cnd.stage === 'conduzir') inner.append(cndRenderConduzir(a))
+  else inner.append(cndRenderFinalizar(a))
+
+  $('#cnd-nav').replaceChildren(cndRenderNav())
+}
+
+function cndRenderPreparar(a) {
+  const box = el('div', 'cnd-block')
+  box.append(el('div', 'cnd-q', 'Antes de começar'))
+  box.append(el('p', 'cnd-hint', 'Materiais e organização — leia antes de chamar a criança.'))
+  const card = el('div', 'cnd-card')
+  card.append(el('p', null, a.antesDeComecar || 'Sem preparação específica.'))
+  box.append(card)
+  return box
+}
+
+function cndRenderConduzir(a) {
+  const box = el('div', 'cnd-block')
+
+  const stepsCard = el('div', 'cnd-card')
+  stepsCard.append(el('div', 'cnd-q', 'Um passo por vez'))
+  const list = el('div', 'cnd-steplist')
+  ;(a.passosAtividade || []).forEach((step, i) => {
+    const item = el('div', `cnd-steplist-item${i === cnd.currentStep ? ' is-current' : ''}`)
+    item.append(el('span', 'cnd-steplist-num', i < cnd.currentStep ? '✓' : String(i + 1)))
+    item.append(document.createTextNode(step))
+    list.append(item)
+  })
+  stepsCard.append(list)
+  if (cnd.currentStep < (a.passosAtividade || []).length - 1) {
+    const nextBtn = el('button', 'btn-ghost-sm', 'Próximo passo →')
+    nextBtn.type = 'button'
+    nextBtn.style.marginTop = '12px'
+    nextBtn.addEventListener('click', () => { cnd.currentStep += 1; renderConducao() })
+    stepsCard.append(nextBtn)
+  }
+  box.append(stepsCard)
+
+  if (a.dizer?.length) {
+    const sayCard = el('div', 'cnd-card')
+    sayCard.append(el('div', 'cnd-q', 'Frases para usar'))
+    const sayWrap = el('div', 'ds-say')
+    a.dizer.forEach((d) => sayWrap.append(el('div', 'cnd-say-item', `"${d}"`)))
+    sayCard.append(sayWrap)
+    box.append(sayCard)
+  }
+
+  const adaptCard = el('div', 'cnd-card')
+  adaptCard.append(el('div', 'cnd-q', 'Adapte na hora'))
+  const row = el('div', 'cnd-adapt-row')
+  const hardBtn = el('button', 'btn-ghost-sm', 'Está difícil')
+  hardBtn.type = 'button'
+  hardBtn.addEventListener('click', () => { cnd.showHard = !cnd.showHard; renderConducao() })
+  const easyBtn = el('button', 'btn-ghost-sm', 'Está fácil')
+  easyBtn.type = 'button'
+  easyBtn.addEventListener('click', () => { cnd.showEasy = !cnd.showEasy; renderConducao() })
+  row.append(hardBtn, easyBtn)
+  adaptCard.append(row)
+  if (cnd.showHard) adaptCard.append(el('div', 'cnd-adapt-reveal', a.seDificil))
+  if (cnd.showEasy) adaptCard.append(el('div', 'cnd-adapt-reveal', a.seFacil))
+  box.append(adaptCard)
+
+  return box
+}
+
+function cndRenderFinalizar(a) {
+  const box = el('div', 'cnd-block')
+
+  const signalLabel = el('label', 'cnd-signal-toggle')
+  const cb = document.createElement('input')
+  cb.type = 'checkbox'
+  cb.checked = cnd.sinalMarcado
+  cb.addEventListener('change', () => { cnd.sinalMarcado = cb.checked })
+  const tx = el('span')
+  tx.append(el('strong', null, 'Sinal de sucesso: '), document.createTextNode(a.sinalSucesso || ''))
+  signalLabel.append(cb, tx)
+  box.append(signalLabel)
+
+  const field = el('div', 'cnd-field')
+  field.append(el('label', null, 'Alguma observação? (opcional)'))
+  const ta = document.createElement('textarea')
+  ta.value = cnd.observacao
+  ta.placeholder = 'Como foi na prática — vira nota interna no registro da sessão.'
+  ta.addEventListener('input', () => { cnd.observacao = ta.value })
+  field.append(ta)
+  box.append(field)
+
+  const elapsed = cnd.startedAt ? Math.max(1, Math.round((Date.now() - cnd.startedAt) / 60000)) : null
+  if (elapsed != null) box.append(el('p', 'cnd-hint', `Duração observada: ${elapsed} min — você pode ajustar no registro.`))
+
+  return box
+}
+
+function cndRenderNav() {
+  const nav = document.createDocumentFragment()
+  const stageIdx = CND_STAGES.indexOf(cnd.stage)
+
+  const left = el('div')
+  if (stageIdx > 0) {
+    const back = el('button', 'btn-ghost-sm', 'Voltar')
+    back.type = 'button'
+    back.addEventListener('click', () => cndGoStage(CND_STAGES[stageIdx - 1]))
+    left.append(back)
+  }
+  nav.append(left)
+
+  if (stageIdx < CND_STAGES.length - 1) {
+    const next = el('button', 'btn-brand-sm', stageIdx === 0 ? 'Começar' : 'Concluir e finalizar')
+    next.type = 'button'
+    next.addEventListener('click', () => cndGoStage(CND_STAGES[stageIdx + 1]))
+    nav.append(next)
+  } else {
+    const save = el('button', 'btn-brand-sm', 'Registrar como foi')
+    save.type = 'button'
+    save.addEventListener('click', cndSaveAndBridge)
+    nav.append(save)
+  }
+  return nav
+}
+
+function cndSaveAndBridge() {
+  const a = cnd.activity
+  const elapsed = cnd.startedAt ? Math.max(1, Math.round((Date.now() - cnd.startedAt) / 60000)) : null
+  const observacaoInterna = [
+    cnd.sinalMarcado && a.sinalSucesso ? `Demonstrou: ${a.sinalSucesso}.` : '',
+    cnd.observacao.trim(),
+  ].filter(Boolean).join(' ')
+
+  sessionStorage.setItem('cognita:conducao-result', JSON.stringify({
+    activityId: a.id,
+    title: a.title,
+    focus: a.skillLabel,
+    durationMinutes: elapsed,
+    observacaoInterna,
+    nextStep: '',
+  }))
+
+  closeConducao()
+  window.location.href = 'tutor.html?view=record&tab=sessions'
 }
 
 // ── Bootstrap ────────────────────────────────────────────────────────────────
 
 async function init() {
-  // Esqueleto
   const grid = $('#lib-grid')
   if (grid) {
     const skel = el('div', 'lib-empty')
@@ -620,25 +869,12 @@ async function init() {
     grid.replaceChildren(skel)
   }
 
-  const identityResult = await Promise.allSettled([
-    loadIdentity(),
-    loadActivities(),
-  ])
+  const results = await Promise.allSettled([loadIdentity(), loadActivities()])
+  if (results[0].status === 'rejected') console.warn('Biblioteca: falha ao carregar identidade.', results[0].reason)
+  if (results[1].status === 'rejected') console.warn('Biblioteca: falha ao carregar atividades.', results[1].reason)
 
-  if (identityResult[0].status === 'rejected') {
-    console.warn('Biblioteca: falha ao carregar identidade.', identityResult[0].reason)
-  }
+  if (CTX_SKILL && SKILL_LABELS[CTX_SKILL]) { state.skill = CTX_SKILL; _filtersOpen = true }
 
-  if (identityResult[1].status === 'rejected') {
-    console.warn('Biblioteca: falha ao carregar atividades.', identityResult[1].reason)
-  }
-
-  // Pré-filtro de habilidade vindo do tutor
-  if (CTX_SKILL && SKILLS.some((s) => s.id === CTX_SKILL)) {
-    state.skill = CTX_SKILL
-  }
-
-  // Banner de contexto de criança
   const ctxBanner = $('#lib-context')
   const ctxLabel = $('#lib-context-label')
   const ctxClear = $('#lib-context-clear')
@@ -647,29 +883,26 @@ async function init() {
     ctxBanner.classList.add('visible')
     ctxClear?.addEventListener('click', () => {
       ctxBanner.classList.remove('visible')
-      // Remove params da URL sem recarregar
-      const clean = location.pathname + location.hash
-      history.replaceState({}, '', clean)
+      history.replaceState({}, '', location.pathname + location.hash)
     })
   }
 
+  renderRecommended()
   update()
+  wireRailToggle()
 
-  $('#lib-search')?.addEventListener('input', (e) => {
-    state.query = e.target.value
-    renderGrid()
-  })
+  $('#lib-search')?.addEventListener('input', (e) => { state.query = e.target.value; renderGrid() })
 
-  // Gaveta de atividade
   $('#drawer-close')?.addEventListener('click', closeDrawer)
   $('#drawer-backdrop')?.addEventListener('click', closeDrawer)
 
-  // Suporte
+  $('#cnd-cancel')?.addEventListener('click', closeConducao)
+
   $('[data-support-close]')?.addEventListener('click', closeSupportDrawer)
   $('[data-support-backdrop]')?.addEventListener('click', closeSupportDrawer)
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { closeDrawer(); closeSupportDrawer() }
+    if (e.key === 'Escape') { closeDrawer(); closeSupportDrawer(); if (cnd) closeConducao() }
   })
 }
 
