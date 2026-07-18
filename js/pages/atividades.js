@@ -293,39 +293,62 @@ function scoreActivity(a) {
   return { score, reasons: reasons.slice(0, 3) }
 }
 
-function renderRecommended() {
-  const section = $('#lib-recommended')
-  const sub = $('#lib-recommended-sub')
-  const grid = $('#rec-grid')
-  if (!section || !grid) return
+// Só UMA recomendação principal — com 4 atividades no catálogo, mostrar 3
+// vira "quase tudo é recomendado" e a palavra perde sentido. A destacada some
+// da grade abaixo enquanto a navegação estiver no estado padrão (ver
+// isDefaultLibraryView) — filtrar ou buscar já muda a intenção do tutor, aí
+// ela pode reaparecer normalmente entre os resultados.
+let featuredActivityId = null
 
-  if (!CTX_CHILD_ID || !ACTIVITIES.length) { section.hidden = true; return }
+// .lib-featured (o <section> em si, ver #lib-recommended no HTML) é quem
+// tem display:grid com 3 colunas — por isso devolve um fragment com 3
+// filhos diretos, não um <div> envolvendo os três (isso viraria 1 item de
+// grid só, colapsando as colunas).
+function buildFeaturedActivity(a, reasons) {
+  const frag = document.createDocumentFragment()
+  frag.append(el('div', 'lib-featured-icon', SKILL_EMOJI[a.skill] || '✨'))
+
+  const mid = el('div')
+  mid.append(el('div', 'lib-featured-eyebrow', 'Recomendada'))
+  mid.append(el('h2', null, a.title))
+  mid.append(el('p', 'lib-featured-summary', a.resumo_curto || ''))
+  const meta = el('div', 'lib-featured-meta')
+  meta.append(el('span', null, a.ageLabel), el('span', null, `${a.estimatedMinutes} min`))
+  mid.append(meta)
+  frag.append(mid)
+
+  const reason = el('div', 'lib-featured-reason')
+  reason.append(el('span', null, 'Por que'))
+  reason.append(el('p', null, `Recomendada porque ${reasons.join(', ')}.`))
+  const actions = el('div', 'lib-featured-actions')
+  actions.append(buildPrimaryCta(a))
+  const roteiro = el('button', 'btn-ghost-sm', 'Ver roteiro')
+  roteiro.type = 'button'
+  roteiro.addEventListener('click', () => openDrawer(a))
+  actions.append(roteiro)
+  reason.append(actions)
+  frag.append(reason)
+
+  return frag
+}
+
+function renderRecommended() {
+  const host = $('#lib-recommended')
+  if (!host) return
+
+  if (!CTX_CHILD_ID || !ACTIVITIES.length) { host.hidden = true; featuredActivityId = null; return }
 
   const scored = ACTIVITIES
     .map((a) => ({ a, ...scoreActivity(a) }))
     .filter((x) => x.score > 0)
     .sort((x, y) => y.score - x.score)
-    .slice(0, 3)
 
-  if (!scored.length) { section.hidden = true; return }
+  const top = scored[0]
+  if (!top) { host.hidden = true; featuredActivityId = null; return }
 
-  section.hidden = false
-  sub.textContent = CTX_CHILD ? `Combinam com o que ${CTX_CHILD} está trabalhando agora.` : 'Combinam com o perfil atual.'
-  grid.replaceChildren()
-  scored.forEach(({ a, reasons }) => {
-    const card = el('div', 'rec-card')
-    card.append(el('div', 'rec-why', `Recomendada porque ${reasons.join(', ')}.`))
-    card.append(el('div', 'rec-title', `${SKILL_EMOJI[a.skill] || '✨'} ${a.title}`))
-    card.append(el('div', 'rec-meta', `${a.ageLabel} · ${a.estimatedMinutes} min`))
-    const actions = el('div', 'rec-card-actions')
-    actions.append(buildPrimaryCta(a, 'btn-brand-sm'))
-    const roteiro = el('button', 'btn-ghost-sm', 'Ver roteiro')
-    roteiro.type = 'button'
-    roteiro.addEventListener('click', () => openDrawer(a))
-    actions.append(roteiro)
-    card.append(actions)
-    grid.append(card)
-  })
+  host.hidden = false
+  featuredActivityId = top.a.id
+  host.replaceChildren(buildFeaturedActivity(top.a, top.reasons))
 }
 
 // ── Caminhos (Todas / No Modo Criança / Com o tutor) ─────────────────────────
@@ -337,31 +360,27 @@ const PATHS = [
 ]
 
 function renderPaths() {
-  const container = $('#lib-paths')
+  const container = $('#lib-modes')
   if (!container) return
   container.replaceChildren()
   PATHS.forEach(({ id, label }) => {
     const n = id === 'todas' ? ACTIVITIES.length : ACTIVITIES.filter((a) => a.path === id).length
-    const btn = el('button', `path-tab${state.path === id ? ' on' : ''}`)
+    const btn = el('button', `lib-mode${state.path === id ? ' is-active' : ''}`)
     btn.type = 'button'
     btn.append(document.createTextNode(label + ' '), el('span', 'n', `(${n})`))
     btn.addEventListener('click', () => { state.path = id; update() })
     container.append(btn)
   })
-
-  const filtersBtn = el('button', `filters-toggle${_filtersOpen ? ' on' : ''}`)
-  filtersBtn.type = 'button'
-  filtersBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>'
-  filtersBtn.append(document.createTextNode('Filtros'))
-  filtersBtn.addEventListener('click', () => { _filtersOpen = !_filtersOpen; renderFiltersToggleState() })
-  container.append(filtersBtn)
 }
 
+// Botão "Filtros" é markup estático em atividades.html (#lib-filters-toggle)
+// agora — antes era recriado a cada render() só pra carregar o estado
+// on/off, sem necessidade (o painel inteiro de filtros já esconde/mostra
+// via classe; o botão só precisa refletir o mesmo booleano).
 let _filtersOpen = false
 function renderFiltersToggleState() {
   $('#lib-filters')?.classList.toggle('open', _filtersOpen)
-  const btn = $('.filters-toggle')
-  btn?.classList.toggle('on', _filtersOpen)
+  $('#lib-filters-toggle')?.classList.toggle('on', _filtersOpen)
 }
 
 // ── Filtros secundários (recolhidos por padrão) ──────────────────────────────
@@ -444,60 +463,61 @@ function filterActivities() {
 
 // CTA primário — o destino muda pelo caminho da atividade, nunca "Abrir no
 // Modo Criança — em breve": o Modo Criança já existe, então a ponte é real.
-function buildPrimaryCta(a, cls) {
+function buildPrimaryCta(a) {
   if (a.path === 'digital') {
-    const btn = el('a', cls, CTX_CHILD ? `Personalizar para ${CTX_CHILD}` : 'Personalizar')
+    const btn = el('a', 'activity-primary-action', CTX_CHILD ? `Personalizar para ${CTX_CHILD}` : 'Personalizar')
     if (!CTX_CHILD_ID) {
       btn.setAttribute('aria-disabled', 'true')
       btn.title = 'Abra a Biblioteca a partir do painel de um acompanhamento pra personalizar.'
       btn.addEventListener('click', (e) => e.preventDefault())
-      btn.classList.add('is-disabled')
-      btn.style.opacity = '.5'; btn.style.pointerEvents = 'none'
     } else {
       btn.href = buildTutorPresetUrl(a.slug)
     }
     return btn
   }
-  const btn = el('button', cls, CTX_CHILD ? `Conduzir com ${CTX_CHILD}` : 'Conduzir atividade')
+  const btn = el('button', 'activity-primary-action', CTX_CHILD ? `Conduzir com ${CTX_CHILD}` : 'Conduzir atividade')
   btn.type = 'button'
   btn.addEventListener('click', () => openConducao(a))
   return btn
 }
 
+// <article>, não <button> com botões dentro — o card é um item de conteúdo
+// com ações internas focáveis, não um controle único.
 function buildCard(a) {
-  const card = el('div', 'activity-card')
+  const card = document.createElement('article')
+  card.className = 'activity-card'
 
-  const top = el('div', 'ac-top')
-  top.append(el('span', 'ac-emoji', SKILL_EMOJI[a.skill] || '✨'))
-  top.append(el('span', 'ac-skill', a.skillLabel))
-  card.append(top)
+  card.append(el('div', 'activity-card-icon', SKILL_EMOJI[a.skill] || '✨'))
 
-  card.append(el('div', 'ac-title', a.title))
-  card.append(el('p', 'ac-summary', a.resumo_curto || ''))
+  const body = el('div', 'activity-card-body')
+  body.append(el('span', `activity-mode ${a.path}`, a.path === 'digital' ? 'No Modo Criança' : 'Com o tutor'))
+  body.append(el('h3', null, a.title))
+  body.append(el('p', 'activity-card-description', a.resumo_curto || ''))
 
-  const meta = el('div', 'ac-meta')
-  const clockItem = el('div', 'ac-meta-item')
-  clockItem.append(svgClock())
-  clockItem.append(document.createTextNode(` ${a.ageLabel} · ${a.estimatedMinutes} min`))
-  meta.append(clockItem)
-  const fmtItem = el('div', 'ac-meta-item')
-  svgFormats(a.formats).forEach((s) => fmtItem.append(s))
-  meta.append(fmtItem)
-  card.append(meta)
+  const meta = el('div', 'activity-card-meta')
+  ;[a.ageLabel, `${a.estimatedMinutes} min`, a.carga === 'baixa' ? 'Carga baixa' : 'Carga média']
+    .filter(Boolean)
+    .forEach((text) => meta.append(el('span', null, text)))
+  body.append(meta)
 
-  const pathPill = a.path === 'digital'
-    ? el('span', 'ac-path-pill digital', '● Disponível no Modo Criança')
-    : el('span', 'ac-path-pill guiada', '● Atividade com tutor')
-  card.append(pathPill)
+  const actions = el('div', 'activity-card-actions')
+  const details = el('button', 'activity-details-link', 'Ver roteiro')
+  details.type = 'button'
+  details.addEventListener('click', () => openDrawer(a))
+  actions.append(details, buildPrimaryCta(a))
+  body.append(actions)
 
-  const footer = el('div', 'ac-footer')
-  const roteiroBtn = el('button', 'link-roteiro', 'Ver roteiro')
-  roteiroBtn.type = 'button'
-  roteiroBtn.addEventListener('click', () => openDrawer(a))
-  footer.append(roteiroBtn, buildPrimaryCta(a, 'btn-brand-sm'))
-  card.append(footer)
-
+  card.append(body)
   return card
+}
+
+// Estado padrão = nenhum filtro/busca ativo. Só nesse estado a destacada
+// some da grade (senão o tutor filtrando por "Com o tutor" veria uma
+// atividade digital sumir sem explicação — ela deve voltar a aparecer
+// normalmente assim que a navegação deixa de ser a aterrissagem inicial).
+function isDefaultLibraryView() {
+  return state.path === 'todas' && !state.skill && !state.age && !state.format
+    && !state.time && !state.carga && !state.query.trim()
 }
 
 function renderGrid() {
@@ -505,7 +525,10 @@ function renderGrid() {
   if (!grid) return
   grid.replaceChildren()
 
-  const visible = filterActivities()
+  let visible = filterActivities()
+  if (isDefaultLibraryView() && featuredActivityId) {
+    visible = visible.filter((a) => a.id !== featuredActivityId)
+  }
 
   if (!ACTIVITIES.length) {
     const empty = el('div', 'lib-empty')
@@ -635,7 +658,7 @@ function buildDrawerBody(a) {
 
 function buildDrawerFooter(a) {
   const frag = document.createDocumentFragment()
-  frag.append(buildPrimaryCta(a, 'btn-brand-sm'))
+  frag.append(buildPrimaryCta(a))
   const closeBtn = el('button', 'btn-ghost-sm', 'Fechar')
   closeBtn.type = 'button'
   closeBtn.addEventListener('click', closeDrawer)
@@ -875,16 +898,13 @@ async function init() {
 
   if (CTX_SKILL && SKILL_LABELS[CTX_SKILL]) { state.skill = CTX_SKILL; _filtersOpen = true }
 
-  const ctxBanner = $('#lib-context')
+  const ctxBadge = $('#lib-context')
   const ctxLabel = $('#lib-context-label')
-  const ctxClear = $('#lib-context-clear')
-  if (CTX_CHILD && ctxBanner && ctxLabel) {
-    ctxLabel.textContent = `Atividades para ${CTX_CHILD}`
-    ctxBanner.classList.add('visible')
-    ctxClear?.addEventListener('click', () => {
-      ctxBanner.classList.remove('visible')
-      history.replaceState({}, '', location.pathname + location.hash)
-    })
+  if (CTX_CHILD && ctxBadge && ctxLabel) {
+    ctxLabel.textContent = CTX_AGE != null ? `${CTX_CHILD} · ${CTX_AGE} anos` : CTX_CHILD
+    ctxBadge.hidden = false
+    const subtitle = $('#lib-subtitle')
+    if (subtitle) subtitle.textContent = `Encontre uma experiência pronta, adapte para ${CTX_CHILD} e escolha como ela será aplicada.`
   }
 
   renderRecommended()
@@ -892,6 +912,7 @@ async function init() {
   wireRailToggle()
 
   $('#lib-search')?.addEventListener('input', (e) => { state.query = e.target.value; renderGrid() })
+  $('#lib-filters-toggle')?.addEventListener('click', () => { _filtersOpen = !_filtersOpen; renderFiltersToggleState() })
 
   $('#drawer-close')?.addEventListener('click', closeDrawer)
   $('#drawer-backdrop')?.addEventListener('click', closeDrawer)
