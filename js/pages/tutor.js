@@ -5,8 +5,8 @@ import { getAvatarUrl, setAvatarImage } from '../lib/avatar.js'
 import { getTutorCycles } from '../data/tutor.js'
 import { getCycleSessions, createSessionWithExecucoes } from '../data/sessions.js'
 import { getActivityById } from '../data/activities.js'
-import { createChildActivity, listChildActivities, updateChildActivity, archiveChildActivity } from '../data/child-activities.js'
-import { listPendingExecucoes, listRecentExecucoes } from '../data/atividade-execucao.js'
+import { createChildActivity, listChildActivities, updateChildActivity, archiveChildActivity, restoreChildActivity } from '../data/child-activities.js'
+import { listPendingExecucoes } from '../data/atividade-execucao.js'
 import { MOLDES_REGISTRO, buildContractFromParts, formatConfigResumo } from '../data/moldes-registro.js'
 import { PLANOS_REGISTRO } from '../data/planos-registro.js'
 import {
@@ -532,51 +532,7 @@ function renderNoRecord(state, retry) {
   return wrap
 }
 
-// ── Controles de formulário (choice buttons, slider, pills) ──────────────────
-
-const LOCK_SVG = '<svg class="scale-btn-lock" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" stroke-width="2"/></svg>'
-
-// Choice buttons com suporte a opção desabilitada (cadeado +
-// "em breve") — precisa disso pros moldes/temas que ainda não existem
-// aparecerem no form sem serem clicáveis. selectedId escolhe o item ativo
-// de largada.
-function makeChoiceButtons(options, selectedId, onChange) {
-  const group = el('div', 'scale')
-  group.setAttribute('role', 'radiogroup')
-  let value = selectedId
-  const entries = []
-
-  // Compartilhada entre o clique real e o setValue programático (Duplicar/
-  // Editar pré-preenchendo o form) — as duas vias precisam do mesmo efeito
-  // colateral (destacar visualmente e disparar onChange pra reconstruir
-  // tema/config na cascata).
-  function select(id) {
-    const entry = entries.find((e) => e.id === id)
-    if (!entry || entry.disabled) return
-    entries.forEach((e) => e.btn.classList.remove('selected'))
-    entry.btn.classList.add('selected')
-    value = id
-    onChange?.(id)
-  }
-
-  options.forEach(({ id, label, disabled }) => {
-    const btn = el('button', 'scale-btn')
-    btn.type = 'button'
-    btn.disabled = !!disabled
-    if (disabled) {
-      btn.innerHTML = LOCK_SVG
-      btn.append(document.createTextNode(`${label} · em breve`))
-    } else {
-      btn.textContent = label
-    }
-    if (id === selectedId) btn.classList.add('selected')
-    btn.addEventListener('click', () => select(id))
-    entries.push({ id, disabled, btn })
-    group.append(btn)
-  })
-
-  return { group, getValue: () => value, setValue: select }
-}
+// ── Controles de formulário (slider, pills) ──────────────────────────────────
 
 // Slider — pra faixas largas ("de sensação contínua", ex.: quantos itens).
 function makeSlider({ label, min, max, value, onChange }) {
@@ -1617,158 +1573,430 @@ function buildSessionsPanel(cycle, state, sessionForm) {
   return panel
 }
 
-// ── Painel: Atividades preparadas (autoria do tutor pro Modo Criança) ───────
-// O que este form salva é a instância child_activities — ver
-// docs/supabase-fase-4b-corrente.sql. "Fazer com a criança" já abre o Modo
-// Criança com a atividade real (getChildActivityById via ?activity=<id>) —
-// ver docs/V2-DIRECAO.md para o mapeamento completo da jornada.
+// ── Painel: Atividades — acervo + assistente de criação ──────────────────────
+// A aba aterrissa num ACERVO (lista com filtros), não num formulário; criar/
+// editar/duplicar abre um assistente de 3 passos (mesma casca visual das
+// Sessões) com a prévia REAL do Modo Criança fixa à direita — o iframe roda a
+// própria casca (?preview=1) e recebe o contrato ao vivo via postMessage.
+// O que salva é a instância child_activities (docs/supabase-fase-4b). O motor
+// (moldes declarativos em MOLDES_REGISTRO, buildContractFromParts) não mudou.
+// "Últimas execuções" saiu daqui — essa informação vive no Resumo (timeline)
+// e em Sessões (aguardando registro); cada aba com um trabalho só.
 
-// callbacks vem só quando o ciclo permite editar o conjunto de atividades
-// (ver buildActivitiesPanel) — undefined nos estados bloqueados, onde só
-// "Fazer com a criança" continua fazendo sentido.
-function renderChildActivityRow(row, callbacks) {
-  const tr = document.createElement('tr')
-  const molde = MOLDES_REGISTRO[row.molde]
-  const temaLabel = molde?.temas.find((t) => t.id === row.tema)?.label || row.tema
-
-  const titleTd = document.createElement('td')
-  titleTd.textContent = row.titulo || molde?.tituloPadrao?.(temaLabel) || row.molde
-
-  const detailsTd = document.createElement('td')
-  detailsTd.className = 'muted'
-  detailsTd.textContent = `${molde?.label || row.molde} · ${temaLabel} · ${formatConfigResumo(row.molde, row.config)}`
-
-  const dateTd = document.createElement('td')
-  dateTd.className = 'num muted'
-  dateTd.textContent = formatLastSession(row.created_at?.slice(0, 10))
-
-  const actionTd = document.createElement('td')
-  const actionsWrap = el('div', 'activity-actions')
-
-  // Atividade avulsa (child_trail_mission_id null) sempre pode ser feita.
-  // Atividade de missão de trilha só quando a missão está 'disponivel' —
-  // 'concluida' NÃO conta: repetir é uma decisão de produto ainda não
-  // desenhada (ver docs/PLANO-SPRINT-4-TRILHA.md / roadmap "repetir/
-  // adaptar"), então o botão padrão não pode virar repetição sem querer.
-  const missaoStatus = row.child_trail_mission_id ? pickEmbedded(row.child_trail_missions)?.status : null
-  const podeExecutar = !row.child_trail_mission_id || missaoStatus === 'disponivel'
-  if (!podeExecutar) {
-    actionsWrap.append(el('span', 'trilha-blocked-pill', 'Bloqueada pela jornada'))
-  } else {
-    const link = el('a', 'btn btn-ghost btn-sm', 'Fazer com a criança')
-    // return aponta direto pra aba Sessões: é lá que a execução recém-gravada
-    // aparece em "Usar esta execução", fechando o loop sem o tutor ter que
-    // procurar onde continuar.
-    link.href = `modo-crianca.html?${new URLSearchParams({ activity: row.id, return: 'tutor.html?view=record&tab=sessions' })}`
-    actionsWrap.append(link)
-  }
-
-  // Duplicar/Editar/Arquivar só fazem sentido pra atividade avulsa. Uma
-  // atividade de missão de trilha é administrada pela trilha (liberar/
-  // avançar): Arquivar deixaria a missão apontando pra uma child_activity
-  // inexistente, sem caminho de recriação (release_child_module recusa
-  // liberar um módulo já liberado); Editar deixaria o tutor reescrever o
-  // currículo por fora do allowlist que a RPC já impõe.
-  if (callbacks && !row.child_trail_mission_id) {
-    const dupBtn = el('button', 'btn btn-ghost btn-sm', 'Duplicar')
-    dupBtn.type = 'button'
-    dupBtn.addEventListener('click', () => callbacks.onDuplicate(row))
-    actionsWrap.append(dupBtn)
-
-    const editBtn = el('button', 'btn btn-ghost btn-sm', 'Editar')
-    editBtn.type = 'button'
-    editBtn.addEventListener('click', () => callbacks.onEdit(row))
-    actionsWrap.append(editBtn)
-
-    const archiveBtn = el('button', 'btn btn-bad btn-sm', 'Arquivar')
-    archiveBtn.type = 'button'
-    archiveBtn.addEventListener('click', () => callbacks.onArchive(row))
-    actionsWrap.append(archiveBtn)
-  }
-
-  actionTd.append(actionsWrap)
-  tr.append(titleTd, detailsTd, dateTd, actionTd)
-  return tr
+// Emblemas por molde (mesmos assets da Jornada). 'revisar' existe mas não é
+// um molde autorável; tudo que não é 'contar' cai em 'identificar'.
+function emblemaDeMolde(molde) {
+  return `../assets/trilha/emblemas/${molde === 'contar' ? 'contar' : 'identificar'}.webp`
 }
 
-// Distingue erro de "sem dado" (CLAUDE.md §11: estado vazio é direção, não
-// decoração — e um erro fingindo de vazio esconde que algo quebrou).
-async function loadChildActivitiesTable(childId, tbody, emptyWrap, errorWrap, table, callbacks) {
-  tbody.replaceChildren()
-  const { data, error } = await listChildActivities(childId)
-
-  if (error) {
-    table.hidden = true
-    emptyWrap.hidden = true
-    errorWrap.hidden = false
-    return []
-  }
-  errorWrap.hidden = true
-
-  const rows = data ?? []
-  if (!rows.length) {
-    table.hidden = true
-    emptyWrap.hidden = false
-  } else {
-    table.hidden = false
-    emptyWrap.hidden = true
-    rows.forEach((r) => tbody.append(renderChildActivityRow(r, callbacks)))
-  }
-  return rows
+// Descrição pedagógica de cada experiência (o tutor escolhe a experiência,
+// não um "molde" técnico). Fica aqui e não no registro porque é copy da
+// tela de autoria, não contrato da casca.
+const MOLDE_DESCRICAO = {
+  contar: 'A criança toca nos elementos enquanto conta.',
+  identificar: 'A criança encontra o número pedido entre algumas opções.',
+  comparar: 'A criança compara quantidades e escolhe a maior.',
+  associar: 'A criança liga cada número à quantidade certa.',
 }
 
-// ── "Últimas execuções" — leitura, sem ação (a ação "Usar esta execução"
-// continua só na aba Sessões, que é onde o registro nasce de verdade) ──
-
-function renderRecentExecucaoItem(execucao) {
-  const item = el('div', 'recent-execucao-item')
-  const molde = MOLDES_REGISTRO[execucao.molde]
-  const temaLabel = molde?.temas.find((t) => t.id === execucao.tema)?.label || execucao.tema
-  const atividade = pickEmbedded(execucao.child_activities)
-  const titulo = atividade?.titulo || molde?.tituloPadrao?.(temaLabel) || `${molde?.label || execucao.molde} · ${temaLabel}`
-
-  const quando = formatExecucaoQuando(execucao.created_at)
-  const detalhes = [
-    quando ? `Feita ${quando}` : null,
-    COMO_ENCERROU_LABEL[execucao.como_encerrou],
-  ].filter(Boolean).join(' · ')
-
-  const statusPill = execucao.session_id
-    ? el('span', 'pill pill-ok', 'Registrada')
-    : el('span', 'pill pill-mid', 'Aguardando registro')
-
-  const row = el('div', 'recent-execucao-row')
-  const tx = el('div')
-  tx.append(el('strong', null, titulo), el('p', 'recent-execucao-detalhes', detalhes))
-  row.append(tx, statusPill)
-  item.append(row)
-  return item
+// Frase humana do passo de revisão. Fallback genérico cobre moldes futuros.
+const FRASE_REVISAO = {
+  contar: (cfg, temaLabel, nome) => `${nome} vai contar até ${cfg.quantidade} com ${temaLabel.toLowerCase()}, em ${cfg.rodadas} ${cfg.rodadas === 1 ? 'rodada' : 'rodadas'}.`,
+  identificar: (cfg, temaLabel, nome) => `${nome} vai encontrar números de 1 a ${cfg.maiorNumero}, entre ${cfg.opcoes} opções, em ${cfg.rodadas} ${cfg.rodadas === 1 ? 'rodada' : 'rodadas'}.`,
 }
 
-async function loadRecentExecucoes(childId, list) {
-  list.replaceChildren()
-  const { data, error } = await listRecentExecucoes(childId, 5)
+// Menu contextual "⋯" — concentra Duplicar/Editar/Arquivar num lugar só,
+// em vez de uma fileira de botões por item do acervo.
+function kebabMenu(items) {
+  const wrap = el('div', 'kebab')
+  const btn = el('button', 'btn btn-ghost btn-sm kebab-btn', '⋯')
+  btn.type = 'button'
+  btn.setAttribute('aria-label', 'Mais ações')
+  btn.setAttribute('aria-haspopup', 'true')
+  btn.setAttribute('aria-expanded', 'false')
+  const menu = el('div', 'kebab-menu')
+  menu.hidden = true
 
-  if (error) {
-    list.append(el('p', 'execucoes-msg', 'Não conseguimos carregar as últimas execuções agora.'))
-    return
+  function close() {
+    menu.hidden = true
+    btn.setAttribute('aria-expanded', 'false')
+    document.removeEventListener('click', onDoc)
+    document.removeEventListener('keydown', onKey)
   }
+  function onDoc(ev) { if (!wrap.contains(ev.target)) close() }
+  function onKey(ev) { if (ev.key === 'Escape') close() }
 
-  const rows = data ?? []
-  if (!rows.length) {
-    list.append(el('p', 'execucoes-msg', 'Nenhuma execução registrada ainda. Quando a criança fizer uma atividade no Modo Criança, ela aparece aqui.'))
-    return
-  }
-  rows.forEach((execucao) => list.append(renderRecentExecucaoItem(execucao)))
+  items.forEach(({ label, run, tone }) => {
+    const it = el('button', `kebab-item${tone ? ` kebab-item--${tone}` : ''}`, label)
+    it.type = 'button'
+    it.addEventListener('click', () => { close(); run() })
+    menu.append(it)
+  })
+
+  btn.addEventListener('click', () => {
+    if (menu.hidden) {
+      menu.hidden = false
+      btn.setAttribute('aria-expanded', 'true')
+      setTimeout(() => {
+        document.addEventListener('click', onDoc)
+        document.addEventListener('keydown', onKey)
+      }, 0)
+    } else close()
+  })
+
+  wrap.append(btn, menu)
+  return wrap
 }
+
+// ── Assistente de criação/edição de atividade (3 passos + prévia viva) ──────
+
+function renderActivityWizard(cycle, onSaved) {
+  const wrap = el('section', 'aw')
+  wrap.hidden = true
+  const childName = firstName(cycle.children?.name)
+  const childAge = ageFrom(cycle.children?.birth_date)
+
+  // Completa o estado com os padrões do molde/tema — chamada tanto ao criar
+  // do zero quanto ao trocar de experiência no passo 1.
+  function withMoldeDefaults(base) {
+    const molde = MOLDES_REGISTRO[base.molde]
+    const tema = base.tema ?? molde.temas.find((t) => t.disponivel)?.id
+    const temaLabel = molde.temas.find((t) => t.id === tema)?.label || ''
+    const config = {}
+    molde.campos.forEach((c) => { config[c.key] = base.config?.[c.key] ?? c.default })
+    return {
+      ...base,
+      tema,
+      config,
+      instrucao: base.instrucao ?? (molde.instrucaoPadrao || ''),
+      titulo: base.titulo ?? (molde.tituloPadrao?.(temaLabel) || molde.label),
+      textTouched: base.textTouched ?? false,
+    }
+  }
+  const blank = () => {
+    const moldeKey = Object.entries(MOLDES_REGISTRO).find(([, m]) => m.disponivel)?.[0]
+    return withMoldeDefaults({ step: 1, mode: 'create', editingId: null, molde: moldeKey })
+  }
+  let s = blank()
+  let isOpen = false
+  let navForward = null
+
+  // Prévia estável: criada UMA vez (recriar por passo recarregaria o iframe).
+  // É o Modo Criança de verdade em ?preview=1 — não grava nada.
+  const previewIframe = document.createElement('iframe')
+  previewIframe.src = 'modo-crianca.html?preview=1'
+  previewIframe.title = 'Prévia do Modo Criança'
+  previewIframe.addEventListener('load', pushPreview)
+  const previewCard = el('div', 'card aw-preview')
+  const previewHead = el('div', 'card-h')
+  const previewHeadInner = el('div', 'preview-card-h')
+  previewHeadInner.innerHTML = '<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+  previewHeadInner.append(document.createTextNode('O que a criança vê — ao vivo'))
+  previewHead.append(previewHeadInner)
+  const previewFrameWrap = el('div', 'preview-frame-wrap')
+  const previewFrame = el('div', 'preview-frame')
+  previewFrame.append(previewIframe)
+  previewFrameWrap.append(previewFrame)
+  previewCard.append(previewHead, previewFrameWrap)
+
+  function pushPreview() {
+    if (!previewIframe.contentWindow) return
+    const contract = buildContractFromParts({
+      molde: s.molde, tema: s.tema, config: s.config, instrucao: s.instrucao, titulo: s.titulo,
+    })
+    previewIframe.contentWindow.postMessage({ type: 'cognita-preview-contract', contract }, window.location.origin)
+  }
+
+  const grid = el('div', 'aw-grid')
+  const main = el('div', 'card sw-main')
+  grid.append(main, previewCard)
+  wrap.append(grid)
+
+  function setOpen(open) {
+    isOpen = open
+    wrap.hidden = !open
+    wrap.dispatchEvent(new CustomEvent('aw-toggle', { detail: { open } }))
+    if (open) { render(); pushPreview() }
+  }
+  wrap.openCreate = () => { s = blank(); setOpen(true) }
+  wrap.openEdit = (row) => {
+    s = withMoldeDefaults({
+      step: 1, mode: 'edit', editingId: row.id,
+      molde: row.molde, tema: row.tema, config: row.config,
+      instrucao: row.instrucao, titulo: row.titulo, textTouched: true,
+    })
+    setOpen(true)
+  }
+  wrap.openDuplicate = (row) => {
+    const molde = MOLDES_REGISTRO[row.molde]
+    const temaLabel = molde?.temas.find((t) => t.id === row.tema)?.label || row.tema
+    const base = row.titulo || molde?.tituloPadrao?.(temaLabel) || molde?.label || ''
+    s = withMoldeDefaults({
+      step: 1, mode: 'duplicate', editingId: null,
+      molde: row.molde, tema: row.tema, config: row.config,
+      instrucao: row.instrucao, titulo: `${base} (cópia)`.trim(), textTouched: true,
+    })
+    setOpen(true)
+  }
+
+  const STEP_LABELS = ['Experiência', 'Ajustar', 'Revisar']
+
+  function render() {
+    main.replaceChildren()
+
+    const head = el('div', 'sw-head')
+    const headTx = el('div')
+    headTx.append(el('h3', 'sw-title', s.mode === 'edit' ? 'Editar atividade' : 'Criar atividade'))
+    headTx.append(el('p', 'sw-sub', `para ${childName}${childAge != null ? ` · ${childAge} anos` : ''} · Passo ${s.step} de 3`))
+    head.append(headTx)
+    const cancel = el('button', 'btn btn-ghost btn-sm', 'Cancelar')
+    cancel.type = 'button'
+    cancel.addEventListener('click', () => setOpen(false))
+    head.append(cancel)
+
+    const steps = el('div', 'sw-steps')
+    STEP_LABELS.forEach((lb, i) => {
+      const n = i + 1
+      const item = el('span', `sw-step${n === s.step ? ' is-current' : n < s.step ? ' is-done' : ''}`)
+      item.append(el('span', 'sw-step-dot', n < s.step ? '✓' : String(n)))
+      item.append(document.createTextNode(lb))
+      steps.append(item)
+    })
+
+    main.append(head, steps)
+    if (s.step === 1) main.append(renderStep1())
+    else if (s.step === 2) main.append(renderStep2())
+    else main.append(renderStep3())
+    main.append(renderNav())
+  }
+
+  function canContinue() {
+    if (s.step === 1) return !!s.molde
+    if (s.step === 2) return !!s.instrucao.trim()
+    return true
+  }
+  function updateNav() { if (navForward) navForward.disabled = !canContinue() }
+  function goStep(n) {
+    s.step = n
+    render()
+    requestAnimationFrame(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
+
+  // Passo 1 — escolher a experiência (cards explicativos, não pills técnicas)
+  function renderStep1() {
+    const box = el('div', 'sw-step2')
+    const b = el('div', 'sw-block')
+    b.append(el('h4', 'sw-q', 'Que experiência você quer criar?'))
+    const list = el('div', 'sw-options')
+    Object.entries(MOLDES_REGISTRO).forEach(([id, m]) => {
+      const card = el('button', `aw-exp${s.molde === id ? ' is-selected' : ''}`)
+      card.type = 'button'
+      if (!m.disponivel) { card.disabled = true; card.setAttribute('aria-disabled', 'true') }
+      const img = el('img', 'aw-exp-emblem')
+      img.src = emblemaDeMolde(id)
+      img.alt = ''
+      const tx = el('span', 'aw-exp-tx')
+      tx.append(el('span', 'aw-exp-title', m.disponivel ? m.label : `${m.label} — em breve`))
+      tx.append(el('span', 'aw-exp-desc', MOLDE_DESCRICAO[id] || ''))
+      card.append(img, tx)
+      if (m.disponivel) {
+        card.addEventListener('click', () => {
+          if (s.molde === id) return
+          s = withMoldeDefaults({
+            ...s, molde: id,
+            tema: undefined, config: undefined, instrucao: undefined, titulo: undefined,
+            textTouched: false,
+          })
+          render()
+          pushPreview()
+        })
+      }
+      list.append(card)
+    })
+    b.append(list)
+    box.append(b)
+    return box
+  }
+
+  // Passo 2 — tema + ajustes (campos dinâmicos do registro) + texto recolhido
+  function renderStep2() {
+    const molde = MOLDES_REGISTRO[s.molde]
+    const box = el('div', 'sw-step2')
+
+    const bTema = el('div', 'sw-block')
+    bTema.append(el('h4', 'sw-q', 'Qual será o tema?'))
+    const temaList = el('div', 'sw-options')
+    molde.temas.forEach((t) => {
+      const btn = el('button', `sw-option${s.tema === t.id ? ' is-selected' : ''}`)
+      btn.type = 'button'
+      if (!t.disponivel) btn.disabled = true
+      btn.append(el('span', 'sw-option-dot'), document.createTextNode(t.disponivel ? t.label : `${t.label} — em breve`))
+      btn.addEventListener('click', () => {
+        s.tema = t.id
+        if (!s.textTouched) s.titulo = molde.tituloPadrao?.(t.label) || molde.label
+        render()
+        pushPreview()
+      })
+      temaList.append(btn)
+    })
+    bTema.append(temaList)
+    box.append(bTema)
+
+    const bCfg = el('div', 'sw-block')
+    bCfg.append(el('h4', 'sw-q', `Ajustar para ${childName}`))
+    const pillsRow = el('div', 'row')
+    molde.campos.forEach((campo) => {
+      const make = campo.control === 'slider' ? makeSlider : makePillSelector
+      const control = make({
+        label: campo.label, min: campo.min, max: campo.max,
+        value: s.config[campo.key] ?? campo.default,
+        onChange: (v) => { s.config[campo.key] = v; pushPreview() },
+      })
+      if (campo.control === 'slider') bCfg.append(control.field)
+      else pillsRow.append(control.field)
+    })
+    if (pillsRow.children.length) bCfg.append(pillsRow)
+    box.append(bCfg)
+
+    const det = document.createElement('details')
+    det.className = 'sw-collapsible'
+    det.open = false
+    const sum = document.createElement('summary')
+    sum.textContent = 'Personalizar texto e instrução'
+    det.append(sum)
+    const dBody = el('div', 'sw-manual-body')
+    const instField = el('div', 'field')
+    instField.append(el('label', null, 'O que a criança lê'))
+    const instInput = document.createElement('textarea')
+    instInput.value = s.instrucao
+    instInput.addEventListener('input', () => { s.instrucao = instInput.value; s.textTouched = true; pushPreview(); updateNav() })
+    instField.append(instInput)
+    const titField = el('div', 'field')
+    titField.append(el('label', null, 'Título (só para você identificar)'))
+    const titInput = document.createElement('input')
+    titInput.type = 'text'
+    titInput.value = s.titulo
+    titInput.addEventListener('input', () => { s.titulo = titInput.value; s.textTouched = true })
+    titField.append(titInput)
+    dBody.append(instField, titField)
+    det.append(dBody)
+    box.append(det)
+    box.append(el('p', 'sw-hint', 'Os textos padrão já funcionam bem — personalize só se quiser.'))
+    return box
+  }
+
+  // Passo 3 — revisão humana; a prévia ao lado é o destaque
+  function renderStep3() {
+    const molde = MOLDES_REGISTRO[s.molde]
+    const temaLabel = molde.temas.find((t) => t.id === s.tema)?.label || s.tema
+    const frase = FRASE_REVISAO[s.molde]?.(s.config, temaLabel, childName)
+      || `"${s.titulo}" — ${formatConfigResumo(s.molde, s.config)}.`
+
+    const box = el('div', 'sw-step2')
+    const b = el('div', 'sw-block')
+    b.append(el('h4', 'sw-q', s.mode === 'edit' ? 'Revisar alterações' : 'Revisar e salvar'))
+    b.append(el('p', 'aw-review', frase))
+    b.append(el('p', 'sw-hint', `${s.titulo} · ${molde.label} · ${temaLabel} · ${formatConfigResumo(s.molde, s.config)}`))
+    const err = el('p', 'form-error')
+    err.hidden = true
+    err.dataset.awErr = ''
+    b.append(err)
+    box.append(b)
+    box.append(el('p', 'sw-hint', 'Confira a prévia ao lado — é exatamente o que a criança verá.'))
+    return box
+  }
+
+  function renderNav() {
+    const nav = el('div', 'sw-nav')
+    const left = el('div')
+    if (s.step > 1) {
+      const back = el('button', 'btn btn-ghost', 'Voltar')
+      back.type = 'button'
+      back.addEventListener('click', () => goStep(s.step - 1))
+      left.append(back)
+    }
+    nav.append(left)
+
+    if (s.step < 3) {
+      navForward = el('button', 'btn btn-accent', 'Continuar')
+      navForward.type = 'button'
+      navForward.addEventListener('click', () => { if (canContinue()) goStep(s.step + 1) })
+      navForward.disabled = !canContinue()
+      nav.append(navForward)
+    } else {
+      const right = el('div', 'aw-save-row')
+      const fazerBtn = el('button', 'btn btn-ghost', `Salvar e fazer agora`)
+      fazerBtn.type = 'button'
+      fazerBtn.addEventListener('click', () => save({ fazerAgora: true, btn: fazerBtn }))
+      const saveBtn = el('button', 'btn btn-accent', s.mode === 'edit' ? 'Salvar alterações' : 'Salvar atividade')
+      saveBtn.type = 'button'
+      saveBtn.addEventListener('click', () => save({ fazerAgora: false, btn: saveBtn }))
+      navForward = saveBtn
+      right.append(fazerBtn, saveBtn)
+      nav.append(right)
+    }
+    return nav
+  }
+
+  async function save({ fazerAgora, btn }) {
+    const errEl = wrap.querySelector('[data-aw-err]')
+    if (errEl) errEl.hidden = true
+
+    const instrucao = s.instrucao.trim()
+    if (!instrucao) {
+      if (errEl) { errEl.textContent = 'A instrução para a criança está vazia — volte ao passo 2 e escreva.'; errEl.hidden = false }
+      return
+    }
+    const molde = MOLDES_REGISTRO[s.molde]
+    const temaLabel = molde.temas.find((t) => t.id === s.tema)?.label || ''
+    const titulo = s.titulo.trim() || molde.tituloPadrao?.(temaLabel) || molde.label
+
+    btn.disabled = true
+    const oldLabel = btn.textContent
+    btn.textContent = 'Salvando…'
+    const { data, error } = s.mode === 'edit'
+      ? await updateChildActivity(s.editingId, { molde: s.molde, tema: s.tema, config: s.config, instrucao, titulo })
+      : await createChildActivity({
+          childId: cycle.child_id,
+          createdBy: session.user.id,
+          cycleId: cycle.id,
+          molde: s.molde,
+          tema: s.tema,
+          config: s.config,
+          instrucao,
+          titulo,
+        })
+    btn.disabled = false
+    btn.textContent = oldLabel
+
+    if (error) {
+      if (errEl) { errEl.textContent = 'Não conseguimos salvar agora. Nada foi perdido — tente novamente.'; errEl.hidden = false }
+      return
+    }
+
+    const savedId = s.mode === 'edit' ? s.editingId : data?.id
+    if (fazerAgora && savedId) {
+      // vai direto pro Modo Criança REAL (grava execução) — volta pra aba
+      // Sessões, onde a execução aparece pra virar registro.
+      window.location.href = `modo-crianca.html?${new URLSearchParams({ activity: savedId, return: 'tutor.html?view=record&tab=sessions' })}`
+      return
+    }
+    setOpen(false)
+    wrap.dispatchEvent(new CustomEvent('aw-saved'))
+    await onSaved?.()
+  }
+
+  return wrap
+}
+
+// ── Painel: Atividades (acervo) ─────────────────────────────────────────────
 
 function buildActivitiesPanel(cycle, state, onSaved) {
   const panel = el('section', 'panel')
   panel.dataset.panel = 'activities'
   panel.hidden = true
-
   const childName = firstName(cycle.children?.name)
-  const childAge = ageFrom(cycle.children?.birth_date)
+
   const stack = el('div', 'stack')
   stack.style.maxWidth = 'none'
 
@@ -1776,368 +2004,210 @@ function buildActivitiesPanel(cycle, state, onSaved) {
     cycle_paused: 'Preparar atividades fica bloqueado enquanto o ciclo estiver pausado. Fale com a equipe Cognita para retomar.',
     cycle_completed: 'Este ciclo já foi concluído — não é mais possível preparar novas atividades. O que já foi preparado continua listado abaixo.',
   }
+  const locked = !!LOCKED[state]
 
-  // callbacks das ações de linha (Duplicar/Editar/Arquivar) só existem
-  // quando o form de composição existe pra recebê-las — undefined nos
-  // estados bloqueados (renderChildActivityRow aí só mostra "Fazer com a
-  // criança", que não depende do form).
-  let rowCallbacks
-  let prefillFromPlanoRef
+  const acervo = el('div', 'stack')
+  acervo.style.maxWidth = 'none'
 
-  if (LOCKED[state]) {
+  let wizard = null
+
+  const head = el('div', 'acervo-head')
+  const headTx = el('div')
+  headTx.append(el('h3', 'acervo-title', `Atividades de ${childName}`))
+  headTx.append(el('p', 'acervo-sub', 'Prepare experiências individuais ou use-as em uma Jornada.'))
+  head.append(headTx)
+  if (!locked) {
+    wizard = renderActivityWizard(cycle, onSaved)
+    const createBtn = el('button', 'btn btn-accent', '+ Criar atividade')
+    createBtn.type = 'button'
+    createBtn.addEventListener('click', () => wizard.openCreate())
+    head.append(createBtn)
+  }
+  acervo.append(head)
+
+  if (locked) {
     const lockedCard = el('div', 'card')
     const note = el('div', 'locked-note')
     note.innerHTML = `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
     note.append(document.createTextNode(LOCKED[state]))
     lockedCard.append(note)
-    stack.append(lockedCard)
-  } else {
-    stack.append(el('div', 'lvl', '1 · Preparar atividade'))
-    const cols = el('div', 'cols')
-
-    // ── Coluna esquerda: compor ──
-    const composeCard = el('div', 'card')
-    const composeHead = el('div', 'card-h')
-    const headCopy = el('div')
-    headCopy.append(el('h3', null, 'Preparar atividade'))
-    const headSub = el('span', null, `para ${childName}${childAge != null ? ` · ${childAge} anos` : ''}`)
-    headSub.style.cssText = 'display:block;font-size:.78rem;color:var(--muted);font-weight:400;margin-top:2px;'
-    headCopy.append(headSub)
-    composeHead.append(headCopy)
-    composeCard.append(composeHead)
-    const composeBody = el('div', 'card-b')
-
-    // Banner de edição — só aparece quando "Editar" pré-preencheu o form com
-    // uma atividade já salva. "Duplicar" NÃO passa por aqui: pré-preenche
-    // mas mantém o form em modo criação (salvar gera uma linha nova).
-    const editBanner = el('div', 'activity-edit-banner')
-    editBanner.hidden = true
-    const editBannerText = el('span', null, '')
-    const cancelEditBtn = el('button', 'btn btn-ghost btn-sm', 'Cancelar edição')
-    cancelEditBtn.type = 'button'
-    editBanner.append(editBannerText, cancelEditBtn)
-    composeBody.append(editBanner)
-
-    const moldeOptions = Object.entries(MOLDES_REGISTRO).map(([id, m]) => ({ id, label: m.label, disabled: !m.disponivel }))
-    const temaWrap = el('div')
-    const configWrap = el('div', 'stack')
-
-    const instField = el('div', 'field')
-    instField.append(el('label', null, 'Instrução *'))
-    const instInput = document.createElement('textarea')
-    instInput.required = true
-    instField.append(instInput)
-
-    const tituloField = el('div', 'field')
-    tituloField.append(el('label', null, 'Título (só para você identificar)'))
-    const tituloInput = document.createElement('input')
-    tituloInput.type = 'text'
-    tituloField.append(tituloInput)
-
-    // Precisa existir antes de rebuildForMolde() rodar lá embaixo — é ela
-    // que pushPreview() usa pra postar o contrato ao vivo.
-    const previewIframe = document.createElement('iframe')
-    previewIframe.src = 'modo-crianca.html?preview=1'
-    previewIframe.title = 'Prévia do Modo Criança'
-
-    const summary = el('p', 'compose-summary')
-    const errorBox = el('p', 'form-error'); errorBox.hidden = true
-    const okBox = el('p', 'form-ok'); okBox.hidden = true
-    const saveBtn = el('button', 'btn btn-accent btn-sm', 'Salvar atividade')
-    saveBtn.type = 'button'
-
-    let temaChoice = null
-    let controlFields = []
-    let editingId = null
-
-    function currentConfig() {
-      const molde = MOLDES_REGISTRO[moldeChoice.getValue()]
-      const config = {}
-      molde.campos.forEach((campo, i) => { config[campo.key] = controlFields[i]?.getValue() ?? campo.default })
-      return config
-    }
-
-    function updateSummary() {
-      const moldeKey = moldeChoice.getValue()
-      const molde = MOLDES_REGISTRO[moldeKey]
-      const temaLabel = molde.temas.find((t) => t.id === temaChoice?.getValue())?.label || ''
-      const tituloAtual = tituloInput.value.trim() || molde.tituloPadrao?.(temaLabel) || molde.label
-      summary.replaceChildren(
-        document.createTextNode(editingId ? 'Vai atualizar ' : 'Vai criar '),
-        el('strong', null, tituloAtual),
-        document.createTextNode(` — ${formatConfigResumo(moldeKey, currentConfig())}.`)
-      )
-    }
-
-    // Reusa buildContractFromParts (a mesma função que monta o contrato real
-    // no Modo Criança) — a prévia não é uma maquete, é a própria casca
-    // rodando num <iframe>, recebendo o estado atual do form ao vivo.
-    function pushPreview() {
-      if (!previewIframe.contentWindow) return
-      const moldeKey = moldeChoice.getValue()
-      const contract = buildContractFromParts({
-        molde: moldeKey,
-        tema: temaChoice?.getValue(),
-        config: currentConfig(),
-        instrucao: instInput.value,
-        titulo: tituloInput.value,
-      })
-      previewIframe.contentWindow.postMessage({ type: 'cognita-preview-contract', contract }, window.location.origin)
-    }
-
-    function onConfigChange() { updateSummary(); pushPreview() }
-
-    function rebuildConfig() {
-      configWrap.replaceChildren()
-      const molde = MOLDES_REGISTRO[moldeChoice.getValue()]
-      const pillsRow = el('div', 'row')
-      controlFields = molde.campos.map((campo) => {
-        const control = campo.control === 'slider'
-          ? makeSlider({ label: campo.label, min: campo.min, max: campo.max, value: campo.default, onChange: onConfigChange })
-          : makePillSelector({ label: campo.label, min: campo.min, max: campo.max, value: campo.default, onChange: onConfigChange })
-        if (campo.control === 'slider') configWrap.append(control.field)
-        else pillsRow.append(control.field)
-        return control
-      })
-      if (pillsRow.children.length) configWrap.append(pillsRow)
-
-      const temaLabel = molde.temas.find((t) => t.id === temaChoice?.getValue())?.label || ''
-      instInput.value = molde.instrucaoPadrao || ''
-      tituloInput.value = molde.tituloPadrao ? molde.tituloPadrao(temaLabel) : ''
-      updateSummary()
-      pushPreview()
-    }
-
-    function rebuildForMolde() {
-      const molde = MOLDES_REGISTRO[moldeChoice.getValue()]
-      temaWrap.replaceChildren()
-      const temaOptions = molde.temas.map((t) => ({ id: t.id, label: t.label, disabled: !t.disponivel }))
-      const defaultTema = temaOptions.find((o) => !o.disabled)?.id
-      temaChoice = makeChoiceButtons(temaOptions, defaultTema, rebuildConfig)
-      temaWrap.append(temaChoice.group)
-      rebuildConfig()
-    }
-
-    const defaultMolde = moldeOptions.find((o) => !o.disabled)?.id
-    const moldeChoice = makeChoiceButtons(moldeOptions, defaultMolde, rebuildForMolde)
-
-    composeBody.append(el('div', 'lvl', 'Como a criança vai interagir'), moldeChoice.group)
-    composeBody.append(el('div', 'lvl', 'Tema'), temaWrap)
-    composeBody.append(configWrap)
-    composeBody.append(el('div', 'lvl', 'O que a criança lê'), instField, tituloField)
-    composeBody.append(el('div', 'lvl', 'Revisar e salvar'), summary)
-
-    ;[instInput, tituloInput].forEach((input) => input.addEventListener('input', () => { updateSummary(); pushPreview() }))
-    rebuildForMolde()
-
-    // Sai do modo edição preservando os campos como estão (usado depois de
-    // salvar uma alteração com sucesso — o que acabou de ser salvo continua
-    // visível, igual já acontecia ao criar). "Cancelar edição" usa
-    // cancelEdit() abaixo, que além de sair também limpa o form.
-    function exitEditMode() {
-      editingId = null
-      saveBtn.textContent = 'Salvar atividade'
-      editBanner.hidden = true
-    }
-
-    function cancelEdit() {
-      exitEditMode()
-      rebuildForMolde()
-    }
-    cancelEditBtn.addEventListener('click', cancelEdit)
-
-    // Duplicar e Editar convergem aqui: os dois pré-preenchem o mesmo form
-    // com os dados de uma atividade já salva — a diferença é só se ficam em
-    // modo criação (gera linha nova, título ganha "(cópia)") ou em modo
-    // edição (atualiza a linha de origem).
-    // asEdit: atualiza a linha de origem (Editar). asCopy: cria linha nova
-    // com "(cópia)" no título (Duplicar). Nenhum dos dois (ex.: vindo do
-    // Plano): cria linha nova com o título como veio, sem sufixo — não é
-    // cópia de nada, é uma atividade nova sugerida pela etapa.
-    function prefillCompose(row, { asEdit = false, asCopy = false } = {}) {
-      const molde = MOLDES_REGISTRO[row.molde]
-      const temaLabel = molde?.temas.find((t) => t.id === row.tema)?.label || row.tema
-
-      moldeChoice.setValue(row.molde)
-      temaChoice.setValue(row.tema)
-      molde?.campos.forEach((campo, i) => {
-        const v = row.config?.[campo.key]
-        if (v != null) controlFields[i]?.setValue(v)
-      })
-
-      instInput.value = row.instrucao || ''
-      const baseTitulo = row.titulo || molde?.tituloPadrao?.(temaLabel) || molde?.label || ''
-      tituloInput.value = asEdit ? baseTitulo : asCopy ? `${baseTitulo} (cópia)`.trim() : baseTitulo
-
-      editingId = asEdit ? row.id : null
-      saveBtn.textContent = asEdit ? 'Salvar alterações' : 'Salvar atividade'
-      editBanner.hidden = !asEdit
-      if (asEdit) editBannerText.textContent = `Editando: ${baseTitulo}`
-
-      updateSummary()
-      pushPreview()
-
-      composeCard.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      tituloInput.focus()
-      tituloInput.select()
-    }
-
-    async function onArchive(row) {
-      const titulo = row.titulo || MOLDES_REGISTRO[row.molde]?.tituloPadrao?.(row.tema) || 'esta atividade'
-      const ok = window.confirm(`Arquivar "${titulo}"? Ela sai da lista de atividades preparadas, mas o histórico de execuções e sessões continua guardado.`)
-      if (!ok) return
-
-      const { error } = await archiveChildActivity(row.id)
-      if (error) {
-        window.alert('Não conseguimos arquivar agora. Tente de novo em instantes.')
-        return
-      }
-      if (editingId === row.id) cancelEdit()
-      await onSaved?.()
-    }
-
-    rowCallbacks = {
-      onDuplicate: (row) => prefillCompose(row, { asCopy: true }),
-      onEdit: (row) => prefillCompose(row, { asEdit: true }),
-      onArchive,
-    }
-
-    // Ponte com a aba Plano (buildPlanPanel): "Preparar atividade desta
-    // etapa" chama isto com { titulo, molde, tema, config, instrucao } —
-    // mesmo formato de uma linha de child_activities, então o mesmo
-    // prefillCompose serve sem duplicar lógica.
-    prefillFromPlanoRef = (etapa) => prefillCompose(etapa, {})
-
-    saveBtn.addEventListener('click', async () => {
-      errorBox.hidden = true; okBox.hidden = true
-
-      const instrucao = instInput.value.trim()
-      if (!instrucao) {
-        errorBox.textContent = 'Escreva a instrução para a criança.'
-        errorBox.hidden = false
-        instInput.focus()
-        return
-      }
-
-      const moldeKey = moldeChoice.getValue()
-      const molde = MOLDES_REGISTRO[moldeKey]
-      const temaId = temaChoice.getValue()
-      const temaLabel = molde.temas.find((t) => t.id === temaId)?.label || ''
-      const config = currentConfig()
-      const titulo = tituloInput.value.trim() || molde.tituloPadrao?.(temaLabel) || molde.label
-      const wasEditing = editingId
-
-      saveBtn.disabled = true; saveBtn.textContent = 'Salvando…'
-      const { error } = wasEditing
-        ? await updateChildActivity(wasEditing, { molde: moldeKey, tema: temaId, config, instrucao, titulo })
-        : await createChildActivity({
-            childId: cycle.child_id,
-            createdBy: session.user.id,
-            cycleId: cycle.id,
-            molde: moldeKey,
-            tema: temaId,
-            config,
-            instrucao,
-            titulo,
-          })
-      saveBtn.disabled = false; saveBtn.textContent = wasEditing ? 'Salvar alterações' : 'Salvar atividade'
-
-      if (error) {
-        errorBox.textContent = 'Não conseguimos salvar agora. Seu texto continua aqui para você tentar de novo.'
-        errorBox.hidden = false
-        return
-      }
-
-      okBox.textContent = wasEditing ? 'Atividade atualizada.' : 'Atividade preparada. Já aparece na lista abaixo.'
-      okBox.hidden = false
-      if (wasEditing) exitEditMode()
-      await onSaved?.()
-    })
-
-    const actions = el('div', 'form-actions')
-    actions.append(errorBox, okBox, saveBtn)
-    composeBody.append(actions)
-    composeCard.append(composeBody)
-
-    // ── Coluna direita: prévia ao vivo — o Modo Criança de verdade, num
-    // <iframe>, em modo prévia (sem login, sem gravar nada). Mesma casca.
-    const previewCard = el('div', 'card')
-    const previewHead = el('div', 'card-h')
-    const previewHeadInner = el('div', 'preview-card-h')
-    previewHeadInner.innerHTML = '<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
-    previewHeadInner.append(document.createTextNode('Prévia — o que a criança vê'))
-    previewHead.append(previewHeadInner)
-    previewCard.append(previewHead)
-
-    const previewFrameWrap = el('div', 'preview-frame-wrap')
-    const previewFrame = el('div', 'preview-frame')
-    previewIframe.addEventListener('load', pushPreview)
-    previewFrame.append(previewIframe)
-    previewFrameWrap.append(previewFrame)
-    previewCard.append(previewFrameWrap)
-
-    cols.append(composeCard, previewCard)
-    stack.append(cols)
+    acervo.append(lockedCard)
   }
 
-  stack.append(el('div', 'lvl', '2 · Atividades salvas'))
-  const historyCard = el('div', 'card')
-  const bar = el('div', 'tbl-bar')
-  bar.append(el('h3', null, `Atividades preparadas para ${childName}`))
-  historyCard.append(bar)
+  // ── filtros ──
+  let filtro = 'todas'
+  let allRows = []
+  const FILTERS = [
+    { id: 'todas', label: 'Todas' },
+    { id: 'avulsas', label: 'Avulsas' },
+    { id: 'jornada', label: 'Em Jornada' },
+    { id: 'arquivadas', label: 'Arquivadas' },
+  ]
+  const filtersRow = el('div', 'acervo-filters')
+  const chipEls = {}
+  FILTERS.forEach(({ id, label }) => {
+    const chip = el('button', `filter-chip${id === filtro ? ' active' : ''}`)
+    chip.type = 'button'
+    chip.append(document.createTextNode(label), el('span', 'num', ''))
+    chip.addEventListener('click', () => { filtro = id; renderList() })
+    chipEls[id] = chip
+    filtersRow.append(chip)
+  })
+  acervo.append(filtersRow)
 
-  const table = el('table', 'tbl')
-  table.innerHTML = `<thead><tr><th>Título</th><th>Detalhes</th><th>Criada em</th><th></th></tr></thead>`
-  const tbody = document.createElement('tbody')
-  table.append(tbody)
+  const listWrap = el('div', 'acervo-list')
+  acervo.append(listWrap)
 
-  const emptyWrap = el('div', 'card-b')
-  const empty = el('div', 'empty-state')
-  const img = document.createElement('img')
-  img.src = '../assets/gatomatematico-sem-fundo.png'
-  img.alt = ''
-  empty.append(
-    img,
-    el('strong', null, 'Nenhuma atividade preparada ainda.'),
-    el('span', null, `Crie uma atividade simples para começar com ${childName} — ela aparece aqui assim que for salva.`)
-  )
-  emptyWrap.append(empty)
-  emptyWrap.hidden = true
+  function matchesFiltro(row, f) {
+    if (f === 'arquivadas') return row.status === 'archived'
+    if (row.status === 'archived') return false
+    if (f === 'avulsas') return !row.child_trail_mission_id
+    if (f === 'jornada') return !!row.child_trail_mission_id
+    return true
+  }
 
-  const errorWrap = el('div', 'card-b')
-  const errorInner = el('div', 'error-card')
-  errorInner.append(
-    el('strong', null, 'Não conseguimos carregar as atividades agora.'),
-    el('p', null, 'Tente atualizar a página.')
-  )
-  const retryBtn = el('button', 'btn btn-ghost', 'Tentar novamente')
-  retryBtn.type = 'button'
-  retryBtn.addEventListener('click', () => panel.loadTable())
-  errorInner.append(retryBtn)
-  errorWrap.append(errorInner)
-  errorWrap.hidden = true
+  async function onArchive(row) {
+    const titulo = row.titulo || MOLDES_REGISTRO[row.molde]?.tituloPadrao?.(row.tema) || 'esta atividade'
+    const ok = window.confirm(`Arquivar "${titulo}"? Ela sai da lista ativa, mas o histórico de execuções e sessões continua guardado.`)
+    if (!ok) return
+    const { error } = await archiveChildActivity(row.id)
+    if (error) { window.alert('Não conseguimos arquivar agora. Tente de novo em instantes.'); return }
+    await onSaved?.()
+  }
 
-  historyCard.append(table, emptyWrap, errorWrap)
-  stack.append(historyCard)
+  async function onRestore(row) {
+    const { error } = await restoreChildActivity(row.id)
+    if (error) { window.alert('Não conseguimos restaurar agora. Tente de novo em instantes.'); return }
+    await onSaved?.()
+  }
 
-  stack.append(el('div', 'lvl', '3 · Últimas execuções'))
-  const recentCard = el('div', 'card')
-  recentCard.append(simpleHead('Últimas execuções no Modo Criança'))
-  const recentBody = el('div', 'card-b')
-  const recentList = el('div', 'recent-execucoes-list')
-  recentBody.append(recentList)
-  recentCard.append(recentBody)
-  stack.append(recentCard)
+  function renderAcervoItem(row) {
+    const molde = MOLDES_REGISTRO[row.molde]
+    const temaLabel = molde?.temas.find((t) => t.id === row.tema)?.label || row.tema
+    const titulo = row.titulo || molde?.tituloPadrao?.(temaLabel) || row.molde
+    const item = el('div', 'card acervo-item')
 
+    const emblem = el('img', 'acervo-emblem')
+    emblem.src = emblemaDeMolde(row.molde)
+    emblem.alt = ''
+
+    const tx = el('div', 'acervo-tx')
+    tx.append(el('strong', 'acervo-item-title', titulo))
+    tx.append(el('p', 'acervo-item-meta', `${molde?.label || row.molde} · ${temaLabel} · ${formatConfigResumo(row.molde, row.config)}`))
+
+    const missaoStatus = row.child_trail_mission_id ? pickEmbedded(row.child_trail_missions)?.status : null
+    const statusLine = el('p', 'acervo-item-status')
+    if (row.status === 'archived') {
+      statusLine.append(el('span', 'pill pill-mid', 'Arquivada'))
+    } else if (row.child_trail_mission_id) {
+      const cls = missaoStatus === 'disponivel' ? 'pill-ok' : 'pill-mid'
+      statusLine.append(el('span', `pill ${cls}`, `Jornada · ${MISSION_STATUS_LABEL[missaoStatus] || missaoStatus || '—'}`))
+    } else {
+      statusLine.append(document.createTextNode(`Avulsa · criada ${formatLastSession(row.created_at?.slice(0, 10))}`))
+    }
+    tx.append(statusLine)
+
+    const actions = el('div', 'acervo-actions')
+    // Avulsa sempre executável; missão de Jornada só quando 'disponivel'
+    // (repetir/adaptar é decisão da Jornada, não um clique aqui).
+    const podeExecutar = row.status !== 'archived' && (!row.child_trail_mission_id || missaoStatus === 'disponivel')
+    if (podeExecutar) {
+      const link = el('a', 'btn btn-ghost btn-sm', `Fazer com ${childName}`)
+      link.href = `modo-crianca.html?${new URLSearchParams({ activity: row.id, return: 'tutor.html?view=record&tab=sessions' })}`
+      actions.append(link)
+    }
+    // Atividade de Jornada é administrada pela Jornada — sem editar/arquivar.
+    if (!locked && wizard && !row.child_trail_mission_id) {
+      const items = row.status === 'archived'
+        ? [
+            { label: 'Restaurar', run: () => onRestore(row) },
+            { label: 'Duplicar', run: () => wizard.openDuplicate(row) },
+          ]
+        : [
+            { label: 'Editar', run: () => wizard.openEdit(row) },
+            { label: 'Duplicar', run: () => wizard.openDuplicate(row) },
+            { label: 'Arquivar', run: () => onArchive(row), tone: 'bad' },
+          ]
+      actions.append(kebabMenu(items))
+    }
+
+    item.append(emblem, tx, actions)
+    return item
+  }
+
+  const EMPTY_MSG = {
+    avulsas: 'Nenhuma atividade avulsa ainda.',
+    jornada: 'Nenhuma atividade de Jornada — elas nascem quando você libera um módulo.',
+    arquivadas: 'Nada arquivado.',
+  }
+
+  function renderList() {
+    FILTERS.forEach(({ id }) => {
+      chipEls[id].classList.toggle('active', id === filtro)
+      chipEls[id].querySelector('.num').textContent = String(allRows.filter((r) => matchesFiltro(r, id)).length)
+    })
+    const rows = allRows.filter((r) => matchesFiltro(r, filtro))
+    listWrap.replaceChildren()
+    if (!rows.length) {
+      if (filtro === 'todas' && !allRows.length) {
+        const emptyCard = el('div', 'card')
+        const emptyBody = el('div', 'card-b')
+        const empty = el('div', 'empty-state')
+        const img = document.createElement('img')
+        img.src = '../assets/gatomatematico-sem-fundo.png'
+        img.alt = ''
+        empty.append(
+          img,
+          el('strong', null, 'Nenhuma atividade preparada ainda.'),
+          el('span', null, `Crie uma experiência simples para começar com ${childName} — leva menos de um minuto.`)
+        )
+        emptyBody.append(empty)
+        emptyCard.append(emptyBody)
+        listWrap.append(emptyCard)
+      } else {
+        listWrap.append(el('p', 'acervo-empty', EMPTY_MSG[filtro] || 'Nada por aqui.'))
+      }
+      return
+    }
+    rows.forEach((r) => listWrap.append(renderAcervoItem(r)))
+  }
+
+  function renderLoadError() {
+    listWrap.replaceChildren()
+    const card = el('div', 'card')
+    const body = el('div', 'card-b')
+    const inner = el('div', 'error-card')
+    inner.append(
+      el('strong', null, 'Não conseguimos carregar as atividades agora.'),
+      el('p', null, 'Verifique a conexão e tente novamente.')
+    )
+    const retry = el('button', 'btn btn-ghost', 'Tentar novamente')
+    retry.type = 'button'
+    retry.addEventListener('click', () => panel.loadTable())
+    inner.append(retry)
+    body.append(inner)
+    card.append(body)
+    listWrap.append(card)
+  }
+
+  async function loadAcervo() {
+    const { data, error } = await listChildActivities(cycle.child_id, { incluirArquivadas: true })
+    if (error) { renderLoadError(); return [] }
+    allRows = data ?? []
+    renderList()
+    // o badge da aba conta só as ativas (arquivada não é "preparada")
+    return allRows.filter((r) => r.status !== 'archived')
+  }
+
+  if (wizard) {
+    wizard.addEventListener('aw-toggle', (ev) => { acervo.hidden = ev.detail.open })
+    stack.append(acervo, wizard)
+  } else {
+    stack.append(acervo)
+  }
   panel.append(stack)
 
-  panel.loadTable = () => loadChildActivitiesTable(cycle.child_id, tbody, emptyWrap, errorWrap, table, rowCallbacks)
-  panel.loadRecentExecucoes = () => loadRecentExecucoes(cycle.child_id, recentList)
-  // undefined nos estados bloqueados (sem form de composição pra receber).
-  // Único chamador restante: a ponte pendingEtapaParams em bootstrap() (volta
-  // de trilha.html com ?plan=&step=) — buildPlanPanel não usa mais isso, a
-  // trilha formal libera módulo inteiro via RPC, não prefill de form.
-  panel.prefillFromPlano = (etapa) => prefillFromPlanoRef?.(etapa)
+  panel.loadTable = loadAcervo
   return panel
 }
 
@@ -3017,7 +3087,6 @@ function renderRecord(state, cycle, initialTab) {
     const rows = await activitiesPanel.loadTable()
     const badge = tabs.querySelector('[data-tab="activities"] .badge')
     if (badge) badge.textContent = String(rows.length)
-    await activitiesPanel.loadRecentExecucoes?.()
   }
 
   const openForm = () => {

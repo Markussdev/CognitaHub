@@ -40,13 +40,16 @@ export async function createChildActivity({
 // quando a missão estiver 'disponivel' (a criança não pode pular pra uma
 // missão 2/3 só porque o tutor liberou o módulo em lote, ver
 // docs/supabase-fase-7-liberar-modulo.sql).
-export async function listChildActivities(childId) {
-  return supabase
+// incluirArquivadas: o acervo do tutor mostra o filtro "Arquivadas" —
+// os demais chamadores (builder de jornada etc.) seguem só com as ativas.
+export async function listChildActivities(childId, { incluirArquivadas = false } = {}) {
+  let query = supabase
     .from('child_activities')
     .select('id, molde, tema, config, instrucao, titulo, status, created_at, child_trail_mission_id, child_trail_missions ( status )')
     .eq('child_id', childId)
-    .neq('status', 'archived')
     .order('created_at', { ascending: false })
+  if (!incluirArquivadas) query = query.neq('status', 'archived')
+  return query
 }
 
 // Edição de uma atividade já preparada — reusa o mesmo form de composição
@@ -69,6 +72,18 @@ export async function archiveChildActivity(id) {
   return supabase
     .from('child_activities')
     .update({ status: 'archived' })
+    .eq('id', id)
+    .select('id')
+    .single()
+}
+
+// Reverso do arquivar — se o tutor pode VER as arquivadas (filtro do acervo),
+// a ação honesta sobre elas é poder trazê-las de volta. Mesma RLS
+// (ca_tutor_update) do updateChildActivity, sem policy nova.
+export async function restoreChildActivity(id) {
+  return supabase
+    .from('child_activities')
+    .update({ status: 'ready' })
     .eq('id', id)
     .select('id')
     .single()
