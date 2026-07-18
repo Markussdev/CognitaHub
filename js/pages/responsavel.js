@@ -61,10 +61,59 @@ function firstName(fullName) {
   return (fullName ?? '').trim().split(/\s+/)[0] || ''
 }
 
+// Tokenizer caractere-a-caractere pra texto[] do Postgres, ex.:
+// {animais, "blocos coloridos", elogios}. Precisa ser tokenizer, não regex
+// de alternância (/"(...)"|([^,]+)/g) — testado e o ramo sem aspas vencia
+// no espaço logo antes de uma aspa (posição onde só ele "começa a casar"),
+// engolindo a aspa inteira como texto em vez de deixar o ramo com aspas
+// disparar. Suporta \" escapado dentro do trecho entre aspas.
+function parsePgArrayLiteral(inner) {
+  const items = []
+  let i = 0
+  const n = inner.length
+  while (i < n) {
+    while (i < n && /\s/.test(inner[i])) i += 1
+    if (i >= n) break
+    let val = ''
+    if (inner[i] === '"') {
+      i += 1
+      while (i < n && inner[i] !== '"') {
+        if (inner[i] === '\\' && i + 1 < n) { val += inner[i + 1]; i += 2 }
+        else { val += inner[i]; i += 1 }
+      }
+      i += 1 // fecha a aspa
+      while (i < n && inner[i] !== ',') i += 1 // até a próxima vírgula
+    } else {
+      while (i < n && inner[i] !== ',') { val += inner[i]; i += 1 }
+    }
+    i += 1 // pula a vírgula
+    items.push(val.trim())
+  }
+  return items.filter(Boolean)
+}
+
+// motivators/avoidances podem chegar em formatos diferentes dependendo de
+// como o dado entrou (form real via .getAll() vira array de verdade pelo
+// supabase-js; dado seedado direto por SQL às vezes vem como texto literal
+// do Postgres — {a,"b c"} — ou como string JSON — ["a","b"]). Trata os três
+// formatos + string simples separada por vírgula, sem vazar sintaxe crua.
 function toList(value) {
-  if (Array.isArray(value)) return value.filter(Boolean)
-  if (typeof value === 'string' && value.trim()) return value.split(',').map((s) => s.trim()).filter(Boolean)
-  return []
+  if (Array.isArray(value)) return value.filter(Boolean).map(String)
+  if (typeof value !== 'string') return []
+  const trimmed = value.trim()
+  if (!trimmed) return []
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    return parsePgArrayLiteral(trimmed.slice(1, -1))
+  }
+  if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(trimmed)
+      if (Array.isArray(parsed)) return parsed.filter(Boolean).map(String)
+    } catch {
+      // não era JSON válido — cai pro split por vírgula abaixo
+    }
+  }
+  return trimmed.split(',').map((s) => s.trim()).filter(Boolean)
 }
 
 function formatDate(value) {
@@ -102,10 +151,15 @@ function currentCycleMonth(startDate, endDate) {
   return Math.min(Math.max(1, m), monthsBetween(startDate, endDate))
 }
 
+// Chaves = enum real de learning_profiles.attention_span (confirmado em
+// js/pages/cadastro-responsavel.js ATTENTION_MAP / js/data/signup.js
+// mapAttentionSpan) — 'curta'/'media'/'longa' nunca existiram no banco,
+// eram um palpite meu não conferido; por isso "medium" vazava cru na tela.
 const ATTENTION_LABEL = {
-  curta: 'Períodos curtos de atenção — pausas ajudam',
-  media: 'Atenção média — sessões de 15 a 25 minutos funcionam bem',
-  longa: 'Consegue manter o foco por períodos mais longos',
+  short: 'Períodos curtos de atenção — pausas ajudam',
+  medium: 'Atenção média — sessões de 15 a 25 minutos funcionam bem',
+  long: 'Consegue manter o foco por períodos mais longos',
+  unknown: null, // "ainda não sei" no cadastro — nada de verdade pra mostrar
 }
 
 // ── Suporte (contato honesto — sem formulário que não persiste) ──────────────
@@ -590,7 +644,7 @@ function viewCrianca() {
   ;[
     factRow('Foco atual', focos),
     factRow('Prefere', toList(lp.preferred_formats)),
-    factRow('Atenção', ATTENTION_LABEL[lp.attention_span] || lp.attention_span),
+    factRow('Atenção', ATTENTION_LABEL[lp.attention_span] ?? null),
     factRow('O que motiva', toList(lp.motivators)),
     factRow('O que evitar', toList(lp.avoidances)),
     factRow('Notas sensoriais', child.sensory_notes),

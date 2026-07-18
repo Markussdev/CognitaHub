@@ -49,21 +49,30 @@ async function getGuardianChildrenInSteps(guardianId) {
     return { data: null, error: cyclesError }
   }
 
-  const tutorIds = [...new Set((cycles ?? []).map((cycle) => cycle.tutor_id).filter(Boolean))]
-  let profiles = []
+  // Perfil do tutor via RPC (security definer, docs/supabase-fase-16-*.sql)
+  // — não via .from('profiles').in('id', ...), que depende de RLS de
+  // leitura em profiles pro responsável e não tinha confirmação de estar
+  // aplicada no projeto real. A RPC escopa por auth.uid() como guardian
+  // e devolve só o que o card do tutor usa (nem email/phone/disponibilidade).
+  const { data: guardianTutorProfiles, error: tutorProfilesError } = await supabase
+    .rpc('get_guardian_tutor_profiles')
 
-  if (tutorIds.length) {
-    const { data: tutorProfiles, error: profilesError } = await supabase
-      .from('profiles')
-      .select('id, name, email, phone, avatar_path, tutor_presentation, tutor_formation, tutor_availability')
-      .in('id', tutorIds)
-
-    if (profilesError) {
-      return { data: null, error: profilesError }
-    }
-
-    profiles = tutorProfiles ?? []
+  if (tutorProfilesError) {
+    return { data: null, error: tutorProfilesError }
   }
+
+  const tutorByCycleId = new Map(
+    (guardianTutorProfiles ?? []).map((row) => [
+      row.cycle_id,
+      {
+        id: row.tutor_id,
+        name: row.tutor_name,
+        avatar_path: row.avatar_path,
+        tutor_presentation: row.tutor_presentation,
+        tutor_formation: row.tutor_formation,
+      },
+    ])
+  )
 
   // A família nunca lê a tabela sessions direto — só pela função
   // get_family_sessions (security definer), que devolve níveis 1+2 e
@@ -87,13 +96,12 @@ async function getGuardianChildrenInSteps(guardianId) {
     sessionsByCycleId.set(sessionRow.cycle_id, list)
   })
 
-  const profileById = new Map(profiles.map((profile) => [profile.id, profile]))
   const cyclesByChildId = new Map()
 
   ;(cycles ?? []).forEach((cycle) => {
     const enrichedCycle = {
       ...cycle,
-      profiles: cycle.tutor_id ? profileById.get(cycle.tutor_id) ?? null : null,
+      profiles: tutorByCycleId.get(cycle.id) ?? null,
       sessions: sessionsByCycleId.get(cycle.id) ?? [],
     }
     const list = cyclesByChildId.get(cycle.child_id) ?? []
