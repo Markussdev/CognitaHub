@@ -1,27 +1,71 @@
 import logoImg from '../assets/logo-icon-transparent.png'
 import { missionNodeHtml } from '../components/mission-node.js'
+import { statusMessageHtml } from '../components/status-message.js'
 
-// Dados fixos só para validar o layout visual (etapa 1). A leitura real da
-// jornada/módulos/missões via Supabase entra na etapa 4.
-const DEMO_CHILD_NAME = 'Mateus'
-const DEMO_MISSIONS = [
-  { title: 'Missão 1', state: 'completed' },
-  { title: 'Missão 2', state: 'completed' },
-  { title: 'Missão 3', state: 'review' },
-  { title: 'Missão 4', state: 'available' },
-  { title: 'Missão 5', state: 'locked' },
-]
+const MISSION_STATES = {
+  bloqueada: 'locked',
+  disponivel: 'available',
+  concluida: 'completed',
+}
 
-export function renderJourney(root, { childName = DEMO_CHILD_NAME } = {}) {
+export function renderJourney(root, { childName, trail, modules, currentModule, missions }) {
+  const header = `
+    <div class="journey-header">
+      <img src="${logoImg}" alt="" />
+      <h1 class="title">Jornada de ${childName}</h1>
+    </div>
+  `
+
+  if (trail?.status === 'concluida') {
+    renderMessage(root, header, 'Você concluiu sua jornada!')
+    return
+  }
+
+  if (trail?.status === 'pausada') {
+    renderMessage(root, header, 'Sua jornada está pausada.')
+    return
+  }
+
+  if (!currentModule || currentModule.status === 'bloqueado') {
+    renderMessage(root, header, 'Seu tutor está preparando o próximo módulo.')
+    return
+  }
+
+  const nodes = missions.map((mission) =>
+    missionNodeHtml({
+      title: mission.mission_templates.title,
+      state: MISSION_STATES[mission.status] ?? 'locked',
+      activityId: mission.status === 'disponivel' ? mission.child_activities?.[0]?.id ?? null : null,
+    }),
+  )
+
+  const reviewBanner =
+    currentModule.status === 'aguardando_revisao'
+      ? statusMessageHtml({ type: 'info', text: 'Módulo concluído! Agora é hora de aguardar seu tutor.' })
+      : ''
+
+  const emptyState =
+    missions.length === 0
+      ? statusMessageHtml({ type: 'info', text: 'Nenhuma missão disponível no momento.' })
+      : ''
+
   root.innerHTML = `
     <div class="screen screen--journey">
-      <div class="journey-header">
-        <img src="${logoImg}" alt="" />
-        <h1 class="title">Jornada de ${childName}</h1>
-      </div>
+      ${header}
       <div class="journey-map">
-        ${DEMO_MISSIONS.map(missionNodeHtml).join('')}
+        ${nodes.join('')}
       </div>
+      ${reviewBanner}
+      ${emptyState}
+    </div>
+  `
+}
+
+function renderMessage(root, header, text) {
+  root.innerHTML = `
+    <div class="screen screen--pairing">
+      ${header}
+      ${statusMessageHtml({ type: 'info', text })}
     </div>
   `
 }

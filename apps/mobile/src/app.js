@@ -4,12 +4,11 @@ import { renderJourney } from './screens/journey.js'
 import { statusMessageHtml } from './components/status-message.js'
 import { ensureAnonymousSession } from './services/auth.js'
 import { claimPairingCode, getPairedChildContext } from './services/pairing.js'
+import { getChildTrail, getChildTrailModules, getModuleMissions } from './services/trails.js'
 
-// Etapa 2: sessão anônima + pareamento reais contra o Supabase.
-// A leitura da jornada/módulos/missões de verdade (trails.js) ainda não
-// existe — quando o dispositivo já está pareado e tem child_trail_id, a
-// tela de jornada mostra o nome real da criança mas a lista de missões
-// continua com os dados demo até a etapa 4.
+// Etapa 3: sessão anônima + pareamento + jornada formal, tudo lido direto
+// do Supabase. Ainda é só leitura — abrir uma missão entra no bloco
+// seguinte (activity-runner).
 export async function initApp(root) {
   renderLoading(root)
   await boot(root)
@@ -30,7 +29,21 @@ async function boot(root) {
       return
     }
 
-    renderJourney(root, { childName: context.primeiro_nome })
+    const trail = await getChildTrail(context.child_trail_id)
+    const modules = await getChildTrailModules(context.child_trail_id)
+
+    const currentModule = modules.find((module) => module.status !== 'concluido') ?? modules.at(-1)
+
+    const missions =
+      !currentModule || currentModule.status === 'bloqueado' ? [] : await getModuleMissions(currentModule.id)
+
+    renderJourney(root, {
+      childName: context.primeiro_nome,
+      trail,
+      modules,
+      currentModule,
+      missions,
+    })
   } catch (err) {
     showError(root, err)
   }

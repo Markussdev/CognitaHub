@@ -232,9 +232,3 @@
   background: var(--success);
   color: var(--warm-white);
 }
-
-.mission-node--review .mission-node__circle {
-  background: var(--soft-gold);
-  color: var(--wine);
-  border: 2px dashed var(--review);
-}
