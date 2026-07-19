@@ -1,1 +1,29 @@
-/* Design tokens will live here. */
+:root {
+  --warm-white: #fffffc;
+  --paper: #fcf7f1;
+  --navy: #141162;
+  --gold: #ffa800;
+  --wine: #540042;
+  --ink: #26051f;
+  --muted: #625363;
+  --line: rgba(20, 17, 98, 0.11);
+  --soft-gold: #fff4d8;
+  --soft-blue: #f0f0ff;
+  --soft-wine: #faeef7;
+
+  --locked: #b8b2c4;
+  --success: #2f9e5a;
+  --review: #ffa800;
+
+  --font: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display: "Baloo 2", var(--font);
+
+  --r-md: 14px;
+  --r-lg: 22px;
+  --r-pill: 999px;
+
+  --shadow-card: 0 16px 36px rgba(35, 2, 32, 0.1);
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
