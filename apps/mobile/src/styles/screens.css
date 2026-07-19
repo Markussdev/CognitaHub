@@ -365,3 +365,62 @@ button.mission-node--available {
   place-items: center;
   box-shadow: var(--shadow-card);
 }
+
+/* ---- molde: identificar ---- */
+
+.identifying-instruction {
+  margin: 0 0 28px;
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.identifying-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(78px, 100px));
+  justify-content: center;
+  gap: 16px;
+}
+
+.identifying-option {
+  aspect-ratio: 1;
+  border: 2px solid var(--line);
+  border-radius: var(--r-lg);
+  background: #fff;
+  color: var(--navy);
+  font-family: var(--display);
+  font-size: 32px;
+  font-weight: 700;
+  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+
+.identifying-option:active {
+  transform: scale(0.94);
+}
+
+.identifying-option.is-correct {
+  border-color: var(--success);
+  background: #e6f6ec;
+  color: var(--success);
+}
+
+.identifying-option.is-wrong {
+  border-color: var(--gold);
+  background: var(--soft-gold);
+  animation: identifying-shake 300ms ease;
+}
+
+@keyframes identifying-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}

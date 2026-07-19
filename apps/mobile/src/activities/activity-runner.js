@@ -1,7 +1,9 @@
 import { mountCounting } from './counting.js'
+import { mountIdentifying } from './identifying.js'
 
 const ACTIVITY_TYPES = {
   contar: mountCounting,
+  identificar: mountIdentifying,
 }
 
 // null quando o molde não existe neste app — quem chama mostra o aviso
