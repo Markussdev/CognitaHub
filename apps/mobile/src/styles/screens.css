@@ -12,7 +12,7 @@
 }
 
 .mascot--sm {
-  width: 96px;
+  width: 112px;
 }
 
 .title {
@@ -95,14 +95,15 @@
 }
 
 .code-input {
-  width: 130px;
-  height: 64px;
+  width: 136px;
+  height: 68px;
   border-radius: var(--r-md);
   border: 2px solid var(--line);
-  background: var(--warm-white);
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(35, 2, 32, 0.05);
   text-align: center;
   font-family: var(--display);
-  font-size: 26px;
+  font-size: 28px;
   letter-spacing: 6px;
   color: var(--navy);
   text-transform: uppercase;

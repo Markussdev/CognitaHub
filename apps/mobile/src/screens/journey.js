@@ -12,12 +12,12 @@ const DEMO_MISSIONS = [
   { title: 'Missão 5', state: 'locked' },
 ]
 
-export function renderJourney(root) {
+export function renderJourney(root, { childName = DEMO_CHILD_NAME } = {}) {
   root.innerHTML = `
     <div class="screen screen--journey">
       <div class="journey-header">
         <img src="${logoImg}" alt="" />
-        <h1 class="title">Jornada de ${DEMO_CHILD_NAME}</h1>
+        <h1 class="title">Jornada de ${childName}</h1>
       </div>
       <div class="journey-map">
         ${DEMO_MISSIONS.map(missionNodeHtml).join('')}

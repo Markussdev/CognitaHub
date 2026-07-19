@@ -1,1 +1,20 @@
-// Pairing service will live here.
+import { supabase } from './supabase.js'
+
+// Exige sessão anônima ativa (a RPC checa is_anonymous=true no JWT).
+export async function claimPairingCode(code, deviceName = null) {
+  const { data, error } = await supabase.rpc('claim_pairing_code', {
+    p_code: code,
+    p_device_name: deviceName,
+  })
+  if (error) throw error
+  return data // child_id
+}
+
+// null quando a sessão atual não está pareada (nunca pareou ou foi
+// revogada) — a RPC não distingue os dois casos, então o app trata os
+// dois mostrando a tela de código de novo.
+export async function getPairedChildContext() {
+  const { data, error } = await supabase.rpc('get_paired_child_context')
+  if (error) throw error
+  return data?.[0] ?? null
+}

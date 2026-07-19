@@ -1,4 +1,3 @@
-import logoImg from '../assets/logo-icon-transparent.png'
 import { mascotHtml } from '../components/mascot.js'
 import { statusMessageHtml } from '../components/status-message.js'
 
@@ -7,7 +6,6 @@ const GROUP_LEN = 4
 export function renderPairing(root, { onSubmit } = {}) {
   root.innerHTML = `
     <div class="screen screen--pairing">
-      <img class="logo" src="${logoImg}" alt="" />
       ${mascotHtml({ size: 'sm' })}
       <h1 class="title">Digite seu código</h1>
       <p class="subtitle">Peça o código de 8 letras para o seu tutor ou responsável.</p>
@@ -52,12 +50,19 @@ export function renderPairing(root, { onSubmit } = {}) {
     updateSubmitState()
   })
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault()
     if (submitBtn.disabled) return
     const code = inputA.value + inputB.value
     statusEl.innerHTML = ''
-    onSubmit?.(code)
+    submitBtn.disabled = true
+    submitBtn.textContent = 'Entrando...'
+    try {
+      await onSubmit?.(code)
+    } finally {
+      submitBtn.disabled = false
+      submitBtn.textContent = 'Entrar'
+    }
   })
 
   return {
