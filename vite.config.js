@@ -8,6 +8,7 @@ module.exports = {
 
         login: resolve(__dirname, 'pages/login.html'),
         cadastro: resolve(__dirname, 'pages/cadastro.html'),
+        comoFunciona: resolve(__dirname, 'pages/como-funciona.html'),
         cadastroTutor: resolve(__dirname, 'pages/cadastro-tutor.html'),
         cadastroResponsavel: resolve(__dirname, 'pages/cadastro-responsavel.html'),
 
