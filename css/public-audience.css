@@ -157,7 +157,7 @@
 .feature-strip {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin: 0;
+  margin: 0 auto;
   border-block: 1px solid rgba(20, 17, 98, .13);
 }
 
