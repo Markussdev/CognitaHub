@@ -21,9 +21,9 @@
 
       <nav class="public-nav" aria-label="Navegação pública">
         <a href="como-funciona.html" aria-current="page">Como funciona</a>
-        <a href="#familias">Para famílias</a>
-        <a href="#tutores">Tutores</a>
-        <a href="#seguranca">Segurança</a>
+        <a href="para-familias.html">Para famílias</a>
+        <a href="para-tutores.html">Tutores</a>
+        <a href="seguranca.html">Segurança</a>
       </nav>
 
       <div class="public-actions">
@@ -36,117 +36,102 @@
   <main>
     <section class="hero-how">
       <div class="wrap hero-how__grid">
-        <div>
+        <div class="hero-how__copy">
           <p class="eyebrow">Como funciona</p>
-          <h1>Um acompanhamento que conecta quem ensina, quem aprende e quem cuida.</h1>
-          <p class="hero-how__lead">O tutor planeja experiências para cada criança, o aplicativo conduz as atividades e a família acompanha cada avanço com uma devolutiva clara.</p>
+          <h1>Acompanhamento, passo a passo.</h1>
+          <p class="hero-how__lead">A família compartilha o contexto, o tutor prepara cada experiência e a criança percorre uma jornada construída para o seu momento.</p>
           <div class="hero-how__actions">
-            <a class="btn btn--primary" href="#familias">Conhecer a experiência da família</a>
-            <a class="btn btn--outline" href="cadastro-tutor.html">Quero ser tutor</a>
+            <a class="btn btn--primary" href="#etapas">Ver as etapas</a>
+            <a class="text-link" href="para-familias.html">Conhecer a visão da família <span aria-hidden="true">&rarr;</span></a>
           </div>
         </div>
 
-        <div class="ecosystem" aria-label="Telas conectadas do Cognita">
-          <span class="ecosystem-line" aria-hidden="true"></span>
-
-          <article class="screen screen--tutor" aria-label="Painel do tutor">
+        <div class="ecosystem" aria-label="Planejamento, atividade e devolutiva conectados">
+          <article class="screen screen--tutor" aria-label="Planejamento do tutor">
             <div class="screen__bar"><i></i><i></i><i></i></div>
             <div class="mini-panel">
               <div class="mini-top">
                 <div>
-                  <p class="mini-kicker">Painel do tutor</p>
-                  <h2 class="mini-title">Planejar missão para Mateus</h2>
+                  <p class="mini-kicker">Tutor</p>
+                  <strong class="mini-title">Missão para Mateus</strong>
                 </div>
-                <span class="mini-chip">Prévia ao vivo</span>
+                <span class="mini-chip">Planejamento</span>
               </div>
               <div class="builder-grid">
                 <div class="builder-form">
                   <span class="field-line">Tema: dinossauros</span>
-                  <span class="field-line">Nível: contagem até 6</span>
-                  <span class="field-line">Quantidade: 4 desafios</span>
+                  <span class="field-line">Contagem até 6</span>
                 </div>
                 <div class="mission-preview">
-                  <strong>Missão infantil</strong>
+                  <strong>Prévia</strong>
                   <img src="../assets/trilha/emblemas/contar.webp" alt="" />
-                  <span class="mini-chip">Próxima</span>
                 </div>
               </div>
             </div>
           </article>
 
-          <article class="screen screen--profile" aria-label="Perfil pedagógico">
-            <div class="screen__bar"><i></i><i></i><i></i></div>
-            <div class="mini-panel">
-              <div class="mini-top">
-                <div>
-                  <p class="mini-kicker">Criança</p>
-                  <h2 class="mini-title">Mateus, 7 anos</h2>
-                </div>
-                <div class="mini-avatar">M</div>
-              </div>
-              <div class="mini-row"><strong>Motivadores</strong><span>mapas, cores e dinossauros</span></div>
-              <div class="mini-row"><strong>Apoios</strong><span>atividade curta e visual</span></div>
-            </div>
-          </article>
-
-          <article class="phone" aria-label="Aplicativo infantil">
+          <article class="phone phone--hero" aria-label="Jornada da criança">
             <div class="phone__inside">
               <div class="phone-map">
-                <h3>Jornada do Mateus</h3>
+                <p class="phone-label">Próxima missão</p>
+                <h2>Vamos contar?</h2>
                 <span class="path-line" aria-hidden="true"></span>
                 <span class="map-node map-node--one"><img src="../assets/trilha/emblemas/identificar.webp" alt="" /></span>
                 <span class="map-node map-node--two"><img src="../assets/trilha/emblemas/contar.webp" alt="" /></span>
                 <span class="map-node map-node--three"><img src="../assets/trilha/emblemas/revisar.webp" alt="" /></span>
-                <img class="map-mascot" src="../assets/trilha/mascote/guia.webp" alt="" />
               </div>
             </div>
           </article>
 
-          <article class="screen screen--family" aria-label="Painel da família">
+          <article class="screen screen--family" aria-label="Devolutiva para a família">
             <div class="screen__bar"><i></i><i></i><i></i></div>
             <div class="mini-panel family-card">
               <div class="mini-top">
                 <div>
                   <p class="mini-kicker">Família</p>
-                  <h2 class="mini-title">Última devolutiva</h2>
+                  <strong class="mini-title">Última devolutiva</strong>
                 </div>
                 <span class="mini-chip">Semana 3</span>
               </div>
               <div class="progress-bar"><i></i></div>
-              <p class="quote-box">Mateus reconheceu grupos de objetos com mais segurança. Na próxima missão, vamos manter o tema dos dinossauros e reduzir distrações.</p>
+              <p class="quote-box">Mateus reconheceu pequenos grupos com mais segurança. O próximo passo já está combinado.</p>
             </div>
           </article>
         </div>
       </div>
     </section>
 
-    <section class="flow-strip" aria-label="Fluxo do acompanhamento">
+    <section class="flow-strip" id="etapas" aria-labelledby="flow-title">
       <div class="wrap">
-        <div class="flow-line">
-          <div class="flow-step"><b>1</b><span>Conhecemos a criança</span></div>
-          <div class="flow-step"><b>2</b><span>Organizamos o acompanhamento</span></div>
-          <div class="flow-step"><b>3</b><span>O tutor prepara a jornada</span></div>
-          <div class="flow-step"><b>4</b><span>A criança realiza as missões</span></div>
-          <div class="flow-step"><b>5</b><span>A família recebe a devolutiva</span></div>
+        <div class="flow-heading">
+          <p class="eyebrow">Um ciclo conectado</p>
+          <h2 id="flow-title">Do primeiro contexto à próxima atividade.</h2>
         </div>
+        <ol class="flow-line">
+          <li class="flow-step"><b>1</b><span>Conhecemos a criança</span></li>
+          <li class="flow-step"><b>2</b><span>Organizamos o acompanhamento</span></li>
+          <li class="flow-step"><b>3</b><span>O tutor prepara a jornada</span></li>
+          <li class="flow-step"><b>4</b><span>A criança realiza as missões</span></li>
+          <li class="flow-step"><b>5</b><span>A família recebe a devolutiva</span></li>
+        </ol>
       </div>
     </section>
 
-    <section class="chapter">
+    <section class="chapter" id="perfil">
       <div class="wrap chapter-grid">
         <div class="chapter-copy">
           <p class="eyebrow">Tudo começa pela criança</p>
-          <h2>Antes de sugerir uma atividade, entendemos quem vai realizá-la.</h2>
-          <p>A família compartilha preferências, necessidades de apoio, motivadores e aspectos da rotina. A equipe Cognita usa esse contexto para organizar um acompanhamento mais cuidadoso.</p>
+          <h2>Antes da atividade, entendemos quem vai realizá-la.</h2>
+          <p>A família compartilha preferências, motivadores e aspectos da rotina. Esse contexto orienta um ciclo mais cuidadoso desde o início.</p>
           <ul class="point-list">
-            <li>objetivos definidos para o ciclo;</li>
-            <li>preferências pedagógicas acessíveis ao tutor;</li>
+            <li>objetivos claros para o ciclo;</li>
+            <li>apoios pedagógicos acessíveis ao tutor;</li>
             <li>informações usadas para adaptar, não para rotular.</li>
           </ul>
         </div>
 
         <div class="screen-stand">
-          <article class="screen profile-screen">
+          <article class="screen profile-screen" aria-label="Exemplo de perfil de acompanhamento">
             <div class="screen__bar"><i></i><i></i><i></i></div>
             <div class="mini-panel">
               <div class="profile-hero">
@@ -158,9 +143,9 @@
               </div>
               <dl class="profile-data">
                 <dt>Objetivo</dt><dd>Reconhecer quantidades pequenas sem pressa.</dd>
-                <dt>Motivadores</dt><dd>Dinossauros, mapas, estrelas e conquistas visuais.</dd>
-                <dt>Apoio</dt><dd>Instruções curtas, uma missão por vez e reforço positivo.</dd>
-                <dt>Rotina</dt><dd>Atividades breves no fim da tarde, com pausa entre tentativas.</dd>
+                <dt>Motivadores</dt><dd>Dinossauros, mapas e conquistas visuais.</dd>
+                <dt>Apoio</dt><dd>Instruções curtas e uma missão por vez.</dd>
+                <dt>Rotina</dt><dd>Atividades breves, com pausa entre tentativas.</dd>
               </dl>
             </div>
           </article>
@@ -168,22 +153,27 @@
       </div>
     </section>
 
-    <section class="core chapter--soft">
-      <div class="wrap">
-        <div class="core-head">
-          <p class="eyebrow">O coração do Cognita</p>
-          <h2>O tutor planeja. A criança aprende fazendo.</h2>
-          <p>A mesma jornada aparece de jeitos diferentes para cada pessoa: o tutor enxerga planejamento, a criança recebe uma missão simples e a família acompanha o avanço.</p>
+    <section class="chapter chapter--soft" id="planejamento">
+      <div class="wrap chapter-grid chapter-grid--planning">
+        <div class="chapter-copy">
+          <p class="eyebrow">Planejar e realizar</p>
+          <h2>O tutor prepara. A criança aprende fazendo.</h2>
+          <p>A mesma atividade aparece de dois jeitos: o tutor organiza escolhas pedagógicas e a criança vê apenas uma missão simples por vez.</p>
+          <ul class="point-list">
+            <li>tema e quantidade adaptados ao objetivo;</li>
+            <li>prévia do que será apresentado;</li>
+            <li>jornada curta, visual e sem telas adultas.</li>
+          </ul>
         </div>
 
-        <div class="core-stage">
-          <article class="screen screen--wide creator-screen" id="tutores">
+        <div class="planning-demo" aria-label="Atividade preparada pelo tutor e apresentada à criança">
+          <article class="screen creator-screen" aria-label="Criador de atividade do tutor">
             <div class="screen__bar"><i></i><i></i><i></i></div>
             <div class="mini-panel">
               <div class="mini-top">
                 <div>
                   <p class="mini-kicker">Criador de atividade</p>
-                  <h2 class="mini-title">Contar fósseis no mapa</h2>
+                  <strong class="mini-title">Contar fósseis no mapa</strong>
                 </div>
                 <span class="mini-chip">Mateus</span>
               </div>
@@ -200,111 +190,86 @@
                 <div class="mission-preview">
                   <strong>Prévia infantil</strong>
                   <img src="../assets/trilha/emblemas/contar.webp" alt="" />
-                  <span class="mini-chip">Ver próxima missão</span>
+                  <span class="mini-chip">Próxima missão</span>
                 </div>
               </div>
             </div>
           </article>
 
-          <article class="phone phone--core" aria-label="Missão no celular da criança">
+          <span class="handoff-arrow" aria-hidden="true">&rarr;</span>
+
+          <article class="phone phone--planning" aria-label="Missão no celular da criança">
             <div class="phone__inside">
               <div class="phone-map">
-                <h3>Vamos contar?</h3>
+                <p class="phone-label">Missão do dia</p>
+                <h2>Vamos contar?</h2>
                 <span class="path-line" aria-hidden="true"></span>
                 <span class="map-node map-node--one"><img src="../assets/trilha/emblemas/identificar.webp" alt="" /></span>
                 <span class="map-node map-node--two"><img src="../assets/trilha/emblemas/contar.webp" alt="" /></span>
                 <span class="map-node map-node--three"><img src="../assets/trilha/emblemas/revisar.webp" alt="" /></span>
-                <img class="map-mascot" src="../assets/trilha/mascote/comemorar.webp" alt="" />
               </div>
             </div>
           </article>
-
-          <div class="core-notes">
-            <div class="role-note">
-              <strong>O tutor</strong>
-              <ul>
-                <li>escolhe a experiência;</li>
-                <li>adapta nível, tema e quantidade;</li>
-                <li>visualiza o que a criança verá;</li>
-                <li>organiza atividades em uma jornada.</li>
-              </ul>
-            </div>
-            <div class="role-note">
-              <strong>A criança</strong>
-              <ul>
-                <li>acessa pelo dispositivo pareado;</li>
-                <li>vê apenas a próxima missão;</li>
-                <li>realiza atividades curtas e visuais;</li>
-                <li>avança sem navegar por telas adultas.</li>
-              </ul>
-            </div>
-          </div>
         </div>
       </div>
     </section>
 
-    <section class="chapter" id="familias">
+    <section class="chapter" id="devolutiva">
       <div class="wrap chapter-grid chapter-grid--reverse">
-        <div class="session-pair">
+        <div class="session-pair" aria-label="Registro da sessão transformado em devolutiva">
           <article class="screen session-card">
             <div class="screen__bar"><i></i><i></i><i></i></div>
             <div class="mini-panel">
               <p class="mini-kicker">Registro do tutor</p>
-              <h2 class="mini-title">Como foi a sessão?</h2>
+              <strong class="mini-title">Como foi a sessão?</strong>
               <div class="session-steps"><span>1</span><span>2</span><span>3</span></div>
-              <div class="text-area-fake">Mateus contou grupos de 3 e 4 objetos com apoio visual. Respondeu melhor quando a instrução veio em uma frase curta.</div>
+              <div class="text-area-fake">Mateus contou grupos de 3 e 4 objetos com apoio visual e respondeu melhor a instruções curtas.</div>
             </div>
           </article>
+
+          <span class="handoff-arrow" aria-hidden="true">&rarr;</span>
 
           <article class="screen family-return">
             <div class="screen__bar"><i></i><i></i><i></i></div>
             <div class="mini-panel family-card">
               <p class="mini-kicker">Painel da família</p>
-              <h2 class="mini-title">Última devolutiva do tutor</h2>
-              <p class="quote-box">A sessão foi positiva. O próximo passo é repetir a contagem com menos elementos na tela e manter o tema preferido.</p>
+              <strong class="mini-title">Última devolutiva</strong>
+              <p class="quote-box">A sessão foi positiva. O próximo passo é repetir a contagem com menos elementos e manter o tema preferido.</p>
             </div>
           </article>
         </div>
 
         <div class="chapter-copy">
-          <p class="eyebrow">A atividade vira acompanhamento</p>
-          <h2>Concluir uma missão é só o começo da devolutiva.</h2>
-          <p>Depois da atividade, o tutor registra como foi a experiência, o que funcionou e qual deve ser o próximo passo. O Cognita transforma esse registro em uma comunicação clara para a família.</p>
+          <p class="eyebrow">Registrar e devolver</p>
+          <h2>Cada atividade ajuda a preparar a próxima.</h2>
+          <p>Depois do encontro, o tutor registra o que funcionou e o próximo passo. A família recebe uma devolutiva clara e o ciclo continua com contexto.</p>
         </div>
       </div>
     </section>
 
-    <section class="mediation" id="seguranca">
-      <div class="wrap mediation-card">
+    <section class="mediation">
+      <div class="wrap mediation-band">
         <div>
           <p class="eyebrow">Mediação humana</p>
           <h2>Tecnologia organiza. Pessoas acompanham.</h2>
-          <ul class="point-list">
-            <li>a equipe valida tutores e acompanha os vínculos;</li>
-            <li>a família não recebe notas internas ou termos desnecessários;</li>
-            <li>decisões pedagógicas continuam com tutor, família e equipe.</li>
-          </ul>
-          <a class="btn btn--outline" href="#seguranca">Entender como protegemos as crianças →</a>
+          <p>Os vínculos, os acessos e as decisões importantes continuam mediados pela equipe Cognita.</p>
+          <a class="btn btn--light" href="seguranca.html">Conhecer os cuidados de segurança</a>
         </div>
         <img src="../assets/gatoprancheta-sem-fundo.png" alt="" />
       </div>
     </section>
 
-    <section class="final-cta">
-      <div class="wrap final-cta__grid">
-        <article class="door">
-          <p class="eyebrow">Para famílias</p>
-          <h3>Acompanhe com mais clareza e proximidade.</h3>
-          <p>Veja o desenvolvimento da criança sem precisar decifrar termos técnicos ou navegar por telas de tutor.</p>
-          <a class="btn btn--primary" href="#familias">Conhecer o painel da família</a>
-        </article>
-
-        <article class="door">
-          <p class="eyebrow">Para tutores</p>
-          <h3>Planeje jornadas personalizadas.</h3>
-          <p>Prepare experiências, acompanhe resultados e registre próximos passos para cada criança.</p>
-          <a class="btn btn--outline" href="#tutores">Conhecer as ferramentas do tutor</a>
-        </article>
+    <section class="next-routes" aria-labelledby="next-title">
+      <div class="wrap">
+        <div class="next-routes__head">
+          <p class="eyebrow">Continue conhecendo</p>
+          <h2 id="next-title">Veja o Cognita pelo seu ponto de vista.</h2>
+        </div>
+        <div class="route-links">
+          <a href="para-familias.html"><span>Para famílias</span><strong>Acompanhamento e devolutivas</strong><b aria-hidden="true">&rarr;</b></a>
+          <a href="para-tutores.html"><span>Para tutores</span><strong>Planejamento e voluntariado</strong><b aria-hidden="true">&rarr;</b></a>
+          <a href="seguranca.html"><span>Segurança</span><strong>Proteção e mediação</strong><b aria-hidden="true">&rarr;</b></a>
+        </div>
       </div>
     </section>
   </main>
@@ -315,21 +280,17 @@
         <a class="public-footer__logo" href="../index.html" aria-label="Cognita Hub"><img src="../assets/logo-retangular-transparent.png" alt="" /></a>
         <p>Acompanhe nossas redes sociais</p>
         <div class="social-links">
-          <a href="https://www.instagram.com/cognita.hub/" aria-label="Instagram">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
-          </a>
-          <a href="https://www.youtube.com/@C-FORCE-s1d" aria-label="YouTube">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9l5 3-5 3z" fill="currentColor" stroke="none"/></svg>
-          </a>
+          <a href="https://www.instagram.com/cognita.hub/" aria-label="Instagram"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+          <a href="https://www.youtube.com/@C-FORCE-s1d" aria-label="YouTube"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9l5 3-5 3z" fill="currentColor" stroke="none"/></svg></a>
         </div>
       </div>
-      <div><h4>Institucional</h4><ul><li><a href="../index.html">Sobre nós</a></li><li><a href="como-funciona.html">Como funciona</a></li><li><a href="#seguranca">Responsabilidade</a></li></ul></div>
+      <div><h4>Institucional</h4><ul><li><a href="../index.html">Sobre nós</a></li><li><a href="como-funciona.html">Como funciona</a></li><li><a href="seguranca.html">Responsabilidade</a></li><li><a href="atividades.html">Atividades</a></li></ul></div>
       <div><h4>Participar</h4><ul><li><a href="cadastro-responsavel.html">Sou responsável</a></li><li><a href="cadastro-tutor.html">Sou tutor</a></li><li><a href="cadastro.html">Voluntariado</a></li></ul></div>
-      <div><h4>Suporte</h4><ul><li><a href="login.html">Entrar</a></li><li><a href="#seguranca">Segurança de dados</a></li><li><a href="#seguranca">Fale conosco</a></li></ul></div>
+      <div><h4>Suporte</h4><ul><li><a href="login.html">Entrar</a></li><li><a href="seguranca.html">Segurança de dados</a></li><li><a href="../index.html">Fale conosco</a></li></ul></div>
       <div><h4>Acesse o hub</h4><ul><li><a href="responsavel.html">Painel do responsável</a></li><li><a href="tutor.html">Painel do tutor</a></li><li><a href="admin.html">Painel admin</a></li></ul></div>
     </div>
     <div class="public-footer__rule"></div>
-    <div class="public-footer__bottom"><span>C-FORCE</span><span>Cognita Hub</span></div>
+    <div class="public-footer__bottom"><span>C-FORCE</span></div>
   </footer>
 </body>
 </html>
