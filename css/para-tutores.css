@@ -1,0 +1,205 @@
+.tutors-page {
+  --tutor-blue: #0f3f68;
+}
+
+.tutors-page .audience-hero__grid {
+  grid-template-columns: minmax(0, .72fr) minmax(640px, 1.28fr);
+  gap: 48px;
+}
+
+.tutors-page .audience-hero__copy h1 {
+  max-width: 11ch;
+}
+
+.work-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-block: 1px solid rgba(20, 17, 98, .14);
+}
+
+.work-step {
+  position: relative;
+  min-height: 118px;
+  padding: 26px 24px;
+}
+
+.work-step + .work-step {
+  border-left: 1px solid rgba(20, 17, 98, .12);
+}
+
+.work-step span {
+  display: block;
+  color: var(--brand);
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.work-step strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.work-step:not(:last-child)::after {
+  position: absolute;
+  top: 50%;
+  right: -8px;
+  z-index: 1;
+  color: var(--accent);
+  content: "\2192";
+  font-size: 1.2rem;
+  transform: translateY(-50%);
+}
+
+.tutor-workflow {
+  padding: 20px 0 56px;
+}
+
+.tutor-profile .product-shot {
+  width: min(100%, 700px);
+}
+
+.creator-focus .section-heading {
+  align-items: flex-start;
+}
+
+.creator-focus .section-heading > div {
+  max-width: 620px;
+}
+
+.creator-focus .section-heading > p {
+  max-width: 40ch;
+}
+
+.creator-focus .product-shot {
+  width: min(100%, 980px);
+}
+
+.tutor-journey .product-shot,
+.tutor-session .product-shot {
+  width: min(100%, 780px);
+}
+
+.responsibility-band {
+  padding: 72px 0;
+  background: var(--tutor-blue);
+  color: #fff;
+}
+
+.responsibility-band__head {
+  display: grid;
+  grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr);
+  gap: 60px;
+  align-items: end;
+}
+
+.responsibility-band .eyebrow {
+  color: #ffd37d;
+}
+
+.responsibility-band h2 {
+  max-width: 14ch;
+  margin: 12px 0 0;
+  font-family: var(--display);
+  font-size: 2.6rem;
+  line-height: 1;
+}
+
+.responsibility-band__head > p {
+  max-width: 52ch;
+  margin: 0;
+  color: rgba(255, 255, 255, .74);
+}
+
+.responsibility-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 38px;
+  border-block: 1px solid rgba(255, 255, 255, .18);
+}
+
+.responsibility-list article {
+  min-height: 134px;
+  padding: 26px 22px;
+}
+
+.responsibility-list article + article {
+  border-left: 1px solid rgba(255, 255, 255, .18);
+}
+
+.responsibility-list strong {
+  display: block;
+  font-family: var(--display);
+  font-size: 1.15rem;
+}
+
+.responsibility-list p {
+  margin: 8px 0 0;
+  color: rgba(255, 255, 255, .7);
+  font-size: .93rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 1080px) {
+  .tutors-page .audience-hero__grid,
+  .responsibility-band__head {
+    grid-template-columns: 1fr;
+  }
+
+  .responsibility-band__head {
+    gap: 24px;
+  }
+}
+
+@media (max-width: 760px) {
+  .work-strip,
+  .responsibility-list {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .work-step:nth-child(3),
+  .responsibility-list article:nth-child(3) {
+    border-left: 0;
+  }
+
+  .work-step:nth-child(n + 3),
+  .responsibility-list article:nth-child(n + 3) {
+    border-top: 1px solid rgba(20, 17, 98, .12);
+  }
+
+  .responsibility-list article:nth-child(n + 3) {
+    border-top-color: rgba(255, 255, 255, .18);
+  }
+
+  .work-step::after {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .work-strip,
+  .responsibility-list {
+    grid-template-columns: 1fr;
+  }
+
+  .work-step,
+  .work-step + .work-step,
+  .responsibility-list article,
+  .responsibility-list article + article {
+    border-left: 0;
+  }
+
+  .work-step + .work-step,
+  .responsibility-list article + article {
+    border-top: 1px solid rgba(20, 17, 98, .12);
+  }
+
+  .responsibility-list article + article {
+    border-top-color: rgba(255, 255, 255, .18);
+  }
+}

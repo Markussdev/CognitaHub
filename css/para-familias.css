@@ -1,0 +1,38 @@
+.families-page .audience-hero__grid {
+  grid-template-columns: minmax(0, .78fr) minmax(590px, 1.22fr);
+}
+
+.families-page .audience-hero .product-shot {
+  transform: translateY(10px);
+}
+
+.family-benefits {
+  padding: 18px 0 54px;
+}
+
+.family-context .product-shot,
+.family-journey .product-shot {
+  width: min(100%, 720px);
+}
+
+.family-tutor {
+  padding-bottom: 74px;
+}
+
+.family-tutor__note {
+  max-width: 40ch;
+  margin: 24px 0 0;
+  border-left: 3px solid var(--accent);
+  padding-left: 16px;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 1080px) {
+  .families-page .audience-hero__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .families-page .audience-hero .product-shot {
+    transform: none;
+  }
+}

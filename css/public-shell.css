@@ -407,6 +407,8 @@ a {
   }
 
   .public-actions {
+    grid-column: 2;
+    grid-row: 1;
     justify-self: end;
     margin-left: 0;
     gap: 6px;
@@ -420,6 +422,7 @@ a {
 
   .public-nav {
     grid-column: 1 / -1;
+    grid-row: 2;
     order: initial;
   }
 
@@ -446,5 +449,18 @@ a {
 
   .route-stub h1 {
     font-size: 2.75rem;
+  }
+}
+
+@media (max-width: 430px) {
+  .public-nav {
+    justify-content: space-between;
+    gap: 2px;
+    padding: 4px;
+  }
+
+  .public-nav a {
+    padding: 7px 8px;
+    font-size: .78rem;
   }
 }

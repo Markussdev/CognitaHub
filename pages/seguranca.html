@@ -4,13 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Segurança | Cognita Hub</title>
+  <meta name="description" content="Entenda os papéis de acesso, o pareamento de dispositivos e a mediação humana no Cognita Hub." />
   <link rel="icon" type="image/png" href="../assets/logo-icon-transparent.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../css/public-shell.css" />
+  <link rel="stylesheet" href="../css/public-audience.css" />
+  <link rel="stylesheet" href="../css/seguranca.css" />
 </head>
-<body class="public-page">
+<body class="public-page audience-page security-page">
   <header class="public-header">
     <div class="wrap public-header__row">
       <a class="public-brand" href="../index.html" aria-label="Cognita Hub">
@@ -30,13 +33,122 @@
     </div>
   </header>
 
-  <main class="route-stub">
-    <div class="wrap route-stub__inner">
-      <p class="eyebrow">Segurança</p>
-      <h1>Cuidado em cada etapa do acompanhamento.</h1>
-      <p class="route-stub__lead">Critérios claros, mediação humana e acesso responsável às informações que sustentam cada vínculo.</p>
-      <a class="btn btn--outline" href="como-funciona.html">Conhecer o acompanhamento</a>
-    </div>
+  <main>
+    <section class="audience-hero">
+      <div class="wrap audience-hero__grid">
+        <div class="audience-hero__copy">
+          <p class="eyebrow">Segurança e responsabilidade</p>
+          <h1>Cuidado em cada etapa do acompanhamento.</h1>
+          <p class="audience-hero__lead">Família, tutor, criança e equipe usam acessos diferentes. O dispositivo infantil fica separado das telas adultas e os vínculos importantes passam por mediação humana.</p>
+          <div class="audience-actions">
+            <a class="btn btn--outline" href="#acessos">Entender os acessos</a>
+            <a class="text-link" href="#pareamento">Ver como o dispositivo é conectado <span aria-hidden="true">&rarr;</span></a>
+          </div>
+        </div>
+
+        <figure class="trust-map" aria-label="Relação entre os acessos no Cognita Hub">
+          <span class="trust-map__line" aria-hidden="true"></span>
+          <span class="trust-map__line trust-map__line--vertical" aria-hidden="true"></span>
+          <div class="trust-map__hub"><span>Cognita<br />Hub</span></div>
+          <div class="trust-map__node trust-map__node--family"><div><strong>Família</strong><small>acompanha o ciclo</small></div></div>
+          <div class="trust-map__node trust-map__node--tutor"><div><strong>Tutor</strong><small>planeja e registra</small></div></div>
+          <div class="trust-map__node trust-map__node--child"><div><strong>Criança</strong><small>acessa a própria missão</small></div></div>
+          <div class="trust-map__node trust-map__node--team"><div><strong>Equipe Cognita</strong><small>valida e medeia</small></div></div>
+        </figure>
+      </div>
+    </section>
+
+    <section class="audience-section audience-section--soft" id="acessos">
+      <div class="wrap">
+        <div class="section-heading">
+          <div><p class="eyebrow">Acesso por papel</p><h2>Cada pessoa vê apenas o que precisa para participar.</h2></div>
+          <p>As áreas do hub são separadas por função. Uma conta de família não opera ferramentas do tutor, e o dispositivo infantil não abre painéis adultos.</p>
+        </div>
+        <div class="access-grid">
+          <article class="access-role"><span class="access-role__tag">Família</span><h3>Acompanha</h3><p>Vê devolutivas, jornada, dados da criança vinculada e o perfil do tutor responsável pelo ciclo.</p></article>
+          <article class="access-role"><span class="access-role__tag">Tutor</span><h3>Planeja</h3><p>Acessa crianças vinculadas, prepara atividades, conduz registros de sessão e organiza a jornada.</p></article>
+          <article class="access-role"><span class="access-role__tag">Criança</span><h3>Realiza</h3><p>No dispositivo, vê somente a própria jornada e a missão que está disponível naquele momento.</p></article>
+          <article class="access-role"><span class="access-role__tag">Equipe Cognita</span><h3>Medeia</h3><p>Atua na análise de cadastros, validação de vínculos, organização de ciclos e gestão de conteúdo.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="audience-section" id="pareamento">
+      <div class="wrap">
+        <div class="section-heading">
+          <div><p class="eyebrow">Pareamento do dispositivo</p><h2>O acesso infantil nasce de um vínculo específico.</h2></div>
+          <p>O celular ou tablet da criança não recebe uma conta adulta. Ele é conectado à jornada por um código temporário gerado dentro do painel do tutor.</p>
+        </div>
+        <div class="pairing-flow">
+          <article class="pairing-step"><b>1</b><strong>Tutor gera o código</strong><p>O código nasce dentro do vínculo com a criança.</p></article>
+          <article class="pairing-step"><b>2</b><strong>Dispositivo conecta</strong><p>O código é informado no aparelho que será usado.</p></article>
+          <article class="pairing-step"><b>3</b><strong>Vínculo é validado</strong><p>O sistema confirma a criança associada ao pareamento.</p></article>
+          <article class="pairing-step"><b>4</b><strong>Jornada é liberada</strong><p>O aparelho passa a mostrar somente as missões daquele vínculo.</p></article>
+        </div>
+        <div class="pairing-notes" aria-label="Regras do pareamento">
+          <span>Código válido por 10 minutos</span>
+          <span>Um dispositivo pareado</span>
+          <span>Apenas a criança vinculada</span>
+          <span>Vínculo revogável</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="audience-section audience-section--cool">
+      <div class="wrap section-grid">
+        <div class="section-copy">
+          <p class="eyebrow">Camadas de proteção</p>
+          <h2>Segurança aplicada ao fluxo, não só à tela de login.</h2>
+          <p>O projeto é desenvolvido com princípios de minimização, controle de acesso e proteção de dados infantis.</p>
+        </div>
+        <div class="layer-list">
+          <details open><summary>Autenticação</summary><p>As áreas adultas exigem uma sessão identificada antes de carregar dados do acompanhamento.</p></details>
+          <details><summary>Permissões por papel</summary><p>Família, tutor e equipe têm áreas e ações distintas, relacionadas à responsabilidade de cada papel.</p></details>
+          <details><summary>Vínculo específico da criança</summary><p>Consultas e atividades são associadas aos vínculos definidos para cada ciclo, inclusive no dispositivo infantil.</p></details>
+          <details><summary>Mediação da equipe</summary><p>Cadastros, correspondências entre participantes e decisões sensíveis não são entregues apenas a uma automação.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="security-band">
+      <div class="wrap mediation-grid">
+        <div>
+          <p class="eyebrow">Mediação humana</p>
+          <h2>Vínculos importantes não acontecem no automático.</h2>
+        </div>
+        <div class="mediation-points">
+          <div><strong>Tutor validado</strong><p>O cadastro é analisado antes da atuação no ciclo.</p></div>
+          <div><strong>Contexto revisado</strong><p>As informações da criança orientam o acompanhamento.</p></div>
+          <div><strong>Correspondência controlada</strong><p>O vínculo entre família e tutor passa pela equipe.</p></div>
+          <div><strong>Sem pedagogia automática</strong><p>O sistema organiza; pessoas decidem e acompanham.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="audience-section">
+      <div class="wrap">
+        <div class="section-heading">
+          <div><p class="eyebrow">Transparência</p><h2>O que o Cognita não se propõe a fazer.</h2></div>
+          <p>Delimitar o papel do projeto também faz parte do cuidado com famílias, crianças e tutores.</p>
+        </div>
+        <div class="transparency-list">
+          <div><strong>Não substitui profissionais</strong><p>O acompanhamento educacional não ocupa o lugar de cuidado clínico ou especializado.</p></div>
+          <div><strong>Não realiza diagnóstico</strong><p>O projeto não diagnostica condições nem interpreta sinais clínicos.</p></div>
+          <div><strong>Não faz avaliação clínica</strong><p>Atividades e registros têm finalidade educacional dentro do ciclo.</p></div>
+          <div><strong>Não publica dados infantis</strong><p>Informações do acompanhamento ficam restritas aos acessos relacionados ao vínculo.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="security-final">
+      <div class="wrap security-final__row">
+        <div><p class="eyebrow">Conheça o projeto</p><h2>Entenda o ciclo completo ou converse com a equipe.</h2></div>
+        <div class="audience-actions">
+          <a class="btn btn--outline" href="como-funciona.html">Ver como funciona</a>
+          <a class="text-link" href="../index.html#comecar">Falar com a equipe <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer class="public-footer">
