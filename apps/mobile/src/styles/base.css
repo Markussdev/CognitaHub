@@ -37,6 +37,11 @@ button {
   cursor: pointer;
 }
 
+:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
 img {
   display: block;
   max-width: 100%;

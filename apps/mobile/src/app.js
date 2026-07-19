@@ -1,14 +1,17 @@
 import { renderLoading } from './screens/loading.js'
 import { renderPairing } from './screens/pairing.js'
 import { renderJourney } from './screens/journey.js'
+import { renderMission } from './screens/mission.js'
 import { statusMessageHtml } from './components/status-message.js'
+import { escapeHtml } from './utils/html.js'
 import { ensureAnonymousSession } from './services/auth.js'
 import { claimPairingCode, getPairedChildContext } from './services/pairing.js'
 import { getChildTrail, getChildTrailModules, getModuleMissions } from './services/trails.js'
+import { getChildActivity } from './services/activities.js'
 
-// Etapa 3: sessão anônima + pareamento + jornada formal, tudo lido direto
-// do Supabase. Ainda é só leitura — abrir uma missão entra no bloco
-// seguinte (activity-runner).
+// Etapa 4: jornada formal + execução da missão (molde "contar"). Gravar
+// atividade_execucao e desbloquear a próxima missão ainda não existe —
+// voltar do mapa recarrega o mesmo estado.
 export async function initApp(root) {
   renderLoading(root)
   await boot(root)
@@ -43,6 +46,19 @@ async function boot(root) {
       modules,
       currentModule,
       missions,
+
+      async onOpenMission(activityId) {
+        renderLoading(root)
+        try {
+          const activity = await getChildActivity(activityId)
+          renderMission(root, {
+            activity,
+            onExit: () => boot(root),
+          })
+        } catch (err) {
+          showError(root, err)
+        }
+      },
     })
   } catch (err) {
     showError(root, err)
@@ -66,7 +82,7 @@ function showPairing(root) {
 function showAwaitingJourney(root, context) {
   root.innerHTML = `
     <div class="screen screen--pairing">
-      <h1 class="title">Oi, ${context.primeiro_nome}!</h1>
+      <h1 class="title">Oi, ${escapeHtml(context.primeiro_nome)}!</h1>
       ${statusMessageHtml({ type: 'info', text: 'Seu tutor ainda não montou sua jornada. Volte daqui a pouco.' })}
     </div>
   `
@@ -74,9 +90,14 @@ function showAwaitingJourney(root, context) {
 
 function showError(root, err) {
   console.error(err)
+  const text =
+    err?.message === 'MISSION_NOT_AVAILABLE'
+      ? 'Essa missão não está mais disponível. Volte ao mapa pra ver o que você já pode fazer.'
+      : 'Não foi possível conectar. Verifique a internet e tente de novo.'
+
   root.innerHTML = `
     <div class="screen screen--pairing">
-      ${statusMessageHtml({ type: 'error', text: 'Não foi possível conectar. Verifique a internet e tente de novo.' })}
+      ${statusMessageHtml({ type: 'error', text })}
       <button class="btn-primary" id="retry-btn" type="button">Tentar novamente</button>
     </div>
   `

@@ -1,6 +1,7 @@
 import logoImg from '../assets/logo-icon-transparent.png'
 import { missionNodeHtml } from '../components/mission-node.js'
 import { statusMessageHtml } from '../components/status-message.js'
+import { escapeHtml } from '../utils/html.js'
 
 const MISSION_STATES = {
   bloqueada: 'locked',
@@ -8,11 +9,11 @@ const MISSION_STATES = {
   concluida: 'completed',
 }
 
-export function renderJourney(root, { childName, trail, modules, currentModule, missions }) {
+export function renderJourney(root, { childName, trail, modules, currentModule, missions, onOpenMission }) {
   const header = `
     <div class="journey-header">
       <img src="${logoImg}" alt="" />
-      <h1 class="title">Jornada de ${childName}</h1>
+      <h1 class="title">Jornada de ${escapeHtml(childName)}</h1>
     </div>
   `
 
@@ -59,6 +60,12 @@ export function renderJourney(root, { childName, trail, modules, currentModule, 
       ${emptyState}
     </div>
   `
+
+  root.querySelectorAll('[data-activity-id]').forEach((node) => {
+    node.addEventListener('click', () => {
+      onOpenMission?.(node.dataset.activityId)
+    })
+  })
 }
 
 function renderMessage(root, header, text) {
