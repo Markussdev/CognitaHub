@@ -8,10 +8,11 @@ import { ensureAnonymousSession } from './services/auth.js'
 import { claimPairingCode, getPairedChildContext } from './services/pairing.js'
 import { getChildTrail, getChildTrailModules, getModuleMissions } from './services/trails.js'
 import { getChildActivity } from './services/activities.js'
+import { createActivityExecution } from './services/executions.js'
 
-// Etapa 4: jornada formal + execução da missão (molde "contar"). Gravar
-// atividade_execucao e desbloquear a próxima missão ainda não existe —
-// voltar do mapa recarrega o mesmo estado.
+// Etapa 5: ciclo fechado — jornada, execução da missão (molde "contar") e
+// gravação de atividade_execucao. Quem desbloqueia a próxima missão é o
+// trigger no banco; o app só recarrega o mapa depois de salvar.
 export async function initApp(root) {
   renderLoading(root)
   await boot(root)
@@ -19,7 +20,7 @@ export async function initApp(root) {
 
 async function boot(root) {
   try {
-    await ensureAnonymousSession()
+    const session = await ensureAnonymousSession()
     const context = await getPairedChildContext()
 
     if (!context) {
@@ -54,6 +55,17 @@ async function boot(root) {
           renderMission(root, {
             activity,
             onExit: () => boot(root),
+
+            async onComplete(result) {
+              await createActivityExecution({
+                activity,
+                executedBy: session.user.id,
+                durationSeconds: result.durationSeconds,
+              })
+
+              renderLoading(root)
+              await boot(root)
+            },
           })
         } catch (err) {
           showError(root, err)
