@@ -1,3 +1,4 @@
+import { App } from '@capacitor/app'
 import { renderLoading } from './screens/loading.js'
 import { renderPairing } from './screens/pairing.js'
 import { renderJourney } from './screens/journey.js'
@@ -10,15 +11,27 @@ import { getChildTrail, getChildTrailModules, getModuleMissions } from './servic
 import { getChildActivity } from './services/activities.js'
 import { createActivityExecution } from './services/executions.js'
 
-// Etapa 5: ciclo fechado — jornada, execução da missão (molde "contar") e
-// gravação de atividade_execucao. Quem desbloqueia a próxima missão é o
-// trigger no banco; o app só recarrega o mapa depois de salvar.
+// Etapa 6: ciclo fechado — jornada, execução das missões suportadas e
+// gravação de atividade_execucao. O banco controla o progresso; o
+// aplicativo recarrega a jornada após cada alteração (missão concluída,
+// botão "Atualizar jornada" ou retomada do segundo plano).
 export async function initApp(root) {
   renderLoading(root)
   await boot(root)
+
+  App.addListener('appStateChange', ({ isActive }) => {
+    if (isActive) {
+      renderLoading(root)
+      boot(root)
+    }
+  })
 }
 
+let booting = false
+
 async function boot(root) {
+  if (booting) return
+  booting = true
   try {
     const session = await ensureAnonymousSession()
     const context = await getPairedChildContext()
@@ -48,6 +61,11 @@ async function boot(root) {
       currentModule,
       missions,
 
+      onRefresh() {
+        renderLoading(root)
+        boot(root)
+      },
+
       async onOpenMission(activityId) {
         renderLoading(root)
         try {
@@ -74,6 +92,8 @@ async function boot(root) {
     })
   } catch (err) {
     showError(root, err)
+  } finally {
+    booting = false
   }
 }
 

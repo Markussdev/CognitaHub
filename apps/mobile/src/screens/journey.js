@@ -9,7 +9,7 @@ const MISSION_STATES = {
   concluida: 'completed',
 }
 
-export function renderJourney(root, { childName, trail, modules, currentModule, missions, onOpenMission }) {
+export function renderJourney(root, { childName, trail, modules, currentModule, missions, onOpenMission, onRefresh }) {
   const header = `
     <div class="journey-header">
       <img src="${logoImg}" alt="" />
@@ -42,7 +42,10 @@ export function renderJourney(root, { childName, trail, modules, currentModule, 
 
   const reviewBanner =
     currentModule.status === 'aguardando_revisao'
-      ? statusMessageHtml({ type: 'info', text: 'Módulo concluído! Agora é hora de aguardar seu tutor.' })
+      ? `
+        ${statusMessageHtml({ type: 'info', text: 'Módulo concluído! Agora é hora de aguardar seu tutor.' })}
+        <button class="btn-primary" id="refresh-btn" type="button">Atualizar jornada</button>
+      `
       : ''
 
   const emptyState =
@@ -60,6 +63,8 @@ export function renderJourney(root, { childName, trail, modules, currentModule, 
       ${emptyState}
     </div>
   `
+
+  root.querySelector('#refresh-btn')?.addEventListener('click', () => onRefresh?.())
 
   root.querySelectorAll('[data-activity-id]').forEach((node) => {
     node.addEventListener('click', () => {
