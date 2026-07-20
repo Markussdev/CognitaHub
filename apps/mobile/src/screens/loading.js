@@ -1,4 +1,4 @@
-import logoImg from '../assets/logo-icon-transparent.png'
+import logoImg from '../assets/logo-icon-transparent.webp'
 import { mascotHtml } from '../components/mascot.js'
 
 export function renderLoading(root) {

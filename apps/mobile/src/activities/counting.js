@@ -1,11 +1,11 @@
-import dino0 from '../assets/activities/dinosaurs/dinossauro.png'
-import dino1 from '../assets/activities/dinosaurs/dinossauro1.png'
-import dino2 from '../assets/activities/dinosaurs/dinossauro2.png'
-import dino3 from '../assets/activities/dinosaurs/dinossauro3.png'
-import dino4 from '../assets/activities/dinosaurs/dinossauro4.png'
-import dino5 from '../assets/activities/dinosaurs/dinossauro5.png'
-import dino6 from '../assets/activities/dinosaurs/dinossauro6.png'
-import dino7 from '../assets/activities/dinosaurs/dinossauro7.png'
+import dino0 from '../assets/activities/dinosaurs/dinossauro.webp'
+import dino1 from '../assets/activities/dinosaurs/dinossauro1.webp'
+import dino2 from '../assets/activities/dinosaurs/dinossauro2.webp'
+import dino3 from '../assets/activities/dinosaurs/dinossauro3.webp'
+import dino4 from '../assets/activities/dinosaurs/dinossauro4.webp'
+import dino5 from '../assets/activities/dinosaurs/dinossauro5.webp'
+import dino6 from '../assets/activities/dinosaurs/dinossauro6.webp'
+import dino7 from '../assets/activities/dinosaurs/dinossauro7.webp'
 
 const TEMAS = {
   dinossauros: [dino0, dino1, dino2, dino3, dino4, dino5, dino6, dino7],

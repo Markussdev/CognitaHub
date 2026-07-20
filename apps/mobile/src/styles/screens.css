@@ -166,17 +166,18 @@
   color: var(--success);
 }
 
-/* ---- journey ---- */
+/* ---- journey ---- (mundo Cap 1 em styles/trail.css) */
 
 .screen--journey {
+  padding: 0;
   align-items: stretch;
-  padding-top: 24px;
 }
 
 .journey-header {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 24px 24px 0;
 }
 
 .journey-header img {
@@ -188,69 +189,6 @@
   text-align: left;
   margin: 0;
   font-size: 20px;
-}
-
-.journey-map {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 22px;
-  margin-top: 32px;
-  padding-bottom: 24px;
-}
-
-/* ---- mission node ---- */
-
-.mission-node {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  width: 96px;
-  border: none;
-  background: none;
-  padding: 0;
-  font: inherit;
-  color: inherit;
-  text-align: center;
-}
-
-button.mission-node--available {
-  cursor: pointer;
-}
-
-.mission-node__circle {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--display);
-  font-size: 24px;
-  box-shadow: var(--shadow-card);
-}
-
-.mission-node__label {
-  font-size: 13px;
-  text-align: center;
-  color: var(--muted);
-}
-
-.mission-node--available .mission-node__circle {
-  background: var(--gold);
-  color: var(--ink);
-}
-
-.mission-node--locked .mission-node__circle {
-  background: var(--line);
-  color: var(--locked);
-  box-shadow: none;
-}
-
-.mission-node--completed .mission-node__circle {
-  background: var(--success);
-  color: var(--warm-white);
 }
 
 /* ---- mission (runner) ---- */

@@ -1,4 +1,4 @@
-import mascotImg from '../assets/mascot-hero-wave.png'
+import mascotImg from '../assets/mascot-hero-wave.webp'
 
 export function mascotHtml({ size = '' } = {}) {
   const sizeClass = size ? ` mascot--${size}` : ''
