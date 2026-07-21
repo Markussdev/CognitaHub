@@ -1,14 +1,17 @@
-// Geometria pura do mapa (mundo Cap 1). Sem DOM, sem Supabase — só números,
-// pra dar pra testar/ajustar sem precisar do resto do app.
+// Geometria pura do mapa (mundo Cap 1). Sem DOM, sem Supabase.
 //
 // Ordem visual: missão 0 embaixo (onde a criança começa), missões seguintes
-// subindo, ábaco/observatório no topo. Índice do array = ordem cronológica
+// subindo, um landmark só no topo. Índice do array = ordem cronológica
 // (igual ao position do banco); y menor = mais alto na tela.
+//
+// Espaçamento enxuto de propósito — a versão anterior dava espaço de sobra
+// pra decoração pesada que não existe mais (um fundo só, sem camadas
+// empilhadas), então o mapa fica mais compacto e o caminho lê mais rápido.
 
-const XS = [50, 28, 72]
-const NODE_GAP = 240
-const TOP_PAD = 420
-const BOTTOM_PAD = 320
+const XS = [50, 68, 32]
+const NODE_GAP = 200
+const TOP_PAD = 300
+const BOTTOM_PAD = 220
 const VIEWBOX_WIDTH = 400
 
 export function computeLayout(missionCount) {
@@ -21,11 +24,10 @@ export function computeLayout(missionCount) {
   }))
 
   const topY = n > 0 ? nodes[n - 1].y : height - BOTTOM_PAD
-  const abacusY = topY - 190
-  const finalY = topY - 380
-  const startPlatformY = height - 110
+  const landmarkY = topY - 170
+  const startPlatformY = height - 90
 
-  return { height, nodes, abacusY, finalY, startPlatformY, viewBoxWidth: VIEWBOX_WIDTH }
+  return { height, nodes, landmarkY, startPlatformY, viewBoxWidth: VIEWBOX_WIDTH }
 }
 
 // Curva suave entre dois nós consecutivos — mesma técnica do mapa do site

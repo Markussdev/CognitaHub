@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core'
 import { App } from '@capacitor/app'
 import { renderLoading } from './screens/loading.js'
 import { renderPairing } from './screens/pairing.js'
@@ -19,12 +20,18 @@ export async function initApp(root) {
   renderLoading(root)
   await boot(root)
 
-  App.addListener('appStateChange', ({ isActive }) => {
-    if (isActive) {
-      renderLoading(root)
-      boot(root)
-    }
-  })
+  // No navegador (`npm run dev`), o plugin emula isso com o
+  // visibilitychange da aba — trocar de aba recarregaria a tela à toa.
+  // No Android de verdade é o app sendo minimizado/reaberto, que é o que
+  // interessa.
+  if (Capacitor.isNativePlatform()) {
+    App.addListener('appStateChange', ({ isActive }) => {
+      if (isActive) {
+        renderLoading(root)
+        boot(root)
+      }
+    })
+  }
 }
 
 let booting = false

@@ -1,9 +1,20 @@
 /* Mundo Cap 1 — mapa de missões. Assets em src/assets/cap1 (ver
-   scripts/optimize-assets.mjs na raiz do repo pra gerar novos capítulos). */
+   scripts/optimize-assets.mjs na raiz do repo pra gerar novos capítulos).
+
+   Regra de hierarquia: 1 cenário (space-clean-bg, decoração só nas bordas,
+   centro vazio) + 1 landmark por módulo + plataformas das missões + 1
+   mascote na atual. Nada mais disputa atenção com o caminho. */
+
+.journey-header {
+  max-width: 480px;
+  width: 100%;
+  margin-inline: auto;
+}
 
 .journey-world {
   position: relative;
-  width: 100%;
+  width: min(100%, 480px);
+  margin-inline: auto;
   overflow: hidden;
   background: linear-gradient(180deg, #c9b6ef 0%, #e9c3e0 45%, #bcd0f5 100%);
 }
@@ -15,22 +26,7 @@
   height: 100%;
   object-fit: cover;
   object-position: top;
-}
-
-.journey-deco {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 78%;
-  max-width: 380px;
-  height: auto;
-  pointer-events: none;
-}
-
-.journey-deco--observatory {
-  width: 60%;
-  max-width: 300px;
+  filter: saturate(0.85);
 }
 
 .journey-path {
@@ -41,25 +37,25 @@
 }
 
 .journey-path__seg {
-  stroke-width: 7;
+  stroke-width: 6;
   stroke-linecap: round;
 }
 
 .journey-path__seg--done {
   stroke: #b090d8;
-  opacity: 0.7;
+  opacity: 0.55;
 }
 
 .journey-path__seg--current {
   stroke: var(--gold);
-  stroke-width: 8;
-  opacity: 0.85;
+  stroke-width: 7;
+  opacity: 0.9;
 }
 
 .journey-path__seg--future {
   stroke: #d8cfe8;
-  stroke-dasharray: 2 16;
-  opacity: 0.9;
+  stroke-dasharray: 2 15;
+  opacity: 0.3;
 }
 
 .journey-landmark,
@@ -70,16 +66,12 @@
   pointer-events: none;
 }
 
-.journey-landmark--abacus {
-  width: 150px;
-}
-
-.journey-landmark--final {
-  width: 190px;
+.journey-landmark {
+  width: 170px;
 }
 
 .journey-start-platform {
-  width: 280px;
+  width: 260px;
 }
 
 .journey-nodes {
@@ -108,18 +100,26 @@ button.mission-node--available {
 }
 
 .mission-node__platform {
-  width: 148px;
+  width: 92px;
   height: auto;
   display: block;
   transition: filter 0.15s ease;
 }
 
+.mission-node--completed .mission-node__platform {
+  width: 100px;
+}
+
+.mission-node--available .mission-node__platform {
+  width: 128px;
+}
+
 .mission-node__badge {
   position: absolute;
-  top: -6px;
-  right: 18px;
-  width: 30px;
-  height: 30px;
+  top: -4px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -127,8 +127,8 @@ button.mission-node--available {
 }
 
 .mission-node__badge svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
 }
 
 .mission-node__badge--lock {
@@ -142,34 +142,35 @@ button.mission-node--available {
 
 .mission-node__mascot {
   position: absolute;
-  bottom: 62%;
+  bottom: 64%;
   left: 50%;
   transform: translateX(-50%);
-  width: 88px;
+  width: 78px;
   pointer-events: none;
 }
 
 .mission-node__label {
-  margin-top: 4px;
-  font-size: 12px;
+  margin-top: 6px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.88);
-  padding: 4px 12px;
+  background: var(--warm-white);
+  padding: 5px 14px;
   border-radius: var(--r-pill);
-  max-width: 130px;
+  max-width: 150px;
+  box-shadow: var(--shadow-card);
 }
 
 .mission-node--locked .mission-node__platform {
-  filter: grayscale(0.5) opacity(0.55);
+  filter: grayscale(0.65) opacity(0.38);
+}
+
+.mission-node--completed .mission-node__platform {
+  filter: saturate(0.85) opacity(0.85);
 }
 
 .mission-node--available .mission-node__platform {
   filter: drop-shadow(0 0 14px rgba(255, 168, 0, 0.65));
-}
-
-.mission-node--completed .mission-node__platform {
-  filter: saturate(0.85);
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -188,25 +189,47 @@ button.mission-node--available {
   }
 }
 
-/* ---- rodapé (revisão) ---- */
+/* ---- módulo concluído (tela curta, não o mapa) ---- */
 
-.journey-footer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 24px;
+.screen--journey-complete {
+  justify-content: center;
+}
+
+.journey-complete__art {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  margin: 8px auto 0;
+}
+
+.journey-complete__landmark {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.journey-complete__mascot {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 96px;
 }
 
 @media (max-width: 360px) {
   .mission-node__platform {
-    width: 120px;
+    width: 80px;
   }
 
-  .journey-landmark--abacus {
-    width: 120px;
+  .mission-node--completed .mission-node__platform {
+    width: 88px;
   }
 
-  .journey-landmark--final {
-    width: 160px;
+  .mission-node--available .mission-node__platform {
+    width: 112px;
+  }
+
+  .journey-landmark {
+    width: 140px;
   }
 }
