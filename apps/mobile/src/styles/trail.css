@@ -34,9 +34,9 @@
 }
 
 .journey-path__seg {
-  stroke-width: 11;
+  stroke-width: 10;
   stroke-linecap: round;
-  stroke-dasharray: 0.1 24;
+  stroke-dasharray: 0.1 20;
 }
 
 .journey-path__seg--done {
@@ -89,13 +89,16 @@ button.mission-node--available {
 }
 
 .mission-node__btn {
+  position: relative;
   width: 110px;
   height: 96px;
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: var(--locked);
-  box-shadow: 0 8px 0 #8f889d;
+  background: #b8b1c7;
+  box-shadow:
+    0 8px 0 #8f889d,
+    inset 0 3px 0 rgba(255, 255, 255, 0.2);
   transition:
     transform 0.08s ease,
     box-shadow 0.08s ease;
@@ -103,12 +106,16 @@ button.mission-node--available {
 
 button.mission-node--available:active .mission-node__btn {
   transform: translateY(8px);
-  box-shadow: 0 2px 0 #4a2fc9;
+  box-shadow:
+    0 2px 0 #4a2fc9,
+    inset 0 3px 0 rgba(255, 255, 255, 0.22);
 }
 
 .mission-node--completed .mission-node__btn {
   background: var(--gold);
-  box-shadow: 0 8px 0 #cc8600;
+  box-shadow:
+    0 8px 0 #cc8600,
+    inset 0 3px 0 rgba(255, 255, 255, 0.28);
 }
 
 .mission-node--available .mission-node__btn {
@@ -117,7 +124,8 @@ button.mission-node--available:active .mission-node__btn {
   background: #6d4aff;
   box-shadow:
     0 10px 0 #4a2fc9,
-    0 0 0 6px rgba(255, 168, 0, 0.25);
+    inset 0 4px 0 rgba(255, 255, 255, 0.22),
+    0 0 0 5px rgba(255, 168, 0, 0.2);
 }
 
 .mission-node__badge {
@@ -144,11 +152,12 @@ button.mission-node--available:active .mission-node__btn {
 
 .mission-node__mascot {
   position: absolute;
-  bottom: 74%;
+  top: -48px;
   left: 50%;
   transform: translateX(-50%);
-  width: 92px;
+  width: 82px;
   pointer-events: none;
+  z-index: 2;
 }
 
 .mission-node__label {

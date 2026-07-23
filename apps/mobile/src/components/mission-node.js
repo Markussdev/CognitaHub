@@ -30,8 +30,10 @@ export function missionNodeHtml({ title, state = 'locked', activityId = null, x,
 
   return `
     <${tag} class="mission-node mission-node--${state}" ${attrs} style="left:${x}%;top:${y}px;" aria-label="${safeTitle} — ${STATUS_LABELS[state] ?? ''}">
-      <span class="mission-node__btn">${badge}</span>
-      ${mascot}
+      <span class="mission-node__btn">
+        ${badge}
+        ${mascot}
+      </span>
       ${label}
     </${tag}>
   `
