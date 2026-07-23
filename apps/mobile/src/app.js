@@ -111,7 +111,14 @@ function showPairing(root) {
         await claimPairingCode(code)
         renderLoading(root)
         await boot(root)
-      } catch {
+      } catch (error) {
+        console.error('Erro ao reivindicar código de pareamento:', {
+          message: error?.message,
+          code: error?.code,
+          details: error?.details,
+          hint: error?.hint,
+          error,
+        })
         pairing.showStatus('error', 'Código inválido ou expirado. Peça um novo código ao seu tutor.')
       }
     },

@@ -1,6 +1,5 @@
 import logoImg from '../assets/logo-icon-transparent.webp'
 import spaceCleanBg from '../assets/cap1/space-clean-bg.webp'
-import platformStart from '../assets/cap1/platform-start.webp'
 import landmarkAbacus from '../assets/cap1/landmark-abacus.webp'
 import landmarkFinal from '../assets/cap1/landmark-final.webp'
 import mascotMap from '../assets/cap1/mascot-map.webp'
@@ -56,7 +55,7 @@ export function renderJourney(root, { childName, trail, modules, currentModule, 
   }
 
   const currentIndex = missions.findIndex((m) => m.status === 'disponivel')
-  const { height, nodes, landmarkY, startPlatformY } = computeLayout(missions.length)
+  const { height, nodes, landmarkY } = computeLayout(missions.length)
 
   const segments = nodes
     .slice(0, -1)
@@ -73,7 +72,6 @@ export function renderJourney(root, { childName, trail, modules, currentModule, 
         title: mission.mission_templates.title,
         state: MISSION_STATES[mission.status] ?? 'locked',
         activityId: mission.status === 'disponivel' ? mission.child_activities?.[0]?.id ?? null : null,
-        index: i,
         x: nodes[i].x,
         y: nodes[i].y,
         isCurrent: i === currentIndex,
@@ -92,7 +90,6 @@ export function renderJourney(root, { childName, trail, modules, currentModule, 
         </svg>
 
         <img class="journey-landmark" src="${landmarkImg}" alt="" aria-hidden="true" style="top:${landmarkY}px" />
-        <img class="journey-start-platform" src="${platformStart}" alt="" aria-hidden="true" style="top:${startPlatformY}px" />
 
         <div class="journey-nodes">
           ${nodesHtml}

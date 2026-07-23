@@ -8,10 +8,10 @@
 // pra decoração pesada que não existe mais (um fundo só, sem camadas
 // empilhadas), então o mapa fica mais compacto e o caminho lê mais rápido.
 
-const XS = [50, 68, 32]
-const NODE_GAP = 200
-const TOP_PAD = 300
-const BOTTOM_PAD = 220
+const XS = [50, 39, 61]
+const NODE_GAP = 160
+const TOP_PAD = 245
+const BOTTOM_PAD = 135
 const VIEWBOX_WIDTH = 400
 
 export function computeLayout(missionCount) {
@@ -25,9 +25,8 @@ export function computeLayout(missionCount) {
 
   const topY = n > 0 ? nodes[n - 1].y : height - BOTTOM_PAD
   const landmarkY = topY - 170
-  const startPlatformY = height - 90
 
-  return { height, nodes, landmarkY, startPlatformY, viewBoxWidth: VIEWBOX_WIDTH }
+  return { height, nodes, landmarkY, viewBoxWidth: VIEWBOX_WIDTH }
 }
 
 // Curva suave entre dois nós consecutivos — mesma técnica do mapa do site
