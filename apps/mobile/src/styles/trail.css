@@ -19,6 +19,7 @@
   width: min(100%, 480px);
   margin-inline: auto;
   overflow: hidden;
+  isolation: isolate;
   background: linear-gradient(180deg, #8f6acb 0%, #b984d2 48%, #8ea6da 100%);
 }
 
@@ -31,6 +32,7 @@
   inset: 0;
   width: 100%;
   height: 100%;
+  z-index: 1;
 }
 
 .journey-path__seg {
@@ -61,11 +63,13 @@
   transform: translate(-50%, -50%);
   pointer-events: none;
   width: 140px;
+  z-index: 2;
 }
 
 .journey-nodes {
   position: absolute;
   inset: 0;
+  z-index: 3;
 }
 
 /* ---- nó de missão ---- */
@@ -82,6 +86,17 @@
   font: inherit;
   color: inherit;
   text-align: center;
+  z-index: 1;
+}
+
+.mission-node--completed {
+  z-index: 2;
+}
+
+/* O nó atual e seu mascote ficam sempre na frente, mesmo que o próximo
+   nó bloqueado venha depois no DOM (ordem das missões, não de pintura). */
+.mission-node--available {
+  z-index: 5;
 }
 
 button.mission-node--available {
@@ -109,6 +124,23 @@ button.mission-node--available:active .mission-node__btn {
   box-shadow:
     0 2px 0 #4a2fc9,
     inset 0 3px 0 rgba(255, 255, 255, 0.22);
+}
+
+/* Toque: afunda rápido, volta com uma pequena sobra elástica — o
+   "release" usa a transition da regra base (mais longa, com overshoot),
+   o "press" usa a da regra :active acima (curta, sem espera). */
+@media (prefers-reduced-motion: no-preference) {
+  .mission-node__btn {
+    transition:
+      transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  button.mission-node--available:active .mission-node__btn {
+    transition:
+      transform 0.06s ease-out,
+      box-shadow 0.06s ease-out;
+  }
 }
 
 .mission-node--completed .mission-node__btn {
@@ -152,12 +184,13 @@ button.mission-node--available:active .mission-node__btn {
 
 .mission-node__mascot {
   position: absolute;
-  top: -48px;
+  top: -34px;
   left: 50%;
   transform: translateX(-50%);
-  width: 82px;
+  width: 78px;
   pointer-events: none;
-  z-index: 2;
+  z-index: 3;
+  filter: drop-shadow(0 5px 4px rgba(38, 5, 31, 0.15));
 }
 
 .mission-node__label {
@@ -208,6 +241,11 @@ button.mission-node--available:active .mission-node__btn {
   .mission-node--available .mission-node__btn {
     width: 112px;
     height: 98px;
+  }
+
+  .mission-node__mascot {
+    top: -30px;
+    width: 70px;
   }
 
   .journey-landmark {

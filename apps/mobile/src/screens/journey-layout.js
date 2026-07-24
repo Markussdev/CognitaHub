@@ -9,7 +9,7 @@
 // empilhadas), então o mapa fica mais compacto e o caminho lê mais rápido.
 
 const XS = [50, 39, 61]
-const NODE_GAP = 160
+const NODE_GAP = 176
 const TOP_PAD = 245
 const BOTTOM_PAD = 135
 const VIEWBOX_WIDTH = 400
