@@ -26,7 +26,12 @@ export function computeLayout(missionCount) {
   const topY = n > 0 ? nodes[n - 1].y : height - BOTTOM_PAD
   const landmarkY = topY - 170
 
-  return { height, nodes, landmarkY, viewBoxWidth: VIEWBOX_WIDTH }
+  // Ponto onde o caminho encosta na base do landmark — não no centro dele
+  // (landmarkY), senão a linha atravessa o meio da imagem em vez de
+  // "chegar" nela.
+  const landmarkPathPoint = { x: 50, y: landmarkY + 64 }
+
+  return { height, nodes, landmarkY, landmarkPathPoint, viewBoxWidth: VIEWBOX_WIDTH }
 }
 
 // Curva suave entre dois nós consecutivos — mesma técnica do mapa do site

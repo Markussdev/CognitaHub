@@ -24,7 +24,13 @@
 }
 
 .journey-world__bg {
-  display: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.1;
+  filter: saturate(0.4) brightness(0.86);
 }
 
 .journey-path {
@@ -105,15 +111,17 @@ button.mission-node--available {
 
 .mission-node__btn {
   position: relative;
-  width: 110px;
-  height: 96px;
+  width: 108px;
+  height: 88px;
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: #b8b1c7;
+  background:
+    radial-gradient(ellipse at 50% 24%, rgba(255, 255, 255, 0.3), transparent 42%),
+    linear-gradient(180deg, #c8c2d2, #aaa2ba);
   box-shadow:
-    0 8px 0 #8f889d,
-    inset 0 3px 0 rgba(255, 255, 255, 0.2);
+    0 10px 0 #827a94,
+    0 15px 18px rgba(38, 5, 31, 0.18);
   transition:
     transform 0.08s ease,
     box-shadow 0.08s ease;
@@ -122,7 +130,7 @@ button.mission-node--available {
 button.mission-node--available:active .mission-node__btn {
   transform: translateY(8px);
   box-shadow:
-    0 2px 0 #4a2fc9,
+    0 2px 0 #4930bd,
     inset 0 3px 0 rgba(255, 255, 255, 0.22);
 }
 
@@ -144,20 +152,24 @@ button.mission-node--available:active .mission-node__btn {
 }
 
 .mission-node--completed .mission-node__btn {
-  background: var(--gold);
+  background:
+    radial-gradient(ellipse at 50% 22%, rgba(255, 255, 255, 0.34), transparent 42%),
+    linear-gradient(180deg, #ffc95c, #f2a917);
   box-shadow:
-    0 8px 0 #cc8600,
-    inset 0 3px 0 rgba(255, 255, 255, 0.28);
+    0 10px 0 #c9820c,
+    0 15px 18px rgba(38, 5, 31, 0.16);
 }
 
 .mission-node--available .mission-node__btn {
-  width: 132px;
-  height: 114px;
-  background: #6d4aff;
+  width: 126px;
+  height: 102px;
+  background:
+    radial-gradient(ellipse at 50% 22%, rgba(255, 255, 255, 0.32), transparent 40%),
+    linear-gradient(180deg, #8267ff, #6644ed);
   box-shadow:
-    0 10px 0 #4a2fc9,
-    inset 0 4px 0 rgba(255, 255, 255, 0.22),
-    0 0 0 5px rgba(255, 168, 0, 0.2);
+    0 11px 0 #4930bd,
+    0 16px 22px rgba(38, 5, 31, 0.22),
+    0 0 0 5px rgba(255, 191, 62, 0.22);
 }
 
 .mission-node__badge {
@@ -184,25 +196,27 @@ button.mission-node--available:active .mission-node__btn {
 
 .mission-node__mascot {
   position: absolute;
-  top: -34px;
+  top: -38px;
   left: 50%;
   transform: translateX(-50%);
-  width: 78px;
+  width: 86px;
   pointer-events: none;
   z-index: 3;
-  filter: drop-shadow(0 5px 4px rgba(38, 5, 31, 0.15));
+  filter: drop-shadow(0 6px 5px rgba(38, 5, 31, 0.18));
 }
 
 .mission-node__label {
-  margin-top: 10px;
+  margin-top: 14px;
   font-size: 13px;
   font-weight: 700;
-  color: var(--ink);
-  background: var(--warm-white);
-  padding: 5px 14px;
-  border-radius: var(--r-pill);
-  max-width: 150px;
-  box-shadow: var(--shadow-card);
+  line-height: 1.3;
+  color: var(--navy);
+  background: rgba(255, 252, 248, 0.96);
+  border: 2px solid rgba(109, 74, 255, 0.14);
+  padding: 7px 15px;
+  border-radius: 18px;
+  max-width: 164px;
+  box-shadow: 0 5px 0 rgba(38, 5, 31, 0.08);
 }
 
 /* ---- módulo concluído (tela curta, não o mapa) ---- */
@@ -234,13 +248,13 @@ button.mission-node--available:active .mission-node__btn {
 
 @media (max-width: 360px) {
   .mission-node__btn {
-    width: 92px;
-    height: 80px;
+    width: 90px;
+    height: 74px;
   }
 
   .mission-node--available .mission-node__btn {
-    width: 112px;
-    height: 98px;
+    width: 107px;
+    height: 88px;
   }
 
   .mission-node__mascot {

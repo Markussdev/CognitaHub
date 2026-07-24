@@ -55,9 +55,9 @@ export function renderJourney(root, { childName, trail, modules, currentModule, 
   }
 
   const currentIndex = missions.findIndex((m) => m.status === 'disponivel')
-  const { height, nodes, landmarkY } = computeLayout(missions.length)
+  const { height, nodes, landmarkY, landmarkPathPoint } = computeLayout(missions.length)
 
-  const segments = nodes
+  const missionSegments = nodes
     .slice(0, -1)
     .map((pos, i) => {
       const next = nodes[i + 1]
@@ -65,6 +65,12 @@ export function renderJourney(root, { childName, trail, modules, currentModule, 
       return `<path d="${segmentPath(pos, next)}" class="journey-path__seg journey-path__seg--${state}" fill="none" />`
     })
     .join('')
+
+  // O ábaco é o destino da jornada, não um enfeite solto — o caminho
+  // continua até a base dele.
+  const landmarkSegment = `<path d="${segmentPath(nodes.at(-1), landmarkPathPoint)}" class="journey-path__seg journey-path__seg--future" fill="none" />`
+
+  const segments = missionSegments + landmarkSegment
 
   const nodesHtml = missions
     .map((mission, i) =>
