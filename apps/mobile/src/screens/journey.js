@@ -14,6 +14,7 @@ const MISSION_STATES = {
   concluida: 'completed',
 }
 
+
 export function renderJourney(root, { childName, trail, modules, currentModule, missions, onOpenMission, onRefresh }) {
   const header = `
     <div class="journey-header">
@@ -85,6 +86,33 @@ export function renderJourney(root, { childName, trail, modules, currentModule, 
     )
     .join('')
 
+  // Identificação da missão atual mora aqui, não numa cápsula grudada no
+  // nó — título técnico do molde inteiro cabe num card fixo, não num
+  // círculo de mapa (ver conversa sobre a cápsula deformando o nó).
+  const currentMission = currentIndex >= 0 ? missions[currentIndex] : null
+  const currentActivityId = currentMission?.child_activities?.[0]?.id ?? null
+  const currentLabel = currentMission?.mission_templates?.title ?? 'Próxima missão'
+
+  // Barra inteira é o alvo de toque — um botão "Começar" separado dentro
+  // dela criava uma segunda ação principal competindo com o nó roxo.
+  const currentMissionCard = currentMission
+    ? `
+      <button
+        class="journey-current-card"
+        type="button"
+        data-current-activity-id="${currentActivityId ?? ''}"
+        aria-label="Começar: ${escapeHtml(currentLabel)}"
+      >
+        <span class="journey-current-card__icon" aria-hidden="true">★</span>
+        <span class="journey-current-card__content">
+          <small>Agora</small>
+          <strong>${escapeHtml(currentLabel)}</strong>
+        </span>
+        <span class="journey-current-card__arrow" aria-hidden="true">›</span>
+      </button>
+    `
+    : ''
+
   root.innerHTML = `
     <div class="screen screen--journey">
       ${header}
@@ -101,6 +129,7 @@ export function renderJourney(root, { childName, trail, modules, currentModule, 
           ${nodesHtml}
         </div>
       </div>
+      ${currentMissionCard}
     </div>
   `
 
@@ -108,6 +137,11 @@ export function renderJourney(root, { childName, trail, modules, currentModule, 
     node.addEventListener('click', () => {
       onOpenMission?.(node.dataset.activityId)
     })
+  })
+
+  root.querySelector('[data-current-activity-id]')?.addEventListener('click', (event) => {
+    const activityId = event.currentTarget.dataset.currentActivityId
+    if (activityId) onOpenMission?.(activityId)
   })
 
   const nodeEls = root.querySelectorAll('.mission-node')
