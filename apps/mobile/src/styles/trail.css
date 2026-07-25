@@ -8,14 +8,59 @@
    abaixo); volta em opacidade baixa numa segunda passada, depois que o
    contraste dos nós estiver resolvido. */
 
-.screen--journey {
-  padding-bottom: calc(88px + env(safe-area-inset-bottom));
+.journey-header {
+  width: min(100%, 480px);
+  margin-inline: auto;
+  padding: 14px 16px 10px;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 10px;
 }
 
-.journey-header {
-  max-width: 480px;
-  width: 100%;
-  margin-inline: auto;
+.journey-header img {
+  width: 40px;
+  height: 40px;
+}
+
+.journey-header__copy {
+  min-width: 0;
+}
+
+.journey-header .title {
+  margin: 0;
+  overflow: hidden;
+  font-size: 18px;
+  line-height: 1.2;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.journey-header__context {
+  min-width: 0;
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.journey-header__context strong {
+  flex: none;
+  color: #6d4aff;
+  font-size: 10px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.journey-header__context span {
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
 }
 
 .journey-world {
@@ -37,6 +82,36 @@
   filter: saturate(0.4) brightness(0.86);
 }
 
+/* Duas decorações discretas, sem asset novo — a lua reaproveita
+   space-left-moon.webp (já existia solta em assets/cap1, não usada em
+   lugar nenhum). Nada disso disputa atenção com o caminho central. */
+.journey-world::before {
+  content: '';
+  position: absolute;
+  top: 6%;
+  right: 6%;
+  width: 84px;
+  height: 84px;
+  background: url('../assets/cap1/space-left-moon.webp') center / contain no-repeat;
+  opacity: 0.16;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.journey-world::after {
+  content: '';
+  position: absolute;
+  top: 32%;
+  left: 9%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9), transparent 70%);
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 0;
+}
+
 .journey-path {
   position: absolute;
   inset: 0;
@@ -52,19 +127,19 @@
 }
 
 .journey-path__seg--done {
-  stroke: var(--warm-white);
-  opacity: 0.75;
+  stroke: #ffc95c;
+  opacity: 0.95;
 }
 
 .journey-path__seg--current {
-  stroke: var(--gold);
+  stroke: rgba(255, 255, 255, 0.95);
   stroke-width: 12;
   opacity: 1;
 }
 
 .journey-path__seg--future {
-  stroke: var(--warm-white);
-  opacity: 0.4;
+  stroke: rgba(255, 255, 255, 0.42);
+  opacity: 1;
 }
 
 .journey-landmark {
@@ -74,6 +149,9 @@
   pointer-events: none;
   width: 140px;
   z-index: 2;
+  filter:
+    drop-shadow(0 10px 12px rgba(38, 5, 31, 0.18))
+    drop-shadow(0 0 18px rgba(255, 233, 163, 0.24));
 }
 
 .journey-nodes {
@@ -122,9 +200,9 @@ button.mission-node--available {
   place-items: center;
   background:
     radial-gradient(ellipse at 50% 24%, rgba(255, 255, 255, 0.3), transparent 42%),
-    linear-gradient(180deg, #c8c2d2, #aaa2ba);
+    linear-gradient(180deg, #c8bfd8, #aaa0bd);
   box-shadow:
-    0 10px 0 #827a94,
+    0 10px 0 #81758f,
     0 15px 18px rgba(38, 5, 31, 0.18);
   transition:
     transform 0.08s ease,
@@ -152,6 +230,36 @@ button.mission-node--available:active .mission-node__btn {
     transition:
       transform 0.06s ease-out,
       box-shadow 0.06s ease-out;
+  }
+
+  /* Só três pixels de respiração — não é cenário se mexendo sozinho,
+     é sinal de vida no que já é a área de ação. */
+  @keyframes mascot-idle {
+    0%,
+    100% {
+      transform: translateX(-50%) translateY(0);
+    }
+    50% {
+      transform: translateX(-50%) translateY(-3px);
+    }
+  }
+
+  .mission-node__mascot {
+    animation: mascot-idle 2.8s ease-in-out infinite;
+  }
+
+  @keyframes current-glow {
+    0%,
+    100% {
+      filter: brightness(1);
+    }
+    50% {
+      filter: brightness(1.08);
+    }
+  }
+
+  .mission-node--available .mission-node__btn {
+    animation: current-glow 2.8s ease-in-out infinite;
   }
 }
 
@@ -209,81 +317,6 @@ button.mission-node--available:active .mission-node__btn {
   filter: drop-shadow(0 6px 5px rgba(38, 5, 31, 0.18));
 }
 
-/* ---- barra fixa da missão atual (substitui a cápsula presa ao nó) ----
-   A barra inteira é o alvo de toque — um botão "Começar" separado dentro
-   dela criava uma segunda ação principal competindo com o nó roxo. */
-
-.journey-current-card {
-  position: sticky;
-  bottom: calc(10px + env(safe-area-inset-bottom));
-  z-index: 10;
-  width: min(calc(100% - 20px), 456px);
-  min-height: 66px;
-  margin: -6px auto 10px;
-  padding: 9px 12px;
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) 24px;
-  align-items: center;
-  gap: 10px;
-  border: 1px solid rgba(109, 74, 255, 0.14);
-  border-radius: 20px;
-  background: rgba(255, 252, 248, 0.97);
-  color: var(--navy);
-  text-align: left;
-  box-shadow:
-    0 7px 0 rgba(38, 5, 31, 0.08),
-    0 12px 26px rgba(38, 5, 31, 0.12);
-  transition:
-    transform 80ms ease,
-    box-shadow 80ms ease;
-}
-
-.journey-current-card:active {
-  transform: translateY(5px);
-  box-shadow:
-    0 2px 0 rgba(38, 5, 31, 0.08),
-    0 6px 14px rgba(38, 5, 31, 0.1);
-}
-
-.journey-current-card__icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 13px;
-  display: grid;
-  place-items: center;
-  background: #eee9ff;
-  color: #6544e8;
-  font-size: 19px;
-}
-
-.journey-current-card__content {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.journey-current-card__content small {
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.journey-current-card__content strong {
-  overflow: hidden;
-  font-size: 13px;
-  line-height: 1.25;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.journey-current-card__arrow {
-  color: #6544e8;
-  font-size: 27px;
-  line-height: 1;
-}
-
 /* ---- módulo concluído (tela curta, não o mapa) ---- */
 
 .screen--journey-complete {
@@ -331,18 +364,21 @@ button.mission-node--available:active .mission-node__btn {
     width: 116px;
   }
 
-  .journey-current-card {
-    grid-template-columns: 38px minmax(0, 1fr) 20px;
-    min-height: 60px;
-    padding: 8px 10px;
+  .journey-header {
+    grid-template-columns: 34px minmax(0, 1fr);
+    padding-inline: 12px;
   }
 
-  .journey-current-card__icon {
-    width: 38px;
-    height: 38px;
+  .journey-header img {
+    width: 34px;
+    height: 34px;
   }
 
-  .journey-current-card__content strong {
-    font-size: 12px;
+  .journey-header .title {
+    font-size: 16px;
+  }
+
+  .journey-header__context {
+    font-size: 10px;
   }
 }

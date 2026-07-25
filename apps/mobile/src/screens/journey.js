@@ -14,14 +14,33 @@ const MISSION_STATES = {
   concluida: 'completed',
 }
 
+// Identificação da missão atual mora aqui, no cabeçalho — não numa
+// cápsula colada no nó nem num card separado embaixo (as duas versões
+// competiam com o nó roxo como "área de ação"). O título completo
+// continua acessível via aria-label no próprio nó.
+function journeyHeaderHtml(childName, missionTitle = null) {
+  const context = missionTitle
+    ? `
+      <p class="journey-header__context">
+        <strong>Agora</strong>
+        <span>${escapeHtml(missionTitle)}</span>
+      </p>
+    `
+    : ''
 
-export function renderJourney(root, { childName, trail, modules, currentModule, missions, onOpenMission, onRefresh }) {
-  const header = `
+  return `
     <div class="journey-header">
       <img src="${logoImg}" alt="" />
-      <h1 class="title">Jornada de ${escapeHtml(childName)}</h1>
+      <div class="journey-header__copy">
+        <h1 class="title">Jornada de ${escapeHtml(childName)}</h1>
+        ${context}
+      </div>
     </div>
   `
+}
+
+export function renderJourney(root, { childName, trail, modules, currentModule, missions, onOpenMission, onRefresh }) {
+  const header = journeyHeaderHtml(childName)
 
   if (trail?.status === 'concluida') {
     renderMessage(root, header, 'Você concluiu sua jornada!')
@@ -56,6 +75,8 @@ export function renderJourney(root, { childName, trail, modules, currentModule, 
   }
 
   const currentIndex = missions.findIndex((m) => m.status === 'disponivel')
+  const currentMission = currentIndex >= 0 ? missions[currentIndex] : null
+  const headerWithContext = journeyHeaderHtml(childName, currentMission?.mission_templates?.title)
   const { height, nodes, landmarkY, landmarkPathPoint } = computeLayout(missions.length)
 
   const missionSegments = nodes
@@ -86,36 +107,9 @@ export function renderJourney(root, { childName, trail, modules, currentModule, 
     )
     .join('')
 
-  // Identificação da missão atual mora aqui, não numa cápsula grudada no
-  // nó — título técnico do molde inteiro cabe num card fixo, não num
-  // círculo de mapa (ver conversa sobre a cápsula deformando o nó).
-  const currentMission = currentIndex >= 0 ? missions[currentIndex] : null
-  const currentActivityId = currentMission?.child_activities?.[0]?.id ?? null
-  const currentLabel = currentMission?.mission_templates?.title ?? 'Próxima missão'
-
-  // Barra inteira é o alvo de toque — um botão "Começar" separado dentro
-  // dela criava uma segunda ação principal competindo com o nó roxo.
-  const currentMissionCard = currentMission
-    ? `
-      <button
-        class="journey-current-card"
-        type="button"
-        data-current-activity-id="${currentActivityId ?? ''}"
-        aria-label="Começar: ${escapeHtml(currentLabel)}"
-      >
-        <span class="journey-current-card__icon" aria-hidden="true">★</span>
-        <span class="journey-current-card__content">
-          <small>Agora</small>
-          <strong>${escapeHtml(currentLabel)}</strong>
-        </span>
-        <span class="journey-current-card__arrow" aria-hidden="true">›</span>
-      </button>
-    `
-    : ''
-
   root.innerHTML = `
     <div class="screen screen--journey">
-      ${header}
+      ${headerWithContext}
       <div class="journey-world" style="height:${height}px">
         <img class="journey-world__bg" src="${spaceCleanBg}" alt="" aria-hidden="true" />
 
@@ -129,7 +123,6 @@ export function renderJourney(root, { childName, trail, modules, currentModule, 
           ${nodesHtml}
         </div>
       </div>
-      ${currentMissionCard}
     </div>
   `
 
@@ -137,11 +130,6 @@ export function renderJourney(root, { childName, trail, modules, currentModule, 
     node.addEventListener('click', () => {
       onOpenMission?.(node.dataset.activityId)
     })
-  })
-
-  root.querySelector('[data-current-activity-id]')?.addEventListener('click', (event) => {
-    const activityId = event.currentTarget.dataset.currentActivityId
-    if (activityId) onOpenMission?.(activityId)
   })
 
   const nodeEls = root.querySelectorAll('.mission-node')

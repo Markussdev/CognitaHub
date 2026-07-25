@@ -28,8 +28,8 @@ export function missionNodeHtml({ title, state = 'locked', activityId = null, x,
   const mascot = isCurrent ? `<img class="mission-node__mascot" src="${mascotMap}" alt="" aria-hidden="true" />` : ''
 
   // Título completo só existe no aria-label agora — a identificação da
-  // missão pra criança mora no card fixo embaixo (journey-current-card),
-  // não numa cápsula colada no nó (deformava o mapa com títulos longos).
+  // missão pra criança mora no cabeçalho (journey-header__context), não
+  // numa cápsula colada no nó (deformava o mapa com títulos longos).
   return `
     <${tag} class="mission-node mission-node--${state}" ${attrs} style="left:${x}%;top:${y}px;" aria-label="${safeTitle} — ${STATUS_LABELS[state] ?? ''}">
       <span class="mission-node__btn">
