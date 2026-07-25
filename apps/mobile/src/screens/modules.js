@@ -1,4 +1,5 @@
 import logoImg from '../assets/logo-icon-transparent.webp'
+import mascotHero from '../assets/mascot-hero-wave.webp'
 import { escapeHtml } from '../utils/html.js'
 import { getModuleVisual, SPACE_CHAPTER_TITLE } from '../config/module-visuals.js'
 
@@ -10,13 +11,13 @@ import { getModuleVisual, SPACE_CHAPTER_TITLE } from '../config/module-visuals.j
 //
 // Estados do banco → estados visuais:
 //   concluido            → completed (colorida + check; conquista, não cinza)
-//   liberado             → current   (destaque, única clicável)
+//   liberado             → current   (destaque, gato-guia, única clicável)
 //   aguardando_revisao   → current   (clicável; a jornada mostra a tela de espera)
-//   bloqueado            → locked    (escurecida + cadeado, sem clique)
+//   bloqueado            → locked    (adormecida, não morta — sem clique)
 
 const STATUS_TEXT = {
   concluido: 'Concluído',
-  liberado: 'Em andamento',
+  liberado: 'Toque para continuar',
   aguardando_revisao: 'Esperando o tutor',
   bloqueado: 'O tutor ainda não liberou',
 }
@@ -46,17 +47,24 @@ export function renderModules(root, { childName, modules, onOpenModule }) {
             ? `<span class="module-scene__check" aria-hidden="true">${CHECK_SVG}</span>`
             : ''
 
+      // Só a estação atual ganha o gato-guia — é a única pergunta que a
+      // criança precisa responder de relance: "é aqui que eu continuo".
+      const mascot =
+        state === 'current' ? `<img class="module-scene__mascot" src="${mascotHero}" alt="" aria-hidden="true" />` : ''
+
       return `
         <${tag} class="module-scene module-scene--${state}" ${attrs} style="--module-accent:${visual.accent}" aria-label="${escapeHtml(visual.title)} — ${STATUS_TEXT[module.status] ?? ''}">
           <div class="module-scene__sky" aria-hidden="true"></div>
 
           <div class="module-scene__content">
             <div class="module-scene__art">
-              <img src="${visual.image}" alt="" aria-hidden="true" />
+              <img class="module-scene__station" src="${visual.image}" alt="" aria-hidden="true" />
               ${badge}
+              ${mascot}
             </div>
 
             <div class="module-scene__copy">
+              <span class="module-scene__eyebrow">Módulo ${index + 1}</span>
               <h2>${escapeHtml(visual.title)}</h2>
               <p>${STATUS_TEXT[module.status] ?? ''}</p>
             </div>

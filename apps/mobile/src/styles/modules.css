@@ -1,30 +1,46 @@
 /* Seleção de módulos (Cap 1 — Céu dos Números): uma cena vertical por
-   módulo, quase tela-cheia, com scroll-snap — equivalente espacial das
-   "casas" do Duolingo ABC. A trilha de missões com caminho orbital
-   continua em trail.css; aqui não tem nó pequeno nem SVG de caminho. */
+   módulo, tela-cheia, com scroll-snap — equivalente espacial das "casas"
+   do Duolingo ABC. A trilha de missões com caminho orbital continua em
+   trail.css; aqui não tem nó pequeno nem SVG de caminho.
+
+   Composição de cada cena, de trás pra frente: céu (::sky com estrelas +
+   halo + horizonte curvo) → estação apoiada nesse horizonte, grande →
+   título integrado ao cenário → controles flutuando por cima, no topo. */
 
 .screen--modules {
+  position: relative;
+  height: 100dvh;
   padding: 0;
-  background: #f8f4ef;
+  overflow: hidden;
+  background: #8f6acb;
 }
 
 .modules-header {
-  position: sticky;
+  position: absolute;
   top: 0;
+  left: 50%;
   z-index: 20;
-  min-height: 72px;
-  padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+  width: min(100%, 480px);
+  min-height: 86px;
+  padding: calc(12px + env(safe-area-inset-top)) 18px 18px;
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) 44px;
+  grid-template-columns: 42px minmax(0, 1fr) 44px;
   align-items: center;
   gap: 10px;
-  background: rgba(248, 244, 239, 0.96);
-  backdrop-filter: blur(12px);
+  transform: translateX(-50%);
+  color: var(--warm-white);
+  background: linear-gradient(180deg, rgba(38, 5, 71, 0.42), transparent);
 }
 
 .modules-header img {
   width: 40px;
   height: 40px;
+}
+
+.modules-header h1,
+.modules-header p {
+  color: var(--warm-white);
+  text-shadow: 0 2px 5px rgba(38, 5, 31, 0.3);
 }
 
 .modules-header h1 {
@@ -40,7 +56,6 @@
 .modules-header p {
   margin: 2px 0 0;
   overflow: hidden;
-  color: var(--muted);
   font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -51,27 +66,35 @@
   height: 44px;
   border: none;
   border-radius: 50%;
-  background: var(--soft-blue);
+  background: rgba(255, 255, 255, 0.9);
   color: var(--navy);
   font-size: 20px;
+  box-shadow: 0 4px 0 rgba(38, 5, 31, 0.14);
   cursor: pointer;
 }
 
 .modules-scenes {
-  height: calc(100dvh - 72px);
+  width: 100%;
+  height: 100dvh;
   overflow-y: auto;
   overscroll-behavior-y: contain;
   scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+
+.modules-scenes::-webkit-scrollbar {
+  display: none;
 }
 
 .module-scene {
   position: relative;
   width: min(100%, 480px);
-  min-height: calc(100dvh - 72px);
+  min-height: 100dvh;
   margin-inline: auto;
-  padding: 40px 20px 32px;
+  padding: calc(104px + env(safe-area-inset-top)) 18px calc(42px + env(safe-area-inset-bottom));
   display: grid;
-  place-items: center;
+  align-items: end;
+  justify-items: center;
   overflow: hidden;
   border: 0;
   color: inherit;
@@ -79,51 +102,117 @@
   scroll-snap-align: start;
   scroll-snap-stop: always;
   background:
-    radial-gradient(circle at 50% 38%, rgba(255, 255, 255, 0.18), transparent 40%),
-    linear-gradient(180deg, #9170d2, #bc88d3 50%, #8da7d9);
+    radial-gradient(circle at 50% 58%, color-mix(in srgb, var(--module-accent) 28%, transparent), transparent 42%),
+    linear-gradient(180deg, #8060c1 0%, #b67fd1 48%, #829dd4 100%);
 }
+
+/* ---- céu: estrelinhas, halo do accent, horizonte curvo (o "chão") ---- */
+
+.module-scene__sky {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.75) 0 2px, transparent 3px),
+    radial-gradient(circle, rgba(255, 238, 176, 0.7) 0 1px, transparent 2px);
+  background-position: 12% 24%, 79% 33%;
+  background-size: 170px 210px, 220px 180px;
+}
+
+.module-scene__sky::before {
+  content: '';
+  position: absolute;
+  top: 16%;
+  right: -54px;
+  width: 150px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.25), rgba(221, 196, 255, 0.12) 55%, transparent 70%);
+}
+
+.module-scene__sky::after {
+  content: '';
+  position: absolute;
+  left: -15%;
+  right: -15%;
+  bottom: -18%;
+  height: 38%;
+  border-radius: 50% 50% 0 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(220, 231, 255, 0.65), rgba(143, 166, 218, 0.4) 50%, transparent 72%);
+}
+
+/* ---- conteúdo: estação apoiada no horizonte, grande ---- */
 
 .module-scene__content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   width: 100%;
   display: grid;
   justify-items: center;
-  transition: transform 80ms ease;
+  transform: translateY(-2vh);
+  transition: transform 120ms ease;
 }
 
 .module-scene--current:active .module-scene__content {
-  transform: scale(0.98);
+  transform: translateY(-2vh) scale(0.98);
 }
 
 .module-scene__art {
   position: relative;
-  width: min(82vw, 360px);
+  width: min(96vw, 430px);
+  margin-bottom: -30px;
 }
 
-.module-scene__art img {
+.module-scene__station {
   display: block;
   width: 100%;
   height: auto;
   filter:
-    drop-shadow(0 16px 18px rgba(38, 5, 31, 0.2))
-    drop-shadow(0 0 24px rgba(255, 232, 165, 0.16));
+    drop-shadow(0 18px 16px rgba(38, 5, 31, 0.22))
+    drop-shadow(0 0 30px color-mix(in srgb, var(--module-accent) 42%, transparent));
 }
 
+.module-scene__mascot {
+  position: absolute;
+  left: 2%;
+  bottom: 12%;
+  width: 92px;
+  height: auto;
+  filter: drop-shadow(0 8px 6px rgba(38, 5, 31, 0.2));
+}
+
+/* ---- título integrado ao cenário ---- */
+
 .module-scene__copy {
-  margin-top: -12px;
+  position: relative;
+  z-index: 4;
+  margin-top: 6px;
+  color: var(--warm-white);
+  text-shadow: 0 3px 7px rgba(38, 5, 31, 0.3);
+}
+
+.module-scene__eyebrow {
+  display: block;
+  margin-bottom: 4px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
 }
 
 .module-scene__copy h2 {
   margin: 0;
-  color: var(--navy);
+  color: var(--warm-white);
   font-family: var(--display);
-  font-size: 20px;
+  font-size: clamp(21px, 5.5vw, 26px);
 }
 
 .module-scene__copy p {
   margin: 5px 0 0;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -131,16 +220,18 @@
   cursor: pointer;
 }
 
+/* Bloqueado dorme, não morre — continua lilás e mágico, só apagado. */
 .module-scene--locked::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(38, 28, 52, 0.3);
+  background: rgba(47, 30, 76, 0.2);
   pointer-events: none;
 }
 
-.module-scene--locked .module-scene__art img {
-  filter: grayscale(0.55) saturate(0.45) brightness(0.72);
+.module-scene--locked .module-scene__station {
+  opacity: 0.82;
+  filter: saturate(0.52) brightness(0.76) drop-shadow(0 16px 14px rgba(38, 5, 31, 0.18));
 }
 
 .module-scene__lock,
@@ -178,14 +269,18 @@
   @keyframes scene-glow {
     0%,
     100% {
-      filter: drop-shadow(0 16px 18px rgba(38, 5, 31, 0.2)) drop-shadow(0 0 24px rgba(255, 232, 165, 0.16));
+      filter:
+        drop-shadow(0 18px 16px rgba(38, 5, 31, 0.22))
+        drop-shadow(0 0 30px color-mix(in srgb, var(--module-accent) 42%, transparent));
     }
     50% {
-      filter: drop-shadow(0 16px 18px rgba(38, 5, 31, 0.2)) drop-shadow(0 0 34px rgba(255, 232, 165, 0.3));
+      filter:
+        drop-shadow(0 18px 16px rgba(38, 5, 31, 0.22))
+        drop-shadow(0 0 42px color-mix(in srgb, var(--module-accent) 60%, transparent));
     }
   }
 
-  .module-scene--current .module-scene__art img {
+  .module-scene--current .module-scene__station {
     animation: scene-glow 2.8s ease-in-out infinite;
   }
 }
