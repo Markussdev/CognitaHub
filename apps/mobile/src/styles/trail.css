@@ -18,6 +18,22 @@
   column-gap: 10px;
 }
 
+.journey-header--with-back {
+  grid-template-columns: 32px 40px minmax(0, 1fr);
+}
+
+.journey-header__back {
+  width: 32px;
+  height: 44px;
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--navy);
+  font-size: 32px;
+  line-height: 1;
+  cursor: pointer;
+}
+
 .journey-header img {
   width: 40px;
   height: 40px;
@@ -367,6 +383,10 @@ button.mission-node--available:active .mission-node__btn {
   .journey-header {
     grid-template-columns: 34px minmax(0, 1fr);
     padding-inline: 12px;
+  }
+
+  .journey-header--with-back {
+    grid-template-columns: 28px 34px minmax(0, 1fr);
   }
 
   .journey-header img {

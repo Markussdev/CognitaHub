@@ -1,0 +1,215 @@
+/* Tela de seleção de módulos (Cap 1 — Céu dos Números).
+   Mesma linguagem da trilha: fundo é só cor, a estação é o que brilha.
+   Estados: current (destaque + gato), completed (colorido + check — é
+   conquista, não vira cinza), locked (apagado + cadeado, sem clique). */
+
+.screen--modules {
+  padding: 0;
+  align-items: stretch;
+  background: #f8f4ef;
+}
+
+.modules-world {
+  position: relative;
+  width: min(100%, 480px);
+  margin-inline: auto;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(180deg, #8f6acb 0%, #b984d2 48%, #8ea6da 100%);
+}
+
+.modules-path {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.modules-path__seg {
+  stroke-width: 11;
+  stroke-linecap: round;
+  stroke-dasharray: 0.1 22;
+}
+
+.modules-path__seg--done {
+  stroke: #ffc95c;
+  opacity: 0.95;
+}
+
+.modules-path__seg--current {
+  stroke: rgba(255, 255, 255, 0.95);
+  opacity: 1;
+}
+
+.modules-path__seg--future {
+  stroke: rgba(255, 255, 255, 0.42);
+  opacity: 1;
+}
+
+/* ---- estação ---- */
+
+.module-station {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: center;
+  z-index: 1;
+}
+
+.module-station--completed {
+  z-index: 2;
+}
+
+.module-station--current {
+  z-index: 5;
+}
+
+button.module-station--current {
+  cursor: pointer;
+}
+
+.module-station__art {
+  position: relative;
+  display: block;
+  transition: transform 0.15s ease;
+}
+
+button.module-station--current:active .module-station__art {
+  transform: translateY(4px) scale(1.04);
+}
+
+.module-station__img {
+  display: block;
+  width: 136px;
+}
+
+.module-station--completed .module-station__img {
+  width: 148px;
+}
+
+.module-station--current .module-station__img {
+  width: 184px;
+  filter: drop-shadow(0 0 22px rgba(255, 233, 163, 0.35));
+}
+
+/* Sem opacity baixa demais — a estação precisa continuar existindo como
+   lugar do mundo, só sem convite ao toque. */
+.module-station--locked .module-station__img {
+  filter: grayscale(0.5) saturate(0.45) brightness(0.72);
+  opacity: 0.72;
+}
+
+.module-station__badge {
+  position: absolute;
+  top: 6%;
+  right: 4%;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.module-station__badge svg {
+  width: 20px;
+  height: 20px;
+}
+
+.module-station__badge--check {
+  background: var(--gold);
+  color: var(--warm-white);
+  box-shadow: 0 3px 0 #cc8600;
+}
+
+.module-station__badge--lock {
+  background: rgba(38, 5, 31, 0.35);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.module-station__mascot {
+  position: absolute;
+  left: -10%;
+  bottom: 6%;
+  width: 64px;
+  pointer-events: none;
+  filter: drop-shadow(0 5px 4px rgba(38, 5, 31, 0.18));
+}
+
+.module-station__name {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--navy);
+  background: rgba(255, 252, 248, 0.96);
+  padding: 5px 13px;
+  border-radius: 16px;
+  max-width: 170px;
+  box-shadow: 0 4px 0 rgba(38, 5, 31, 0.08);
+}
+
+.module-station--current .module-station__name {
+  border: 2px solid var(--station-accent, #6d4aff);
+}
+
+.module-station--locked .module-station__name {
+  opacity: 0.8;
+}
+
+.module-station__status {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.module-station--locked .module-station__status {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes station-glow {
+    0%,
+    100% {
+      filter: drop-shadow(0 0 18px rgba(255, 233, 163, 0.28));
+    }
+    50% {
+      filter: drop-shadow(0 0 26px rgba(255, 233, 163, 0.42));
+    }
+  }
+
+  .module-station--current .module-station__img {
+    animation: station-glow 2.8s ease-in-out infinite;
+  }
+}
+
+@media (max-width: 360px) {
+  .module-station__img {
+    width: 112px;
+  }
+
+  .module-station--completed .module-station__img {
+    width: 124px;
+  }
+
+  .module-station--current .module-station__img {
+    width: 150px;
+  }
+
+  .module-station__mascot {
+    width: 54px;
+  }
+
+  .module-station__name {
+    font-size: 12px;
+    max-width: 150px;
+  }
+}

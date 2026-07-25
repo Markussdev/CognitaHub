@@ -2,6 +2,7 @@ import { Capacitor } from '@capacitor/core'
 import { App } from '@capacitor/app'
 import { renderLoading } from './screens/loading.js'
 import { renderPairing } from './screens/pairing.js'
+import { renderModules } from './screens/modules.js'
 import { renderJourney } from './screens/journey.js'
 import { renderMission } from './screens/mission.js'
 import { statusMessageHtml } from './components/status-message.js'
@@ -11,11 +12,19 @@ import { claimPairingCode, getPairedChildContext } from './services/pairing.js'
 import { getChildTrail, getChildTrailModules, getModuleMissions } from './services/trails.js'
 import { getChildActivity } from './services/activities.js'
 import { createActivityExecution } from './services/executions.js'
+import { getModuleVisual } from './config/module-visuals.js'
 
-// Etapa 6: ciclo fechado — jornada, execução das missões suportadas e
-// gravação de atividade_execucao. O banco controla o progresso; o
-// aplicativo recarrega a jornada após cada alteração (missão concluída,
-// botão "Atualizar jornada" ou retomada do segundo plano).
+// Fluxo: pareamento → seleção de módulos → trilha do módulo → atividade →
+// trilha atualizada. O banco continua mandando no progresso; o app só
+// decide qual tela mostrar. Sem router — três telas, um estado pequeno.
+const appState = {
+  session: null,
+  context: null,
+  trail: null,
+  modules: [],
+  currentModule: null,
+}
+
 export async function initApp(root) {
   renderLoading(root)
   await boot(root)
@@ -55,18 +64,58 @@ async function boot(root) {
 
     const trail = await getChildTrail(context.child_trail_id)
     const modules = await getChildTrailModules(context.child_trail_id)
-
     const currentModule = modules.find((module) => module.status !== 'concluido') ?? modules.at(-1)
 
-    const missions =
-      !currentModule || currentModule.status === 'bloqueado' ? [] : await getModuleMissions(currentModule.id)
+    Object.assign(appState, { session, context, trail, modules, currentModule })
+
+    // Jornada encerrada/pausada ou sem módulo nenhum: renderJourney já
+    // resolve essas mensagens de estado — não faz sentido mostrar o mapa.
+    if (trail?.status !== 'ativa' || modules.length === 0) {
+      renderJourney(root, {
+        childName: context.primeiro_nome,
+        trail,
+        currentModule: null,
+        missions: [],
+        onRefresh: () => {
+          renderLoading(root)
+          boot(root)
+        },
+      })
+      return
+    }
+
+    showModules(root)
+  } catch (err) {
+    showError(root, err)
+  } finally {
+    booting = false
+  }
+}
+
+function showModules(root) {
+  renderModules(root, {
+    childName: appState.context.primeiro_nome,
+    modules: appState.modules,
+    onOpenModule: (module) => showJourney(root, module),
+  })
+}
+
+async function showJourney(root, module) {
+  if (!module || module.status === 'bloqueado') return
+
+  renderLoading(root)
+  try {
+    const missions = await getModuleMissions(module.id)
+    const moduleIndex = appState.modules.findIndex((item) => item.id === module.id)
 
     renderJourney(root, {
-      childName: context.primeiro_nome,
-      trail,
-      modules,
-      currentModule,
+      childName: appState.context.primeiro_nome,
+      trail: appState.trail,
+      currentModule: module,
       missions,
+      moduleVisual: getModuleVisual(moduleIndex),
+
+      onBack: () => showModules(root),
 
       onRefresh() {
         renderLoading(root)
@@ -79,17 +128,17 @@ async function boot(root) {
           const activity = await getChildActivity(activityId)
           renderMission(root, {
             activity,
-            onExit: () => boot(root),
+            onExit: () => showJourney(root, module),
 
             async onComplete(result) {
               await createActivityExecution({
                 activity,
-                executedBy: session.user.id,
+                executedBy: appState.session.user.id,
                 durationSeconds: result.durationSeconds,
               })
 
               renderLoading(root)
-              await boot(root)
+              await reloadJourney(root, module.id)
             },
           })
         } catch (err) {
@@ -99,8 +148,22 @@ async function boot(root) {
     })
   } catch (err) {
     showError(root, err)
-  } finally {
-    booting = false
+  }
+}
+
+// Depois de concluir uma missão, a criança volta pra trilha do MESMO
+// módulo com os dados frescos (caminho cresce, próximo nó abre) — não pra
+// seleção de módulos, que quebraria o momento de recompensa.
+async function reloadJourney(root, moduleId) {
+  try {
+    const modules = await getChildTrailModules(appState.context.child_trail_id)
+    appState.modules = modules
+    appState.currentModule = modules.find((m) => m.status !== 'concluido') ?? modules.at(-1)
+
+    const module = modules.find((m) => m.id === moduleId) ?? appState.currentModule
+    await showJourney(root, module)
+  } catch (err) {
+    showError(root, err)
   }
 }
 

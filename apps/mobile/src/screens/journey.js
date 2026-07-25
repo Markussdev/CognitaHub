@@ -1,7 +1,6 @@
 import logoImg from '../assets/logo-icon-transparent.webp'
 import spaceCleanBg from '../assets/cap1/space-clean-bg.webp'
 import landmarkAbacus from '../assets/cap1/landmark-abacus.webp'
-import landmarkFinal from '../assets/cap1/landmark-final.webp'
 import mascotMap from '../assets/cap1/mascot-map.webp'
 import { missionNodeHtml } from '../components/mission-node.js'
 import { statusMessageHtml } from '../components/status-message.js'
@@ -18,7 +17,7 @@ const MISSION_STATES = {
 // cápsula colada no nó nem num card separado embaixo (as duas versões
 // competiam com o nó roxo como "área de ação"). O título completo
 // continua acessível via aria-label no próprio nó.
-function journeyHeaderHtml(childName, missionTitle = null) {
+function journeyHeaderHtml(childName, missionTitle = null, withBack = false) {
   const context = missionTitle
     ? `
       <p class="journey-header__context">
@@ -28,8 +27,13 @@ function journeyHeaderHtml(childName, missionTitle = null) {
     `
     : ''
 
+  const back = withBack
+    ? `<button class="journey-header__back" type="button" aria-label="Voltar aos módulos">‹</button>`
+    : ''
+
   return `
-    <div class="journey-header">
+    <div class="journey-header ${withBack ? 'journey-header--with-back' : ''}">
+      ${back}
       <img src="${logoImg}" alt="" />
       <div class="journey-header__copy">
         <h1 class="title">Jornada de ${escapeHtml(childName)}</h1>
@@ -39,7 +43,7 @@ function journeyHeaderHtml(childName, missionTitle = null) {
   `
 }
 
-export function renderJourney(root, { childName, trail, modules, currentModule, missions, onOpenMission, onRefresh }) {
+export function renderJourney(root, { childName, trail, currentModule, missions, moduleVisual, onBack, onOpenMission, onRefresh }) {
   const header = journeyHeaderHtml(childName)
 
   if (trail?.status === 'concluida') {
@@ -62,21 +66,18 @@ export function renderJourney(root, { childName, trail, modules, currentModule, 
     return
   }
 
-  // Só existe um "landmark" por módulo: ábaco pra qualquer módulo com mais
-  // trilha pela frente, o observatório final só pro último módulo mesmo
-  // (não é o mesmo conceito de "módulo concluído" — um módulo no meio pode
-  // ficar em aguardando_revisao sem ser o fim da jornada).
-  const isLastModule = modules?.at(-1)?.id === currentModule.id
-  const landmarkImg = isLastModule ? landmarkFinal : landmarkAbacus
+  // O landmark do topo é a mesma estação tocada na seleção de módulos —
+  // a criança entra "naquele lugar", então o destino da trilha é ele.
+  const landmarkImg = moduleVisual?.image ?? landmarkAbacus
 
   if (currentModule.status === 'aguardando_revisao') {
-    renderModuleComplete(root, header, { landmarkImg, onRefresh })
+    renderModuleComplete(root, journeyHeaderHtml(childName, null, Boolean(onBack)), { landmarkImg, onRefresh, onBack })
     return
   }
 
   const currentIndex = missions.findIndex((m) => m.status === 'disponivel')
   const currentMission = currentIndex >= 0 ? missions[currentIndex] : null
-  const headerWithContext = journeyHeaderHtml(childName, currentMission?.mission_templates?.title)
+  const headerWithContext = journeyHeaderHtml(childName, currentMission?.mission_templates?.title, Boolean(onBack))
   const { height, nodes, landmarkY, landmarkPathPoint } = computeLayout(missions.length)
 
   const missionSegments = nodes
@@ -132,6 +133,8 @@ export function renderJourney(root, { childName, trail, modules, currentModule, 
     })
   })
 
+  root.querySelector('.journey-header__back')?.addEventListener('click', () => onBack?.())
+
   const nodeEls = root.querySelectorAll('.mission-node')
   const scrollTarget = currentIndex >= 0 ? nodeEls[currentIndex] : root.querySelector('.journey-landmark')
   scrollTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -140,7 +143,7 @@ export function renderJourney(root, { childName, trail, modules, currentModule, 
 // Tela curta, não o mapa inteiro de novo — a criança já viu o caminho
 // enquanto jogava; repetir tudo só pra mostrar "espere o tutor" é exagero
 // visual pra um estado de espera.
-function renderModuleComplete(root, header, { landmarkImg, onRefresh }) {
+function renderModuleComplete(root, header, { landmarkImg, onRefresh, onBack }) {
   root.innerHTML = `
     <div class="screen screen--journey-complete">
       ${header}
@@ -154,6 +157,7 @@ function renderModuleComplete(root, header, { landmarkImg, onRefresh }) {
     </div>
   `
   root.querySelector('#refresh-btn')?.addEventListener('click', () => onRefresh?.())
+  root.querySelector('.journey-header__back')?.addEventListener('click', () => onBack?.())
 }
 
 function renderMessage(root, header, text) {
