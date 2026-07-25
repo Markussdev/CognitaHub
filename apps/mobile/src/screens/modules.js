@@ -1,5 +1,4 @@
 import logoImg from '../assets/logo-icon-transparent.webp'
-import mascotHero from '../assets/mascot-hero-wave.webp'
 import { escapeHtml } from '../utils/html.js'
 import { getModuleVisual, SPACE_CHAPTER_TITLE } from '../config/module-visuals.js'
 
@@ -31,7 +30,7 @@ function stationState(status) {
   return 'current'
 }
 
-export function renderModules(root, { childName, modules, onOpenModule }) {
+export function renderModules(root, { childName, modules, onOpenModule, onOpenSettings }) {
   const scenesHtml = modules
     .map((module, index) => {
       const visual = getModuleVisual(index)
@@ -49,11 +48,23 @@ export function renderModules(root, { childName, modules, onOpenModule }) {
 
       // Só a estação atual ganha o gato-guia — é a única pergunta que a
       // criança precisa responder de relance: "é aqui que eu continuo".
+      // Posição/tamanho vêm do module-visuals.js (cada silhueta é diferente).
       const mascot =
-        state === 'current' ? `<img class="module-scene__mascot" src="${mascotHero}" alt="" aria-hidden="true" />` : ''
+        state === 'current'
+          ? `<img class="module-scene__mascot" src="${visual.mascot}" alt="" aria-hidden="true" />`
+          : ''
+
+      const sceneStyle = [
+        `--module-accent:${visual.accent}`,
+        `--station-width:${visual.stationWidth}`,
+        `--mascot-x:${visual.mascotX}`,
+        `--mascot-y:${visual.mascotY}`,
+        `--mascot-width:${visual.mascotWidth}`,
+        `--mascot-flip:${visual.mascotFlip ? -1 : 1}`,
+      ].join(';')
 
       return `
-        <${tag} class="module-scene module-scene--${state}" ${attrs} style="--module-accent:${visual.accent}" aria-label="${escapeHtml(visual.title)} — ${STATUS_TEXT[module.status] ?? ''}">
+        <${tag} class="module-scene module-scene--${state}" ${attrs} style="${sceneStyle}" aria-label="${escapeHtml(visual.title)} — ${STATUS_TEXT[module.status] ?? ''}">
           <div class="module-scene__sky" aria-hidden="true"></div>
 
           <div class="module-scene__content">
@@ -82,7 +93,7 @@ export function renderModules(root, { childName, modules, onOpenModule }) {
           <h1>${SPACE_CHAPTER_TITLE}</h1>
           <p>Jornada de ${escapeHtml(childName)}</p>
         </div>
-        <button type="button" aria-label="Abrir configurações">⚙</button>
+        <button class="modules-header__settings" type="button" aria-label="Abrir configurações">⚙</button>
       </header>
 
       <main class="modules-scenes">
@@ -97,6 +108,8 @@ export function renderModules(root, { childName, modules, onOpenModule }) {
       if (module) onOpenModule?.(module)
     })
   })
+
+  root.querySelector('.modules-header__settings')?.addEventListener('click', () => onOpenSettings?.())
 
   root.querySelector('.module-scene--current')?.scrollIntoView({ block: 'start' })
 }

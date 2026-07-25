@@ -5,6 +5,7 @@ import { renderPairing } from './screens/pairing.js'
 import { renderModules } from './screens/modules.js'
 import { renderJourney } from './screens/journey.js'
 import { renderMission } from './screens/mission.js'
+import { renderSettings } from './screens/settings.js'
 import { statusMessageHtml } from './components/status-message.js'
 import { escapeHtml } from './utils/html.js'
 import { ensureAnonymousSession } from './services/auth.js'
@@ -15,14 +16,19 @@ import { createActivityExecution } from './services/executions.js'
 import { getModuleVisual } from './config/module-visuals.js'
 
 // Fluxo: pareamento → seleção de módulos → trilha do módulo → atividade →
-// trilha atualizada. O banco continua mandando no progresso; o app só
-// decide qual tela mostrar. Sem router — três telas, um estado pequeno.
+// trilha atualizada (ou módulos → configurações). O banco continua
+// mandando no progresso; o app só decide qual tela mostrar. Sem router —
+// `screen`/`openModule` existem só pra o botão físico de voltar do
+// Android saber o que fazer em cada tela.
 const appState = {
   session: null,
   context: null,
   trail: null,
   modules: [],
   currentModule: null,
+  openModule: null,
+  screen: 'loading',
+  modulesScrollTop: null,
 }
 
 export async function initApp(root) {
@@ -40,7 +46,33 @@ export async function initApp(root) {
         boot(root)
       }
     })
+
+    App.addListener('backButton', () => handleBackButton(root))
   }
+}
+
+// Atividade → jornada do mesmo módulo; jornada/configurações → módulos;
+// módulos → confirma antes de sair; qualquer outra tela (pareamento,
+// carregando, erro, aguardando jornada) → sai direto, não tem "voltar".
+function handleBackButton(root) {
+  if (appState.screen === 'mission') {
+    showJourney(root, appState.openModule)
+    return
+  }
+
+  if (appState.screen === 'journey' || appState.screen === 'settings') {
+    showModules(root)
+    return
+  }
+
+  if (appState.screen === 'modules') {
+    if (window.confirm('Quer sair do Cognita?')) {
+      App.exitApp()
+    }
+    return
+  }
+
+  App.exitApp()
 }
 
 let booting = false
@@ -58,6 +90,7 @@ async function boot(root) {
     }
 
     if (!context.child_trail_id) {
+      appState.screen = 'awaiting'
       showAwaitingJourney(root, context)
       return
     }
@@ -71,6 +104,7 @@ async function boot(root) {
     // Jornada encerrada/pausada ou sem módulo nenhum: renderJourney já
     // resolve essas mensagens de estado — não faz sentido mostrar o mapa.
     if (trail?.status !== 'ativa' || modules.length === 0) {
+      appState.screen = 'journey'
       renderJourney(root, {
         childName: context.primeiro_nome,
         trail,
@@ -86,6 +120,7 @@ async function boot(root) {
 
     showModules(root)
   } catch (err) {
+    appState.screen = 'error'
     showError(root, err)
   } finally {
     booting = false
@@ -93,21 +128,51 @@ async function boot(root) {
 }
 
 function showModules(root) {
+  appState.screen = 'modules'
+  appState.openModule = null
+
   renderModules(root, {
     childName: appState.context.primeiro_nome,
     modules: appState.modules,
     onOpenModule: (module) => showJourney(root, module),
+    onOpenSettings: () => showSettings(root),
   })
+
+  // A criança não deveria sentir que a tela "recomeçou" ao voltar — restaura
+  // a posição de antes, se já existir uma (na primeira vez ainda não tem,
+  // e aí o scrollIntoView pro módulo atual dentro de renderModules já resolve).
+  if (appState.modulesScrollTop != null) {
+    const scroller = root.querySelector('.modules-scenes')
+    if (scroller) scroller.scrollTop = appState.modulesScrollTop
+  }
+}
+
+function showSettings(root) {
+  rememberModulesScroll(root)
+  appState.screen = 'settings'
+
+  renderSettings(root, {
+    onBack: () => showModules(root),
+  })
+}
+
+function rememberModulesScroll(root) {
+  const scrollTop = root.querySelector('.modules-scenes')?.scrollTop
+  if (scrollTop != null) appState.modulesScrollTop = scrollTop
 }
 
 async function showJourney(root, module) {
   if (!module || module.status === 'bloqueado') return
+
+  rememberModulesScroll(root)
+  appState.openModule = module
 
   renderLoading(root)
   try {
     const missions = await getModuleMissions(module.id)
     const moduleIndex = appState.modules.findIndex((item) => item.id === module.id)
 
+    appState.screen = 'journey'
     renderJourney(root, {
       childName: appState.context.primeiro_nome,
       trail: appState.trail,
@@ -126,6 +191,7 @@ async function showJourney(root, module) {
         renderLoading(root)
         try {
           const activity = await getChildActivity(activityId)
+          appState.screen = 'mission'
           renderMission(root, {
             activity,
             onExit: () => showJourney(root, module),
@@ -168,6 +234,8 @@ async function reloadJourney(root, moduleId) {
 }
 
 function showPairing(root) {
+  appState.screen = 'pairing'
+
   const pairing = renderPairing(root, {
     async onSubmit(code) {
       try {
@@ -203,6 +271,8 @@ function showError(root, err) {
     err?.message === 'MISSION_NOT_AVAILABLE'
       ? 'Essa missão não está mais disponível. Volte ao mapa pra ver o que você já pode fazer.'
       : 'Não foi possível conectar. Verifique a internet e tente de novo.'
+
+  appState.screen = 'error'
 
   root.innerHTML = `
     <div class="screen screen--pairing">
