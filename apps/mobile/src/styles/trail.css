@@ -85,7 +85,8 @@
   margin-inline: auto;
   overflow: hidden;
   isolation: isolate;
-  background: linear-gradient(180deg, #8f6acb 0%, #b984d2 48%, #8ea6da 100%);
+  /* Tons extraídos do backgro.png novo (proposta calma, azul, sem roxo). */
+  background: linear-gradient(180deg, #202a76 0%, #3c4bae 48%, #8fa2dc 100%);
 }
 
 .journey-world__bg {
