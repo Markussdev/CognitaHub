@@ -1,23 +1,18 @@
 import logoImg from '../assets/logo-icon-transparent.webp'
-import mascotMap from '../assets/cap1/mascot-map.webp'
 import { escapeHtml } from '../utils/html.js'
-import { segmentPath } from './journey-layout.js'
 import { getModuleVisual, SPACE_CHAPTER_TITLE } from '../config/module-visuals.js'
 
-// Seleção de módulos (lógica do Duolingo ABC, não a aparência): o capítulo
-// é um céu contínuo, cada estação é um módulo, e a criança só entra no que
-// o tutor liberou. Cresce de baixo pra cima, igual à trilha interna.
+// Seleção de módulos = cena vertical por módulo (Duolingo ABC), não a
+// trilha de nós pequenos (Duolingo normal) — os assets espaciais foram
+// feitos pra serem protagonistas, não ícones de mapa. A trilha de missões
+// com caminho orbital continua existindo dentro de cada módulo, em
+// journey.js; só a seleção mudou de metáfora.
 //
 // Estados do banco → estados visuais:
-//   concluido            → completed (colorido + check; conquista, não cinza)
-//   liberado             → current   (destaque, gato, único clicável)
+//   concluido            → completed (colorida + check; conquista, não cinza)
+//   liberado             → current   (destaque, única clicável)
 //   aguardando_revisao   → current   (clicável; a jornada mostra a tela de espera)
-//   bloqueado            → locked    (apagado + cadeado, sem clique)
-
-const MODULE_X = [50, 34, 66, 38, 62]
-const MODULE_GAP = 230
-const TOP_PAD = 200
-const BOTTOM_PAD = 170
+//   bloqueado            → locked    (escurecida + cadeado, sem clique)
 
 const STATUS_TEXT = {
   concluido: 'Concluído',
@@ -35,66 +30,37 @@ function stationState(status) {
   return 'current'
 }
 
-// Geometria pura, mesma convenção do journey-layout: índice = ordem
-// cronológica, y menor = mais alto na tela.
-export function computeModulesLayout(moduleCount) {
-  const n = Math.max(moduleCount, 0)
-  const height = TOP_PAD + Math.max(0, n - 1) * MODULE_GAP + BOTTOM_PAD
-
-  const stations = Array.from({ length: n }, (_, i) => ({
-    x: MODULE_X[i % MODULE_X.length],
-    y: height - BOTTOM_PAD - i * MODULE_GAP,
-  }))
-
-  return { height, stations }
-}
-
 export function renderModules(root, { childName, modules, onOpenModule }) {
-  const { height, stations } = computeModulesLayout(modules.length)
-
-  const segments = stations
-    .slice(0, -1)
-    .map((pos, i) => {
-      const next = stations[i + 1]
-      const nextStatus = modules[i + 1].status
-      const state =
-        nextStatus === 'concluido' ? 'done' : stationState(nextStatus) === 'current' ? 'current' : 'future'
-      return `<path d="${segmentPath(pos, next)}" class="modules-path__seg modules-path__seg--${state}" fill="none" />`
-    })
-    .join('')
-
-  const stationsHtml = modules
-    .map((module, i) => {
-      const visual = getModuleVisual(i)
+  const scenesHtml = modules
+    .map((module, index) => {
+      const visual = getModuleVisual(index)
       const state = stationState(module.status)
       const clickable = state === 'current'
-      const tag = clickable ? 'button' : 'div'
+      const tag = clickable ? 'button' : 'section'
       const attrs = clickable ? `type="button" data-module-id="${module.id}"` : ''
-      const statusText = STATUS_TEXT[module.status] ?? ''
 
       const badge =
-        state === 'completed'
-          ? `<span class="module-station__badge module-station__badge--check" aria-hidden="true">${CHECK_SVG}</span>`
-          : state === 'locked'
-            ? `<span class="module-station__badge module-station__badge--lock" aria-hidden="true">${LOCK_SVG}</span>`
+        state === 'locked'
+          ? `<span class="module-scene__lock" aria-hidden="true">${LOCK_SVG}</span>`
+          : state === 'completed'
+            ? `<span class="module-scene__check" aria-hidden="true">${CHECK_SVG}</span>`
             : ''
 
-      const mascot =
-        state === 'current' && module.status === 'liberado'
-          ? `<img class="module-station__mascot" src="${mascotMap}" alt="" aria-hidden="true" />`
-          : ''
-
       return `
-        <${tag} class="module-station module-station--${state}" ${attrs}
-          style="left:${stations[i].x}%;top:${stations[i].y}px;--station-accent:${visual.accent};"
-          aria-label="${escapeHtml(visual.title)} — ${statusText}">
-          <span class="module-station__art">
-            <img class="module-station__img" src="${visual.image}" alt="" aria-hidden="true" />
-            ${badge}
-            ${mascot}
-          </span>
-          <span class="module-station__name">${escapeHtml(visual.title)}</span>
-          <span class="module-station__status">${statusText}</span>
+        <${tag} class="module-scene module-scene--${state}" ${attrs} style="--module-accent:${visual.accent}" aria-label="${escapeHtml(visual.title)} — ${STATUS_TEXT[module.status] ?? ''}">
+          <div class="module-scene__sky" aria-hidden="true"></div>
+
+          <div class="module-scene__content">
+            <div class="module-scene__art">
+              <img src="${visual.image}" alt="" aria-hidden="true" />
+              ${badge}
+            </div>
+
+            <div class="module-scene__copy">
+              <h2>${escapeHtml(visual.title)}</h2>
+              <p>${STATUS_TEXT[module.status] ?? ''}</p>
+            </div>
+          </div>
         </${tag}>
       `
     })
@@ -102,29 +68,27 @@ export function renderModules(root, { childName, modules, onOpenModule }) {
 
   root.innerHTML = `
     <div class="screen screen--modules">
-      <div class="journey-header">
+      <header class="modules-header">
         <img src="${logoImg}" alt="" />
-        <div class="journey-header__copy">
-          <h1 class="title">${SPACE_CHAPTER_TITLE}</h1>
-          <p class="journey-header__context"><span>Jornada de ${escapeHtml(childName)}</span></p>
+        <div>
+          <h1>${SPACE_CHAPTER_TITLE}</h1>
+          <p>Jornada de ${escapeHtml(childName)}</p>
         </div>
-      </div>
+        <button type="button" aria-label="Abrir configurações">⚙</button>
+      </header>
 
-      <div class="modules-world" style="height:${height}px">
-        <svg class="modules-path" viewBox="0 0 400 ${height}" preserveAspectRatio="none" aria-hidden="true">
-          ${segments}
-        </svg>
-        ${stationsHtml}
-      </div>
+      <main class="modules-scenes">
+        ${scenesHtml}
+      </main>
     </div>
   `
 
-  root.querySelectorAll('[data-module-id]').forEach((station) => {
-    station.addEventListener('click', () => {
-      const module = modules.find((m) => m.id === station.dataset.moduleId)
+  root.querySelectorAll('[data-module-id]').forEach((scene) => {
+    scene.addEventListener('click', () => {
+      const module = modules.find((item) => item.id === scene.dataset.moduleId)
       if (module) onOpenModule?.(module)
     })
   })
 
-  root.querySelector('.module-station--current')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  root.querySelector('.module-scene--current')?.scrollIntoView({ block: 'start' })
 }
