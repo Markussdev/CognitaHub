@@ -1,14 +1,32 @@
 /* Mundo Cap 1 — mapa de missões. Assets em src/assets/cap1 (ver
    scripts/optimize-assets.mjs na raiz do repo pra gerar novos capítulos).
 
-   Regra de hierarquia (invertida do que era antes): o fundo é só cor —
-   ele existe pra fazer o nó parecer bonito, não pra ser bonito sozinho.
-   O elemento interativo (botão do nó) é a coisa mais saturada da tela.
-   space-clean-bg.webp fica desligado por enquanto (display: none logo
-   abaixo); volta em opacidade baixa numa segunda passada, depois que o
-   contraste dos nós estiver resolvido. */
+   A trilha interna agora vive no mesmo céu noturno da seleção de módulos
+   (styles/modules.css) — mesma paleta azul/dourada, mesmo cabeçalho
+   flutuante translúcido. As duas telas precisam parecer o mesmo app. */
+
+.screen--journey,
+.screen--journey-complete,
+.screen--journey-message {
+  background: #202a76;
+  color: var(--warm-white);
+}
+
+/* .screen--pairing centraliza os filhos como um grupo (justify-content) —
+   bom pro card de status sozinho, ruim pro header, que precisa ficar
+   fixo no topo, não flutuando no meio da tela junto com a mensagem. */
+.screen--journey-message {
+  justify-content: flex-start;
+}
+
+.screen--journey-complete .title {
+  color: var(--warm-white);
+}
 
 .journey-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   width: min(100%, 480px);
   margin-inline: auto;
   padding: 14px 16px 10px;
@@ -16,6 +34,8 @@
   grid-template-columns: 40px minmax(0, 1fr);
   align-items: center;
   column-gap: 10px;
+  color: var(--warm-white);
+  background: linear-gradient(180deg, rgba(10, 14, 58, 0.92), rgba(10, 14, 58, 0.55) 72%, transparent);
 }
 
 .journey-header--with-back {
@@ -28,7 +48,7 @@
   border: none;
   background: none;
   padding: 0;
-  color: var(--navy);
+  color: var(--warm-white);
   font-size: 32px;
   line-height: 1;
   cursor: pointer;
@@ -51,6 +71,7 @@
   text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--warm-white);
 }
 
 .journey-header__context {
@@ -67,7 +88,7 @@
 
 .journey-header__context strong {
   flex: none;
-  color: #6d4aff;
+  color: var(--gold);
   font-size: 10px;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -75,7 +96,7 @@
 
 .journey-header__context span {
   overflow: hidden;
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.76);
   text-overflow: ellipsis;
 }
 
@@ -164,11 +185,13 @@
   left: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
-  width: 140px;
+  width: var(--landmark-width, 140px);
   z-index: 2;
+  /* Bem mais discreto que antes — ele é o destino da trilha, não precisa
+     competir com os nós pelo mesmo brilho da seleção de módulos. */
   filter:
-    drop-shadow(0 10px 12px rgba(38, 5, 31, 0.18))
-    drop-shadow(0 0 18px rgba(255, 233, 163, 0.24));
+    drop-shadow(0 9px 10px rgba(7, 12, 45, 0.2))
+    drop-shadow(0 0 14px rgba(255, 207, 122, 0.15));
 }
 
 .journey-nodes {
@@ -216,11 +239,11 @@ button.mission-node--available {
   display: grid;
   place-items: center;
   background:
-    radial-gradient(ellipse at 50% 24%, rgba(255, 255, 255, 0.3), transparent 42%),
-    linear-gradient(180deg, #c8bfd8, #aaa0bd);
+    radial-gradient(ellipse at 50% 22%, rgba(255, 255, 255, 0.16), transparent 42%),
+    linear-gradient(180deg, #7f8ab5, #616c9b);
   box-shadow:
-    0 10px 0 #81758f,
-    0 15px 18px rgba(38, 5, 31, 0.18);
+    0 9px 0 #48527d,
+    0 14px 18px rgba(6, 10, 35, 0.24);
   transition:
     transform 0.08s ease,
     box-shadow 0.08s ease;
@@ -229,7 +252,7 @@ button.mission-node--available {
 button.mission-node--available:active .mission-node__btn {
   transform: translateY(8px);
   box-shadow:
-    0 2px 0 #4930bd,
+    0 2px 0 #3857a4,
     inset 0 3px 0 rgba(255, 255, 255, 0.22);
 }
 
@@ -281,24 +304,22 @@ button.mission-node--available:active .mission-node__btn {
 }
 
 .mission-node--completed .mission-node__btn {
-  background:
-    radial-gradient(ellipse at 50% 22%, rgba(255, 255, 255, 0.34), transparent 42%),
-    linear-gradient(180deg, #ffc95c, #f2a917);
+  background: linear-gradient(180deg, #f8d77c, #eeb347);
   box-shadow:
-    0 10px 0 #c9820c,
-    0 15px 18px rgba(38, 5, 31, 0.16);
+    0 9px 0 #bd7d25,
+    0 14px 18px rgba(6, 10, 35, 0.22);
 }
 
 .mission-node--available .mission-node__btn {
-  width: 126px;
-  height: 102px;
+  width: 114px;
+  height: 92px;
   background:
-    radial-gradient(ellipse at 50% 22%, rgba(255, 255, 255, 0.32), transparent 40%),
-    linear-gradient(180deg, #8267ff, #6644ed);
+    radial-gradient(ellipse at 50% 20%, rgba(255, 255, 255, 0.32), transparent 42%),
+    linear-gradient(180deg, #7caaf5, #547bd7);
   box-shadow:
-    0 11px 0 #4930bd,
-    0 16px 22px rgba(38, 5, 31, 0.22),
-    0 0 0 5px rgba(255, 191, 62, 0.22);
+    0 10px 0 #3857a4,
+    0 15px 20px rgba(6, 10, 35, 0.28),
+    0 0 0 5px rgba(255, 207, 122, 0.28);
 }
 
 .mission-node__badge {
@@ -331,7 +352,7 @@ button.mission-node--available:active .mission-node__btn {
   width: 86px;
   pointer-events: none;
   z-index: 3;
-  filter: drop-shadow(0 6px 5px rgba(38, 5, 31, 0.18));
+  filter: drop-shadow(0 6px 5px rgba(6, 10, 35, 0.22));
 }
 
 /* ---- módulo concluído (tela curta, não o mapa) ---- */
@@ -368,17 +389,13 @@ button.mission-node--available:active .mission-node__btn {
   }
 
   .mission-node--available .mission-node__btn {
-    width: 107px;
-    height: 88px;
+    width: 97px;
+    height: 78px;
   }
 
   .mission-node__mascot {
     top: -30px;
     width: 70px;
-  }
-
-  .journey-landmark {
-    width: 116px;
   }
 
   .journey-header {

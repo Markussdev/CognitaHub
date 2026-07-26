@@ -54,13 +54,14 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
           ? `<img class="module-scene__mascot" src="${visual.mascot}" alt="" aria-hidden="true" />`
           : ''
 
+      const sel = visual.selection
       const sceneStyle = [
         `--module-accent:${visual.accent}`,
-        `--station-width:${visual.stationWidth}`,
-        `--mascot-x:${visual.mascotX}`,
-        `--mascot-y:${visual.mascotY}`,
-        `--mascot-width:${visual.mascotWidth}`,
-        `--mascot-flip:${visual.mascotFlip ? -1 : 1}`,
+        `--station-width:${sel.stationWidth}`,
+        `--mascot-x:${sel.mascotX}`,
+        `--mascot-y:${sel.mascotY}`,
+        `--mascot-width:${sel.mascotWidth}`,
+        `--mascot-flip:${sel.mascotFlip ? -1 : 1}`,
       ].join(';')
 
       return `

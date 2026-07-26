@@ -29,7 +29,7 @@ export function missionNodeHtml({ title, state = 'locked', activityId = null, x,
 
   // Título completo só existe no aria-label agora — a identificação da
   // missão pra criança mora no cabeçalho (journey-header__context), não
-  // numa cápsula colada no nó (deformava o mapa com títulos longos).
+  // numa cápsula colada no nó.
   return `
     <${tag} class="mission-node mission-node--${state}" ${attrs} style="left:${x}%;top:${y}px;" aria-label="${safeTitle} — ${STATUS_LABELS[state] ?? ''}">
       <span class="mission-node__btn">

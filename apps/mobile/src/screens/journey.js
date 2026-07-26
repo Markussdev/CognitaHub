@@ -1,7 +1,6 @@
 import logoImg from '../assets/logo-icon-transparent.webp'
 import spaceCleanBg from '../assets/cap1/space-clean-bg.webp'
 import landmarkAbacus from '../assets/cap1/landmark-abacus.webp'
-import mascotMap from '../assets/cap1/mascot-map.webp'
 import { missionNodeHtml } from '../components/mission-node.js'
 import { statusMessageHtml } from '../components/status-message.js'
 import { escapeHtml } from '../utils/html.js'
@@ -13,11 +12,11 @@ const MISSION_STATES = {
   concluida: 'completed',
 }
 
-// Identificação da missão atual mora aqui, no cabeçalho — não numa
-// cápsula colada no nó nem num card separado embaixo (as duas versões
-// competiam com o nó roxo como "área de ação"). O título completo
-// continua acessível via aria-label no próprio nó.
-function journeyHeaderHtml(childName, missionTitle = null, withBack = false) {
+// Dentro do módulo, o cabeçalho identifica ONDE a criança está (o nome
+// dela já apareceu na seleção) — título da estação, não "Jornada de
+// Fulano" de novo. Título completo da missão continua acessível via
+// aria-label no próprio nó, não numa cápsula colada nele.
+function journeyHeaderHtml({ title, missionTitle = null, withBack = false }) {
   const context = missionTitle
     ? `
       <p class="journey-header__context">
@@ -36,7 +35,7 @@ function journeyHeaderHtml(childName, missionTitle = null, withBack = false) {
       ${back}
       <img src="${logoImg}" alt="" />
       <div class="journey-header__copy">
-        <h1 class="title">Jornada de ${escapeHtml(childName)}</h1>
+        <h1 class="title">${escapeHtml(title)}</h1>
         ${context}
       </div>
     </div>
@@ -44,7 +43,8 @@ function journeyHeaderHtml(childName, missionTitle = null, withBack = false) {
 }
 
 export function renderJourney(root, { childName, trail, currentModule, missions, moduleVisual, onBack, onOpenMission, onRefresh }) {
-  const header = journeyHeaderHtml(childName)
+  const fallbackTitle = `Jornada de ${childName}`
+  const header = journeyHeaderHtml({ title: fallbackTitle })
 
   if (trail?.status === 'concluida') {
     renderMessage(root, header, 'Você concluiu sua jornada!')
@@ -67,17 +67,29 @@ export function renderJourney(root, { childName, trail, currentModule, missions,
   }
 
   // O landmark do topo é a mesma estação tocada na seleção de módulos —
-  // a criança entra "naquele lugar", então o destino da trilha é ele.
+  // a criança entra "naquele lugar", então o destino da trilha é ele. O
+  // título do cabeçalho também vira o nome dessa estação, não mais
+  // "Jornada de Fulano" (isso já apareceu na seleção).
   const landmarkImg = moduleVisual?.image ?? landmarkAbacus
+  const moduleTitle = moduleVisual?.title ?? fallbackTitle
 
   if (currentModule.status === 'aguardando_revisao') {
-    renderModuleComplete(root, journeyHeaderHtml(childName, null, Boolean(onBack)), { landmarkImg, onRefresh, onBack })
+    renderModuleComplete(root, journeyHeaderHtml({ title: moduleTitle, withBack: Boolean(onBack) }), {
+      landmarkImg,
+      mascotImg: moduleVisual?.mascot,
+      onRefresh,
+      onBack,
+    })
     return
   }
 
   const currentIndex = missions.findIndex((m) => m.status === 'disponivel')
   const currentMission = currentIndex >= 0 ? missions[currentIndex] : null
-  const headerWithContext = journeyHeaderHtml(childName, currentMission?.mission_templates?.title, Boolean(onBack))
+  const headerWithContext = journeyHeaderHtml({
+    title: moduleTitle,
+    missionTitle: currentMission?.mission_templates?.title,
+    withBack: Boolean(onBack),
+  })
   const { height, nodes, landmarkY, landmarkPathPoint } = computeLayout(missions.length)
 
   const missionSegments = nodes
@@ -108,6 +120,8 @@ export function renderJourney(root, { childName, trail, currentModule, missions,
     )
     .join('')
 
+  const landmarkWidth = moduleVisual?.journey?.landmarkWidth ?? '140px'
+
   root.innerHTML = `
     <div class="screen screen--journey">
       ${headerWithContext}
@@ -118,7 +132,7 @@ export function renderJourney(root, { childName, trail, currentModule, missions,
           ${segments}
         </svg>
 
-        <img class="journey-landmark" src="${landmarkImg}" alt="" aria-hidden="true" style="top:${landmarkY}px" />
+        <img class="journey-landmark" src="${landmarkImg}" alt="" aria-hidden="true" style="top:${landmarkY}px;--landmark-width:${landmarkWidth};" />
 
         <div class="journey-nodes">
           ${nodesHtml}
@@ -143,13 +157,15 @@ export function renderJourney(root, { childName, trail, currentModule, missions,
 // Tela curta, não o mapa inteiro de novo — a criança já viu o caminho
 // enquanto jogava; repetir tudo só pra mostrar "espere o tutor" é exagero
 // visual pra um estado de espera.
-function renderModuleComplete(root, header, { landmarkImg, onRefresh, onBack }) {
+function renderModuleComplete(root, header, { landmarkImg, mascotImg, onRefresh, onBack }) {
+  const mascot = mascotImg ? `<img class="journey-complete__mascot" src="${mascotImg}" alt="" aria-hidden="true" />` : ''
+
   root.innerHTML = `
     <div class="screen screen--journey-complete">
       ${header}
       <div class="journey-complete__art">
         <img class="journey-complete__landmark" src="${landmarkImg}" alt="" aria-hidden="true" />
-        <img class="journey-complete__mascot" src="${mascotMap}" alt="" aria-hidden="true" />
+        ${mascot}
       </div>
       <h2 class="title">Módulo concluído!</h2>
       ${statusMessageHtml({ type: 'info', text: 'Agora é hora de aguardar seu tutor.' })}
@@ -162,7 +178,7 @@ function renderModuleComplete(root, header, { landmarkImg, onRefresh, onBack }) 
 
 function renderMessage(root, header, text) {
   root.innerHTML = `
-    <div class="screen screen--pairing">
+    <div class="screen screen--pairing screen--journey-message">
       ${header}
       ${statusMessageHtml({ type: 'info', text })}
     </div>

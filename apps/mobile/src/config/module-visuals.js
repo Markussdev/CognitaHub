@@ -5,9 +5,9 @@
 // catálogo ganhar um visual_key próprio, a chave `key` daqui vira o elo;
 // até lá, índice resolve sem migration.
 //
-// Posição/tamanho do mascote-guia são dados, não CSS por imagem — cada
-// estação tem uma silhueta diferente (foguete alto, ábaco largo...), e
-// isso fica aqui pra não virar regra solta espalhada pelo modules.css.
+// `selection` e `journey` separam como a MESMA estação aparece em cada
+// tela — protagonista na seleção de módulos, coadjuvante (landmark) dentro
+// da trilha. Nunca é o mesmo tamanho nas duas.
 
 import launchImg from '../assets/space/module-launch.webp'
 import abacusImg from '../assets/space/module-abacus.webp'
@@ -15,12 +15,12 @@ import observatoryImg from '../assets/space/module-observatory.webp'
 import crystalLabImg from '../assets/space/module-crystal-lab.webp'
 import portalImg from '../assets/space/module-number-portal.webp'
 
-// Só "explore" existe por enquanto — "guide" e "celebrate" reaproveitam o
-// mesmo arquivo até alguém gerar os outros dois poses.
+// Só "explore" existe por enquanto — "guide" reaproveita o mesmo arquivo
+// até alguém gerar uma pose de verdade apontando (a criação original pediu
+// só essa, espelhada em CSS pro lado esquerdo/direito).
 import astronautExplore from '../assets/mascot/astronaut-explore.webp'
 
 const astronautGuide = astronautExplore
-const astronautCelebrate = astronautExplore
 
 export const SPACE_CHAPTER_TITLE = 'Céu dos Números'
 
@@ -30,60 +30,45 @@ export const SPACE_MODULE_VISUALS = [
     title: 'Base de Lançamento',
     image: launchImg,
     accent: '#ffcf7a',
-    stationWidth: '350px',
     mascot: astronautGuide,
-    mascotX: '5%',
-    mascotY: '10%',
-    mascotWidth: '88px',
-    mascotFlip: false,
+    selection: { stationWidth: '300px', mascotX: '3%', mascotY: '1%', mascotWidth: '60px', mascotFlip: false },
+    journey: { landmarkWidth: '118px' },
   },
   {
     key: 'abacus',
     title: 'Estação do Ábaco',
     image: abacusImg,
     accent: '#b9c8f5',
-    stationWidth: '330px',
-    mascot: astronautExplore,
-    mascotX: '74%',
-    mascotY: '8%',
-    mascotWidth: '82px',
-    mascotFlip: true,
+    mascot: astronautGuide,
+    selection: { stationWidth: '292px', mascotX: '79%', mascotY: '1%', mascotWidth: '58px', mascotFlip: true },
+    journey: { landmarkWidth: '112px' },
   },
   {
     key: 'observatory',
     title: 'Observatório da Contagem',
     image: observatoryImg,
     accent: '#6fa0d8',
-    stationWidth: '340px',
-    mascot: astronautExplore,
-    mascotX: '6%',
-    mascotY: '12%',
-    mascotWidth: '84px',
-    mascotFlip: false,
+    mascot: astronautGuide,
+    selection: { stationWidth: '300px', mascotX: '4%', mascotY: '1%', mascotWidth: '58px', mascotFlip: false },
+    journey: { landmarkWidth: '118px' },
   },
   {
     key: 'crystal-lab',
     title: 'Laboratório dos Cristais',
     image: crystalLabImg,
     accent: '#a8e0e8',
-    stationWidth: '330px',
-    mascot: astronautExplore,
-    mascotX: '73%',
-    mascotY: '9%',
-    mascotWidth: '80px',
-    mascotFlip: true,
+    mascot: astronautGuide,
+    selection: { stationWidth: '292px', mascotX: '78%', mascotY: '1%', mascotWidth: '56px', mascotFlip: true },
+    journey: { landmarkWidth: '112px' },
   },
   {
     key: 'number-portal',
     title: 'Portal dos Números',
     image: portalImg,
     accent: '#ffd76d',
-    stationWidth: '335px',
-    mascot: astronautCelebrate,
-    mascotX: '4%',
-    mascotY: '9%',
-    mascotWidth: '88px',
-    mascotFlip: false,
+    mascot: astronautGuide,
+    selection: { stationWidth: '278px', mascotX: '3%', mascotY: '1%', mascotWidth: '60px', mascotFlip: false },
+    journey: { landmarkWidth: '108px' },
   },
 ]
 
