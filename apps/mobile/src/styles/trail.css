@@ -322,6 +322,23 @@ button.mission-node--available:active .mission-node__btn {
     0 0 0 5px rgba(255, 207, 122, 0.28);
 }
 
+/* Checkpoint (missão 4, 8, 12...) ganha um anel dourado mais grosso — o
+   mesmo botão, só sinalizando de longe "isso aqui é um marco". Nada de
+   card, título ou cenário novo pra isso. */
+.mission-node--checkpoint.mission-node--available .mission-node__btn {
+  box-shadow:
+    0 10px 0 #3857a4,
+    0 15px 20px rgba(6, 10, 35, 0.28),
+    0 0 0 6px rgba(255, 207, 122, 0.42);
+}
+
+.mission-node--checkpoint.mission-node--locked .mission-node__btn {
+  box-shadow:
+    0 9px 0 #48527d,
+    0 14px 18px rgba(6, 10, 35, 0.24),
+    0 0 0 6px rgba(255, 207, 122, 0.32);
+}
+
 .mission-node__badge {
   width: 30px;
   height: 30px;

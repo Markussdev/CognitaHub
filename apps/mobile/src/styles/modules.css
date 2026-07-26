@@ -147,27 +147,30 @@
 /* ---- conteúdo: estação apoiada no horizonte, grande ---- */
 
 .module-scene__content {
-  position: relative;
+  position: absolute;
+  inset: 0;
   z-index: 2;
   width: 100%;
   height: 100%;
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-  justify-items: center;
-  align-items: end;
-  transform: none;
+  display: block;
+}
+
+/* Âncora vertical previsível — a estação fica a ~55-56dvh do topo,
+   independente do tamanho do título ou de quantas linhas ele quebra.
+   Cabeçalho preso no topo, estação ancorada no meio, título preso no
+   rodapé: as três coisas param de depender umas das outras. */
+.module-scene__art {
+  position: absolute;
+  top: var(--station-y, clamp(330px, 56dvh, 480px));
+  left: 50%;
+  width: min(68vw, var(--station-width, 300px));
+  margin: 0;
+  transform: translate(-50%, -50%);
   transition: transform 120ms ease;
 }
 
-.module-scene--current:active .module-scene__content {
-  transform: scale(0.985);
-}
-
-.module-scene__art {
-  position: relative;
-  align-self: center;
-  width: min(68vw, var(--station-width, 300px));
-  margin: 0 0 20px;
+.module-scene--current:active .module-scene__art {
+  transform: translate(-50%, -50%) scale(0.985);
 }
 
 .module-scene__station {
@@ -194,12 +197,16 @@
 /* ---- título integrado ao cenário ---- */
 
 .module-scene__copy {
-  position: relative;
+  position: absolute;
+  right: 18px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  left: 18px;
   z-index: 4;
-  min-height: 92px;
+  min-height: auto;
   margin: 0;
-  padding-bottom: calc(18px + env(safe-area-inset-bottom));
+  padding: 0;
   color: var(--warm-white);
+  text-align: center;
   text-shadow: 0 3px 7px rgba(38, 5, 31, 0.3);
 }
 
@@ -280,10 +287,16 @@
 @media (max-width: 360px) {
   .module-scene__art {
     width: min(66vw, 260px);
-    margin-bottom: 14px;
+  }
+}
+
+@media (max-height: 700px) {
+  .module-scene__art {
+    top: var(--station-y-small, 53dvh);
+    width: min(62vw, var(--station-width, 280px));
   }
 
-  .module-scene__copy {
-    min-height: 84px;
+  .module-scene__copy h2 {
+    font-size: 21px;
   }
 }

@@ -31,7 +31,7 @@ export const SPACE_MODULE_VISUALS = [
     image: launchImg,
     accent: '#ffcf7a',
     mascot: astronautGuide,
-    selection: { stationWidth: '300px', mascotX: '3%', mascotY: '1%', mascotWidth: '60px', mascotFlip: false },
+    selection: { stationWidth: '300px', stationY: '56dvh', mascotX: '3%', mascotY: '1%', mascotWidth: '60px', mascotFlip: false },
     journey: { landmarkWidth: '118px' },
   },
   {
@@ -40,7 +40,7 @@ export const SPACE_MODULE_VISUALS = [
     image: abacusImg,
     accent: '#b9c8f5',
     mascot: astronautGuide,
-    selection: { stationWidth: '292px', mascotX: '79%', mascotY: '1%', mascotWidth: '58px', mascotFlip: true },
+    selection: { stationWidth: '292px', stationY: '55dvh', mascotX: '79%', mascotY: '1%', mascotWidth: '58px', mascotFlip: true },
     journey: { landmarkWidth: '112px' },
   },
   {
@@ -49,7 +49,7 @@ export const SPACE_MODULE_VISUALS = [
     image: observatoryImg,
     accent: '#6fa0d8',
     mascot: astronautGuide,
-    selection: { stationWidth: '300px', mascotX: '4%', mascotY: '1%', mascotWidth: '58px', mascotFlip: false },
+    selection: { stationWidth: '300px', stationY: '56dvh', mascotX: '4%', mascotY: '1%', mascotWidth: '58px', mascotFlip: false },
     journey: { landmarkWidth: '118px' },
   },
   {
@@ -58,7 +58,7 @@ export const SPACE_MODULE_VISUALS = [
     image: crystalLabImg,
     accent: '#a8e0e8',
     mascot: astronautGuide,
-    selection: { stationWidth: '292px', mascotX: '78%', mascotY: '1%', mascotWidth: '56px', mascotFlip: true },
+    selection: { stationWidth: '292px', stationY: '56dvh', mascotX: '78%', mascotY: '1%', mascotWidth: '56px', mascotFlip: true },
     journey: { landmarkWidth: '112px' },
   },
   {
@@ -67,7 +67,7 @@ export const SPACE_MODULE_VISUALS = [
     image: portalImg,
     accent: '#ffd76d',
     mascot: astronautGuide,
-    selection: { stationWidth: '278px', mascotX: '3%', mascotY: '1%', mascotWidth: '60px', mascotFlip: false },
+    selection: { stationWidth: '278px', stationY: '54dvh', mascotX: '3%', mascotY: '1%', mascotWidth: '60px', mascotFlip: false },
     journey: { landmarkWidth: '108px' },
   },
 ]

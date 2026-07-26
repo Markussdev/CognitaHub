@@ -8,10 +8,13 @@
 // pra decoração pesada que não existe mais (um fundo só, sem camadas
 // empilhadas), então o mapa fica mais compacto e o caminho lê mais rápido.
 
-const XS = [50, 39, 61]
-const NODE_GAP = 176
+// 5 colunas em vez de 3 — com poucas missões o zigue-zague de 3 já dava
+// pra perceber o padrão; testado com 12 nós (modo ?journeyNodes=12 do
+// dev), 3 ficava repetitivo/previsível rápido demais.
+const XS = [50, 35, 65, 42, 58]
+const NODE_GAP = 158
 const TOP_PAD = 245
-const BOTTOM_PAD = 135
+const BOTTOM_PAD = 145
 const VIEWBOX_WIDTH = 400
 
 export function computeLayout(missionCount) {

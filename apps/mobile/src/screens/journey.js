@@ -12,6 +12,45 @@ const MISSION_STATES = {
   concluida: 'completed',
 }
 
+// Modo de estresse visual — só em dev, só via ?journeyNodes=12. Existe
+// pra ver se o mapa aguenta uma trilha de verdade (12 missões) sem
+// bagunçar o Supabase com missão fake. Nunca compila em produção porque
+// import.meta.env.DEV vira `false` estático no build.
+const VISUAL_TEST_TITLES = [
+  'Identificar números de 1 a 3',
+  'Contar objetos até 3',
+  'Identificar números de 1 a 5',
+  'Revisão de 1 a 5',
+  'Contar objetos até 5',
+  'Identificar números no espaço',
+  'Contar estrelas até 5',
+  'Revisão calma até 5',
+  'Encontrar o número correto',
+  'Contar grupos de objetos',
+  'Revisão mista',
+  'Desafio final do módulo',
+]
+
+function buildVisualTestMissions(missions, count = 12) {
+  if (!missions.length) return missions
+
+  const availableMission = missions.find((mission) => mission.status === 'disponivel') ?? missions[0]
+
+  return Array.from({ length: count }, (_, index) => {
+    const source = missions[index % missions.length]
+    const status = index < 4 ? 'concluida' : index === 4 ? 'disponivel' : 'bloqueada'
+
+    return {
+      ...source,
+      id: `visual-test-${index}`, // só pra não repetir id dentro do teste
+      status,
+      mission_templates: { ...source.mission_templates, title: VISUAL_TEST_TITLES[index] },
+      // Só o nó marcado como atual continua abrindo uma atividade real.
+      child_activities: status === 'disponivel' ? availableMission.child_activities : [],
+    }
+  })
+}
+
 // Dentro do módulo, o cabeçalho identifica ONDE a criança está (o nome
 // dela já apareceu na seleção) — título da estação, não "Jornada de
 // Fulano" de novo. Título completo da missão continua acessível via
@@ -83,20 +122,25 @@ export function renderJourney(root, { childName, trail, currentModule, missions,
     return
   }
 
-  const currentIndex = missions.findIndex((m) => m.status === 'disponivel')
-  const currentMission = currentIndex >= 0 ? missions[currentIndex] : null
+  // ?journeyNodes=12 troca a trilha real por uma trilha falsa de 12 nós
+  // só pra teste visual de densidade — nunca ativa fora de dev.
+  const visualTestEnabled = import.meta.env.DEV && new URLSearchParams(window.location.search).get('journeyNodes') === '12'
+  const displayMissions = visualTestEnabled ? buildVisualTestMissions(missions, 12) : missions
+
+  const currentIndex = displayMissions.findIndex((m) => m.status === 'disponivel')
+  const currentMission = currentIndex >= 0 ? displayMissions[currentIndex] : null
   const headerWithContext = journeyHeaderHtml({
     title: moduleTitle,
     missionTitle: currentMission?.mission_templates?.title,
     withBack: Boolean(onBack),
   })
-  const { height, nodes, landmarkY, landmarkPathPoint } = computeLayout(missions.length)
+  const { height, nodes, landmarkY, landmarkPathPoint } = computeLayout(displayMissions.length)
 
   const missionSegments = nodes
     .slice(0, -1)
     .map((pos, i) => {
       const next = nodes[i + 1]
-      const state = missions[i + 1].status === 'concluida' ? 'done' : i + 1 === currentIndex ? 'current' : 'future'
+      const state = displayMissions[i + 1].status === 'concluida' ? 'done' : i + 1 === currentIndex ? 'current' : 'future'
       return `<path d="${segmentPath(pos, next)}" class="journey-path__seg journey-path__seg--${state}" fill="none" />`
     })
     .join('')
@@ -107,7 +151,7 @@ export function renderJourney(root, { childName, trail, currentModule, missions,
 
   const segments = missionSegments + landmarkSegment
 
-  const nodesHtml = missions
+  const nodesHtml = displayMissions
     .map((mission, i) =>
       missionNodeHtml({
         title: mission.mission_templates.title,
@@ -115,6 +159,7 @@ export function renderJourney(root, { childName, trail, currentModule, missions,
         activityId: mission.status === 'disponivel' ? mission.child_activities?.[0]?.id ?? null : null,
         x: nodes[i].x,
         y: nodes[i].y,
+        isCheckpoint: (i + 1) % 4 === 0,
         isCurrent: i === currentIndex,
       }),
     )

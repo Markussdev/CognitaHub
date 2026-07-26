@@ -58,6 +58,7 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
       const sceneStyle = [
         `--module-accent:${visual.accent}`,
         `--station-width:${sel.stationWidth}`,
+        `--station-y:${sel.stationY}`,
         `--mascot-x:${sel.mascotX}`,
         `--mascot-y:${sel.mascotY}`,
         `--mascot-width:${sel.mascotWidth}`,
