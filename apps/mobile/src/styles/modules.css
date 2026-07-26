@@ -1,18 +1,18 @@
-/* Seleção de módulos (Cap 1 — Céu dos Números): uma cena vertical por
-   módulo, tela-cheia, com scroll-snap — equivalente espacial das "casas"
-   do Duolingo ABC. A trilha de missões com caminho orbital continua em
-   trail.css; aqui não tem nó pequeno nem SVG de caminho.
+/* Seleção de módulos: uma cena por módulo, navegação HORIZONTAL (Duolingo
+   ABC) — setas, swipe e pontos, nunca rolagem vertical. Cada landmark traz
+   seu próprio ambiente (céu/sol-lua/estrelas/nuvens/horizonte), definido
+   como custom properties por cena em module-visuals.js + modules.js.
 
-   Composição de cada cena, de trás pra frente: céu (::sky com estrelas +
-   halo + horizonte curvo) → estação apoiada nesse horizonte, grande →
-   título integrado ao cenário → controles flutuando por cima, no topo. */
+   Camadas de trás pra frente: .module-scene::before (horizonte) →
+   .module-scene__sky (estrelas) → .module-scene::after (sol/lua) →
+   .module-scene__clouds (nuvens) → .module-scene__content (landmark +
+   título), z-index 0/0/1/1/2 nessa ordem. */
 
 .screen--modules {
   position: relative;
   height: 100dvh;
   padding: 0;
   overflow: hidden;
-  /* Tons extraídos do backgro.png novo (proposta calma, azul, sem roxo). */
   background: #202a76;
 }
 
@@ -74,12 +74,20 @@
   cursor: pointer;
 }
 
+/* ---- carrossel horizontal ---- */
+
 .modules-scenes {
-  width: 100%;
+  width: min(100%, 480px);
   height: 100dvh;
-  overflow-y: auto;
-  overscroll-behavior-y: contain;
-  scroll-snap-type: y mandatory;
+  margin-inline: auto;
+  flex-shrink: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
   scrollbar-width: none;
 }
 
@@ -89,9 +97,8 @@
 
 .module-scene {
   position: relative;
-  width: min(100%, 480px);
-  min-height: 100dvh;
-  margin-inline: auto;
+  width: 100%;
+  height: 100dvh;
   padding: calc(100px + env(safe-area-inset-top)) 18px 0;
   display: grid;
   align-items: stretch;
@@ -102,49 +109,77 @@
   text-align: center;
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  /* Tons extraídos do backgro.png novo (proposta calma, azul, sem roxo). */
-  background:
-    radial-gradient(circle at 50% 58%, color-mix(in srgb, var(--module-accent) 28%, transparent), transparent 42%),
-    linear-gradient(180deg, #1f2a78 0%, #4054ac 48%, #8ea0da 100%);
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
 }
 
-/* ---- céu: estrelinhas, halo do accent, horizonte curvo (o "chão") ---- */
-
-.module-scene__sky {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.75) 0 2px, transparent 3px),
-    radial-gradient(circle, rgba(255, 238, 176, 0.7) 0 1px, transparent 2px);
-  background-position: 12% 24%, 79% 33%;
-  background-size: 170px 210px, 220px 180px;
-}
-
-.module-scene__sky::before {
+/* Horizonte — cor própria do ambiente, não mais fixa. */
+.module-scene::before {
   content: '';
   position: absolute;
-  top: 16%;
-  right: -54px;
-  width: 150px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.25), rgba(196, 210, 255, 0.14) 55%, transparent 70%);
-}
-
-.module-scene__sky::after {
-  content: '';
-  position: absolute;
+  z-index: 0;
   left: -15%;
   right: -15%;
   bottom: -18%;
   height: 38%;
   border-radius: 50% 50% 0 0;
-  background: radial-gradient(ellipse at 50% 0%, rgba(220, 231, 255, 0.65), rgba(143, 166, 218, 0.4) 50%, transparent 72%);
+  background: radial-gradient(ellipse at 50% 0%, var(--horizon), transparent 72%);
+  pointer-events: none;
 }
 
-/* ---- conteúdo: estação apoiada no horizonte, grande ---- */
+/* Sol ou lua — mesmo elemento, cor/textura decide qual é. */
+.module-scene::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  top: 12%;
+  right: -40px;
+  width: 130px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.module-scene--sun::after {
+  background: radial-gradient(circle at 35% 30%, #fff8dc, var(--glow) 55%, transparent 75%);
+}
+
+.module-scene--moon::after {
+  background: radial-gradient(circle at 35% 30%, #ffffff, var(--glow) 70%, transparent 80%);
+  opacity: 0.85;
+}
+
+/* Estrelas — densidade por tema via --stars (0-1), independente do
+   horizonte/sol-lua (por isso é elemento próprio, não pseudo-elemento
+   compartilhado com eles). */
+.module-scene__sky {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: var(--stars, 0);
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.85) 0 2px, transparent 3px),
+    radial-gradient(circle, rgba(255, 238, 176, 0.8) 0 1px, transparent 2px);
+  background-position: 12% 24%, 79% 18%;
+  background-size: 170px 210px, 220px 180px;
+}
+
+/* Nuvens — densidade por tema via --clouds (0-1). */
+.module-scene__clouds {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: var(--clouds, 0);
+  background-image:
+    radial-gradient(ellipse 90px 34px at 20% 20%, rgba(255, 255, 255, 0.85), transparent 70%),
+    radial-gradient(ellipse 70px 28px at 78% 14%, rgba(255, 255, 255, 0.78), transparent 70%),
+    radial-gradient(ellipse 110px 40px at 55% 28%, rgba(255, 255, 255, 0.65), transparent 70%);
+}
+
+/* ---- conteúdo: landmark ancorado, título preso no rodapé ---- */
 
 .module-scene__content {
   position: absolute;
@@ -155,15 +190,13 @@
   display: block;
 }
 
-/* Âncora vertical previsível — a estação fica a ~55-56dvh do topo,
-   independente do tamanho do título ou de quantas linhas ele quebra.
-   Cabeçalho preso no topo, estação ancorada no meio, título preso no
-   rodapé: as três coisas param de depender umas das outras. */
+/* Âncora vertical previsível — o landmark fica a ~54-56dvh do topo,
+   independente do tamanho do título ou de quantas linhas ele quebra. */
 .module-scene__art {
   position: absolute;
-  top: var(--station-y, clamp(330px, 56dvh, 480px));
+  top: var(--landmark-y, clamp(330px, 56dvh, 480px));
   left: 50%;
-  width: min(68vw, var(--station-width, 300px));
+  width: min(68vw, var(--landmark-width, 300px));
   margin: 0;
   transform: translate(-50%, -50%);
   transition: transform 120ms ease;
@@ -179,22 +212,8 @@
   height: auto;
   filter:
     drop-shadow(0 14px 14px rgba(7, 12, 45, 0.24))
-    drop-shadow(0 0 20px color-mix(in srgb, var(--module-accent) 24%, transparent));
+    drop-shadow(0 0 20px color-mix(in srgb, var(--glow) 24%, transparent));
 }
-
-.module-scene__mascot {
-  position: absolute;
-  left: var(--mascot-x, 4%);
-  bottom: var(--mascot-y, 10%);
-  width: var(--mascot-width, 84px);
-  height: auto;
-  transform: scaleX(var(--mascot-flip, 1));
-  transform-origin: center;
-  filter: drop-shadow(0 8px 6px rgba(38, 5, 31, 0.2));
-  pointer-events: none;
-}
-
-/* ---- título integrado ao cenário ---- */
 
 .module-scene__copy {
   position: absolute;
@@ -241,11 +260,15 @@
 /* Bloqueado dorme, não morre — continua visível, só claramente não é o
    foco (atual = nítido, concluído = colorido, bloqueado = distante). */
 .module-scene--locked::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(14, 20, 65, 0.16);
-  pointer-events: none;
+  /* combina o sol/lua do tema com o escurecimento — mesmo pseudo, dois
+     backgrounds empilhados via mask não vale a pena aqui, então o
+     overlay vem de um segundo mecanismo: reduzir a opacidade do próprio
+     sol/lua e escurecer a cena com um box-shadow inset. */
+  opacity: 0.4;
+}
+
+.module-scene--locked {
+  box-shadow: inset 0 0 0 999px rgba(14, 20, 65, 0.16);
 }
 
 .module-scene--locked .module-scene__station {
@@ -284,16 +307,80 @@
   box-shadow: 0 6px 0 #cc8600;
 }
 
+/* ---- setas + pontos (navegação, não rolagem) ---- */
+
+.modules-arrow {
+  position: fixed;
+  top: 50%;
+  z-index: 25;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(10, 14, 58, 0.55);
+  color: var(--warm-white);
+  font-size: 24px;
+  line-height: 1;
+  backdrop-filter: blur(6px);
+}
+
+.modules-arrow:disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.modules-arrow--prev {
+  left: max(12px, calc(50% - 296px));
+}
+
+.modules-arrow--next {
+  right: max(12px, calc(50% - 296px));
+}
+
+.modules-dots {
+  position: fixed;
+  left: 50%;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  z-index: 25;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+
+.modules-dots__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  transition:
+    background 150ms ease,
+    transform 150ms ease;
+}
+
+.modules-dots__dot.is-active {
+  background: var(--warm-white);
+  transform: scale(1.3);
+}
+
 @media (max-width: 360px) {
   .module-scene__art {
     width: min(66vw, 260px);
+  }
+
+  .modules-arrow {
+    width: 38px;
+    height: 38px;
+    font-size: 20px;
   }
 }
 
 @media (max-height: 700px) {
   .module-scene__art {
-    top: var(--station-y-small, 53dvh);
-    width: min(62vw, var(--station-width, 280px));
+    top: var(--landmark-y-small, 53dvh);
+    width: min(62vw, var(--landmark-width, 280px));
   }
 
   .module-scene__copy h2 {

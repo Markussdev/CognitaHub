@@ -1,16 +1,15 @@
 import logoImg from '../assets/logo-icon-transparent.webp'
 import { escapeHtml } from '../utils/html.js'
-import { getModuleVisual, SPACE_CHAPTER_TITLE } from '../config/module-visuals.js'
+import { getLandmarkPreset } from '../config/module-visuals.js'
 
-// Seleção de módulos = cena vertical por módulo (Duolingo ABC), não a
-// trilha de nós pequenos (Duolingo normal) — os assets espaciais foram
-// feitos pra serem protagonistas, não ícones de mapa. A trilha de missões
-// com caminho orbital continua existindo dentro de cada módulo, em
-// journey.js; só a seleção mudou de metáfora.
+// Seleção de módulos = cena por módulo (Duolingo ABC), navegação horizontal
+// por setas/swipe — não rolagem vertical. Cada landmark carrega seu próprio
+// ambiente (céu, sol/lua, estrelas, nuvens); o tema não é mais um capítulo
+// fixo, é escolha por módulo (ver module-visuals.js).
 //
 // Estados do banco → estados visuais:
 //   concluido            → completed (colorida + check; conquista, não cinza)
-//   liberado             → current   (destaque, gato-guia, única clicável)
+//   liberado             → current   (destaque, única clicável)
 //   aguardando_revisao   → current   (clicável; a jornada mostra a tela de espera)
 //   bloqueado            → locked    (adormecida, não morta — sem clique)
 
@@ -30,14 +29,29 @@ function stationState(status) {
   return 'current'
 }
 
-export function renderModules(root, { childName, modules, onOpenModule, onOpenSettings }) {
+export function renderModules(root, { childName, modules, onOpenModule, onOpenSettings, initialPageIndex }) {
+  const currentModuleIndex = Math.max(
+    modules.findIndex((m) => m.status === 'liberado' || m.status === 'aguardando_revisao'),
+    0,
+  )
+  // Volta pra página que a criança estava vendo (não necessariamente o
+  // módulo jogável), senão o carrossel "reinicia" toda vez que ela volta
+  // de configurações ou da trilha.
+  const startIndex = initialPageIndex ?? currentModuleIndex
+
   const scenesHtml = modules
     .map((module, index) => {
-      const visual = getModuleVisual(index)
+      const visual = getLandmarkPreset(index)
+      const env = visual.environment
       const state = stationState(module.status)
       const clickable = state === 'current'
       const tag = clickable ? 'button' : 'section'
       const attrs = clickable ? `type="button" data-module-id="${module.id}"` : ''
+
+      // O título pedagógico vem do banco — o landmark é cenário, não
+      // conteúdo. Só cai pro nome do preset se o módulo não tiver título
+      // próprio (não deveria acontecer com dado real).
+      const moduleTitle = module.trail_modules?.title ?? visual.label
 
       const badge =
         state === 'locked'
@@ -46,39 +60,36 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
             ? `<span class="module-scene__check" aria-hidden="true">${CHECK_SVG}</span>`
             : ''
 
-      // Só a estação atual ganha o gato-guia — é a única pergunta que a
-      // criança precisa responder de relance: "é aqui que eu continuo".
-      // Posição/tamanho vêm do module-visuals.js (cada silhueta é diferente).
-      const mascot =
-        state === 'current'
-          ? `<img class="module-scene__mascot" src="${visual.mascot}" alt="" aria-hidden="true" />`
-          : ''
-
       const sel = visual.selection
       const sceneStyle = [
-        `--module-accent:${visual.accent}`,
-        `--station-width:${sel.stationWidth}`,
-        `--station-y:${sel.stationY}`,
-        `--mascot-x:${sel.mascotX}`,
-        `--mascot-y:${sel.mascotY}`,
-        `--mascot-width:${sel.mascotWidth}`,
-        `--mascot-flip:${sel.mascotFlip ? -1 : 1}`,
+        `--landmark-width:${sel.landmarkWidth}`,
+        `--landmark-y:${sel.landmarkY}`,
+        `--sky-top:${env.skyTop}`,
+        `--sky-bottom:${env.skyBottom}`,
+        `--horizon:${env.horizon}`,
+        `--glow:${env.glow}`,
+        `--stars:${env.stars}`,
+        `--clouds:${env.clouds}`,
       ].join(';')
 
       return `
-        <${tag} class="module-scene module-scene--${state}" ${attrs} style="${sceneStyle}" aria-label="${escapeHtml(visual.title)} — ${STATUS_TEXT[module.status] ?? ''}">
+        <${tag}
+          class="module-scene module-scene--${state} module-scene--${env.celestial}"
+          ${attrs}
+          style="${sceneStyle}"
+          aria-label="${escapeHtml(moduleTitle)} — ${STATUS_TEXT[module.status] ?? ''}"
+        >
           <div class="module-scene__sky" aria-hidden="true"></div>
 
           <div class="module-scene__content">
             <div class="module-scene__art">
               <img class="module-scene__station" src="${visual.image}" alt="" aria-hidden="true" />
               ${badge}
-              ${mascot}
             </div>
 
             <div class="module-scene__copy">
-              <span class="module-scene__eyebrow">Módulo ${index + 1}</span>
-              <h2>${escapeHtml(visual.title)}</h2>
+              <span class="module-scene__eyebrow">Módulo ${index + 1} de ${modules.length}</span>
+              <h2>${escapeHtml(moduleTitle)}</h2>
               <p>${STATUS_TEXT[module.status] ?? ''}</p>
             </div>
           </div>
@@ -87,13 +98,15 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
     })
     .join('')
 
+  const dotsHtml = modules.map((_, i) => `<span class="modules-dots__dot" data-dot="${i}"></span>`).join('')
+
   root.innerHTML = `
     <div class="screen screen--modules">
       <header class="modules-header">
         <img src="${logoImg}" alt="" />
         <div>
-          <h1>${SPACE_CHAPTER_TITLE}</h1>
-          <p>Jornada de ${escapeHtml(childName)}</p>
+          <h1>Jornada de ${escapeHtml(childName)}</h1>
+          <p>Escolha seu próximo módulo</p>
         </div>
         <button class="modules-header__settings" type="button" aria-label="Abrir configurações">⚙</button>
       </header>
@@ -101,6 +114,10 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
       <main class="modules-scenes">
         ${scenesHtml}
       </main>
+
+      <button class="modules-arrow modules-arrow--prev" type="button" data-modules-arrow="prev" aria-label="Módulo anterior">‹</button>
+      <button class="modules-arrow modules-arrow--next" type="button" data-modules-arrow="next" aria-label="Próximo módulo">›</button>
+      <div class="modules-dots" aria-hidden="true">${dotsHtml}</div>
     </div>
   `
 
@@ -113,5 +130,41 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
 
   root.querySelector('.modules-header__settings')?.addEventListener('click', () => onOpenSettings?.())
 
-  root.querySelector('.module-scene--current')?.scrollIntoView({ block: 'start' })
+  // Carrossel horizontal (Duolingo ABC), não rolagem vertical — uma cena
+  // por página, setas + pontos + swipe nativo do scroll-snap.
+  const scroller = root.querySelector('.modules-scenes')
+  const dots = [...root.querySelectorAll('[data-dot]')]
+  const prevBtn = root.querySelector('[data-modules-arrow="prev"]')
+  const nextBtn = root.querySelector('[data-modules-arrow="next"]')
+  const lastIndex = modules.length - 1
+  let page = startIndex
+
+  function setPage(index, behavior) {
+    page = Math.max(0, Math.min(lastIndex, index))
+    scroller.scrollTo({ left: page * scroller.clientWidth, behavior })
+    updateControls()
+  }
+
+  function updateControls() {
+    dots.forEach((dot, i) => dot.classList.toggle('is-active', i === page))
+    prevBtn.disabled = page <= 0
+    nextBtn.disabled = page >= lastIndex
+  }
+
+  prevBtn?.addEventListener('click', () => setPage(page - 1, 'smooth'))
+  nextBtn?.addEventListener('click', () => setPage(page + 1, 'smooth'))
+
+  // Swipe/arraste nativo (scroll-snap) também precisa manter os pontos e
+  // as setas sincronizados — só os cliques nas setas não bastam.
+  let syncRaf = null
+  scroller.addEventListener('scroll', () => {
+    if (syncRaf) return
+    syncRaf = requestAnimationFrame(() => {
+      page = Math.round(scroller.scrollLeft / scroller.clientWidth)
+      updateControls()
+      syncRaf = null
+    })
+  })
+
+  setPage(startIndex, 'auto')
 }

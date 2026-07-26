@@ -13,7 +13,7 @@ import { claimPairingCode, getPairedChildContext } from './services/pairing.js'
 import { getChildTrail, getChildTrailModules, getModuleMissions } from './services/trails.js'
 import { getChildActivity } from './services/activities.js'
 import { createActivityExecution } from './services/executions.js'
-import { getModuleVisual } from './config/module-visuals.js'
+import { getLandmarkPreset } from './config/module-visuals.js'
 
 // Fluxo: pareamento → seleção de módulos → trilha do módulo → atividade →
 // trilha atualizada (ou módulos → configurações). O banco continua
@@ -28,7 +28,7 @@ const appState = {
   currentModule: null,
   openModule: null,
   screen: 'loading',
-  modulesScrollTop: null,
+  modulesPageIndex: null,
 }
 
 export async function initApp(root) {
@@ -131,24 +131,21 @@ function showModules(root) {
   appState.screen = 'modules'
   appState.openModule = null
 
+  // A criança não deveria sentir que o carrossel "reiniciou" ao voltar —
+  // manda a página que ela estava vendo (não necessariamente o módulo
+  // jogável). Na primeira vez ainda não existe uma, e aí renderModules
+  // decide sozinho (módulo atual).
   renderModules(root, {
     childName: appState.context.primeiro_nome,
     modules: appState.modules,
+    initialPageIndex: appState.modulesPageIndex ?? undefined,
     onOpenModule: (module) => showJourney(root, module),
     onOpenSettings: () => showSettings(root),
   })
-
-  // A criança não deveria sentir que a tela "recomeçou" ao voltar — restaura
-  // a posição de antes, se já existir uma (na primeira vez ainda não tem,
-  // e aí o scrollIntoView pro módulo atual dentro de renderModules já resolve).
-  if (appState.modulesScrollTop != null) {
-    const scroller = root.querySelector('.modules-scenes')
-    if (scroller) scroller.scrollTop = appState.modulesScrollTop
-  }
 }
 
 function showSettings(root) {
-  rememberModulesScroll(root)
+  rememberModulesPage(root)
   appState.screen = 'settings'
 
   renderSettings(root, {
@@ -156,15 +153,16 @@ function showSettings(root) {
   })
 }
 
-function rememberModulesScroll(root) {
-  const scrollTop = root.querySelector('.modules-scenes')?.scrollTop
-  if (scrollTop != null) appState.modulesScrollTop = scrollTop
+function rememberModulesPage(root) {
+  const scroller = root.querySelector('.modules-scenes')
+  if (!scroller || !scroller.clientWidth) return
+  appState.modulesPageIndex = Math.round(scroller.scrollLeft / scroller.clientWidth)
 }
 
 async function showJourney(root, module) {
   if (!module || module.status === 'bloqueado') return
 
-  rememberModulesScroll(root)
+  rememberModulesPage(root)
   appState.openModule = module
 
   renderLoading(root)
@@ -178,7 +176,7 @@ async function showJourney(root, module) {
       trail: appState.trail,
       currentModule: module,
       missions,
-      moduleVisual: getModuleVisual(moduleIndex),
+      moduleVisual: getLandmarkPreset(moduleIndex),
 
       onBack: () => showModules(root),
 

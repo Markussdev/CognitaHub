@@ -1,9 +1,9 @@
 // Harness temporário só pra visualizar as telas do mapa sem precisar de
 // sessão/pareamento reais. NÃO faz parte do app — apagar depois do teste.
 //
-// Reproduz o mesmo controle de tela/scroll do app.js real (showModules /
-// showJourney / showSettings / rememberModulesScroll) com dados falsos no
-// lugar do Supabase, pra testar a restauração de posição de verdade.
+// Reproduz o mesmo controle de tela/página do app.js real (showModules /
+// showJourney / showSettings / rememberModulesPage) com dados falsos no
+// lugar do Supabase, pra testar a restauração de página de verdade.
 import './styles/tokens.css'
 import './styles/base.css'
 import './styles/screens.css'
@@ -13,14 +13,16 @@ import './styles/settings.css'
 import { renderModules } from './screens/modules.js'
 import { renderJourney } from './screens/journey.js'
 import { renderSettings } from './screens/settings.js'
-import { getModuleVisual } from './config/module-visuals.js'
+import { getLandmarkPreset } from './config/module-visuals.js'
 
 const modules = [
   { id: 'm1', status: 'concluido', trail_modules: { position: 1, title: 'Números de 1 a 5' } },
   { id: 'm2', status: 'concluido', trail_modules: { position: 2, title: 'Contagem até 5' } },
   { id: 'm3', status: 'liberado', trail_modules: { position: 3, title: 'Contagem até 10' } },
   { id: 'm4', status: 'bloqueado', trail_modules: { position: 4, title: 'Comparar quantidades' } },
-  { id: 'm5', status: 'bloqueado', trail_modules: { position: 5, title: 'Revisão do capítulo' } },
+  { id: 'm5', status: 'bloqueado', trail_modules: { position: 5, title: 'Leitura e livros' } },
+  { id: 'm6', status: 'bloqueado', trail_modules: { position: 6, title: 'Dinossauros gigantes' } },
+  { id: 'm7', status: 'bloqueado', trail_modules: { position: 7, title: 'Revisão do capítulo' } },
 ]
 
 const missions = [
@@ -30,36 +32,33 @@ const missions = [
 ]
 
 const root = document.querySelector('#app')
-const appState = { modulesScrollTop: null }
+const appState = { modulesPageIndex: null }
 
-function rememberModulesScroll() {
-  const scrollTop = root.querySelector('.modules-scenes')?.scrollTop
-  if (scrollTop != null) appState.modulesScrollTop = scrollTop
+function rememberModulesPage() {
+  const scroller = root.querySelector('.modules-scenes')
+  if (!scroller || !scroller.clientWidth) return
+  appState.modulesPageIndex = Math.round(scroller.scrollLeft / scroller.clientWidth)
 }
 
 function showModules() {
   renderModules(root, {
     childName: 'Weligtom',
     modules,
+    initialPageIndex: appState.modulesPageIndex ?? undefined,
     onOpenModule: showJourney,
     onOpenSettings: showSettings,
   })
-
-  if (appState.modulesScrollTop != null) {
-    const scroller = root.querySelector('.modules-scenes')
-    if (scroller) scroller.scrollTop = appState.modulesScrollTop
-  }
 }
 
 function showJourney(module) {
-  rememberModulesScroll()
+  rememberModulesPage()
   const idx = modules.findIndex((m) => m.id === module.id)
   renderJourney(root, {
     childName: 'Weligtom',
     trail: { status: 'ativa' },
     currentModule: module,
     missions,
-    moduleVisual: getModuleVisual(idx),
+    moduleVisual: getLandmarkPreset(idx),
     onBack: showModules,
     onOpenMission: () => {},
     onRefresh: () => {},
@@ -67,7 +66,7 @@ function showJourney(module) {
 }
 
 function showSettings() {
-  rememberModulesScroll()
+  rememberModulesPage()
   renderSettings(root, { onBack: showModules })
 }
 

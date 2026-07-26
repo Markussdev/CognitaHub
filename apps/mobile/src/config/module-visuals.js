@@ -1,79 +1,148 @@
-// Identidade visual das estações do Cap 1 ("Céu dos Números").
+// Registro de landmarks (prédios-cenário) — um por tema, não por posição
+// de capítulo. O tutor escolhe o tema por módulo (trail_modules.visual_key,
+// coluna que já existe no banco desde a fase 5, só nunca foi usada); até
+// essa ligação existir (etapa 3), resolvemos por índice de posição.
 //
-// O pareamento com os módulos do banco é por índice ordenado (position) —
-// módulo 1 = launch, módulo 2 = abacus, e assim por diante. Quando o
-// catálogo ganhar um visual_key próprio, a chave `key` daqui vira o elo;
-// até lá, índice resolve sem migration.
+// `environment` é o "céu" inteiro daquele tema — quase tudo desenhado em
+// CSS (gradiente, sol/lua, estrelas, nuvens, horizonte, glow). Nenhum
+// prédio precisa de um fundo pintado só pra ele.
 //
-// `selection` e `journey` separam como a MESMA estação aparece em cada
-// tela — protagonista na seleção de módulos, coadjuvante (landmark) dentro
-// da trilha. Nunca é o mesmo tamanho nas duas.
+// `selection` é como o landmark aparece na seleção de módulos (grande,
+// protagonista). O tamanho dele dentro da trilha (pequeno, coadjuvante)
+// ainda não foi redesenhado pra esse registro novo — ver journey.js.
 
-import launchImg from '../assets/space/module-launch.webp'
-import abacusImg from '../assets/space/module-abacus.webp'
-import observatoryImg from '../assets/space/module-observatory.webp'
-import crystalLabImg from '../assets/space/module-crystal-lab.webp'
-import portalImg from '../assets/space/module-number-portal.webp'
+import abacoImg from '../assets/landmarks/abaco.png'
+import baseImg from '../assets/landmarks/base.png'
+import biblioImg from '../assets/landmarks/biblio.png'
+import cinemaImg from '../assets/landmarks/cinema.png'
+import dinossauroImg from '../assets/landmarks/dinossauro.png'
+import observationImg from '../assets/landmarks/observation.png'
+import parqueImg from '../assets/landmarks/parque.png'
 
-// Só "explore" existe por enquanto — "guide" reaproveita o mesmo arquivo
-// até alguém gerar uma pose de verdade apontando (a criação original pediu
-// só essa, espelhada em CSS pro lado esquerdo/direito).
-import astronautExplore from '../assets/mascot/astronaut-explore.webp'
-
-const astronautGuide = astronautExplore
-
-export const SPACE_CHAPTER_TITLE = 'Céu dos Números'
-
-export const SPACE_MODULE_VISUALS = [
+export const LANDMARK_PRESETS = [
   {
-    key: 'launch',
-    title: 'Base de Lançamento',
-    image: launchImg,
-    accent: '#ffcf7a',
-    mascot: astronautGuide,
-    selection: { stationWidth: '300px', stationY: '56dvh', mascotX: '3%', mascotY: '1%', mascotWidth: '60px', mascotFlip: false },
-    journey: { landmarkWidth: '118px' },
+    key: 'base',
+    label: 'Base Espacial',
+    image: baseImg,
+    environment: {
+      period: 'dawn', // madrugada azulada
+      skyTop: '#0d1b4d',
+      skyBottom: '#3a4f9e',
+      horizon: '#7f94d1',
+      celestial: 'moon',
+      stars: 0.6,
+      clouds: 0.2,
+      glow: '#7ac9ff',
+    },
+    selection: { landmarkWidth: '300px', landmarkY: '56dvh' },
   },
   {
-    key: 'abacus',
-    title: 'Estação do Ábaco',
-    image: abacusImg,
-    accent: '#b9c8f5',
-    mascot: astronautGuide,
-    selection: { stationWidth: '292px', stationY: '55dvh', mascotX: '79%', mascotY: '1%', mascotWidth: '58px', mascotFlip: true },
-    journey: { landmarkWidth: '112px' },
+    key: 'abaco',
+    label: 'Escola do Ábaco',
+    image: abacoImg,
+    environment: {
+      period: 'morning', // manhã clara
+      skyTop: '#5ba3d9',
+      skyBottom: '#bfe3f5',
+      horizon: '#eaf6ff',
+      celestial: 'sun',
+      stars: 0,
+      clouds: 0.5,
+      glow: '#fff3b0',
+    },
+    selection: { landmarkWidth: '300px', landmarkY: '56dvh' },
   },
   {
-    key: 'observatory',
-    title: 'Observatório da Contagem',
-    image: observatoryImg,
-    accent: '#6fa0d8',
-    mascot: astronautGuide,
-    selection: { stationWidth: '300px', stationY: '56dvh', mascotX: '4%', mascotY: '1%', mascotWidth: '58px', mascotFlip: false },
-    journey: { landmarkWidth: '118px' },
+    key: 'observation',
+    label: 'Observatório',
+    image: observationImg,
+    environment: {
+      period: 'night', // noite estrelada
+      skyTop: '#11183f',
+      skyBottom: '#6068ad',
+      horizon: '#9299d4',
+      celestial: 'moon',
+      stars: 1,
+      clouds: 0.1,
+      glow: '#a384ff',
+    },
+    selection: { landmarkWidth: '300px', landmarkY: '55dvh' },
   },
   {
-    key: 'crystal-lab',
-    title: 'Laboratório dos Cristais',
-    image: crystalLabImg,
-    accent: '#a8e0e8',
-    mascot: astronautGuide,
-    selection: { stationWidth: '292px', stationY: '56dvh', mascotX: '78%', mascotY: '1%', mascotWidth: '56px', mascotFlip: true },
-    journey: { landmarkWidth: '112px' },
+    key: 'biblio',
+    label: 'Biblioteca',
+    image: biblioImg,
+    environment: {
+      period: 'afternoon', // fim de tarde calmo
+      skyTop: '#5c6f9e',
+      skyBottom: '#e8b98d',
+      horizon: '#f3d9b8',
+      celestial: 'sun',
+      stars: 0,
+      clouds: 0.4,
+      glow: '#ffcf8a',
+    },
+    selection: { landmarkWidth: '292px', landmarkY: '55dvh' },
   },
   {
-    key: 'number-portal',
-    title: 'Portal dos Números',
-    image: portalImg,
-    accent: '#ffd76d',
-    mascot: astronautGuide,
-    selection: { stationWidth: '278px', stationY: '54dvh', mascotX: '3%', mascotY: '1%', mascotWidth: '60px', mascotFlip: false },
-    journey: { landmarkWidth: '108px' },
+    key: 'cinema',
+    label: 'Cinema',
+    image: cinemaImg,
+    environment: {
+      period: 'night',
+      skyTop: '#141233',
+      skyBottom: '#3c3570',
+      horizon: '#6a5a9e',
+      celestial: 'moon',
+      stars: 1,
+      clouds: 0.1,
+      glow: '#ff6fae',
+    },
+    selection: { landmarkWidth: '292px', landmarkY: '55dvh' },
+  },
+  {
+    key: 'dinossauro',
+    label: 'Museu dos Dinossauros',
+    image: dinossauroImg,
+    environment: {
+      period: 'day', // dia, verde e quente
+      skyTop: '#4f8fd9',
+      skyBottom: '#d7edb8',
+      horizon: '#eef7cf',
+      celestial: 'sun',
+      stars: 0,
+      clouds: 0.3,
+      glow: '#ffe08a',
+    },
+    selection: { landmarkWidth: '300px', landmarkY: '56dvh' },
+  },
+  {
+    key: 'parque',
+    label: 'Parque de Diversões',
+    image: parqueImg,
+    environment: {
+      period: 'sunset',
+      skyTop: '#6175ca',
+      skyBottom: '#ffc58d',
+      horizon: '#a5b9dc',
+      celestial: 'sun',
+      stars: 0,
+      clouds: 0.7,
+      glow: '#ffd36f',
+    },
+    selection: { landmarkWidth: '278px', landmarkY: '54dvh' },
   },
 ]
 
-// Trilhas com mais módulos que assets reaproveitam a última estação em vez
-// de quebrar — melhor um visual repetido que um mapa sem imagem.
-export function getModuleVisual(moduleIndex) {
-  return SPACE_MODULE_VISUALS[moduleIndex] ?? SPACE_MODULE_VISUALS[SPACE_MODULE_VISUALS.length - 1]
+// Trilhas com mais módulos que presets reaproveitam o último em vez de
+// quebrar — melhor um visual repetido que um mapa sem imagem. Quando
+// visual_key existir de verdade (etapa 3), isso vira uma busca por key
+// com o índice só como fallback.
+export function getLandmarkPreset(moduleIndex) {
+  const preset = LANDMARK_PRESETS[moduleIndex] ?? LANDMARK_PRESETS[LANDMARK_PRESETS.length - 1]
+
+  // journey.js (etapa 4, ainda não mexida) lê `.title` — mantém como
+  // alias de `.label` só pra não regredir silenciosamente o cabeçalho da
+  // trilha interna enquanto essa tela não é redesenhada pro registro novo.
+  return { ...preset, title: preset.label }
 }
