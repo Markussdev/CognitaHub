@@ -183,6 +183,13 @@ export function renderJourney(root, { childName, trail, currentModule, missions,
           ${nodesHtml}
         </div>
       </div>
+
+      <nav class="journey-scroll-controls" aria-label="Navegação pela trilha">
+        <button type="button" data-journey-scroll="up" aria-label="Subir na trilha">↑</button>
+        <span class="journey-scroll-controls__progress">${Math.max(currentIndex + 1, 1)} / ${displayMissions.length}</span>
+        <button type="button" data-journey-scroll="current" aria-label="Voltar à missão atual">●</button>
+        <button type="button" data-journey-scroll="down" aria-label="Descer na trilha">↓</button>
+      </nav>
     </div>
   `
 
@@ -196,7 +203,22 @@ export function renderJourney(root, { childName, trail, currentModule, missions,
 
   const nodeEls = root.querySelectorAll('.mission-node')
   const scrollTarget = currentIndex >= 0 ? nodeEls[currentIndex] : root.querySelector('.journey-landmark')
-  scrollTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  scrollTarget?.scrollIntoView({ behavior: 'auto', block: 'center' })
+
+  // Setinhas laterais só aparecem em telas largas (desktop) — no celular
+  // a rolagem por toque/roda já resolve, os botões só ocupariam espaço.
+  const journeyScreen = root.querySelector('.screen--journey')
+  const scrollAmount = () => Math.max(380, journeyScreen.clientHeight * 0.72)
+
+  root.querySelector('[data-journey-scroll="up"]')?.addEventListener('click', () => {
+    journeyScreen.scrollBy({ top: -scrollAmount(), behavior: 'smooth' })
+  })
+  root.querySelector('[data-journey-scroll="down"]')?.addEventListener('click', () => {
+    journeyScreen.scrollBy({ top: scrollAmount(), behavior: 'smooth' })
+  })
+  root.querySelector('[data-journey-scroll="current"]')?.addEventListener('click', () => {
+    scrollTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  })
 }
 
 // Tela curta, não o mapa inteiro de novo — a criança já viu o caminho

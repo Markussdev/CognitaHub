@@ -23,10 +23,25 @@
   color: var(--warm-white);
 }
 
+/* .journey-world recebe a altura real da trilha via style inline (pode
+   passar de 2000px com muitas missões) — mas ele é filho flex de
+   .screen--journey (display:flex;flex-direction:column, de base.css) e
+   tem overflow:hidden. Sem flex-shrink:0, isso zera o "automatic minimum
+   size" do item e o flexbox comprime a trilha inteira pra caber na tela
+   em vez de deixar .screen rolar. A trilha via inteira, minúscula — não
+   era problema de excesso de nós, era o flexbox esmagando a altura. */
+.screen--journey {
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  scroll-behavior: smooth;
+  touch-action: pan-y;
+}
+
 .journey-header {
   position: sticky;
   top: 0;
   z-index: 20;
+  flex-shrink: 0;
   width: min(100%, 480px);
   margin-inline: auto;
   padding: 14px 16px 10px;
@@ -102,6 +117,7 @@
 
 .journey-world {
   position: relative;
+  flex-shrink: 0;
   width: min(100%, 480px);
   margin-inline: auto;
   overflow: hidden;
@@ -435,5 +451,57 @@ button.mission-node--available:active .mission-node__btn {
 
   .journey-header__context {
     font-size: 10px;
+  }
+}
+
+/* Navegação lateral — só desktop. No celular, roda/toque já resolve; os
+   botões só ocupariam espaço numa tela que já é justa. */
+.journey-scroll-controls {
+  display: none;
+}
+
+@media (min-width: 760px) {
+  .journey-scroll-controls {
+    position: fixed;
+    top: 50%;
+    left: calc(50% + 258px);
+    z-index: 30;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    background: rgba(10, 14, 58, 0.72);
+    box-shadow: 0 12px 30px rgba(5, 9, 40, 0.25);
+    backdrop-filter: blur(12px);
+  }
+
+  .journey-scroll-controls button {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--warm-white);
+    font-size: 20px;
+  }
+
+  .journey-scroll-controls button:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .journey-scroll-controls button:active {
+    transform: translateY(2px);
+  }
+
+  .journey-scroll-controls__progress {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 11px;
+    font-weight: 700;
   }
 }
