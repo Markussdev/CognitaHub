@@ -52,6 +52,9 @@ export const LANDMARK_PRESETS = [
       contactWidth: '46%',
       contactOpacity: '0.14',
     },
+    // Tamanho dentro da trilha interna (pequeno, ao lado dos nós) — valor
+    // inicial pro landmark showcase, ainda vai mudar por landmark.
+    journey: { landmarkWidth: '158px' },
   },
   {
     key: 'abaco',
@@ -82,6 +85,7 @@ export const LANDMARK_PRESETS = [
       contactWidth: '52%',
       contactOpacity: '0.12',
     },
+    journey: { landmarkWidth: '150px' },
   },
   {
     key: 'observation',
@@ -98,6 +102,7 @@ export const LANDMARK_PRESETS = [
       glow: '#a384ff',
     },
     selection: { landmarkWidth: '300px', landmarkY: '55dvh' },
+    journey: { landmarkWidth: '148px' },
   },
   {
     key: 'biblio',
@@ -114,6 +119,7 @@ export const LANDMARK_PRESETS = [
       glow: '#ffcf8a',
     },
     selection: { landmarkWidth: '292px', landmarkY: '55dvh' },
+    journey: { landmarkWidth: '148px' },
   },
   {
     key: 'cinema',
@@ -130,6 +136,7 @@ export const LANDMARK_PRESETS = [
       glow: '#ff6fae',
     },
     selection: { landmarkWidth: '292px', landmarkY: '55dvh' },
+    journey: { landmarkWidth: '152px' },
   },
   {
     key: 'dinossauro',
@@ -146,6 +153,7 @@ export const LANDMARK_PRESETS = [
       glow: '#ffe08a',
     },
     selection: { landmarkWidth: '300px', landmarkY: '56dvh' },
+    journey: { landmarkWidth: '158px' },
   },
   {
     key: 'parque',
@@ -162,6 +170,7 @@ export const LANDMARK_PRESETS = [
       glow: '#ffd36f',
     },
     selection: { landmarkWidth: '278px', landmarkY: '54dvh' },
+    journey: { landmarkWidth: '154px' },
   },
 ]
 

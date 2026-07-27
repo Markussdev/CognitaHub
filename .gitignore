@@ -5,3 +5,6 @@ claude.md
 node_modules
 dist
 js/test/
+.env
+.env.*
+!.env.example

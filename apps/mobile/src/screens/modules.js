@@ -41,7 +41,11 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
 
   const scenesHtml = modules
     .map((module, index) => {
-      const visual = getLandmarkPreset(index)
+      // No landmark showcase (dev), o array tem um módulo por preset mas
+      // fora de ordem/reaproveitando um módulo real só — visualIndex fixa
+      // qual preset mostrar independente da posição no carrossel.
+      const visualIndex = module.visualIndex ?? index
+      const visual = getLandmarkPreset(visualIndex)
       const env = visual.environment
       const ground = visual.ground ?? {
         type: 'plain',

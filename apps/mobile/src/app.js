@@ -13,7 +13,7 @@ import { claimPairingCode, getPairedChildContext } from './services/pairing.js'
 import { getChildTrail, getChildTrailModules, getModuleMissions } from './services/trails.js'
 import { getChildActivity } from './services/activities.js'
 import { createActivityExecution } from './services/executions.js'
-import { getLandmarkPreset } from './config/module-visuals.js'
+import { LANDMARK_PRESETS, getLandmarkPreset } from './config/module-visuals.js'
 
 // Fluxo: pareamento → seleção de módulos → trilha do módulo → atividade →
 // trilha atualizada (ou módulos → configurações). O banco continua
@@ -29,6 +29,39 @@ const appState = {
   openModule: null,
   screen: 'loading',
   modulesPageIndex: null,
+}
+
+// Laboratório visual dos 7 landmarks — só em dev, via
+// ?landmarkShowcase=1 (combinar com ?journeyNodes=12 pra ver cada um como
+// destino de uma trilha longa). Não grava nada no Supabase: pega um módulo
+// real (pra ter missões de verdade pra abrir) e clona ele 7x, um por
+// preset, todos liberados.
+const LANDMARK_SHOWCASE_ENABLED =
+  import.meta.env.DEV && new URLSearchParams(window.location.search).get('landmarkShowcase') === '1'
+
+function buildLandmarkShowcaseModules(realModules) {
+  const sourceModule =
+    realModules.find((module) => module.status === 'liberado' || module.status === 'aguardando_revisao') ??
+    realModules.find((module) => module.status !== 'bloqueado') ??
+    realModules[0]
+
+  if (!sourceModule) return realModules
+
+  return LANDMARK_PRESETS.map((preset, index) => ({
+    ...sourceModule,
+    id: `landmark-showcase-${preset.key}`, // id só do carrossel
+    sourceModuleId: sourceModule.id, // id real, usado pra buscar as missões
+    visualIndex: index, // fixa o preset certo, não depende da posição
+    visualShowcase: true, // marca "não existe no banco" pro resto do app
+    status: 'liberado',
+    trail_modules: {
+      ...sourceModule.trail_modules,
+      id: `landmark-showcase-template-${preset.key}`,
+      position: index + 1,
+      title: preset.label,
+      objective: `Teste visual do tema ${preset.label}`,
+    },
+  }))
 }
 
 export async function initApp(root) {
@@ -96,7 +129,8 @@ async function boot(root) {
     }
 
     const trail = await getChildTrail(context.child_trail_id)
-    const modules = await getChildTrailModules(context.child_trail_id)
+    const realModules = await getChildTrailModules(context.child_trail_id)
+    const modules = LANDMARK_SHOWCASE_ENABLED ? buildLandmarkShowcaseModules(realModules) : realModules
     const currentModule = modules.find((module) => module.status !== 'concluido') ?? modules.at(-1)
 
     Object.assign(appState, { session, context, trail, modules, currentModule })
@@ -167,8 +201,12 @@ async function showJourney(root, module) {
 
   renderLoading(root)
   try {
-    const missions = await getModuleMissions(module.id)
-    const moduleIndex = appState.modules.findIndex((item) => item.id === module.id)
+    // No showcase, o módulo do carrossel é sintético — as missões vêm do
+    // módulo real por trás dele, mas o preset visual é o do landmark
+    // sendo testado, não o da posição real desse módulo.
+    const sourceModuleId = module.sourceModuleId ?? module.id
+    const missions = await getModuleMissions(sourceModuleId)
+    const moduleIndex = module.visualIndex ?? appState.modules.findIndex((item) => item.id === module.id)
 
     appState.screen = 'journey'
     renderJourney(root, {
@@ -185,30 +223,34 @@ async function showJourney(root, module) {
         boot(root)
       },
 
-      async onOpenMission(activityId) {
-        renderLoading(root)
-        try {
-          const activity = await getChildActivity(activityId)
-          appState.screen = 'mission'
-          renderMission(root, {
-            activity,
-            onExit: () => showJourney(root, module),
-
-            async onComplete(result) {
-              await createActivityExecution({
+      // Módulo sintético = nada de abrir atividade real nem gravar
+      // execução no Supabase — o mapa só existe pra avaliar o visual.
+      onOpenMission: module.visualShowcase
+        ? undefined
+        : async (activityId) => {
+            renderLoading(root)
+            try {
+              const activity = await getChildActivity(activityId)
+              appState.screen = 'mission'
+              renderMission(root, {
                 activity,
-                executedBy: appState.session.user.id,
-                durationSeconds: result.durationSeconds,
-              })
+                onExit: () => showJourney(root, module),
 
-              renderLoading(root)
-              await reloadJourney(root, module.id)
-            },
-          })
-        } catch (err) {
-          showError(root, err)
-        }
-      },
+                async onComplete(result) {
+                  await createActivityExecution({
+                    activity,
+                    executedBy: appState.session.user.id,
+                    durationSeconds: result.durationSeconds,
+                  })
+
+                  renderLoading(root)
+                  await reloadJourney(root, module.id)
+                },
+              })
+            } catch (err) {
+              showError(root, err)
+            }
+          },
     })
   } catch (err) {
     showError(root, err)
