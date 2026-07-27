@@ -43,6 +43,7 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
     .map((module, index) => {
       const visual = getLandmarkPreset(index)
       const env = visual.environment
+      const surface = visual.surface
       const state = stationState(module.status)
       const clickable = state === 'current'
       const tag = clickable ? 'button' : 'section'
@@ -70,7 +71,21 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
         `--glow:${env.glow}`,
         `--stars:${env.stars}`,
         `--clouds:${env.clouds}`,
+        ...(surface
+          ? [
+              `--surface-top:${surface.top}`,
+              `--surface-edge:${surface.edge}`,
+              `--surface-detail:${surface.detail}`,
+              `--surface-width:${surface.width}`,
+              `--surface-height:${surface.height}`,
+              `--surface-bottom:${surface.bottom}`,
+            ]
+          : []),
       ].join(';')
+
+      const surfaceHtml = surface
+        ? `<div class="module-scene__surface module-scene__surface--${surface.type}" aria-hidden="true"></div>`
+        : ''
 
       return `
         <${tag}
@@ -83,6 +98,7 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
 
           <div class="module-scene__content">
             <div class="module-scene__art">
+              ${surfaceHtml}
               <img class="module-scene__station" src="${visual.image}" alt="" aria-hidden="true" />
               ${badge}
             </div>
@@ -134,6 +150,7 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
   // por página, setas + pontos + swipe nativo do scroll-snap.
   const scroller = root.querySelector('.modules-scenes')
   const dots = [...root.querySelectorAll('[data-dot]')]
+  const scenes = [...root.querySelectorAll('.module-scene')]
   const prevBtn = root.querySelector('[data-modules-arrow="prev"]')
   const nextBtn = root.querySelector('[data-modules-arrow="next"]')
   const lastIndex = modules.length - 1
@@ -147,6 +164,7 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
 
   function updateControls() {
     dots.forEach((dot, i) => dot.classList.toggle('is-active', i === page))
+    scenes.forEach((scene, i) => scene.classList.toggle('is-active-page', i === page))
     prevBtn.disabled = page <= 0
     nextBtn.disabled = page >= lastIndex
   }
