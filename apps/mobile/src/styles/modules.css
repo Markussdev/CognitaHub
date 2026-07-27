@@ -3,10 +3,10 @@
    seu próprio ambiente (céu/sol-lua/estrelas/nuvens/horizonte), definido
    como custom properties por cena em module-visuals.js + modules.js.
 
-   Camadas de trás pra frente: .module-scene::before (horizonte) →
-   .module-scene__sky (estrelas) → .module-scene::after (sol/lua) →
-   .module-scene__clouds (nuvens) → .module-scene__content (landmark +
-   título), z-index 0/0/1/1/2 nessa ordem. */
+   Camadas de trás pra frente: .module-scene__sky (estrelas) →
+   .module-scene::after (sol/lua) → .module-scene__clouds (nuvens) →
+   .module-scene__ground (terreno) → .module-scene__content (landmark +
+   título), z-index 0/1/1/1/2 nessa ordem. */
 
 .screen--modules {
   position: relative;
@@ -112,20 +112,6 @@
   background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
 }
 
-/* Horizonte — cor própria do ambiente, não mais fixa. */
-.module-scene::before {
-  content: '';
-  position: absolute;
-  z-index: 0;
-  left: -15%;
-  right: -15%;
-  bottom: -18%;
-  height: 38%;
-  border-radius: 50% 50% 0 0;
-  background: radial-gradient(ellipse at 50% 0%, var(--horizon), transparent 72%);
-  pointer-events: none;
-}
-
 /* Sol ou lua — mesmo elemento, cor/textura decide qual é. */
 .module-scene::after {
   content: '';
@@ -174,9 +160,66 @@
   pointer-events: none;
   opacity: var(--clouds, 0);
   background-image:
-    radial-gradient(ellipse 90px 34px at 20% 20%, rgba(255, 255, 255, 0.85), transparent 70%),
-    radial-gradient(ellipse 70px 28px at 78% 14%, rgba(255, 255, 255, 0.78), transparent 70%),
-    radial-gradient(ellipse 110px 40px at 55% 28%, rgba(255, 255, 255, 0.65), transparent 70%);
+    radial-gradient(circle 22px at 15% 18%, rgba(255, 255, 255, 0.78) 0 62%, transparent 68%),
+    radial-gradient(circle 28px at 21% 17%, rgba(255, 255, 255, 0.82) 0 62%, transparent 68%),
+    radial-gradient(ellipse 78px 20px at 19% 21%, rgba(255, 255, 255, 0.76) 0 62%, transparent 68%),
+    radial-gradient(circle 18px at 74% 13%, rgba(255, 255, 255, 0.7) 0 62%, transparent 68%),
+    radial-gradient(circle 23px at 79% 12%, rgba(255, 255, 255, 0.76) 0 62%, transparent 68%),
+    radial-gradient(ellipse 64px 17px at 77% 15%, rgba(255, 255, 255, 0.7) 0 62%, transparent 68%),
+    radial-gradient(circle 24px at 51% 25%, rgba(255, 255, 255, 0.62) 0 62%, transparent 68%),
+    radial-gradient(circle 30px at 57% 24%, rgba(255, 255, 255, 0.68) 0 62%, transparent 68%),
+    radial-gradient(ellipse 88px 22px at 55% 28%, rgba(255, 255, 255, 0.62) 0 62%, transparent 68%);
+}
+
+.module-scene__ground {
+  position: absolute;
+  top: var(--ground-start, 67%);
+  right: -18%;
+  bottom: -8%;
+  left: -18%;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: 50% 50% 0 0 / 11% 11% 0 0;
+  background: linear-gradient(180deg, var(--ground-top), var(--ground-bottom));
+  box-shadow: inset 0 10px 18px rgba(255, 255, 255, 0.13);
+  opacity: var(--ground-opacity, 1);
+  transform-origin: bottom;
+  pointer-events: none;
+}
+
+.module-scene__ground--plain {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 18%),
+    linear-gradient(180deg, var(--ground-top), var(--ground-bottom));
+}
+
+.module-scene__ground--lunar {
+  background:
+    radial-gradient(ellipse 38px 15px at 24% 17%, rgba(76, 94, 151, 0.46) 0 43%, rgba(220, 230, 250, 0.18) 48% 57%, transparent 61%),
+    radial-gradient(ellipse 26px 11px at 72% 31%, rgba(76, 94, 151, 0.38) 0 43%, rgba(220, 230, 250, 0.14) 48% 57%, transparent 61%),
+    radial-gradient(ellipse 48px 18px at 88% 70%, rgba(76, 94, 151, 0.3) 0 43%, transparent 53%),
+    linear-gradient(180deg, var(--ground-top), var(--ground-bottom));
+}
+
+.module-scene__ground--schoolyard {
+  background:
+    radial-gradient(circle at 18% 20%, rgba(232, 246, 199, 0.52) 0 3px, transparent 4px),
+    radial-gradient(circle at 81% 34%, rgba(232, 246, 199, 0.42) 0 3px, transparent 4px),
+    linear-gradient(180deg, var(--ground-top), var(--ground-bottom));
+}
+
+.module-scene__ground--schoolyard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 54%;
+  transform: translateX(-50%);
+  clip-path: polygon(43% 0, 57% 0, 100% 100%, 0 100%);
+  background:
+    repeating-linear-gradient(180deg, transparent 0 36px, rgba(105, 115, 125, 0.14) 37px 39px),
+    linear-gradient(180deg, #f0f2f4, var(--ground-detail));
 }
 
 /* ---- conteúdo: landmark ancorado, título preso no rodapé ---- */
@@ -194,75 +237,17 @@
    independente do tamanho do título ou de quantas linhas ele quebra. */
 .module-scene__art {
   position: absolute;
+  z-index: 2;
   top: var(--landmark-y, clamp(330px, 56dvh, 480px));
   left: 50%;
   width: min(68vw, var(--landmark-width, 300px));
   margin: 0;
-  isolation: isolate;
   transform: translate(-50%, -50%);
   transition: transform 120ms ease;
 }
 
 .module-scene--current:active .module-scene__art {
   transform: translate(-50%, -50%) scale(0.985);
-}
-
-.module-scene__surface {
-  position: absolute;
-  bottom: var(--surface-bottom, -7px);
-  left: 50%;
-  z-index: 0;
-  width: var(--surface-width, 112%);
-  height: var(--surface-height, 64px);
-  border-radius: 50%;
-  background: var(--surface-top);
-  box-shadow:
-    0 10px 0 var(--surface-edge),
-    0 22px 24px rgba(7, 12, 45, 0.24);
-  opacity: var(--surface-opacity, 1);
-  transform: translateX(-50%);
-  transform-origin: center;
-  pointer-events: none;
-}
-
-.module-scene__surface::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-.module-scene__surface--lunar {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.24), transparent 54%),
-    var(--surface-top);
-}
-
-.module-scene__surface--lunar::before {
-  background:
-    radial-gradient(ellipse 19px 8px at 23% 42%, rgba(75, 94, 151, 0.38) 0 45%, rgba(224, 232, 249, 0.28) 50% 68%, transparent 72%),
-    radial-gradient(ellipse 13px 6px at 69% 30%, rgba(75, 94, 151, 0.32) 0 44%, rgba(224, 232, 249, 0.24) 50% 68%, transparent 72%),
-    radial-gradient(ellipse 16px 7px at 84% 61%, rgba(75, 94, 151, 0.3) 0 44%, rgba(224, 232, 249, 0.22) 50% 68%, transparent 72%);
-}
-
-.module-scene__surface--schoolyard {
-  background:
-    radial-gradient(circle at 18% 26%, rgba(232, 246, 199, 0.55) 0 2px, transparent 3px),
-    radial-gradient(circle at 79% 36%, rgba(232, 246, 199, 0.45) 0 2px, transparent 3px),
-    linear-gradient(180deg, #9bcf78, var(--surface-top));
-}
-
-.module-scene__surface--schoolyard::before {
-  top: 4%;
-  right: 29%;
-  bottom: 0;
-  left: 29%;
-  border-radius: 3px 3px 44% 44%;
-  background:
-    repeating-linear-gradient(180deg, transparent 0 12px, rgba(112, 122, 132, 0.18) 13px 14px),
-    linear-gradient(180deg, #eef1f4, var(--surface-detail));
-  clip-path: polygon(41% 0, 59% 0, 94% 100%, 6% 100%);
 }
 
 .module-scene__station {
@@ -277,23 +262,23 @@
     drop-shadow(0 0 20px color-mix(in srgb, var(--glow) 24%, transparent));
 }
 
-.module-scene.is-active-page .module-scene__surface {
-  animation: module-surface-enter 240ms ease-out both;
+.module-scene.is-active-page .module-scene__ground {
+  animation: module-ground-enter 240ms ease-out both;
 }
 
 .module-scene.is-active-page .module-scene__station {
   animation: module-landmark-enter 280ms 45ms ease-out both;
 }
 
-@keyframes module-surface-enter {
+@keyframes module-ground-enter {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(9px) scaleX(0.92);
+    transform: translateY(16px) scaleY(0.98);
   }
 
   to {
-    opacity: var(--surface-opacity, 1);
-    transform: translateX(-50%) translateY(0) scaleX(1);
+    opacity: var(--ground-opacity, 1);
+    transform: translateY(0) scaleY(1);
   }
 }
 
@@ -312,7 +297,7 @@
 .module-scene__copy {
   position: absolute;
   right: 18px;
-  bottom: calc(16px + env(safe-area-inset-bottom));
+  bottom: calc(46px + env(safe-area-inset-bottom));
   left: 18px;
   z-index: 4;
   min-height: auto;
@@ -362,17 +347,17 @@
 }
 
 .module-scene--locked {
-  --station-opacity: 0.5;
-  --surface-opacity: 0.68;
-  box-shadow: inset 0 0 0 999px rgba(14, 20, 65, 0.16);
+  --station-opacity: 0.74;
+  --ground-opacity: 0.88;
+  box-shadow: inset 0 0 0 999px rgba(14, 20, 65, 0.08);
 }
 
 .module-scene--locked .module-scene__station {
-  filter: saturate(0.25) brightness(0.68) drop-shadow(0 12px 12px rgba(7, 12, 45, 0.14));
+  filter: saturate(0.62) brightness(0.86) drop-shadow(0 12px 12px rgba(7, 12, 45, 0.14));
 }
 
-.module-scene--locked .module-scene__surface {
-  filter: saturate(0.45) brightness(0.78);
+.module-scene--locked .module-scene__ground {
+  filter: saturate(0.74) brightness(0.9);
 }
 
 .module-scene__lock,
@@ -442,7 +427,7 @@
 .modules-dots {
   position: fixed;
   left: 50%;
-  bottom: calc(20px + env(safe-area-inset-bottom));
+  bottom: calc(17px + env(safe-area-inset-bottom));
   z-index: 25;
   transform: translateX(-50%);
   display: flex;
@@ -450,18 +435,21 @@
 }
 
 .modules-dots__dot {
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.68);
   transition:
+    width 180ms ease,
     background 150ms ease,
     transform 150ms ease;
 }
 
 .modules-dots__dot.is-active {
+  width: 24px;
+  border-radius: 999px;
   background: var(--warm-white);
-  transform: scale(1.3);
+  transform: none;
 }
 
 @media (max-width: 360px) {
@@ -477,6 +465,10 @@
 }
 
 @media (max-height: 700px) {
+  .module-scene__ground {
+    top: var(--ground-start-small, 64%);
+  }
+
   .module-scene__art {
     top: var(--landmark-y-small, 53dvh);
     width: min(62vw, var(--landmark-width, 280px));
@@ -488,7 +480,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .module-scene.is-active-page .module-scene__surface,
+  .module-scene.is-active-page .module-scene__ground,
   .module-scene.is-active-page .module-scene__station {
     animation: none;
   }

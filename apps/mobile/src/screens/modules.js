@@ -43,7 +43,14 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
     .map((module, index) => {
       const visual = getLandmarkPreset(index)
       const env = visual.environment
-      const surface = visual.surface
+      const ground = visual.ground ?? {
+        type: 'plain',
+        top: env.horizon,
+        bottom: env.horizon,
+        detail: env.horizon,
+        start: '67%',
+        startSmall: '64%',
+      }
       const state = stationState(module.status)
       const clickable = state === 'current'
       const tag = clickable ? 'button' : 'section'
@@ -67,25 +74,15 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
         `--landmark-y:${sel.landmarkY}`,
         `--sky-top:${env.skyTop}`,
         `--sky-bottom:${env.skyBottom}`,
-        `--horizon:${env.horizon}`,
         `--glow:${env.glow}`,
         `--stars:${env.stars}`,
         `--clouds:${env.clouds}`,
-        ...(surface
-          ? [
-              `--surface-top:${surface.top}`,
-              `--surface-edge:${surface.edge}`,
-              `--surface-detail:${surface.detail}`,
-              `--surface-width:${surface.width}`,
-              `--surface-height:${surface.height}`,
-              `--surface-bottom:${surface.bottom}`,
-            ]
-          : []),
+        `--ground-top:${ground.top}`,
+        `--ground-bottom:${ground.bottom}`,
+        `--ground-detail:${ground.detail}`,
+        `--ground-start:${ground.start}`,
+        `--ground-start-small:${ground.startSmall}`,
       ].join(';')
-
-      const surfaceHtml = surface
-        ? `<div class="module-scene__surface module-scene__surface--${surface.type}" aria-hidden="true"></div>`
-        : ''
 
       return `
         <${tag}
@@ -95,10 +92,11 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
           aria-label="${escapeHtml(moduleTitle)} — ${STATUS_TEXT[module.status] ?? ''}"
         >
           <div class="module-scene__sky" aria-hidden="true"></div>
+          <div class="module-scene__clouds" aria-hidden="true"></div>
+          <div class="module-scene__ground module-scene__ground--${ground.type}" aria-hidden="true"></div>
 
           <div class="module-scene__content">
             <div class="module-scene__art">
-              ${surfaceHtml}
               <img class="module-scene__station" src="${visual.image}" alt="" aria-hidden="true" />
               ${badge}
             </div>

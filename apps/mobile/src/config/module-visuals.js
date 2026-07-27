@@ -4,8 +4,11 @@
 // essa ligação existir (etapa 3), resolvemos por índice de posição.
 //
 // `environment` é o "céu" inteiro daquele tema — quase tudo desenhado em
-// CSS (gradiente, sol/lua, estrelas, nuvens, horizonte, glow). Nenhum
+// CSS (gradiente, sol/lua, estrelas, nuvens, glow). Nenhum
 // prédio precisa de um fundo pintado só pra ele.
+//
+// `ground` prolonga o cenário até o rodapé e ancora o landmark. Temas
+// ainda sem terreno próprio recebem um fallback baseado no horizonte.
 //
 // `selection` é como o landmark aparece na seleção de módulos (grande,
 // protagonista). O tamanho dele dentro da trilha (pequeno, coadjuvante)
@@ -34,14 +37,13 @@ export const LANDMARK_PRESETS = [
       clouds: 0.2,
       glow: '#7ac9ff',
     },
-    surface: {
+    ground: {
       type: 'lunar',
       top: '#a7b8df',
-      edge: '#6176ad',
-      detail: '#7188bb',
-      width: '112%',
-      height: '64px',
-      bottom: '-7px',
+      bottom: '#7188bb',
+      detail: '#6176ad',
+      start: '67%',
+      startSmall: '64%',
     },
     selection: { landmarkWidth: '300px', landmarkY: '56dvh' },
   },
@@ -59,14 +61,13 @@ export const LANDMARK_PRESETS = [
       clouds: 0.5,
       glow: '#fff3b0',
     },
-    surface: {
+    ground: {
       type: 'schoolyard',
-      top: '#7fbd68',
-      edge: '#4f874d',
-      detail: '#d9dde5',
-      width: '116%',
-      height: '64px',
-      bottom: '-7px',
+      top: '#91c978',
+      bottom: '#5c9257',
+      detail: '#e2e5e9',
+      start: '67%',
+      startSmall: '64%',
     },
     selection: { landmarkWidth: '300px', landmarkY: '56dvh' },
   },
