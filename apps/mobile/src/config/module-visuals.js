@@ -21,6 +21,10 @@ import cinemaImg from '../assets/landmarks/cinema.png'
 import dinossauroImg from '../assets/landmarks/dinossauro.png'
 import observationImg from '../assets/landmarks/observation.png'
 import parqueImg from '../assets/landmarks/parque.png'
+import libraryTreesBack from '../assets/landmarks/library-trees-back.png'
+import libraryPages from '../assets/landmarks/library-pages.png'
+import dinoFoliageBack from '../assets/landmarks/dino-foliage-back.png'
+import dinoFootprints from '../assets/landmarks/dino-footprints.png'
 
 export const LANDMARK_PRESETS = [
   {
@@ -93,15 +97,29 @@ export const LANDMARK_PRESETS = [
     image: observationImg,
     environment: {
       period: 'night', // noite estrelada
-      skyTop: '#11183f',
-      skyBottom: '#6068ad',
-      horizon: '#9299d4',
+      skyTop: '#0a0e2e',
+      skyBottom: '#484d8f',
+      horizon: '#7076b8',
       celestial: 'moon',
       stars: 1,
       clouds: 0.1,
       glow: '#a384ff',
     },
-    selection: { landmarkWidth: '300px', landmarkY: '55dvh' },
+    ground: {
+      type: 'rocky',
+      top: '#454873',
+      bottom: '#262a52',
+      detail: '#34386a',
+      start: '66%',
+      startSmall: '63%',
+    },
+    selection: {
+      landmarkWidth: '300px',
+      landmarkY: '55dvh',
+      contactBottom: '16%',
+      contactWidth: '50%',
+      contactOpacity: '0.16',
+    },
     journey: { landmarkWidth: '148px' },
   },
   {
@@ -109,33 +127,83 @@ export const LANDMARK_PRESETS = [
     label: 'Biblioteca',
     image: biblioImg,
     environment: {
-      period: 'afternoon', // fim de tarde calmo
+      period: 'afternoon', // fim de tarde calmo, sem disco solar — o
+      // aconchego vem da luz quente do gradiente, não de uma aventura
+      // espacial com bola gigante no céu.
       skyTop: '#5c6f9e',
       skyBottom: '#e8b98d',
       horizon: '#f3d9b8',
-      celestial: 'sun',
+      celestial: 'none',
       stars: 0,
       clouds: 0.4,
       glow: '#ffcf8a',
     },
-    selection: { landmarkWidth: '292px', landmarkY: '55dvh' },
+    ground: {
+      type: 'plaza',
+      top: '#f0dcb8',
+      bottom: '#c9a06e',
+      detail: '#fbead0',
+      start: '67%',
+      startSmall: '64%',
+    },
+    selection: {
+      landmarkWidth: '292px',
+      landmarkY: '55dvh',
+      contactBottom: '15%',
+      contactWidth: '50%',
+      contactOpacity: '0.13',
+    },
     journey: { landmarkWidth: '148px' },
+    // Camada de árvores distante atrás do prédio + páginas soltas
+    // flutuando — só pra tirar a sensação de "planeta bege vazio".
+    scenery: [
+      {
+        src: libraryTreesBack,
+        bottom: '30%',
+        width: '94%',
+        opacity: '0.85',
+        className: 'module-scene__scenery--backdrop',
+      },
+      {
+        src: libraryPages,
+        top: '20%',
+        right: '6%',
+        width: '104px',
+        opacity: '0.92',
+        className: 'module-scene__scenery--float',
+      },
+    ],
   },
   {
     key: 'cinema',
     label: 'Cinema',
     image: cinemaImg,
     environment: {
-      period: 'night',
+      period: 'night', // fundo urbano noturno — sem lua rosa, a
+      // personalidade vem dos holofotes de estreia (ver .module-scene--theme-cinema no CSS).
       skyTop: '#141233',
       skyBottom: '#3c3570',
       horizon: '#6a5a9e',
-      celestial: 'moon',
+      celestial: 'none',
       stars: 1,
       clouds: 0.1,
       glow: '#ff6fae',
     },
-    selection: { landmarkWidth: '292px', landmarkY: '55dvh' },
+    ground: {
+      type: 'carpet',
+      top: '#2a2440',
+      bottom: '#161227',
+      detail: '#c31432',
+      start: '67%',
+      startSmall: '64%',
+    },
+    selection: {
+      landmarkWidth: '292px',
+      landmarkY: '55dvh',
+      contactBottom: '15%',
+      contactWidth: '48%',
+      contactOpacity: '0.16',
+    },
     journey: { landmarkWidth: '152px' },
   },
   {
@@ -152,8 +220,42 @@ export const LANDMARK_PRESETS = [
       clouds: 0.3,
       glow: '#ffe08a',
     },
-    selection: { landmarkWidth: '300px', landmarkY: '56dvh' },
+    ground: {
+      type: 'wild',
+      top: '#8fb56a',
+      bottom: '#4f7a3d',
+      detail: '#c9a066',
+      start: '66%',
+      startSmall: '63%',
+    },
+    selection: {
+      landmarkWidth: '300px',
+      landmarkY: '56dvh',
+      contactBottom: '14%',
+      contactWidth: '54%',
+      contactOpacity: '0.14',
+    },
     journey: { landmarkWidth: '158px' },
+    // Vegetação atrás do museu + trilha de pegadas na frente — o museu
+    // vira parte de um parque paleontológico, não um prédio sozinho num
+    // planeta verde-claro.
+    scenery: [
+      {
+        src: dinoFoliageBack,
+        bottom: '31%',
+        width: '98%',
+        opacity: '0.9',
+        className: 'module-scene__scenery--backdrop',
+      },
+      {
+        src: dinoFootprints,
+        bottom: '17%',
+        left: '36%',
+        width: '124px',
+        opacity: '0.5',
+        rotate: '4deg',
+      },
+    ],
   },
   {
     key: 'parque',
@@ -169,7 +271,21 @@ export const LANDMARK_PRESETS = [
       clouds: 0.7,
       glow: '#ffd36f',
     },
-    selection: { landmarkWidth: '278px', landmarkY: '54dvh' },
+    ground: {
+      type: 'carnival',
+      top: '#d8c7e8',
+      bottom: '#8ca8cf',
+      detail: '#f4d36d',
+      start: '67%',
+      startSmall: '64%',
+    },
+    selection: {
+      landmarkWidth: '286px',
+      landmarkY: '58.4dvh',
+      contactBottom: '13%',
+      contactWidth: '60%',
+      contactOpacity: '0.13',
+    },
     journey: { landmarkWidth: '154px' },
   },
 ]

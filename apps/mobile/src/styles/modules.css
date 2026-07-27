@@ -134,6 +134,82 @@
   opacity: 0.85;
 }
 
+/* Tema decide não ter astro no céu (ex.: Cinema, que troca o astro por
+   holofotes) — sem isso, todo tema cai num sol/lua genérico do mesmo
+   tamanho, mesmo quando a identidade pede outra coisa. */
+.module-scene--none::after {
+  display: none;
+}
+
+/* Observatório: lua pequena e discreta, não a esfera roxa gigante — o
+   protagonismo é do prédio e das estrelas, não do astro. */
+.module-scene--theme-observation::after {
+  top: 9%;
+  right: -14px;
+  width: 74px;
+  opacity: 0.75;
+}
+
+/* Cinema: holofotes de estreia no lugar do astro — dois feixes cruzando
+   devagar atrás do prédio, feitos só com os pseudo-elementos da cena (sem
+   asset novo). Vem depois de --none pra vencer o display:none. */
+.module-scene--theme-cinema::before,
+.module-scene--theme-cinema::after {
+  content: '';
+  display: block;
+  position: absolute;
+  z-index: 1;
+  bottom: 40%;
+  width: 48px;
+  height: 60%;
+  clip-path: polygon(44% 100%, 56% 100%, 100% 0, 0 0);
+  background: linear-gradient(to top, rgba(255, 214, 130, 0.34), transparent 78%);
+  filter: blur(2px);
+  transform-origin: 50% 100%;
+  pointer-events: none;
+}
+
+.module-scene--theme-cinema::before {
+  left: 20%;
+  animation: cinema-searchlight-left 7s ease-in-out infinite;
+}
+
+.module-scene--theme-cinema::after {
+  right: 20%;
+  animation: cinema-searchlight-right 7s ease-in-out infinite;
+  animation-delay: -3.5s;
+}
+
+@keyframes cinema-searchlight-left {
+  0%,
+  100% {
+    transform: rotate(-22deg);
+  }
+
+  50% {
+    transform: rotate(6deg);
+  }
+}
+
+@keyframes cinema-searchlight-right {
+  0%,
+  100% {
+    transform: rotate(20deg);
+  }
+
+  50% {
+    transform: rotate(-8deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .module-scene--theme-cinema::before,
+  .module-scene--theme-cinema::after {
+    animation: none;
+    transform: rotate(-8deg);
+  }
+}
+
 /* Estrelas — densidade por tema via --stars (0-1), independente do
    horizonte/sol-lua (por isso é elemento próprio, não pseudo-elemento
    compartilhado com eles). */
@@ -244,6 +320,156 @@
   background:
     repeating-linear-gradient(180deg, transparent 0 36px, rgba(105, 115, 125, 0.14) 37px 39px),
     linear-gradient(180deg, #f0f2f4, var(--ground-detail));
+}
+
+/* Observatório: colina de pedra escura, sem caminho — só as crateras/
+   pedregulhos (mesmo truque do --lunar, cores mais frias e escuras). */
+.module-scene__ground--rocky {
+  background:
+    radial-gradient(ellipse 42px 16px at 20% 22%, rgba(18, 20, 42, 0.4) 0 45%, transparent 58%),
+    radial-gradient(ellipse 30px 13px at 68% 38%, rgba(18, 20, 42, 0.32) 0 45%, transparent 58%),
+    radial-gradient(ellipse 52px 20px at 85% 68%, rgba(18, 20, 42, 0.26) 0 45%, transparent 55%),
+    linear-gradient(180deg, var(--ground-top), var(--ground-bottom));
+}
+
+/* Biblioteca: praça de pedra clara com um caminho até a porta — mesma
+   ideia do --schoolyard, tom quente de pedra em vez de grama. */
+.module-scene__ground--plaza {
+  background:
+    radial-gradient(circle at 16% 24%, rgba(255, 255, 255, 0.4) 0 3px, transparent 4px),
+    radial-gradient(circle at 83% 40%, rgba(255, 255, 255, 0.3) 0 3px, transparent 4px),
+    linear-gradient(180deg, var(--ground-top), var(--ground-bottom));
+}
+
+.module-scene__ground--plaza::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 46%;
+  transform: translateX(-50%);
+  clip-path: polygon(45% 0, 55% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, var(--ground-detail), var(--ground-bottom));
+}
+
+/* Cinema: calçada escura + tapete vermelho (com barrinha dourada) até a
+   entrada — a única cena com "evento" acontecendo no chão. */
+.module-scene__ground--carpet {
+  background: linear-gradient(180deg, var(--ground-top), var(--ground-bottom));
+}
+
+.module-scene__ground--carpet::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 40%;
+  transform: translateX(-50%);
+  clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
+  background: #e8b84b;
+}
+
+.module-scene__ground--carpet::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 34%;
+  transform: translateX(-50%);
+  clip-path: polygon(43% 0, 57% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, var(--ground-detail), #7c0e1f);
+}
+
+/* Museu dos Dinossauros: grama viva com trilha de terra — vira parque
+   paleontológico, não só um gramado genérico. */
+.module-scene__ground--wild {
+  background:
+    radial-gradient(circle at 20% 22%, rgba(255, 255, 255, 0.22) 0 4px, transparent 5px),
+    radial-gradient(circle at 78% 36%, rgba(255, 255, 255, 0.18) 0 3px, transparent 4px),
+    radial-gradient(circle at 60% 16%, rgba(255, 255, 255, 0.16) 0 3px, transparent 4px),
+    linear-gradient(180deg, var(--ground-top), var(--ground-bottom));
+}
+
+.module-scene__ground--wild::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 38%;
+  transform: translateX(-50%);
+  clip-path: polygon(41% 0, 59% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, var(--ground-detail), var(--ground-bottom));
+  opacity: 0.75;
+}
+
+/* Parque de Diversões: praça colorida com caminho dourado — festivo, não
+   um planeta liso. */
+.module-scene__ground--carnival {
+  background:
+    radial-gradient(circle at 22% 20%, rgba(255, 255, 255, 0.3) 0 3px, transparent 4px),
+    radial-gradient(circle at 76% 32%, rgba(255, 255, 255, 0.24) 0 3px, transparent 4px),
+    linear-gradient(180deg, var(--ground-top), var(--ground-bottom));
+}
+
+.module-scene__ground--carnival::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 50%;
+  transform: translateX(-50%);
+  clip-path: polygon(44% 0, 56% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, var(--ground-detail), var(--ground-bottom));
+  opacity: 0.8;
+}
+
+/* ---- cenário entre o terreno e o prédio (árvores, folhagem, pegadas) ---- */
+
+.module-scene__scenery {
+  position: absolute;
+  z-index: 1;
+  top: var(--scenery-top, auto);
+  right: var(--scenery-right, auto);
+  bottom: var(--scenery-bottom, auto);
+  left: var(--scenery-left, auto);
+  width: var(--scenery-width, 200px);
+  opacity: var(--scenery-opacity, 1);
+  transform: rotate(var(--scenery-rotate, 0deg));
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Camadas largas de fundo (árvores, folhagem) — sempre centralizadas
+   atrás do prédio, não posicionadas ponto a ponto como pegadas/páginas. */
+.module-scene__scenery--backdrop {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.module-scene__scenery--float {
+  animation: module-scenery-float 6s ease-in-out infinite;
+}
+
+@keyframes module-scenery-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .module-scene__scenery--float {
+    animation: none;
+  }
 }
 
 /* ---- conteúdo: landmark ancorado, título preso no rodapé ---- */
@@ -373,6 +599,17 @@
   color: rgba(255, 255, 255, 0.86);
   font-size: 13px;
   font-weight: 700;
+}
+
+/* Temas com fundo mais claro no rodapé (tarde/dia/pôr do sol) perdem
+   contraste com o texto branco padrão — sombra mais forte em vez de
+   escurecer o texto, pra manter os 7 temas com a mesma cor de texto. */
+.module-scene--theme-biblio .module-scene__copy,
+.module-scene--theme-dinossauro .module-scene__copy,
+.module-scene--theme-parque .module-scene__copy {
+  text-shadow:
+    0 2px 10px rgba(20, 16, 8, 0.55),
+    0 1px 3px rgba(0, 0, 0, 0.45);
 }
 
 .module-scene--current {

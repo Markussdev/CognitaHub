@@ -72,6 +72,30 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
             ? `<span class="module-scene__check" aria-hidden="true">${CHECK_SVG}</span>`
             : ''
 
+      // Camada de cenário entre o terreno e o prédio (árvores, folhagem,
+      // pegadas, páginas) — cada preset decide se usa, não é obrigatório.
+      const sceneryHtml = (visual.scenery ?? [])
+        .map(
+          (item) => `
+            <img
+              src="${item.src}"
+              alt=""
+              aria-hidden="true"
+              class="module-scene__scenery${item.className ? ` ${item.className}` : ''}"
+              style="
+                --scenery-top:${item.top ?? 'auto'};
+                --scenery-left:${item.left ?? 'auto'};
+                --scenery-right:${item.right ?? 'auto'};
+                --scenery-bottom:${item.bottom ?? 'auto'};
+                --scenery-width:${item.width ?? '200px'};
+                --scenery-opacity:${item.opacity ?? '1'};
+                --scenery-rotate:${item.rotate ?? '0deg'};
+              "
+            />
+          `,
+        )
+        .join('')
+
       const sel = visual.selection
       const sceneStyle = [
         `--landmark-width:${sel.landmarkWidth}`,
@@ -93,7 +117,7 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
 
       return `
         <${tag}
-          class="module-scene module-scene--${state} module-scene--${env.celestial}"
+          class="module-scene module-scene--${state} module-scene--${env.celestial ?? 'none'} module-scene--theme-${visual.key}"
           ${attrs}
           style="${sceneStyle}"
           aria-label="${escapeHtml(moduleTitle)} — ${STATUS_TEXT[module.status] ?? ''}"
@@ -101,6 +125,7 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
           <div class="module-scene__sky" aria-hidden="true"></div>
           <div class="module-scene__clouds" aria-hidden="true"></div>
           <div class="module-scene__ground module-scene__ground--${ground.type}" aria-hidden="true"></div>
+          ${sceneryHtml}
 
           <div class="module-scene__content">
             <div class="module-scene__art">
