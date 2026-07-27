@@ -72,6 +72,9 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
       const sceneStyle = [
         `--landmark-width:${sel.landmarkWidth}`,
         `--landmark-y:${sel.landmarkY}`,
+        `--contact-bottom:${sel.contactBottom ?? '10%'}`,
+        `--contact-width:${sel.contactWidth ?? '58%'}`,
+        `--contact-opacity:${sel.contactOpacity ?? '0.18'}`,
         `--sky-top:${env.skyTop}`,
         `--sky-bottom:${env.skyBottom}`,
         `--glow:${env.glow}`,

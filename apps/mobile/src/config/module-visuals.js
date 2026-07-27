@@ -34,7 +34,7 @@ export const LANDMARK_PRESETS = [
       horizon: '#7f94d1',
       celestial: 'moon',
       stars: 0.6,
-      clouds: 0.1,
+      clouds: 0,
       glow: '#7ac9ff',
     },
     ground: {
@@ -45,7 +45,13 @@ export const LANDMARK_PRESETS = [
       start: '67%',
       startSmall: '64%',
     },
-    selection: { landmarkWidth: '300px', landmarkY: '57.2dvh' },
+    selection: {
+      landmarkWidth: '300px',
+      landmarkY: '57.6dvh',
+      contactBottom: '18%',
+      contactWidth: '46%',
+      contactOpacity: '0.14',
+    },
   },
   {
     key: 'abaco',
@@ -58,7 +64,7 @@ export const LANDMARK_PRESETS = [
       horizon: '#eaf6ff',
       celestial: 'sun',
       stars: 0,
-      clouds: 0.26,
+      clouds: 0,
       glow: '#fff3b0',
     },
     ground: {
@@ -69,7 +75,13 @@ export const LANDMARK_PRESETS = [
       start: '67%',
       startSmall: '64%',
     },
-    selection: { landmarkWidth: '300px', landmarkY: '58.6dvh' },
+    selection: {
+      landmarkWidth: '300px',
+      landmarkY: '58.6dvh',
+      contactBottom: '14%',
+      contactWidth: '52%',
+      contactOpacity: '0.12',
+    },
   },
   {
     key: 'observation',
