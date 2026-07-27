@@ -151,7 +151,10 @@
   background-size: 170px 210px, 220px 180px;
 }
 
-/* Nuvens — densidade por tema via --clouds (0-1). */
+/* Nuvens — densidade por tema via --clouds (0-1) na opacidade do
+   elemento pai. Cada bolha é #fff sólido (via box-shadow, não
+   radial-gradient semitransparente) pra interseção entre bolhas não
+   aparecer — a transparência só existe uma vez, na nuvem inteira. */
 .module-scene__clouds {
   position: absolute;
   inset: 0;
@@ -159,16 +162,37 @@
   overflow: hidden;
   pointer-events: none;
   opacity: var(--clouds, 0);
-  background-image:
-    radial-gradient(circle 22px at 15% 18%, rgba(255, 255, 255, 0.78) 0 62%, transparent 68%),
-    radial-gradient(circle 28px at 21% 17%, rgba(255, 255, 255, 0.82) 0 62%, transparent 68%),
-    radial-gradient(ellipse 78px 20px at 19% 21%, rgba(255, 255, 255, 0.76) 0 62%, transparent 68%),
-    radial-gradient(circle 18px at 74% 13%, rgba(255, 255, 255, 0.7) 0 62%, transparent 68%),
-    radial-gradient(circle 23px at 79% 12%, rgba(255, 255, 255, 0.76) 0 62%, transparent 68%),
-    radial-gradient(ellipse 64px 17px at 77% 15%, rgba(255, 255, 255, 0.7) 0 62%, transparent 68%),
-    radial-gradient(circle 24px at 51% 25%, rgba(255, 255, 255, 0.62) 0 62%, transparent 68%),
-    radial-gradient(circle 30px at 57% 24%, rgba(255, 255, 255, 0.68) 0 62%, transparent 68%),
-    radial-gradient(ellipse 88px 22px at 55% 28%, rgba(255, 255, 255, 0.62) 0 62%, transparent 68%);
+  background: none;
+}
+
+/* Cluster de círculos, não um pill com "solavancos" — box-shadow copia a
+   FORMA do elemento base (spread inclusive), então só fica redondo se a
+   base já for um círculo. Um pill como base faz as cópias saírem pill
+   também, lidas como blob, não nuvem. */
+.module-scene__clouds::before,
+.module-scene__clouds::after {
+  content: '';
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    16px 3px 0 3px #fff,
+    32px 5px 0 -3px #fff,
+    -13px 6px 0 -6px #fff,
+    6px -7px 0 -8px #fff;
+}
+
+.module-scene__clouds::before {
+  top: 20%;
+  left: 10%;
+}
+
+.module-scene__clouds::after {
+  top: 14%;
+  right: 14%;
+  transform: scale(0.82);
 }
 
 .module-scene__ground {
@@ -258,8 +282,26 @@
   height: auto;
   opacity: var(--station-opacity, 1);
   filter:
-    drop-shadow(0 14px 14px rgba(7, 12, 45, 0.24))
-    drop-shadow(0 0 20px color-mix(in srgb, var(--glow) 24%, transparent));
+    drop-shadow(0 5px 5px rgba(7, 12, 45, 0.18))
+    drop-shadow(0 0 14px color-mix(in srgb, var(--glow) 18%, transparent));
+}
+
+/* Sombra de contato — cola o prédio no chão em vez de deixá-lo flutuando
+   sobre uma sombra longa. z-index:0, fica atrás do prédio (z-index:1) e
+   na frente do terreno. */
+.module-scene__art::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  bottom: 10%;
+  width: 58%;
+  height: 16px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(20, 29, 70, 0.3), transparent 72%);
+  filter: blur(2px);
+  pointer-events: none;
 }
 
 .module-scene.is-active-page .module-scene__ground {
