@@ -250,7 +250,9 @@
 }
 
 /* Textura repetida na descida — pontinhos na cor de detalhe do terreno
-   pra coluna longa não ficar chapada. background-size repete sozinho. */
+   pra coluna longa não ficar chapada. background-size repete sozinho.
+   Opacidade baixa de propósito: forte demais lê como sujeira/elemento
+   clicável, não como textura de fundo. */
 .journey-world::after {
   content: '';
   position: absolute;
@@ -259,13 +261,24 @@
   bottom: 0;
   left: 0;
   z-index: 1;
-  opacity: 0.4;
+  opacity: 0.16;
   pointer-events: none;
   background-image:
     radial-gradient(circle at 22% 18%, var(--ground-detail, #6176ad) 0 5px, transparent 6px),
     radial-gradient(circle at 78% 46%, var(--ground-detail, #6176ad) 0 4px, transparent 5px),
     radial-gradient(circle at 46% 76%, var(--ground-detail, #6176ad) 0 6px, transparent 7px);
   background-size: 340px 420px;
+}
+
+/* Cinema (tapete escuro) precisa de ainda menos — a mesma opacidade do
+   padrão já lia como manchas no vermelho. Dinossauro (grama clara)
+   aguenta um pouco mais sem virar sujeira. */
+.journey-world--ground-carpet::after {
+  opacity: 0.1;
+}
+
+.journey-world--ground-wild::after {
+  opacity: 0.22;
 }
 
 /* ---- caminho: estrada de terra embaixo, pontilhado de progresso em cima ---- */
@@ -287,14 +300,22 @@
 
 .journey-path__road path {
   stroke: var(--ground-detail, #6176ad);
-  stroke-width: 44;
+  stroke-width: 32;
   stroke-linecap: round;
   fill: none;
-  opacity: 0.5;
+  opacity: 0.38;
+}
+
+/* Cinema é a única cena com "evento" no chão (tapete vermelho) — mantém
+   mais largo e mais opaco que os outros temas, que ficam com uma trilha
+   mais discreta. */
+.journey-world--ground-carpet .journey-path__road path {
+  stroke-width: 36;
+  opacity: 0.62;
 }
 
 .journey-path__seg {
-  stroke-width: 8;
+  stroke-width: 7;
   stroke-linecap: round;
   stroke-dasharray: 0.1 18;
 }
@@ -365,9 +386,11 @@
   z-index: 1;
   display: block;
   width: 100%;
+  /* Sombra curta — a versão anterior descia 9px e fazia o prédio parecer
+     ligeiramente suspenso sobre o horizonte em vez de apoiado nele. */
   filter:
-    drop-shadow(0 9px 10px rgba(7, 12, 45, 0.2))
-    drop-shadow(0 0 14px color-mix(in srgb, var(--glow, #ffcf7a) 16%, transparent));
+    drop-shadow(0 5px 6px rgba(7, 12, 45, 0.18))
+    drop-shadow(0 0 12px color-mix(in srgb, var(--glow, #ffcf7a) 14%, transparent));
 }
 
 /* Sombra de contato — mesma do .module-scene__art::before: cola o prédio
@@ -428,8 +451,8 @@ button.mission-node--available {
 
 .mission-node__btn {
   position: relative;
-  width: 92px;
-  height: 92px;
+  width: 82px;
+  height: 82px;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -441,17 +464,19 @@ button.mission-node--available {
       color-mix(in srgb, var(--ground-bottom, #7188bb) 90%, #000)
     );
   box-shadow:
-    0 8px 0 color-mix(in srgb, var(--ground-bottom, #7188bb) 62%, #000),
-    0 14px 18px rgba(6, 10, 35, 0.22);
+    0 6px 0 color-mix(in srgb, var(--ground-bottom, #7188bb) 62%, #000),
+    0 11px 15px rgba(6, 10, 35, 0.18);
   transition:
     transform 0.08s ease,
     box-shadow 0.08s ease;
 }
 
-/* Mesmos números do .module-scene--locked — é essa regra compartilhada
-   ("adormecido = dessaturado, não cinza") que amarra as duas telas. */
+/* Bloqueado só um pouco dessaturado/escurecido (mesma ideia do
+   .module-scene--locked), não um buraco preto — em terrenos escuros
+   (Cinema) as duas reduções juntas viravam praticamente invisível. */
 .mission-node--locked .mission-node__btn {
-  filter: saturate(0.62) brightness(0.86);
+  opacity: 0.86;
+  filter: saturate(0.72) brightness(0.96);
 }
 
 button.mission-node--available:active .mission-node__btn {
@@ -508,16 +533,16 @@ button.mission-node--available:active .mission-node__btn {
    de cada preset, então Observatório fica roxo, Biblioteca âmbar, Cinema
    rosa, sem uma linha a mais. */
 .mission-node--available .mission-node__btn {
-  width: 100px;
-  height: 100px;
+  width: 90px;
+  height: 90px;
   background:
     radial-gradient(ellipse at 50% 20%, rgba(255, 255, 255, 0.5), transparent 46%),
     linear-gradient(180deg, #fffdf6, color-mix(in srgb, var(--glow, #7ac9ff) 55%, #fff));
   box-shadow:
-    0 9px 0 color-mix(in srgb, var(--glow, #547bd7) 55%, #8a5a12),
-    0 16px 22px rgba(6, 10, 35, 0.26),
-    0 0 0 6px color-mix(in srgb, var(--glow, #ffcf7a) 38%, transparent),
-    0 0 34px 8px color-mix(in srgb, var(--glow, #ffcf7a) 26%, transparent);
+    0 7px 0 color-mix(in srgb, var(--glow, #547bd7) 55%, #8a5a12),
+    0 13px 18px rgba(6, 10, 35, 0.22),
+    0 0 0 5px color-mix(in srgb, var(--glow, #ffcf7a) 32%, transparent),
+    0 0 26px 5px color-mix(in srgb, var(--glow, #ffcf7a) 20%, transparent);
 }
 
 /* Checkpoint bloqueado (missão 4, 8, 12...) mantém o anel dourado — um
@@ -525,8 +550,8 @@ button.mission-node--available:active .mission-node__btn {
    de segundo anel disputando. */
 .mission-node--checkpoint.mission-node--locked .mission-node__btn {
   box-shadow:
-    0 8px 0 color-mix(in srgb, var(--ground-bottom, #7188bb) 62%, #000),
-    0 14px 18px rgba(6, 10, 35, 0.22),
+    0 6px 0 color-mix(in srgb, var(--ground-bottom, #7188bb) 62%, #000),
+    0 11px 15px rgba(6, 10, 35, 0.18),
     0 0 0 6px rgba(255, 207, 122, 0.32);
 }
 
@@ -549,8 +574,8 @@ button.mission-node--available:active .mission-node__btn {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: rgba(38, 5, 31, 0.5);
-  color: var(--warm-white);
+  background: rgba(28, 22, 45, 0.42);
+  color: rgba(255, 255, 255, 0.88);
 }
 
 .mission-node__badge--lock svg {

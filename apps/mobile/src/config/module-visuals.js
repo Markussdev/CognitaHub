@@ -56,9 +56,10 @@ export const LANDMARK_PRESETS = [
       contactWidth: '46%',
       contactOpacity: '0.14',
     },
-    // Tamanho dentro da trilha interna (pequeno, ao lado dos nós) — valor
-    // inicial pro landmark showcase, ainda vai mudar por landmark.
-    journey: { landmarkWidth: '158px' },
+    // Tamanho dentro da trilha interna (pequeno, ao lado dos nós) — ~10-12%
+    // maior que a primeira versão: com os nós menores e o resto mais leve,
+    // o landmark ficava pequeno demais perto da qualidade da arte externa.
+    journey: { landmarkWidth: '174px' },
   },
   {
     key: 'abaco',
@@ -89,7 +90,7 @@ export const LANDMARK_PRESETS = [
       contactWidth: '52%',
       contactOpacity: '0.12',
     },
-    journey: { landmarkWidth: '150px' },
+    journey: { landmarkWidth: '166px' },
   },
   {
     key: 'observation',
@@ -120,7 +121,7 @@ export const LANDMARK_PRESETS = [
       contactWidth: '50%',
       contactOpacity: '0.16',
     },
-    journey: { landmarkWidth: '148px' },
+    journey: { landmarkWidth: '164px' },
   },
   {
     key: 'biblio',
@@ -153,7 +154,7 @@ export const LANDMARK_PRESETS = [
       contactWidth: '52%',
       contactOpacity: '0.11',
     },
-    journey: { landmarkWidth: '148px' },
+    journey: { landmarkWidth: '164px' },
     // Camada de árvores distante atrás do prédio + páginas soltas
     // flutuando — só pra tirar a sensação de "planeta bege vazio". Árvores
     // menores e páginas mais perto do livro no telhado, pra apoiar a
@@ -206,7 +207,7 @@ export const LANDMARK_PRESETS = [
       contactWidth: '48%',
       contactOpacity: '0.16',
     },
-    journey: { landmarkWidth: '152px' },
+    journey: { landmarkWidth: '170px' },
   },
   {
     key: 'dinossauro',
@@ -239,7 +240,7 @@ export const LANDMARK_PRESETS = [
       contactWidth: '54%',
       contactOpacity: '0.12',
     },
-    journey: { landmarkWidth: '158px' },
+    journey: { landmarkWidth: '176px' },
     // Vegetação atrás do museu + trilha de pegadas na frente — o museu
     // vira parte de um parque paleontológico, não um prédio sozinho num
     // planeta verde-claro. Folhagem mais baixa/discreta e pegadas mais
@@ -291,7 +292,7 @@ export const LANDMARK_PRESETS = [
       contactWidth: '60%',
       contactOpacity: '0.13',
     },
-    journey: { landmarkWidth: '154px' },
+    journey: { landmarkWidth: '170px' },
   },
 ]
 
