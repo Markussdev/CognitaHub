@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cadastro do Tutor | Cognita Hub</title>
-  <link rel="icon" type="image/png" href="../assets/logo-icon-transparent.png">
+  <link rel="icon" type="image/png" href="/assets/logo-icon-transparent.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Baloo+2:wght@600;700&display=swap" rel="stylesheet">
@@ -211,7 +211,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
 <header class="auth-hd">
   <div class="wrap row">
     <a class="brand" href="../index.html" aria-label="Cognita Hub — página inicial">
-      <span class="brand-mark"><img src="../assets/logo-icon-transparent.png" alt="" /></span>
+      <span class="brand-mark"><img src="/assets/logo-icon-transparent.png" alt="" /></span>
       <span class="brand-copy"><strong>Cognita Hub</strong><small>TEA + Matemática</small></span>
     </a>
     <div class="auth-hd-right">
@@ -531,7 +531,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
     <!-- ── ETAPA 4 — Candidatura enviada ── -->
     <section class="step-panel" id="panel-4" aria-labelledby="h-s4">
       <div class="success-body">
-        <img class="success-mascot" src="../assets/gato-plaquinha.png" alt="" aria-hidden="true" />
+        <img class="success-mascot" src="/assets/gato-plaquinha.png" alt="" aria-hidden="true" />
         <h2 class="success-title" id="h-s4">Candidatura enviada!</h2>
         <p class="success-lead">A equipe Cognita vai avaliar sua candidatura com cuidado. Você receberá um retorno por e-mail. Confirme também o seu e-mail para garantir o recebimento.</p>
 
@@ -557,10 +557,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
 import { signUp } from '../js/lib/auth.js'
 import { stashPendingSignup } from '../js/lib/pending-signup.js'
 import { submitTutorApplication } from '../js/data/signup.js'
+import { loadDraft, applyDraft, saveDraft, clearDraft, wireDraftAutosave } from '../js/lib/form-draft.js'
 
 (function(){
+  var DRAFT_KEY = 'cognita:draft:cadastro-tutor';
   var TOTAL = 4;
   var wizardForm = document.querySelector('[data-tutor-form]');
+  var draft = loadDraft(DRAFT_KEY);
   var current = 0;
   var panels   = document.querySelectorAll('.step-panel');
   var stpItems = document.querySelectorAll('.stepper-item');
@@ -649,7 +652,7 @@ import { submitTutorApplication } from '../js/data/signup.js'
     if (announce) announce.textContent = 'Etapa ' + (idx+1) + ' de ' + TOTAL + ': ' + stepLabels[idx];
     current = idx;
     window.scrollTo({top: 0, behavior: 'smooth'});
-    sessionStorage.setItem('tt_step', idx);
+    saveDraft(DRAFT_KEY, wizardForm, { step: idx });
   }
 
   function validateStep(panelEl) {
@@ -726,6 +729,7 @@ import { submitTutorApplication } from '../js/data/signup.js'
         btn.textContent = 'Enviar candidatura';
 
         if (!ok) return;
+        clearDraft(DRAFT_KEY);
       } else {
         if (!validateStep(panels[current])) return;
       }
@@ -818,9 +822,14 @@ import { submitTutorApplication } from '../js/data/signup.js'
     });
   }
 
-  // Restaura etapa
-  var saved = parseInt(sessionStorage.getItem('tt_step'), 10);
-  if (!isNaN(saved) && saved > 0 && saved < TOTAL && valueOf('#tt-email')) goTo(saved);
+  // Restaura rascunho (campos já digitados) e depois a etapa em que a
+  // pessoa parou — precisa vir depois dos listeners acima (máscara,
+  // força de senha, alerta de idade) pra reagirem aos valores restaurados.
+  applyDraft(wizardForm, draft);
+  wireDraftAutosave(DRAFT_KEY, wizardForm, function(){ return { step: current }; });
+
+  var savedStep = draft && typeof draft.step === 'number' ? draft.step : NaN;
+  if (!isNaN(savedStep) && savedStep > 0 && savedStep < TOTAL && valueOf('#tt-email')) goTo(savedStep);
 })();
 </script>
 </body>

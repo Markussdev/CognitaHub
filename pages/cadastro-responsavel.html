@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cadastro do Responsavel | Cognita Hub</title>
-  <link rel="icon" type="image/png" href="../assets/logo-icon-transparent.png">
+  <link rel="icon" type="image/png" href="/assets/logo-icon-transparent.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Baloo+2:wght@600;700&display=swap" rel="stylesheet">
@@ -312,7 +312,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
 <header class="auth-hd">
   <div class="wrap row">
     <a class="brand" href="../index.html" aria-label="Cognita Hub — página inicial">
-      <span class="brand-mark"><img src="../assets/logo-icon-transparent.png" alt="" /></span>
+      <span class="brand-mark"><img src="/assets/logo-icon-transparent.png" alt="" /></span>
       <span class="brand-copy"><strong>Cognita Hub</strong><small>TEA + Matemática</small></span>
     </a>
     <div class="auth-hd-right">
@@ -641,7 +641,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
     <!-- ── ETAPA 5 — Enviado ── -->
     <section class="step-panel" id="panel-5" aria-labelledby="h-s5">
       <div class="success-body">
-        <img class="success-mascot" src="../assets/gato-plaquinha.png" alt="" aria-hidden="true" />
+        <img class="success-mascot" src="/assets/gato-plaquinha.png" alt="" aria-hidden="true" />
         <h2 class="success-title" id="h-s5">Cadastro enviado!</h2>
         <p class="success-lead">A equipe Cognita vai revisar as informações e entrar em contato. Confirme também o seu e-mail para garantir o acesso ao painel.</p>
 
@@ -665,10 +665,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
 import { signIn, signUp } from '../js/lib/auth.js'
 import { stashPendingSignup } from '../js/lib/pending-signup.js'
 import { submitGuardianRegistration } from '../js/data/signup.js'
+import { loadDraft, applyDraft, saveDraft, clearDraft, wireDraftAutosave } from '../js/lib/form-draft.js'
 
 (function(){
+  var DRAFT_KEY = 'cognita:draft:cadastro-responsavel';
   var TOTAL = 5;
   var wizardForm = document.querySelector('[data-guardian-form]');
+  var draft = loadDraft(DRAFT_KEY);
   var current = 0;
   var panels  = document.querySelectorAll('.step-panel');
   var stpItems = document.querySelectorAll('.stepper-item');
@@ -791,9 +794,7 @@ import { submitGuardianRegistration } from '../js/data/signup.js'
     current = idx;
     window.scrollTo({top: 0, behavior: 'smooth'});
 
-    // Salva etapa no sessionStorage para preservar progresso
-    // TODO(wiring): substituir por persistência real
-    sessionStorage.setItem('rp_step', idx);
+    saveDraft(DRAFT_KEY, wizardForm, { step: idx });
   }
 
   function validateStep(panelEl) {
@@ -869,6 +870,7 @@ import { submitGuardianRegistration } from '../js/data/signup.js'
         btn.textContent = 'Enviar cadastro';
 
         if (!ok) return;
+        clearDraft(DRAFT_KEY);
       } else {
         if (!validateStep(panels[current])) return;
       }
@@ -1004,9 +1006,15 @@ import { submitGuardianRegistration } from '../js/data/signup.js'
     });
   });
 
-  // Restaura etapa salva (se existir)
-  var saved = parseInt(sessionStorage.getItem('rp_step'), 10);
-  if (!isNaN(saved) && saved > 0 && saved < TOTAL && valueOf('#rp-email')) goTo(saved);
+  // Restaura rascunho (campos já digitados) e depois a etapa em que a
+  // pessoa parou — precisa vir depois dos listeners acima (máscara,
+  // força de senha, alerta de idade, não-sei-informar) pra reagirem
+  // aos valores restaurados.
+  applyDraft(wizardForm, draft);
+  wireDraftAutosave(DRAFT_KEY, wizardForm, function(){ return { step: current }; });
+
+  var savedStep = draft && typeof draft.step === 'number' ? draft.step : NaN;
+  if (!isNaN(savedStep) && savedStep > 0 && savedStep < TOTAL && valueOf('#rp-email')) goTo(savedStep);
 })();
 </script>
 </body>

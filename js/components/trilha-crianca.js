@@ -1,5 +1,6 @@
 import { el } from '../lib/ui.js'
 import { DECORACAO_ESPACIAL } from './trilha-visual-config.js'
+import { emblemaUrl, mascoteUrl, espacoUrl } from '../lib/trilha-assets.js'
 
 // Componente puro (mesmo espírito do trilha-plano.js): não fala com
 // Supabase, não navega sozinho, não conhece PLANOS_REGISTRO. Recebe as
@@ -18,10 +19,6 @@ import { DECORACAO_ESPACIAL } from './trilha-visual-config.js'
 // Continua igual ao antigo em tudo que não depende da contagem: só a
 // missão 'disponivel' é clicável, sem painel técnico, mascote com função
 // narrativa (guia na atual, comemora quando o módulo termina).
-
-const EMBLEMA_BASE = '../assets/trilha/emblemas/'
-const ESPACO_BASE = '../assets/trilha/espaco/'
-const MASCOTE_BASE = '../assets/trilha/mascote/'
 
 const CHECK_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`
 const LOCK_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
@@ -64,7 +61,7 @@ export function renderTrilhaCrianca({ missoes, onOpenMission }) {
 
   const decoLayer = el('div', 'crianca-deco-layer')
   decoLayer.innerHTML = DECORACAO_ESPACIAL.map(({ src, x, y, size, opacity }) => (
-    `<img class="crianca-deco" src="${ESPACO_BASE}${src}.webp" alt="" aria-hidden="true" style="left:${x};top:${y};width:${size}px;height:${size}px;opacity:${opacity};" />`
+    `<img class="crianca-deco" src="${espacoUrl(src)}" alt="" aria-hidden="true" style="left:${x};top:${y};width:${size}px;height:${size}px;opacity:${opacity};" />`
   )).join('')
   wrap.append(decoLayer)
 
@@ -100,7 +97,7 @@ export function renderTrilhaCrianca({ missoes, onOpenMission }) {
       badge.innerHTML = LOCK_SVG
     } else {
       const emblemImg = el('img', 'crianca-emblem-img')
-      emblemImg.src = `${EMBLEMA_BASE}${missao.emblema}.webp`
+      emblemImg.src = emblemaUrl(missao.emblema)
       emblemImg.alt = ''
       badge.append(emblemImg)
     }
@@ -125,7 +122,7 @@ export function renderTrilhaCrianca({ missoes, onOpenMission }) {
   // comemorar substitui na última.
   if (!tudoConcluido && missaoAtualEl) {
     const guia = el('img', 'crianca-guia')
-    guia.src = `${MASCOTE_BASE}guia.webp`
+    guia.src = mascoteUrl('guia')
     guia.alt = ''
     guia.setAttribute('aria-hidden', 'true')
     missaoAtualEl.append(guia)
@@ -133,7 +130,7 @@ export function renderTrilhaCrianca({ missoes, onOpenMission }) {
     const ultimoBtn = nodesLayer.lastElementChild
     if (ultimoBtn) {
       const comemora = el('img', 'crianca-guia')
-      comemora.src = `${MASCOTE_BASE}comemorar.webp`
+      comemora.src = mascoteUrl('comemorar')
       comemora.alt = ''
       comemora.setAttribute('aria-hidden', 'true')
       ultimoBtn.append(comemora)

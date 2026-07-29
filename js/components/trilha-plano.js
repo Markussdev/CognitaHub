@@ -2,6 +2,7 @@ import { el } from '../lib/ui.js'
 import { MOLDES_REGISTRO, formatConfigResumo } from '../data/moldes-registro.js'
 import { STATUS_ETAPA } from '../data/planos-registro.js'
 import { NODE_POSICOES, SEGMENTOS_D, DECORACAO_ESPACIAL } from './trilha-visual-config.js'
+import { emblemaUrl, espacoUrl } from '../lib/trilha-assets.js'
 
 // Componente puro: não importa supabase, não conhece ciclo, não navega.
 // Recebe o plano + status já calculados e devolve um elemento (só mapa +
@@ -9,12 +10,6 @@ import { NODE_POSICOES, SEGMENTOS_D, DECORACAO_ESPACIAL } from './trilha-visual-
 // usa isto, ver js/pages/trilha.js). Quem chama decide quando "Preparar
 // atividade" bloqueia (podePreparar) e o que fazer com a etapa escolhida
 // (onPrepararEtapa → prefillFromPlano/bridge de URL em tutor.js).
-
-// Caminhos relativos a pages/trilha.html (único lugar que carrega este
-// componente) — mesmo padrão de `img.src = '../assets/...'` já usado em
-// tutor.js, não import de módulo Vite.
-const EMBLEMA_BASE = '../assets/trilha/emblemas/'
-const ESPACO_BASE = '../assets/trilha/espaco/'
 
 const CHECK_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`
 
@@ -53,7 +48,7 @@ export function renderTrilhaPlano({ plano, statuses, podePreparar, onPrepararEta
 
   const decoLayer = el('div', 'trail-deco-layer')
   decoLayer.innerHTML = DECORACAO_ESPACIAL.map(({ src, x, y, size, opacity }) => (
-    `<img class="trail-deco" src="${ESPACO_BASE}${src}.webp" alt="" aria-hidden="true" style="left:${x};top:${y};width:${size}px;height:${size}px;opacity:${opacity};" />`
+    `<img class="trail-deco" src="${espacoUrl(src)}" alt="" aria-hidden="true" style="left:${x};top:${y};width:${size}px;height:${size}px;opacity:${opacity};" />`
   )).join('')
   mapWrap.append(decoLayer)
 
@@ -118,7 +113,7 @@ export function renderTrilhaPlano({ plano, statuses, podePreparar, onPrepararEta
 
       const badge = el('span', 'trail-step-badge')
       const emblemImg = el('img', 'trail-emblem-img')
-      emblemImg.src = `${EMBLEMA_BASE}${etapa.emblema}.webp`
+      emblemImg.src = emblemaUrl(etapa.emblema)
       emblemImg.alt = ''
       badge.append(emblemImg)
       btn.append(badge)

@@ -1,5 +1,6 @@
 import { requireRole, signOut } from '../lib/auth.js'
 import { wireRailToggle } from '../lib/rail.js'
+import logoIconSrc from '../../assets/logo-icon-transparent.png'
 import {
   getPendingTutors,
   getChildrenWaitingReview,
@@ -839,14 +840,27 @@ async function loadAll() {
 }
 
 function fillIdentity() {
-  const name = session.profile.name || 'Equipe Cognita'
-  const set = (sel, val) => { const n = $(sel); if (n) n.textContent = val }
-  set('[data-account-name]', name)
-  const ini = initialsOf(name)
-  const railAv = $('[data-account-avatar]')
-  if (railAv) railAv.textContent = ini
-  const topAv = $('[data-topbar-avatar]')
-  if (topAv) topAv.textContent = ini
+  const rawName = session.profile?.name?.trim()
+  const invalidNames = ['sem nome', 'admin', 'administrador']
+
+  const name = rawName && !invalidNames.includes(rawName.toLowerCase())
+    ? rawName
+    : 'Central Cognita'
+
+  const nameNode = $('[data-account-name]')
+  if (nameNode) nameNode.textContent = name
+
+  const setMascotAvatar = (node) => {
+    if (!node) return
+
+    const img = document.createElement('img')
+    img.src = logoIconSrc
+    img.alt = ''
+    node.replaceChildren(img)
+  }
+
+  setMascotAvatar($('[data-account-avatar]'))
+  setMascotAvatar($('[data-topbar-avatar]'))
 }
 
 async function boot() {

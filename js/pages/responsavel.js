@@ -9,6 +9,7 @@ import cientistaSrc from '../../assets/cat-cientista.png'
 import magoSrc from '../../assets/cat-mago.png'
 import pintorSrc from '../../assets/cat-pintor.png'
 import mascoteSrc from '../../assets/gatomatematico-sem-fundo.png'
+import { emblemaUrl } from '../lib/trilha-assets.js'
 
 // ── Painel da família — devolutiva, não operação ─────────────────────────────
 // A família não é uma versão limitada do tutor: ela responde só a quatro
@@ -34,8 +35,6 @@ function mascoteDe(childId) {
   for (let i = 0; i < s.length; i += 1) h = (h * 31 + s.charCodeAt(i)) >>> 0
   return MASCOTES[h % MASCOTES.length]
 }
-
-const EMBLEMA_BASE = '../assets/trilha/emblemas/'
 
 // ── Estado carregado no boot ─────────────────────────────────────────────────
 
@@ -538,7 +537,7 @@ function viewJornada() {
         const mt = m.mission_templates
         const row = el('div', 'fam-missao')
         const img = document.createElement('img')
-        img.src = `${EMBLEMA_BASE}${mt?.emblema || 'identificar'}.webp`
+        img.src = emblemaUrl(mt?.emblema || 'identificar')
         img.alt = ''
         row.append(img)
         row.append(el('span', 'tx', mt?.title ?? 'Missão'))
