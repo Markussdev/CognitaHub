@@ -23,6 +23,19 @@ export async function getGuardianChildren(guardianId) {
   return getGuardianChildrenInSteps(guardianId)
 }
 
+// Consulta separada (não faz parte de CHILDREN_SELECT) porque preferred_name
+// e avatar_key vêm da personalização feita no app da criança — uma feature
+// mais nova, sem confirmação de estar aplicada em todo ambiente. Isolada
+// assim, se as colunas não existirem em algum banco, só este card degrada
+// (fallback pro nome/mascote determinístico), sem derrubar o painel inteiro.
+export async function getChildAppIdentity(childId) {
+  return supabase
+    .from('children')
+    .select('preferred_name, avatar_key')
+    .eq('id', childId)
+    .maybeSingle()
+}
+
 async function getGuardianChildrenInSteps(guardianId) {
   const { data: children, error: childrenError } = await supabase
     .from('children')
