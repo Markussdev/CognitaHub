@@ -1,5 +1,4 @@
 import { escapeHtml } from '../utils/html.js'
-import mascotMap from '../assets/cap1/mascot-map.webp'
 
 const STATUS_LABELS = {
   locked: 'bloqueada',
@@ -14,22 +13,22 @@ const STAR_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6
 // Título só aparece pra missão disponível — bloqueada/concluída não
 // precisam de texto, só do ícone (regra: a criança precisa achar rápido
 // onde continuar, não ler o mapa inteiro).
-export function missionNodeHtml({ title, state = 'locked', activityId = null, x, y, isCurrent = false, isCheckpoint = false }) {
+export function missionNodeHtml({ title, state = 'locked', activityId = null, x, y, isCheckpoint = false }) {
   const tag = activityId ? 'button' : 'div'
   const attrs = activityId ? `type="button" data-activity-id="${activityId}"` : ''
   const safeTitle = escapeHtml(title)
 
   // Checkpoint bloqueado ganha estrela em vez de cadeado — ainda é "não
   // liberado", mas sinaliza de longe que é um marco (4/8/12), não uma
-  // missão qualquer da fileira.
+  // missão qualquer da fileira. O nó disponível também leva estrela (o
+  // mascote saiu do mapa por enquanto — decisão de arte): o disco aceso
+  // sozinho ficava vazio, sem "toque aqui".
   const badge =
     state === 'locked'
       ? `<span class="mission-node__badge mission-node__badge--lock">${isCheckpoint ? STAR_SVG : LOCK_SVG}</span>`
       : state === 'completed'
         ? `<span class="mission-node__badge mission-node__badge--check">${CHECK_SVG}</span>`
-        : ''
-
-  const mascot = isCurrent ? `<img class="mission-node__mascot" src="${mascotMap}" alt="" aria-hidden="true" />` : ''
+        : `<span class="mission-node__badge mission-node__badge--star">${STAR_SVG}</span>`
 
   const checkpointClass = isCheckpoint ? ' mission-node--checkpoint' : ''
 
@@ -40,7 +39,6 @@ export function missionNodeHtml({ title, state = 'locked', activityId = null, x,
     <${tag} class="mission-node mission-node--${state}${checkpointClass}" ${attrs} style="left:${x}%;top:${y}px;" aria-label="${safeTitle} — ${STATUS_LABELS[state] ?? ''}">
       <span class="mission-node__btn">
         ${badge}
-        ${mascot}
       </span>
     </${tag}>
   `

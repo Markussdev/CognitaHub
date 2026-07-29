@@ -1,9 +1,14 @@
-/* Mundo Cap 1 — mapa de missões. Assets em src/assets/cap1 (ver
-   scripts/optimize-assets.mjs na raiz do repo pra gerar novos capítulos).
+/* Trilha interna — não é outra tela, é a ENCOSTA do mesmo mundo da
+   seleção de módulos, vista de baixo. A criança toca na Biblioteca, cai
+   no pé da colina e sobe o mesmo caminho de pedra que na seleção já
+   aparecia indo até a porta. Landmark no horizonte, céu só no topo,
+   terreno do tema no resto.
 
-   A trilha interna agora vive no mesmo céu noturno da seleção de módulos
-   (styles/modules.css) — mesma paleta azul/dourada, mesmo cabeçalho
-   flutuante translúcido. As duas telas precisam parecer o mesmo app. */
+   Todas as cores vêm das custom properties que journey.js coloca na
+   .screen--journey (mesmos presets de module-visuals.js usados pelo
+   modules.css): --sky-top/--sky-bottom/--horizon/--glow/--stars/--clouds
+   e --ground-top/--ground-bottom/--ground-detail. Sem tema, os fallbacks
+   abaixo caem na paleta lunar da Base Espacial. */
 
 .screen--journey,
 .screen--journey-complete,
@@ -28,14 +33,22 @@
    .screen--journey (display:flex;flex-direction:column, de base.css) e
    tem overflow:hidden. Sem flex-shrink:0, isso zera o "automatic minimum
    size" do item e o flexbox comprime a trilha inteira pra caber na tela
-   em vez de deixar .screen rolar. A trilha via inteira, minúscula — não
-   era problema de excesso de nós, era o flexbox esmagando a altura. */
+   em vez de deixar .screen rolar.
+
+   A moldura em volta da coluna (visível só em desktop) escurece o céu do
+   PRÓPRIO tema em vez de cair num navy fixo — assim nem a borda da tela
+   sai do mundo. */
 .screen--journey {
   overflow-x: hidden;
   overscroll-behavior-y: contain;
   scroll-behavior: smooth;
   touch-action: pan-y;
+  background: color-mix(in srgb, var(--sky-top, #202a76) 62%, #070b2c);
 }
+
+/* ---- cabeçalho: mesmo idioma do .modules-header (scrim que dissolve na
+   cena, tingido com o céu do tema), não uma faixa sólida cortando a tela.
+   O safe-area-inset-top evita encostar no relógio em telas com notch. */
 
 .journey-header {
   position: sticky;
@@ -44,13 +57,18 @@
   flex-shrink: 0;
   width: min(100%, 480px);
   margin-inline: auto;
-  padding: 14px 16px 10px;
+  padding: calc(12px + var(--safe-top)) 16px 14px;
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr);
   align-items: center;
   column-gap: 10px;
   color: var(--warm-white);
-  background: linear-gradient(180deg, rgba(10, 14, 58, 0.92), rgba(10, 14, 58, 0.55) 72%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--sky-top, #0a0e3a) 88%, transparent),
+    color-mix(in srgb, var(--sky-top, #0a0e3a) 45%, transparent) 72%,
+    transparent
+  );
 }
 
 .journey-header--with-back {
@@ -87,6 +105,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--warm-white);
+  text-shadow: 0 2px 5px rgba(38, 5, 31, 0.3);
 }
 
 .journey-header__context {
@@ -99,13 +118,17 @@
   font-size: 11px;
   line-height: 1.2;
   white-space: nowrap;
+  text-shadow: 0 2px 5px rgba(38, 5, 31, 0.3);
 }
 
+/* Mesmos números do .module-scene__eyebrow — o "AGORA" daqui e o
+   "MÓDULO 4 DE 7" de lá são o mesmo elemento tipográfico. */
 .journey-header__context strong {
   flex: none;
   color: var(--gold);
-  font-size: 10px;
-  letter-spacing: 0.07em;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
 }
 
@@ -115,6 +138,25 @@
   text-overflow: ellipsis;
 }
 
+/* Progresso do módulo como barrinha dourada — substitui o "5 / 12" que
+   morava escondido no painel lateral de desktop. */
+.journey-header__progress {
+  margin-top: 7px;
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.journey-header__progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ffd06a, var(--gold));
+}
+
+/* ---- o mundo: terreno por padrão, céu só na faixa do topo ---- */
+
 .journey-world {
   position: relative;
   flex-shrink: 0;
@@ -122,49 +164,111 @@
   margin-inline: auto;
   overflow: hidden;
   isolation: isolate;
-  /* Tons extraídos do backgro.png novo (proposta calma, azul, sem roxo). */
-  background: linear-gradient(180deg, #202a76 0%, #3c4bae 48%, #8fa2dc 100%);
+  background: var(--ground-bottom, #7188bb);
 }
 
-.journey-world__bg {
+/* Céu: acaba na linha do horizonte (--horizon-y vem do journey.js,
+   calculada pra base do landmark), não esticado pelos 2000px da coluna —
+   degradê longo em rolagem vertical lê como fundo de PowerPoint. */
+.journey-world__sky {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: var(--horizon-y, 470px);
+  z-index: 0;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    var(--sky-top, #0d1b4d),
+    var(--sky-bottom, #3a4f9e) 82%,
+    var(--horizon, #7f94d1)
+  );
+}
+
+/* Estrelas e nuvens: cópia do .module-scene__sky / __clouds, densidade
+   por tema via --stars / --clouds (0-1) — o Observatório continua
+   estrelado aqui dentro, a Biblioteca continua com nuvens de tarde. */
+.journey-world__stars {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.1;
-  filter: saturate(0.4) brightness(0.86);
+  pointer-events: none;
+  opacity: var(--stars, 0);
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.85) 0 2px, transparent 3px),
+    radial-gradient(circle, rgba(255, 238, 176, 0.8) 0 1px, transparent 2px);
+  background-position: 12% 24%, 79% 18%;
+  background-size: 170px 210px, 220px 180px;
 }
 
-/* Duas decorações discretas, sem asset novo — a lua reaproveita
-   space-left-moon.webp (já existia solta em assets/cap1, não usada em
-   lugar nenhum). Nada disso disputa atenção com o caminho central. */
-.journey-world::before {
+.journey-world__clouds {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--clouds, 0);
+}
+
+.journey-world__clouds::before,
+.journey-world__clouds::after {
   content: '';
   position: absolute;
-  top: 6%;
-  right: 6%;
-  width: 84px;
-  height: 84px;
-  background: url('../assets/cap1/space-left-moon.webp') center / contain no-repeat;
-  opacity: 0.16;
-  pointer-events: none;
-  z-index: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    16px 3px 0 3px #fff,
+    32px 5px 0 -3px #fff,
+    -13px 6px 0 -6px #fff,
+    6px -7px 0 -8px #fff;
 }
 
+.journey-world__clouds::before {
+  top: 22%;
+  left: 10%;
+}
+
+.journey-world__clouds::after {
+  top: 44%;
+  right: 12%;
+  transform: scale(0.82);
+}
+
+/* A curva de horizonte — a mesma do .module-scene__ground, com o mesmo
+   brilho interno na crista. É ela que transforma o degradê em "lugar". */
+.journey-world__horizon {
+  position: absolute;
+  top: var(--horizon-y, 470px);
+  right: -18%;
+  left: -18%;
+  height: 300px;
+  z-index: 1;
+  border-radius: 50% 50% 0 0 / 16% 16% 0 0;
+  background: linear-gradient(180deg, var(--ground-top, #a7b8df), var(--ground-bottom, #7188bb));
+  box-shadow: inset 0 10px 18px rgba(255, 255, 255, 0.13);
+  pointer-events: none;
+}
+
+/* Textura repetida na descida — pontinhos na cor de detalhe do terreno
+   pra coluna longa não ficar chapada. background-size repete sozinho. */
 .journey-world::after {
   content: '';
   position: absolute;
-  top: 32%;
-  left: 9%;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.9), transparent 70%);
-  opacity: 0.18;
+  top: calc(var(--horizon-y, 470px) + 260px);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  opacity: 0.4;
   pointer-events: none;
-  z-index: 0;
+  background-image:
+    radial-gradient(circle at 22% 18%, var(--ground-detail, #6176ad) 0 5px, transparent 6px),
+    radial-gradient(circle at 78% 46%, var(--ground-detail, #6176ad) 0 4px, transparent 5px),
+    radial-gradient(circle at 46% 76%, var(--ground-detail, #6176ad) 0 6px, transparent 7px);
+  background-size: 340px 420px;
 }
+
+/* ---- caminho: estrada de terra embaixo, pontilhado de progresso em cima ---- */
 
 .journey-path {
   position: absolute;
@@ -174,40 +278,113 @@
   z-index: 1;
 }
 
-.journey-path__seg {
-  stroke-width: 10;
+/* non-scaling-stroke mede o traço em px de TELA, imune ao
+   preserveAspectRatio="none" que esticava os pontos redondos em ovais
+   sempre que o container não tinha exatamente 400px. */
+.journey-path path {
+  vector-effect: non-scaling-stroke;
+}
+
+.journey-path__road path {
+  stroke: var(--ground-detail, #6176ad);
+  stroke-width: 44;
   stroke-linecap: round;
-  stroke-dasharray: 0.1 20;
+  fill: none;
+  opacity: 0.5;
+}
+
+.journey-path__seg {
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 0.1 18;
 }
 
 .journey-path__seg--done {
-  stroke: #ffc95c;
+  stroke: var(--gold);
   opacity: 0.95;
 }
 
 .journey-path__seg--current {
   stroke: rgba(255, 255, 255, 0.95);
-  stroke-width: 12;
+  stroke-width: 10;
   opacity: 1;
 }
 
+/* Se adapta ao terreno em vez de sumir — branco fixo a 0.42 desaparecia
+   completamente sobre o bege da Biblioteca. */
 .journey-path__seg--future {
-  stroke: rgba(255, 255, 255, 0.42);
-  opacity: 1;
+  stroke: color-mix(in srgb, var(--ground-bottom, #7188bb) 45%, #fff);
+  opacity: 0.7;
 }
+
+/* Cenário reaproveitado da seleção (árvores, folhagem, páginas, pegadas) —
+   ancorado no landmark via top em px (não % — o mundo é uma coluna alta
+   que rola). Backdrop fica na linha do horizonte, atrás do landmark. */
+.journey-scenery {
+  position: absolute;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.journey-scenery--backdrop {
+  opacity: 0.65;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .journey-scenery--float {
+    animation: journey-scenery-float 6s ease-in-out infinite;
+  }
+}
+
+@keyframes journey-scenery-float {
+  0%,
+  100% {
+    transform: translate(-50%, -50%);
+  }
+
+  50% {
+    transform: translate(-50%, calc(-50% - 8px));
+  }
+}
+
+/* ---- landmark: chegando em algum lugar, não pendurado no vazio ---- */
 
 .journey-landmark {
   position: absolute;
   left: 50%;
   transform: translate(-50%, -50%);
-  pointer-events: none;
   width: var(--landmark-width, 140px);
   z-index: 2;
-  /* Bem mais discreto que antes — ele é o destino da trilha, não precisa
-     competir com os nós pelo mesmo brilho da seleção de módulos. */
+  pointer-events: none;
+}
+
+.journey-landmark img {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
   filter:
     drop-shadow(0 9px 10px rgba(7, 12, 45, 0.2))
-    drop-shadow(0 0 14px rgba(255, 207, 122, 0.15));
+    drop-shadow(0 0 14px color-mix(in srgb, var(--glow, #ffcf7a) 16%, transparent));
+}
+
+/* Sombra de contato — mesma do .module-scene__art::before: cola o prédio
+   no horizonte em vez de deixá-lo boiando sobre o degradê. */
+.journey-landmark::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  bottom: 3%;
+  width: 60%;
+  height: 12px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(20, 29, 70, 0.72), transparent 72%);
+  filter: blur(3px);
+  opacity: 0.16;
 }
 
 .journey-nodes {
@@ -216,7 +393,9 @@
   z-index: 3;
 }
 
-/* ---- nó de missão ---- */
+/* ---- nó de missão: uma moeda do próprio terreno, não um botão
+   cinza-lilás de wireframe. As cores vêm de --ground-top/--ground-bottom,
+   então o nó PERTENCE ao chão em que está apoiado, em qualquer tema. ---- */
 
 .mission-node {
   position: absolute;
@@ -237,8 +416,8 @@
   z-index: 2;
 }
 
-/* O nó atual e seu mascote ficam sempre na frente, mesmo que o próximo
-   nó bloqueado venha depois no DOM (ordem das missões, não de pintura). */
+/* O nó atual fica sempre na frente, mesmo que o próximo nó bloqueado
+   venha depois no DOM (ordem das missões, não de pintura). */
 .mission-node--available {
   z-index: 5;
 }
@@ -249,26 +428,37 @@ button.mission-node--available {
 
 .mission-node__btn {
   position: relative;
-  width: 108px;
-  height: 88px;
+  width: 92px;
+  height: 92px;
   border-radius: 50%;
   display: grid;
   place-items: center;
   background:
-    radial-gradient(ellipse at 50% 22%, rgba(255, 255, 255, 0.16), transparent 42%),
-    linear-gradient(180deg, #7f8ab5, #616c9b);
+    radial-gradient(ellipse at 50% 22%, rgba(255, 255, 255, 0.22), transparent 46%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--ground-top, #a7b8df) 84%, #fff),
+      color-mix(in srgb, var(--ground-bottom, #7188bb) 90%, #000)
+    );
   box-shadow:
-    0 9px 0 #48527d,
-    0 14px 18px rgba(6, 10, 35, 0.24);
+    0 8px 0 color-mix(in srgb, var(--ground-bottom, #7188bb) 62%, #000),
+    0 14px 18px rgba(6, 10, 35, 0.22);
   transition:
     transform 0.08s ease,
     box-shadow 0.08s ease;
 }
 
+/* Mesmos números do .module-scene--locked — é essa regra compartilhada
+   ("adormecido = dessaturado, não cinza") que amarra as duas telas. */
+.mission-node--locked .mission-node__btn {
+  filter: saturate(0.62) brightness(0.86);
+}
+
 button.mission-node--available:active .mission-node__btn {
-  transform: translateY(8px);
+  transform: translateY(7px);
   box-shadow:
-    0 2px 0 #3857a4,
+    0 2px 0 color-mix(in srgb, var(--glow, #547bd7) 55%, #8a5a12),
+    0 6px 10px rgba(6, 10, 35, 0.2),
     inset 0 3px 0 rgba(255, 255, 255, 0.22);
 }
 
@@ -288,22 +478,6 @@ button.mission-node--available:active .mission-node__btn {
       box-shadow 0.06s ease-out;
   }
 
-  /* Só três pixels de respiração — não é cenário se mexendo sozinho,
-     é sinal de vida no que já é a área de ação. */
-  @keyframes mascot-idle {
-    0%,
-    100% {
-      transform: translateX(-50%) translateY(0);
-    }
-    50% {
-      transform: translateX(-50%) translateY(-3px);
-    }
-  }
-
-  .mission-node__mascot {
-    animation: mascot-idle 2.8s ease-in-out infinite;
-  }
-
   @keyframes current-glow {
     0%,
     100% {
@@ -319,42 +493,46 @@ button.mission-node--available:active .mission-node__btn {
   }
 }
 
+/* Dourado = concluído nas DUAS telas — #cc8600 é a mesma saia do
+   .module-scene__check da seleção de módulos. */
 .mission-node--completed .mission-node__btn {
-  background: linear-gradient(180deg, #f8d77c, #eeb347);
+  background:
+    radial-gradient(ellipse at 50% 20%, rgba(255, 255, 255, 0.34), transparent 46%),
+    linear-gradient(180deg, #ffd06a, var(--gold));
   box-shadow:
-    0 9px 0 #bd7d25,
+    0 8px 0 #cc8600,
     0 14px 18px rgba(6, 10, 35, 0.22);
 }
 
+/* O nó atual é uma lâmpada acesa com a cor do capítulo — --glow já vem
+   de cada preset, então Observatório fica roxo, Biblioteca âmbar, Cinema
+   rosa, sem uma linha a mais. */
 .mission-node--available .mission-node__btn {
-  width: 114px;
-  height: 92px;
+  width: 100px;
+  height: 100px;
   background:
-    radial-gradient(ellipse at 50% 20%, rgba(255, 255, 255, 0.32), transparent 42%),
-    linear-gradient(180deg, #7caaf5, #547bd7);
+    radial-gradient(ellipse at 50% 20%, rgba(255, 255, 255, 0.5), transparent 46%),
+    linear-gradient(180deg, #fffdf6, color-mix(in srgb, var(--glow, #7ac9ff) 55%, #fff));
   box-shadow:
-    0 10px 0 #3857a4,
-    0 15px 20px rgba(6, 10, 35, 0.28),
-    0 0 0 5px rgba(255, 207, 122, 0.28);
+    0 9px 0 color-mix(in srgb, var(--glow, #547bd7) 55%, #8a5a12),
+    0 16px 22px rgba(6, 10, 35, 0.26),
+    0 0 0 6px color-mix(in srgb, var(--glow, #ffcf7a) 38%, transparent),
+    0 0 34px 8px color-mix(in srgb, var(--glow, #ffcf7a) 26%, transparent);
 }
 
-/* Checkpoint (missão 4, 8, 12...) ganha um anel dourado mais grosso — o
-   mesmo botão, só sinalizando de longe "isso aqui é um marco". Nada de
-   card, título ou cenário novo pra isso. */
-.mission-node--checkpoint.mission-node--available .mission-node__btn {
-  box-shadow:
-    0 10px 0 #3857a4,
-    0 15px 20px rgba(6, 10, 35, 0.28),
-    0 0 0 6px rgba(255, 207, 122, 0.42);
-}
-
+/* Checkpoint bloqueado (missão 4, 8, 12...) mantém o anel dourado — um
+   marco visível de longe; o atual já tem o halo do --glow, não precisa
+   de segundo anel disputando. */
 .mission-node--checkpoint.mission-node--locked .mission-node__btn {
   box-shadow:
-    0 9px 0 #48527d,
-    0 14px 18px rgba(6, 10, 35, 0.24),
+    0 8px 0 color-mix(in srgb, var(--ground-bottom, #7188bb) 62%, #000),
+    0 14px 18px rgba(6, 10, 35, 0.22),
     0 0 0 6px rgba(255, 207, 122, 0.32);
 }
 
+/* Cadeado/estrela de bloqueado num "chip" — mesmo tratamento do
+   .module-scene__lock da seleção (círculo escuro, ícone claro), legível
+   sobre qualquer cor de terreno, do bege da Biblioteca ao breu do Cinema. */
 .mission-node__badge {
   width: 30px;
   height: 30px;
@@ -368,7 +546,16 @@ button.mission-node--available:active .mission-node__btn {
 }
 
 .mission-node__badge--lock {
-  color: rgba(38, 5, 31, 0.45);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(38, 5, 31, 0.5);
+  color: var(--warm-white);
+}
+
+.mission-node__badge--lock svg {
+  width: 17px;
+  height: 17px;
 }
 
 .mission-node__badge--check {
@@ -377,15 +564,12 @@ button.mission-node--available:active .mission-node__btn {
   color: var(--warm-white);
 }
 
-.mission-node__mascot {
-  position: absolute;
-  top: -38px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 86px;
-  pointer-events: none;
-  z-index: 3;
-  filter: drop-shadow(0 6px 5px rgba(6, 10, 35, 0.22));
+/* Estrela do nó atual: tom quente escuro derivado do --glow do tema —
+   contraste garantido sobre o disco quase branco da "lâmpada". */
+.mission-node__badge--star {
+  width: 36px;
+  height: 36px;
+  color: color-mix(in srgb, var(--glow, #ffa800) 55%, #4a3414);
 }
 
 /* ---- módulo concluído (tela curta, não o mapa) ---- */
@@ -417,18 +601,13 @@ button.mission-node--available:active .mission-node__btn {
 
 @media (max-width: 360px) {
   .mission-node__btn {
-    width: 90px;
-    height: 74px;
+    width: 80px;
+    height: 80px;
   }
 
   .mission-node--available .mission-node__btn {
-    width: 97px;
-    height: 78px;
-  }
-
-  .mission-node__mascot {
-    top: -30px;
-    width: 70px;
+    width: 88px;
+    height: 88px;
   }
 
   .journey-header {
@@ -455,7 +634,8 @@ button.mission-node--available:active .mission-node__btn {
 }
 
 /* Navegação lateral — só desktop. No celular, roda/toque já resolve; os
-   botões só ocupariam espaço numa tela que já é justa. */
+   botões só ocupariam espaço numa tela que já é justa. O progresso saiu
+   daqui pra barrinha dourada do cabeçalho, visível em todo tamanho. */
 .journey-scroll-controls {
   display: none;
 }
@@ -497,11 +677,5 @@ button.mission-node--available:active .mission-node__btn {
 
   .journey-scroll-controls button:active {
     transform: translateY(2px);
-  }
-
-  .journey-scroll-controls__progress {
-    color: rgba(255, 255, 255, 0.72);
-    font-size: 11px;
-    font-weight: 700;
   }
 }

@@ -159,46 +159,52 @@
   display: block;
   position: absolute;
   z-index: 1;
-  bottom: 40%;
-  width: 48px;
-  height: 60%;
-  clip-path: polygon(44% 100%, 56% 100%, 100% 0, 0 0);
-  background: linear-gradient(to top, rgba(255, 214, 130, 0.34), transparent 78%);
-  filter: blur(2px);
+  bottom: 50%;
+  width: 110px;
+  height: 72%;
+  clip-path: polygon(48% 100%, 52% 100%, 100% 0, 0 0);
+  background: linear-gradient(
+    to top,
+    rgba(255, 235, 170, 0.24),
+    rgba(255, 221, 145, 0.11) 52%,
+    transparent 100%
+  );
+  filter: blur(8px);
+  mix-blend-mode: screen;
+  opacity: 0.8;
   transform-origin: 50% 100%;
   pointer-events: none;
 }
 
 .module-scene--theme-cinema::before {
-  left: 20%;
+  left: 35%;
   animation: cinema-searchlight-left 7s ease-in-out infinite;
 }
 
 .module-scene--theme-cinema::after {
-  right: 20%;
+  right: 35%;
   animation: cinema-searchlight-right 7s ease-in-out infinite;
-  animation-delay: -3.5s;
 }
 
 @keyframes cinema-searchlight-left {
   0%,
   100% {
-    transform: rotate(-22deg);
+    transform: rotate(-16deg);
   }
 
   50% {
-    transform: rotate(6deg);
+    transform: rotate(5deg);
   }
 }
 
 @keyframes cinema-searchlight-right {
   0%,
   100% {
-    transform: rotate(20deg);
+    transform: rotate(16deg);
   }
 
   50% {
-    transform: rotate(-8deg);
+    transform: rotate(-5deg);
   }
 }
 
@@ -206,7 +212,17 @@
   .module-scene--theme-cinema::before,
   .module-scene--theme-cinema::after {
     animation: none;
+  }
+
+  /* Sem animação os dois viram um ângulo fixo — mas precisam continuar
+     espelhados (sinais opostos), senão os dois giram pro mesmo lado e
+     parecem um feixe só torto em vez de um "V". */
+  .module-scene--theme-cinema::before {
     transform: rotate(-8deg);
+  }
+
+  .module-scene--theme-cinema::after {
+    transform: rotate(8deg);
   }
 }
 
@@ -347,9 +363,9 @@
   top: 0;
   bottom: 0;
   left: 50%;
-  width: 46%;
+  width: 40%;
   transform: translateX(-50%);
-  clip-path: polygon(45% 0, 55% 0, 100% 100%, 0 100%);
+  clip-path: polygon(43% 0, 57% 0, 100% 100%, 0 100%);
   background: linear-gradient(180deg, var(--ground-detail), var(--ground-bottom));
 }
 
@@ -365,7 +381,7 @@
   top: 0;
   bottom: 0;
   left: 50%;
-  width: 40%;
+  width: 32%;
   transform: translateX(-50%);
   clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
   background: #e8b84b;
@@ -377,7 +393,7 @@
   top: 0;
   bottom: 0;
   left: 50%;
-  width: 34%;
+  width: 27%;
   transform: translateX(-50%);
   clip-path: polygon(43% 0, 57% 0, 100% 100%, 0 100%);
   background: linear-gradient(180deg, var(--ground-detail), #7c0e1f);
@@ -399,11 +415,11 @@
   top: 0;
   bottom: 0;
   left: 50%;
-  width: 38%;
+  width: 32%;
   transform: translateX(-50%);
   clip-path: polygon(41% 0, 59% 0, 100% 100%, 0 100%);
   background: linear-gradient(180deg, var(--ground-detail), var(--ground-bottom));
-  opacity: 0.75;
+  opacity: 0.62;
 }
 
 /* Parque de Diversões: praça colorida com caminho dourado — festivo, não

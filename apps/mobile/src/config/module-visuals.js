@@ -147,29 +147,31 @@ export const LANDMARK_PRESETS = [
       startSmall: '64%',
     },
     selection: {
-      landmarkWidth: '292px',
-      landmarkY: '55dvh',
-      contactBottom: '15%',
-      contactWidth: '50%',
-      contactOpacity: '0.13',
+      landmarkWidth: '286px',
+      landmarkY: '57.6dvh',
+      contactBottom: '13%',
+      contactWidth: '52%',
+      contactOpacity: '0.11',
     },
     journey: { landmarkWidth: '148px' },
     // Camada de árvores distante atrás do prédio + páginas soltas
-    // flutuando — só pra tirar a sensação de "planeta bege vazio".
+    // flutuando — só pra tirar a sensação de "planeta bege vazio". Árvores
+    // menores e páginas mais perto do livro no telhado, pra apoiar a
+    // composição em vez de competir com o prédio.
     scenery: [
       {
         src: libraryTreesBack,
-        bottom: '30%',
-        width: '94%',
-        opacity: '0.85',
+        bottom: '25%',
+        width: '84%',
+        opacity: '0.72',
         className: 'module-scene__scenery--backdrop',
       },
       {
         src: libraryPages,
-        top: '20%',
-        right: '6%',
-        width: '104px',
-        opacity: '0.92',
+        top: '25%',
+        right: '9%',
+        width: '78px',
+        opacity: '0.78',
         className: 'module-scene__scenery--float',
       },
     ],
@@ -185,8 +187,8 @@ export const LANDMARK_PRESETS = [
       skyBottom: '#3c3570',
       horizon: '#6a5a9e',
       celestial: 'none',
-      stars: 1,
-      clouds: 0.1,
+      stars: 0.4,
+      clouds: 0,
       glow: '#ff6fae',
     },
     ground: {
@@ -215,7 +217,9 @@ export const LANDMARK_PRESETS = [
       skyTop: '#4f8fd9',
       skyBottom: '#d7edb8',
       horizon: '#eef7cf',
-      celestial: 'sun',
+      // O crânio já é a silhueta grande do topo — não precisa disputar
+      // atenção com um sol gigante, o céu claro já comunica o dia.
+      celestial: 'none',
       stars: 0,
       clouds: 0.3,
       glow: '#ffe08a',
@@ -229,31 +233,32 @@ export const LANDMARK_PRESETS = [
       startSmall: '63%',
     },
     selection: {
-      landmarkWidth: '300px',
-      landmarkY: '56dvh',
-      contactBottom: '14%',
+      landmarkWidth: '294px',
+      landmarkY: '58dvh',
+      contactBottom: '13%',
       contactWidth: '54%',
-      contactOpacity: '0.14',
+      contactOpacity: '0.12',
     },
     journey: { landmarkWidth: '158px' },
     // Vegetação atrás do museu + trilha de pegadas na frente — o museu
     // vira parte de um parque paleontológico, não um prédio sozinho num
-    // planeta verde-claro.
+    // planeta verde-claro. Folhagem mais baixa/discreta e pegadas mais
+    // pra cima, começando na saída do museu, sem chegar perto do título.
     scenery: [
       {
         src: dinoFoliageBack,
-        bottom: '31%',
-        width: '98%',
-        opacity: '0.9',
+        bottom: '26%',
+        width: '90%',
+        opacity: '0.78',
         className: 'module-scene__scenery--backdrop',
       },
       {
         src: dinoFootprints,
-        bottom: '17%',
-        left: '36%',
-        width: '124px',
-        opacity: '0.5',
-        rotate: '4deg',
+        bottom: '23%',
+        left: '38%',
+        width: '100px',
+        opacity: '0.38',
+        rotate: '2deg',
       },
     ],
   },

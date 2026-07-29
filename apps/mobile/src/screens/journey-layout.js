@@ -4,16 +4,16 @@
 // subindo, um landmark só no topo. Índice do array = ordem cronológica
 // (igual ao position do banco); y menor = mais alto na tela.
 //
-// Espaçamento enxuto de propósito — a versão anterior dava espaço de sobra
-// pra decoração pesada que não existe mais (um fundo só, sem camadas
-// empilhadas), então o mapa fica mais compacto e o caminho lê mais rápido.
+// O TOP_PAD alto não é desperdício: é o céu. O landmark senta na linha
+// do horizonte (landmarkY ≈ 390) e tudo acima dele é céu do tema — a
+// mesma composição da seleção de módulos, só que vista do pé da colina.
 
 // 5 colunas em vez de 3 — com poucas missões o zigue-zague de 3 já dava
 // pra perceber o padrão; testado com 12 nós (modo ?journeyNodes=12 do
 // dev), 3 ficava repetitivo/previsível rápido demais.
 const XS = [50, 35, 65, 42, 58]
-const NODE_GAP = 158
-const TOP_PAD = 245
+const NODE_GAP = 128
+const TOP_PAD = 560
 const BOTTOM_PAD = 145
 const VIEWBOX_WIDTH = 400
 

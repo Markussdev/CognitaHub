@@ -1,5 +1,4 @@
 import logoImg from '../assets/logo-icon-transparent.webp'
-import spaceCleanBg from '../assets/cap1/space-clean-bg.webp'
 import landmarkAbacus from '../assets/cap1/landmark-abacus.webp'
 import { missionNodeHtml } from '../components/mission-node.js'
 import { statusMessageHtml } from '../components/status-message.js'
@@ -55,13 +54,23 @@ function buildVisualTestMissions(missions, count = 12) {
 // dela já apareceu na seleção) — título da estação, não "Jornada de
 // Fulano" de novo. Título completo da missão continua acessível via
 // aria-label no próprio nó, não numa cápsula colada nele.
-function journeyHeaderHtml({ title, missionTitle = null, withBack = false }) {
+function journeyHeaderHtml({ title, missionTitle = null, progress = null, withBack = false }) {
   const context = missionTitle
     ? `
       <p class="journey-header__context">
         <strong>Agora</strong>
         <span>${escapeHtml(missionTitle)}</span>
       </p>
+    `
+    : ''
+
+  // Barrinha dourada no lugar do "5 / 12" escondido no painel lateral —
+  // a criança vê o quanto anda faltando sem precisar ler número nenhum.
+  const progressBar = progress
+    ? `
+      <div class="journey-header__progress" role="img" aria-label="Missão ${progress.current} de ${progress.total}">
+        <span style="width:${Math.round((progress.current / Math.max(progress.total, 1)) * 100)}%"></span>
+      </div>
     `
     : ''
 
@@ -76,6 +85,7 @@ function journeyHeaderHtml({ title, missionTitle = null, withBack = false }) {
       <div class="journey-header__copy">
         <h1 class="title">${escapeHtml(title)}</h1>
         ${context}
+        ${progressBar}
       </div>
     </div>
   `
@@ -132,24 +142,28 @@ export function renderJourney(root, { childName, trail, currentModule, missions,
   const headerWithContext = journeyHeaderHtml({
     title: moduleTitle,
     missionTitle: currentMission?.mission_templates?.title,
+    progress: { current: Math.max(currentIndex + 1, 1), total: displayMissions.length },
     withBack: Boolean(onBack),
   })
   const { height, nodes, landmarkY, landmarkPathPoint } = computeLayout(displayMissions.length)
 
-  const missionSegments = nodes
-    .slice(0, -1)
-    .map((pos, i) => {
-      const next = nodes[i + 1]
-      const state = displayMissions[i + 1].status === 'concluida' ? 'done' : i + 1 === currentIndex ? 'current' : 'future'
-      return `<path d="${segmentPath(pos, next)}" class="journey-path__seg journey-path__seg--${state}" fill="none" />`
-    })
-    .join('')
+  const segmentDefs = nodes.slice(0, -1).map((pos, i) => {
+    const state = displayMissions[i + 1].status === 'concluida' ? 'done' : i + 1 === currentIndex ? 'current' : 'future'
+    return { d: segmentPath(pos, nodes[i + 1]), state }
+  })
 
-  // O ábaco é o destino da jornada, não um enfeite solto — o caminho
+  // O landmark é o destino da jornada, não um enfeite solto — o caminho
   // continua até a base dele.
-  const landmarkSegment = `<path d="${segmentPath(nodes.at(-1), landmarkPathPoint)}" class="journey-path__seg journey-path__seg--future" fill="none" />`
+  segmentDefs.push({ d: segmentPath(nodes.at(-1), landmarkPathPoint), state: 'future' })
 
-  const segments = missionSegments + landmarkSegment
+  // Duas passadas nos mesmos segmentos: embaixo a "estrada" contínua na
+  // cor de detalhe do terreno (o mesmo caminho de terra/pedra/tapete que
+  // sai da porta do prédio na seleção de módulos), em cima o pontilhado
+  // de progresso.
+  const roadHtml = segmentDefs.map(({ d }) => `<path d="${d}" fill="none" />`).join('')
+  const trailHtml = segmentDefs
+    .map(({ d, state }) => `<path d="${d}" class="journey-path__seg journey-path__seg--${state}" fill="none" />`)
+    .join('')
 
   const nodesHtml = displayMissions
     .map((mission, i) =>
@@ -160,24 +174,84 @@ export function renderJourney(root, { childName, trail, currentModule, missions,
         x: nodes[i].x,
         y: nodes[i].y,
         isCheckpoint: (i + 1) % 4 === 0,
-        isCurrent: i === currentIndex,
       }),
     )
     .join('')
 
   const landmarkWidth = moduleVisual?.journey?.landmarkWidth ?? '140px'
 
+  // O preset chega inteiro — antes a trilha usava só image/title/width e
+  // redesenhava um mundo genérico por cima. Agora as custom properties
+  // vão na .screen--journey (não só no mundo) pro cabeçalho e a moldura
+  // desktop herdarem o tema também; céu, horizonte, terreno, estrelas e
+  // nuvens são desenhados com o MESMO vocabulário do modules.css.
+  const env = moduleVisual?.environment ?? {}
+  const ground = moduleVisual?.ground ?? {}
+  const themeVars = [
+    `--sky-top:${env.skyTop ?? '#202a76'}`,
+    `--sky-bottom:${env.skyBottom ?? '#3c4bae'}`,
+    `--horizon:${env.horizon ?? '#8fa2dc'}`,
+    `--glow:${env.glow ?? '#7ac9ff'}`,
+    `--stars:${env.stars ?? 0}`,
+    `--clouds:${env.clouds ?? 0}`,
+    `--ground-top:${ground.top ?? '#5a68a8'}`,
+    `--ground-bottom:${ground.bottom ?? '#3c4bae'}`,
+    `--ground-detail:${ground.detail ?? '#6b79b4'}`,
+  ].join(';')
+
+  // O céu acaba logo abaixo da base do landmark — ele senta na linha do
+  // horizonte e todo o resto da coluna é terreno do tema, não degradê.
+  const horizonY = landmarkY + 80
+
+  // Reaproveita o mesmo cenário (árvores, folhagem, páginas, pegadas) já
+  // usado na seleção de módulos — sem asset novo. Só a Biblioteca e o
+  // Museu dos Dinossauros têm isso hoje; os outros temas ficam só com a
+  // paleta (céu/chão/brilho) até ganharem seus próprios props.
+  const sceneryHtml = (moduleVisual?.scenery ?? [])
+    .map((item) => {
+      const isBackdrop = item.className?.includes('scenery--backdrop')
+      const isFloat = item.className?.includes('scenery--float')
+
+      // Três alturas, não duas: backdrop atrás do landmark no horizonte,
+      // props flutuantes (páginas) no céu, props de chão (pegadas) no
+      // terreno depois da saída — pegada voando ao lado do crânio não.
+      const top = isBackdrop ? landmarkY + 46 : isFloat ? landmarkY - 78 : landmarkY + 138
+      const left = isBackdrop ? '50%' : isFloat ? '74%' : '64%'
+      const width = isBackdrop ? '230px' : isFloat ? '84px' : '92px'
+      const rotate = !isBackdrop && item.rotate ? `rotate:${item.rotate};` : ''
+      const opacity = !isBackdrop && item.opacity ? `opacity:${item.opacity};` : ''
+      return `
+        <img
+          src="${item.src}"
+          alt=""
+          aria-hidden="true"
+          class="journey-scenery${isBackdrop ? ' journey-scenery--backdrop' : ''}${isFloat ? ' journey-scenery--float' : ''}"
+          style="top:${top}px;left:${left};width:${width};${rotate}${opacity}"
+        />
+      `
+    })
+    .join('')
+
   root.innerHTML = `
-    <div class="screen screen--journey">
+    <div class="screen screen--journey" style="${themeVars}">
       ${headerWithContext}
-      <div class="journey-world" style="height:${height}px">
-        <img class="journey-world__bg" src="${spaceCleanBg}" alt="" aria-hidden="true" />
+      <div class="journey-world journey-world--ground-${ground.type ?? 'plain'}" style="height:${height}px;--horizon-y:${horizonY}px">
+        <div class="journey-world__sky" aria-hidden="true">
+          <div class="journey-world__stars"></div>
+          <div class="journey-world__clouds"></div>
+        </div>
+        <div class="journey-world__horizon" aria-hidden="true"></div>
 
         <svg class="journey-path" viewBox="0 0 400 ${height}" preserveAspectRatio="none" aria-hidden="true">
-          ${segments}
+          <g class="journey-path__road">${roadHtml}</g>
+          ${trailHtml}
         </svg>
 
-        <img class="journey-landmark" src="${landmarkImg}" alt="" aria-hidden="true" style="top:${landmarkY}px;--landmark-width:${landmarkWidth};" />
+        ${sceneryHtml}
+
+        <div class="journey-landmark" style="top:${landmarkY}px;--landmark-width:${landmarkWidth};" aria-hidden="true">
+          <img src="${landmarkImg}" alt="" />
+        </div>
 
         <div class="journey-nodes">
           ${nodesHtml}
@@ -186,7 +260,6 @@ export function renderJourney(root, { childName, trail, currentModule, missions,
 
       <nav class="journey-scroll-controls" aria-label="Navegação pela trilha">
         <button type="button" data-journey-scroll="up" aria-label="Subir na trilha">↑</button>
-        <span class="journey-scroll-controls__progress">${Math.max(currentIndex + 1, 1)} / ${displayMissions.length}</span>
         <button type="button" data-journey-scroll="current" aria-label="Voltar à missão atual">●</button>
         <button type="button" data-journey-scroll="down" aria-label="Descer na trilha">↓</button>
       </nav>
