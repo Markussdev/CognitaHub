@@ -22,3 +22,13 @@ export async function getPairedChildContext() {
   if (error) throw error
   return data?.[0] ?? null
 }
+
+// Revoga só o vínculo ativo do dispositivo autenticado atual (revoked_at =
+// now(), não apaga registro nem criança) — depois disso
+// getPairedChildContext() volta a retornar null. Não faz signOut(): a
+// sessão anônima do dispositivo continua a mesma, só sem criança pareada.
+export async function unpairCurrentDevice() {
+  const { data, error } = await supabase.rpc('unpair_current_device')
+  if (error) throw error
+  return Boolean(data)
+}

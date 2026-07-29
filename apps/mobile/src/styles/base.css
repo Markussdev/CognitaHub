@@ -113,9 +113,35 @@ html[data-text-size='grande'] .settings-header h1 {
 }
 
 html[data-text-size='grande'] .modules-header p,
-html[data-text-size='grande'] .journey-header__context,
-html[data-text-size='grande'] .settings-row__copy span {
+html[data-text-size='grande'] .settings-row__copy span,
+html[data-text-size='grande'] .settings-menu-item__copy span,
+html[data-text-size='grande'] .profile-field__hint {
   font-size: calc(12px * var(--accessibility-text-scale));
+}
+
+html[data-text-size='grande'] .journey-header__context {
+  font-size: calc(11px * var(--accessibility-text-scale));
+}
+
+/* Textos da atividade em si — é ali que a criança mais precisa ler, não
+   só no chrome/navegação ao redor. */
+html[data-text-size='grande'] .mission-round,
+html[data-text-size='grande'] .status-message {
+  font-size: calc(15px * var(--accessibility-text-scale));
+}
+
+html[data-text-size='grande'] .profile-field__label,
+html[data-text-size='grande'] .help-text {
+  font-size: calc(14px * var(--accessibility-text-scale));
+}
+
+html[data-text-size='grande'] .counting-counter,
+html[data-text-size='grande'] .identifying-instruction {
+  font-size: calc(18px * var(--accessibility-text-scale));
+}
+
+html[data-text-size='grande'] .settings-menu-item__copy strong {
+  font-size: calc(16px * var(--accessibility-text-scale));
 }
 
 /* .module-scene__copy h2 usa clamp() (responsivo por viewport) — escala

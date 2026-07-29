@@ -15,6 +15,8 @@ import { renderJourney } from './screens/journey.js'
 import { renderSettings } from './screens/settings.js'
 import { renderProfileSettings } from './screens/profile-settings.js'
 import { renderExperienceSettings } from './screens/experience-settings.js'
+import { renderGuardianSettings } from './screens/guardian-settings.js'
+import { renderPairing } from './screens/pairing.js'
 import { getLandmarkPreset } from './config/module-visuals.js'
 import { getChildAvatar } from './config/child-avatars.js'
 import { applySettings, getSettings } from './services/settings.js'
@@ -40,7 +42,7 @@ const missions = [
 ]
 
 const root = document.querySelector('#app')
-const appState = { modulesPageIndex: null, avatarKey: null }
+const appState = { modulesPageIndex: null, avatarKey: null, guardianUnlocked: false }
 
 function getIdentity() {
   const avatar = getChildAvatar(appState.avatarKey)
@@ -88,6 +90,7 @@ function showSettings() {
     onBack: showModules,
     onOpenProfile: showProfileSettings,
     onOpenExperience: showExperienceSettings,
+    onOpenGuardians: showGuardianSettings,
   })
 }
 
@@ -107,6 +110,46 @@ function showProfileSettings() {
 
 function showExperienceSettings() {
   renderExperienceSettings(root, { onBack: showSettings })
+}
+
+// Fake — não existe rede aqui. Código "DEMOCODE" simula sucesso, qualquer
+// outro simula "código inválido" (mesmo padrão do app real: quem chama
+// onSubmit decide o texto de erro via pairing.showStatus).
+function showGuardianSettings() {
+  const identity = getIdentity()
+  renderGuardianSettings(root, {
+    childName: identity.name,
+    childAvatar: identity.avatarSrc,
+    initiallyUnlocked: appState.guardianUnlocked,
+    onUnlock: () => {
+      appState.guardianUnlocked = true
+    },
+    onBack: () => {
+      appState.guardianUnlocked = false
+      showSettings()
+    },
+    onSwitchChild: showSwitchPairingDemo,
+    onDisconnect: async () => {
+      appState.guardianUnlocked = false
+      await new Promise((r) => setTimeout(r, 400))
+      renderPairing(root, { onSubmit: async () => {} })
+    },
+  })
+}
+
+function showSwitchPairingDemo() {
+  const pairing = renderPairing(root, {
+    mode: 'switch',
+    onCancel: showGuardianSettings,
+    async onSubmit(code) {
+      await new Promise((r) => setTimeout(r, 500))
+      if (code === 'DEMOCODE') {
+        showModules()
+      } else {
+        pairing.showStatus('error', 'Código inválido ou expirado (demo: use DEMOCODE).')
+      }
+    },
+  })
 }
 
 showModules()

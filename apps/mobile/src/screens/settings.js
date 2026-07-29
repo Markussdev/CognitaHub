@@ -2,8 +2,7 @@ import { escapeHtml } from '../utils/html.js'
 import pkg from '../../package.json'
 
 // Menu principal de Configurações — três botões grandes, função de cada
-// um clara sem precisar entrar. "Para responsáveis" fica desabilitado
-// nesta entrega (só perfil + experiência existem de ponta a ponta).
+// um clara sem precisar entrar.
 const ITEMS = [
   {
     key: 'profile',
@@ -24,11 +23,11 @@ const ITEMS = [
     emoji: '🛡',
     title: 'Para responsáveis',
     hint: 'Conexão, aparelhos e ajuda',
-    enabled: false,
+    enabled: true,
   },
 ]
 
-export function renderSettings(root, { onBack, onOpenProfile, onOpenExperience }) {
+export function renderSettings(root, { onBack, onOpenProfile, onOpenExperience, onOpenGuardians }) {
   const itemsHtml = ITEMS.map((item) => {
     const trailing = item.enabled
       ? `<span class="settings-menu-item__chevron" aria-hidden="true">›</span>`
@@ -69,4 +68,5 @@ export function renderSettings(root, { onBack, onOpenProfile, onOpenExperience }
   root.querySelector('.settings-header__back')?.addEventListener('click', () => onBack?.())
   root.querySelector('[data-settings-item="profile"]')?.addEventListener('click', () => onOpenProfile?.())
   root.querySelector('[data-settings-item="experience"]')?.addEventListener('click', () => onOpenExperience?.())
+  root.querySelector('[data-settings-item="guardians"]')?.addEventListener('click', () => onOpenGuardians?.())
 }

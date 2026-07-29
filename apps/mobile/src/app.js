@@ -8,10 +8,11 @@ import { renderMission } from './screens/mission.js'
 import { renderSettings } from './screens/settings.js'
 import { renderProfileSettings } from './screens/profile-settings.js'
 import { renderExperienceSettings } from './screens/experience-settings.js'
+import { renderGuardianSettings } from './screens/guardian-settings.js'
 import { statusMessageHtml } from './components/status-message.js'
 import { escapeHtml } from './utils/html.js'
 import { ensureAnonymousSession } from './services/auth.js'
-import { claimPairingCode, getPairedChildContext } from './services/pairing.js'
+import { claimPairingCode, getPairedChildContext, unpairCurrentDevice } from './services/pairing.js'
 import { getChildTrail, getChildTrailModules, getModuleMissions } from './services/trails.js'
 import { getChildActivity } from './services/activities.js'
 import { createActivityExecution } from './services/executions.js'
@@ -104,6 +105,22 @@ export async function initApp(root) {
   }
 }
 
+// Guarda a instância atual de "Para responsáveis" — o botão físico de
+// voltar precisa perguntar a ela mesma se tem um estado interno pra
+// cancelar primeiro (ex.: confirmação de desconectar) antes de sair da
+// tela inteira. Troca de criança (modo 'switch' do pareamento) usa o
+// mesmo tipo de callback, guardado à parte.
+let guardianSettingsHandle = null
+let pendingPairingCancel = null
+
+// Sobrevive a re-entradas na MESMA sessão da área protegida (ex.: voltar
+// de um "Cancelar" em Trocar criança não deveria pedir o gate de novo) —
+// mas reseta assim que a pessoa sai de verdade (leaveGuardianSettings) ou
+// desconecta o aparelho. Sem isso, ou o gate vira uma parede que o adulto
+// precisa reabrir a cada clique, ou vira algo que "gruda" liberado e para
+// de proteger a criança depois do primeiro uso.
+let guardianUnlocked = false
+
 // Atividade → jornada do mesmo módulo; subpáginas de configurações → menu
 // de configurações; jornada/configurações → módulos; módulos → confirma
 // antes de sair; qualquer outra tela (pareamento, carregando, erro,
@@ -111,6 +128,21 @@ export async function initApp(root) {
 function handleBackButton(root) {
   if (appState.screen === 'mission') {
     showJourney(root, appState.openModule)
+    return
+  }
+
+  // Troca de criança: voltar cancela a troca (mantém a criança atual),
+  // não sai do app nem some sem explicação.
+  if (appState.screen === 'pairing-switch') {
+    pendingPairingCancel?.()
+    return
+  }
+
+  // "Para responsáveis" pode estar no meio da confirmação de desconectar
+  // — nesse caso, voltar cancela SÓ a confirmação, não sai da tela.
+  if (appState.screen === 'guardian-settings') {
+    if (guardianSettingsHandle?.handleBack()) return
+    leaveGuardianSettings(root)
     return
   }
 
@@ -221,6 +253,7 @@ function showSettings(root) {
     onBack: () => showModules(root),
     onOpenProfile: () => showProfileSettings(root),
     onOpenExperience: () => showExperienceSettings(root),
+    onOpenGuardians: () => showGuardianSettings(root),
   })
 }
 
@@ -249,6 +282,60 @@ function showExperienceSettings(root) {
 
   renderExperienceSettings(root, {
     onBack: () => showSettings(root),
+  })
+}
+
+// Único jeito de sair de "Para responsáveis" pro menu de Configurações —
+// tanto a seta na tela quanto o botão físico de voltar passam por aqui,
+// pra nenhum dos dois esquecer de resetar o gate de 2s.
+function leaveGuardianSettings(root) {
+  guardianUnlocked = false
+  showSettings(root)
+}
+
+function showGuardianSettings(root) {
+  appState.screen = 'guardian-settings'
+  const child = getChildIdentity()
+
+  guardianSettingsHandle = renderGuardianSettings(root, {
+    childName: child.name,
+    childAvatar: child.avatarSrc,
+    initiallyUnlocked: guardianUnlocked,
+    onUnlock: () => {
+      guardianUnlocked = true
+    },
+    onBack: () => leaveGuardianSettings(root),
+
+    // Vínculo atual só muda se um código válido chegar (claim_pairing_code
+    // já garante isso no banco) — cancelar ou errar o código não desconecta
+    // a criança de agora. Cancelar volta pra cá sem passar pelo gate de
+    // novo (guardianUnlocked continua true — ainda é a mesma sessão).
+    onSwitchChild: () => {
+      showPairing(root, {
+        mode: 'switch',
+        onCancel: () => showGuardianSettings(root),
+      })
+    },
+
+    // A RPC só revoga o vínculo (revoked_at), não apaga nada nem faz
+    // signOut — a sessão anônima do aparelho continua a mesma, só sem
+    // criança pareada. Por isso boot() não é chamado de novo aqui: já
+    // sabemos o resultado (sem contexto), então vai direto pro pareamento.
+    onDisconnect: async () => {
+      await unpairCurrentDevice()
+      guardianUnlocked = false
+
+      Object.assign(appState, {
+        context: null,
+        trail: null,
+        modules: [],
+        currentModule: null,
+        openModule: null,
+        modulesPageIndex: null,
+      })
+
+      showPairing(root)
+    },
   })
 }
 
@@ -340,13 +427,21 @@ async function reloadJourney(root, moduleId) {
   }
 }
 
-function showPairing(root) {
-  appState.screen = 'pairing'
+function showPairing(root, { mode = 'initial', onCancel } = {}) {
+  const isSwitch = mode === 'switch'
+  appState.screen = isSwitch ? 'pairing-switch' : 'pairing'
+  pendingPairingCancel = isSwitch ? onCancel : null
 
   const pairing = renderPairing(root, {
+    mode,
+    onCancel: () => {
+      pendingPairingCancel = null
+      onCancel?.()
+    },
     async onSubmit(code) {
       try {
         await claimPairingCode(code)
+        pendingPairingCancel = null
         renderLoading(root)
         await boot(root)
       } catch (error) {
