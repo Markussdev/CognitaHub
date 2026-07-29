@@ -18,6 +18,9 @@ import { createPairingCode, listPairedDevices } from '../data/pareamento.js'
 import { derivarEstadoResumo, ESTADOS_RESUMO, moduloAtualDe } from './resumo-estado.js'
 import { closeRailDrawer, wireRailToggle } from '../lib/rail.js'
 import { DIGITAL_PRESETS } from '../data/digital-presets.js'
+import { emblemaUrl, mascoteUrl } from '../lib/trilha-assets.js'
+import gatoMatematicoSrc from '../../assets/gatomatematico-sem-fundo.png'
+import logoIconSrc from '../../assets/logo-icon-transparent.png'
 
 const session = await requireRole('tutor')
 const stateBox = document.querySelector('[data-tutor-state]')
@@ -1591,7 +1594,7 @@ function buildSessionsPanel(cycle, state, sessionForm) {
   const emptyWrap = el('div', 'card-b')
   const empty = el('div', 'empty-state')
   const img = document.createElement('img')
-  img.src = '../assets/gatomatematico-sem-fundo.png'
+  img.src = gatoMatematicoSrc
   img.alt = ''
   empty.append(
     img,
@@ -1622,7 +1625,7 @@ function buildSessionsPanel(cycle, state, sessionForm) {
 // Emblemas por molde (mesmos assets da Jornada). 'revisar' existe mas não é
 // um molde autorável; tudo que não é 'contar' cai em 'identificar'.
 function emblemaDeMolde(molde) {
-  return `../assets/trilha/emblemas/${molde === 'contar' ? 'contar' : 'identificar'}.webp`
+  return emblemaUrl(molde === 'contar' ? 'contar' : 'identificar')
 }
 
 // Descrição pedagógica de cada experiência (o tutor escolhe a experiência,
@@ -2202,7 +2205,7 @@ function buildActivitiesPanel(cycle, state, onSaved) {
         const emptyBody = el('div', 'card-b')
         const empty = el('div', 'empty-state')
         const img = document.createElement('img')
-        img.src = '../assets/gatomatematico-sem-fundo.png'
+        img.src = gatoMatematicoSrc
         img.alt = ''
         empty.append(
           img,
@@ -2320,7 +2323,7 @@ function buildPlanPanel(cycle, state) {
   const headerSub = el('p', 'journey-sub')
   headerText.append(headerSub)
   const mascot = el('img', 'journey-mascot')
-  mascot.src = '../assets/trilha/mascote/planejar.webp'
+  mascot.src = mascoteUrl('planejar')
   mascot.alt = ''
   mascot.hidden = true // só no estado vazio — dá identidade Cognita aos dois caminhos
   header.append(headerText, mascot)
@@ -2640,7 +2643,7 @@ function buildPlanPanel(cycle, state) {
           const left = el('span', 'trilha-formal-mission-left')
           if (mt.emblema) {
             const emblem = el('img', 'journey-mission-emblem')
-            emblem.src = `../assets/trilha/emblemas/${mt.emblema}.webp`
+            emblem.src = emblemaUrl(mt.emblema)
             emblem.alt = ''
             left.append(emblem)
           }
@@ -2958,7 +2961,7 @@ async function buildHomeView(state, cycle, openRecord) {
   const head = el('div', 'home-head')
   const mascot = document.createElement('img')
   mascot.className = 'mascot'
-  mascot.src = '../assets/logo-icon-transparent.png'
+  mascot.src = logoIconSrc
   mascot.alt = ''
   const headCopy = el('div')
   headCopy.append(

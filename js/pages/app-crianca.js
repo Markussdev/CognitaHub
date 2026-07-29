@@ -6,6 +6,7 @@ import { getLatestChildTrail, getChildTrailModules, getChildTrailMissionsWithAct
 import { claimPairingCode, getPairedChildContext } from '../data/pareamento.js'
 import { renderTrilhaCrianca } from '../components/trilha-crianca.js'
 import { solveTurnstile } from '../lib/turnstile.js'
+import { mascoteUrl } from '../lib/trilha-assets.js'
 
 // Duas portas de entrada coexistindo (Fase 13):
 //   ?demo=1 + tutor autenticado → "modo demonstração" (Sprint 6A), reusa a
@@ -58,7 +59,7 @@ function renderAviso(sairHref, titulo, mensagem) {
 function renderAbertura({ childName, onContinuar }) {
   const wrap = el('div', 'crianca-abertura')
   const mascote = el('img', 'crianca-abertura-mascote')
-  mascote.src = '../assets/trilha/mascote/planejar.webp'
+  mascote.src = mascoteUrl('planejar')
   mascote.alt = ''
   mascote.setAttribute('aria-hidden', 'true')
   wrap.append(mascote)
@@ -79,7 +80,7 @@ function renderPareamento({ onPareado }) {
   root.replaceChildren()
   const wrap = el('div', 'crianca-abertura crianca-pareamento')
   const mascote = el('img', 'crianca-abertura-mascote')
-  mascote.src = '../assets/trilha/mascote/planejar.webp'
+  mascote.src = mascoteUrl('planejar')
   mascote.alt = ''
   mascote.setAttribute('aria-hidden', 'true')
   wrap.append(mascote)
