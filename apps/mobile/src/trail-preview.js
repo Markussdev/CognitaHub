@@ -13,7 +13,10 @@ import './styles/settings.css'
 import { renderModules } from './screens/modules.js'
 import { renderJourney } from './screens/journey.js'
 import { renderSettings } from './screens/settings.js'
+import { renderProfileSettings } from './screens/profile-settings.js'
+import { renderExperienceSettings } from './screens/experience-settings.js'
 import { getLandmarkPreset } from './config/module-visuals.js'
+import { getChildAvatar } from './config/child-avatars.js'
 
 const modules = [
   { id: 'm1', status: 'concluido', trail_modules: { position: 1, title: 'Números de 1 a 5' } },
@@ -32,7 +35,12 @@ const missions = [
 ]
 
 const root = document.querySelector('#app')
-const appState = { modulesPageIndex: null }
+const appState = { modulesPageIndex: null, avatarKey: null }
+
+function getIdentity() {
+  const avatar = getChildAvatar(appState.avatarKey)
+  return { name: 'Weligtom', avatarKey: avatar.key, avatarSrc: avatar.image }
+}
 
 function rememberModulesPage() {
   const scroller = root.querySelector('.modules-scenes')
@@ -41,8 +49,10 @@ function rememberModulesPage() {
 }
 
 function showModules() {
+  const identity = getIdentity()
   renderModules(root, {
-    childName: 'Weligtom',
+    childName: identity.name,
+    childAvatar: identity.avatarSrc,
     modules,
     initialPageIndex: appState.modulesPageIndex ?? undefined,
     onOpenModule: showJourney,
@@ -53,8 +63,10 @@ function showModules() {
 function showJourney(module) {
   rememberModulesPage()
   const idx = modules.findIndex((m) => m.id === module.id)
+  const identity = getIdentity()
   renderJourney(root, {
-    childName: 'Weligtom',
+    childName: identity.name,
+    childAvatar: identity.avatarSrc,
     trail: { status: 'ativa' },
     currentModule: module,
     missions,
@@ -67,7 +79,29 @@ function showJourney(module) {
 
 function showSettings() {
   rememberModulesPage()
-  renderSettings(root, { onBack: showModules })
+  renderSettings(root, {
+    onBack: showModules,
+    onOpenProfile: showProfileSettings,
+    onOpenExperience: showExperienceSettings,
+  })
+}
+
+function showProfileSettings() {
+  const identity = getIdentity()
+  renderProfileSettings(root, {
+    childId: 'preview-child-id',
+    currentName: identity.name,
+    currentAvatarKey: identity.avatarKey,
+    onBack: showSettings,
+    onSaved: ({ avatarKey }) => {
+      appState.avatarKey = avatarKey
+      showSettings()
+    },
+  })
+}
+
+function showExperienceSettings() {
+  renderExperienceSettings(root, { onBack: showSettings })
 }
 
 showModules()

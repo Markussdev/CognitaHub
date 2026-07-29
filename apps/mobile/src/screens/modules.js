@@ -1,4 +1,3 @@
-import logoImg from '../assets/logo-icon-transparent.webp'
 import { escapeHtml } from '../utils/html.js'
 import { getLandmarkPreset } from '../config/module-visuals.js'
 
@@ -29,7 +28,7 @@ function stationState(status) {
   return 'current'
 }
 
-export function renderModules(root, { childName, modules, onOpenModule, onOpenSettings, initialPageIndex }) {
+export function renderModules(root, { childName, childAvatar, modules, onOpenModule, onOpenSettings, initialPageIndex }) {
   const currentModuleIndex = Math.max(
     modules.findIndex((m) => m.status === 'liberado' || m.status === 'aguardando_revisao'),
     0,
@@ -149,7 +148,7 @@ export function renderModules(root, { childName, modules, onOpenModule, onOpenSe
   root.innerHTML = `
     <div class="screen screen--modules">
       <header class="modules-header">
-        <img src="${logoImg}" alt="" />
+        <img src="${childAvatar}" alt="" />
         <div>
           <h1>Jornada de ${escapeHtml(childName)}</h1>
           <p>Escolha seu próximo módulo</p>

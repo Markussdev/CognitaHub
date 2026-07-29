@@ -6,6 +6,8 @@ import { renderModules } from './screens/modules.js'
 import { renderJourney } from './screens/journey.js'
 import { renderMission } from './screens/mission.js'
 import { renderSettings } from './screens/settings.js'
+import { renderProfileSettings } from './screens/profile-settings.js'
+import { renderExperienceSettings } from './screens/experience-settings.js'
 import { statusMessageHtml } from './components/status-message.js'
 import { escapeHtml } from './utils/html.js'
 import { ensureAnonymousSession } from './services/auth.js'
@@ -14,6 +16,7 @@ import { getChildTrail, getChildTrailModules, getModuleMissions } from './servic
 import { getChildActivity } from './services/activities.js'
 import { createActivityExecution } from './services/executions.js'
 import { LANDMARK_PRESETS, getLandmarkPreset } from './config/module-visuals.js'
+import { getChildAvatar } from './config/child-avatars.js'
 
 // Fluxo: pareamento → seleção de módulos → trilha do módulo → atividade →
 // trilha atualizada (ou módulos → configurações). O banco continua
@@ -29,6 +32,23 @@ const appState = {
   openModule: null,
   screen: 'loading',
   modulesPageIndex: null,
+}
+
+// Identidade centralizada — nome/avatar escolhidos em "Meu perfil" (ou o
+// fallback, pra criança que nunca personalizou nada). Nenhuma tela lê
+// appState.context.primeiro_nome/avatar_key direto, todas passam por aqui,
+// pra não espalhar a mesma cadeia de fallback em 4 lugares diferentes.
+function getChildDisplayName() {
+  return appState.context?.nome_exibicao ?? appState.context?.primeiro_nome ?? 'Explorador'
+}
+
+function getChildIdentity() {
+  const avatar = getChildAvatar(appState.context?.avatar_key)
+  return {
+    name: getChildDisplayName(),
+    avatarKey: avatar.key,
+    avatarSrc: avatar.image,
+  }
 }
 
 // Laboratório visual dos 7 landmarks — só em dev, via
@@ -84,12 +104,18 @@ export async function initApp(root) {
   }
 }
 
-// Atividade → jornada do mesmo módulo; jornada/configurações → módulos;
-// módulos → confirma antes de sair; qualquer outra tela (pareamento,
-// carregando, erro, aguardando jornada) → sai direto, não tem "voltar".
+// Atividade → jornada do mesmo módulo; subpáginas de configurações → menu
+// de configurações; jornada/configurações → módulos; módulos → confirma
+// antes de sair; qualquer outra tela (pareamento, carregando, erro,
+// aguardando jornada) → sai direto, não tem "voltar".
 function handleBackButton(root) {
   if (appState.screen === 'mission') {
     showJourney(root, appState.openModule)
+    return
+  }
+
+  if (appState.screen === 'profile-settings' || appState.screen === 'experience-settings') {
+    showSettings(root)
     return
   }
 
@@ -122,9 +148,13 @@ async function boot(root) {
       return
     }
 
+    // Fixado assim que chega — todo o resto do boot (inclusive os retornos
+    // antecipados abaixo) já pode ler nome/avatar via getChildIdentity().
+    appState.context = context
+
     if (!context.child_trail_id) {
       appState.screen = 'awaiting'
-      showAwaitingJourney(root, context)
+      showAwaitingJourney(root)
       return
     }
 
@@ -138,9 +168,11 @@ async function boot(root) {
     // Jornada encerrada/pausada ou sem módulo nenhum: renderJourney já
     // resolve essas mensagens de estado — não faz sentido mostrar o mapa.
     if (trail?.status !== 'ativa' || modules.length === 0) {
+      const child = getChildIdentity()
       appState.screen = 'journey'
       renderJourney(root, {
-        childName: context.primeiro_nome,
+        childName: child.name,
+        childAvatar: child.avatarSrc,
         trail,
         currentModule: null,
         missions: [],
@@ -165,12 +197,15 @@ function showModules(root) {
   appState.screen = 'modules'
   appState.openModule = null
 
+  const child = getChildIdentity()
+
   // A criança não deveria sentir que o carrossel "reiniciou" ao voltar —
   // manda a página que ela estava vendo (não necessariamente o módulo
   // jogável). Na primeira vez ainda não existe uma, e aí renderModules
   // decide sozinho (módulo atual).
   renderModules(root, {
-    childName: appState.context.primeiro_nome,
+    childName: child.name,
+    childAvatar: child.avatarSrc,
     modules: appState.modules,
     initialPageIndex: appState.modulesPageIndex ?? undefined,
     onOpenModule: (module) => showJourney(root, module),
@@ -184,6 +219,36 @@ function showSettings(root) {
 
   renderSettings(root, {
     onBack: () => showModules(root),
+    onOpenProfile: () => showProfileSettings(root),
+    onOpenExperience: () => showExperienceSettings(root),
+  })
+}
+
+function showProfileSettings(root) {
+  appState.screen = 'profile-settings'
+  const child = getChildIdentity()
+
+  renderProfileSettings(root, {
+    childId: appState.context.child_id,
+    currentName: child.name,
+    currentAvatarKey: child.avatarKey,
+    onBack: () => showSettings(root),
+
+    // A RPC já validou/gravou — só refletimos o resultado dela no estado
+    // (não chama boot() de novo, não precisa de loading global pra isso).
+    onSaved: ({ name, avatarKey }) => {
+      appState.context.nome_exibicao = name
+      appState.context.avatar_key = avatarKey
+      showSettings(root)
+    },
+  })
+}
+
+function showExperienceSettings(root) {
+  appState.screen = 'experience-settings'
+
+  renderExperienceSettings(root, {
+    onBack: () => showSettings(root),
   })
 }
 
@@ -207,10 +272,12 @@ async function showJourney(root, module) {
     const sourceModuleId = module.sourceModuleId ?? module.id
     const missions = await getModuleMissions(sourceModuleId)
     const moduleIndex = module.visualIndex ?? appState.modules.findIndex((item) => item.id === module.id)
+    const child = getChildIdentity()
 
     appState.screen = 'journey'
     renderJourney(root, {
-      childName: appState.context.primeiro_nome,
+      childName: child.name,
+      childAvatar: child.avatarSrc,
       trail: appState.trail,
       currentModule: module,
       missions,
@@ -296,10 +363,10 @@ function showPairing(root) {
   })
 }
 
-function showAwaitingJourney(root, context) {
+function showAwaitingJourney(root) {
   root.innerHTML = `
     <div class="screen screen--pairing">
-      <h1 class="title">Oi, ${escapeHtml(context.primeiro_nome)}!</h1>
+      <h1 class="title">Oi, ${escapeHtml(getChildDisplayName())}!</h1>
       ${statusMessageHtml({ type: 'info', text: 'Seu tutor ainda não montou sua jornada. Volte daqui a pouco.' })}
     </div>
   `

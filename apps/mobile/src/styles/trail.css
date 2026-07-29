@@ -704,3 +704,33 @@ button.mission-node--available:active .mission-node__btn {
     transform: translateY(2px);
   }
 }
+
+/* No mobile, o mundo precisa preencher toda a largura disponível — o
+   limite de 480px só faz sentido como moldura de desktop. Sem isso, o
+   container rolável fica alguns px maior que 480 (barra de rolagem do
+   navegador/emulador) e sobra uma faixa do fundo escurecido da
+   .screen--journey nas bordas, lida como uma sombra que não fecha. */
+.journey-header,
+.journey-world {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+}
+
+@media (min-width: 760px) {
+  .journey-header,
+  .journey-world {
+    width: 480px;
+    max-width: 480px;
+    margin-inline: auto;
+  }
+}
+
+.screen--journey {
+  scrollbar-width: none;
+}
+
+.screen--journey::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}

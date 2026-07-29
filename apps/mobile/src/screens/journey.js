@@ -1,4 +1,3 @@
-import logoImg from '../assets/logo-icon-transparent.webp'
 import landmarkAbacus from '../assets/cap1/landmark-abacus.webp'
 import { missionNodeHtml } from '../components/mission-node.js'
 import { statusMessageHtml } from '../components/status-message.js'
@@ -54,7 +53,7 @@ function buildVisualTestMissions(missions, count = 12) {
 // dela já apareceu na seleção) — título da estação, não "Jornada de
 // Fulano" de novo. Título completo da missão continua acessível via
 // aria-label no próprio nó, não numa cápsula colada nele.
-function journeyHeaderHtml({ title, missionTitle = null, progress = null, withBack = false }) {
+function journeyHeaderHtml({ title, avatarSrc, missionTitle = null, progress = null, withBack = false }) {
   const context = missionTitle
     ? `
       <p class="journey-header__context">
@@ -81,7 +80,7 @@ function journeyHeaderHtml({ title, missionTitle = null, progress = null, withBa
   return `
     <div class="journey-header ${withBack ? 'journey-header--with-back' : ''}">
       ${back}
-      <img src="${logoImg}" alt="" />
+      <img src="${avatarSrc}" alt="" />
       <div class="journey-header__copy">
         <h1 class="title">${escapeHtml(title)}</h1>
         ${context}
@@ -91,9 +90,12 @@ function journeyHeaderHtml({ title, missionTitle = null, progress = null, withBa
   `
 }
 
-export function renderJourney(root, { childName, trail, currentModule, missions, moduleVisual, onBack, onOpenMission, onRefresh }) {
+export function renderJourney(
+  root,
+  { childName, childAvatar, trail, currentModule, missions, moduleVisual, onBack, onOpenMission, onRefresh },
+) {
   const fallbackTitle = `Jornada de ${childName}`
-  const header = journeyHeaderHtml({ title: fallbackTitle })
+  const header = journeyHeaderHtml({ title: fallbackTitle, avatarSrc: childAvatar })
 
   if (trail?.status === 'concluida') {
     renderMessage(root, header, 'Você concluiu sua jornada!')
@@ -123,7 +125,7 @@ export function renderJourney(root, { childName, trail, currentModule, missions,
   const moduleTitle = moduleVisual?.title ?? fallbackTitle
 
   if (currentModule.status === 'aguardando_revisao') {
-    renderModuleComplete(root, journeyHeaderHtml({ title: moduleTitle, withBack: Boolean(onBack) }), {
+    renderModuleComplete(root, journeyHeaderHtml({ title: moduleTitle, avatarSrc: childAvatar, withBack: Boolean(onBack) }), {
       landmarkImg,
       mascotImg: moduleVisual?.mascot,
       onRefresh,
@@ -141,6 +143,7 @@ export function renderJourney(root, { childName, trail, currentModule, missions,
   const currentMission = currentIndex >= 0 ? displayMissions[currentIndex] : null
   const headerWithContext = journeyHeaderHtml({
     title: moduleTitle,
+    avatarSrc: childAvatar,
     missionTitle: currentMission?.mission_templates?.title,
     progress: { current: Math.max(currentIndex + 1, 1), total: displayMissions.length },
     withBack: Boolean(onBack),

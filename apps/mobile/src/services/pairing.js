@@ -13,8 +13,12 @@ export async function claimPairingCode(code, deviceName = null) {
 // null quando a sessão atual não está pareada (nunca pareou ou foi
 // revogada) — a RPC não distingue os dois casos, então o app trata os
 // dois mostrando a tela de código de novo.
+//
+// v2 soma nome_exibicao/avatar_key (perfil escolhido pela criança) ao
+// contexto original — mantém o nome JS antigo pra o resto do app não
+// precisar saber qual versão da RPC está por trás.
 export async function getPairedChildContext() {
-  const { data, error } = await supabase.rpc('get_paired_child_context')
+  const { data, error } = await supabase.rpc('get_paired_child_context_v2')
   if (error) throw error
   return data?.[0] ?? null
 }

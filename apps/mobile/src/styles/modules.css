@@ -36,6 +36,9 @@
 .modules-header img {
   width: 40px;
   height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(6, 10, 35, 0.28);
 }
 
 .modules-header h1,
