@@ -20,4 +20,16 @@ export function getSettings() {
 
 export function saveSettings(nextSettings) {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(nextSettings))
+  applySettings(nextSettings)
+}
+
+// Reflete a preferência no <html> via atributo, pra CSS global reagir sem
+// nenhuma tela precisar saber que "movimento reduzido"/"texto grande"
+// existem. Chamado no boot (main.js, antes da primeira tela) e de novo
+// aqui dentro de saveSettings — assim o toggle já vale no próprio toque,
+// sem esperar re-render de tela nenhuma.
+export function applySettings(settings = getSettings()) {
+  const root = document.documentElement
+  root.dataset.reducedMotion = String(Boolean(settings.reducedMotion))
+  root.dataset.textSize = settings.textSize
 }

@@ -16,7 +16,7 @@ const ITEMS = [
     key: 'experience',
     emoji: '✨',
     title: 'Minha experiência',
-    hint: 'Texto, movimento e sons',
+    hint: 'Texto e movimento',
     enabled: true,
   },
   {

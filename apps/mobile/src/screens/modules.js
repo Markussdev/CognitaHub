@@ -1,5 +1,6 @@
 import { escapeHtml } from '../utils/html.js'
 import { getLandmarkPreset } from '../config/module-visuals.js'
+import { getSettings } from '../services/settings.js'
 
 // Seleção de módulos = cena por módulo (Duolingo ABC), navegação horizontal
 // por setas/swipe — não rolagem vertical. Cada landmark carrega seu próprio
@@ -185,9 +186,15 @@ export function renderModules(root, { childName, childAvatar, modules, onOpenMod
   const lastIndex = modules.length - 1
   let page = startIndex
 
+  // scrollTo({behavior:'smooth'}) ignora a preferência de movimento
+  // reduzido — scroll-behavior:auto (CSS) só cobre scroll sem behavior
+  // explícito. Setas/pontos pedem 'smooth' direto no JS, então checamos
+  // a preferência aqui antes de repassar.
+  const { reducedMotion } = getSettings()
+
   function setPage(index, behavior) {
     page = Math.max(0, Math.min(lastIndex, index))
-    scroller.scrollTo({ left: page * scroller.clientWidth, behavior })
+    scroller.scrollTo({ left: page * scroller.clientWidth, behavior: reducedMotion ? 'auto' : behavior })
     updateControls()
   }
 

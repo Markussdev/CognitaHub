@@ -25,4 +25,9 @@
 
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* 1 = tamanho normal. html[data-text-size='grande'] (base.css) sobrescreve
+     pra 1.12 — default aqui garante que nada quebra se essa variável for
+     lida fora do bloco condicional. */
+  --accessibility-text-scale: 1;
 }

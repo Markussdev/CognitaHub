@@ -2,6 +2,7 @@ import landmarkAbacus from '../assets/cap1/landmark-abacus.webp'
 import { missionNodeHtml } from '../components/mission-node.js'
 import { statusMessageHtml } from '../components/status-message.js'
 import { escapeHtml } from '../utils/html.js'
+import { getSettings } from '../services/settings.js'
 import { computeLayout, segmentPath } from './journey-layout.js'
 
 const MISSION_STATES = {
@@ -286,14 +287,20 @@ export function renderJourney(
   const journeyScreen = root.querySelector('.screen--journey')
   const scrollAmount = () => Math.max(380, journeyScreen.clientHeight * 0.72)
 
+  // Mesmo caso do carrossel de módulos: behavior:'smooth' explícito no JS
+  // ignora scroll-behavior:auto do CSS, então a preferência de movimento
+  // reduzido precisa ser checada aqui também.
+  const { reducedMotion } = getSettings()
+  const scrollBehavior = reducedMotion ? 'auto' : 'smooth'
+
   root.querySelector('[data-journey-scroll="up"]')?.addEventListener('click', () => {
-    journeyScreen.scrollBy({ top: -scrollAmount(), behavior: 'smooth' })
+    journeyScreen.scrollBy({ top: -scrollAmount(), behavior: scrollBehavior })
   })
   root.querySelector('[data-journey-scroll="down"]')?.addEventListener('click', () => {
-    journeyScreen.scrollBy({ top: scrollAmount(), behavior: 'smooth' })
+    journeyScreen.scrollBy({ top: scrollAmount(), behavior: scrollBehavior })
   })
   root.querySelector('[data-journey-scroll="current"]')?.addEventListener('click', () => {
-    scrollTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    scrollTarget?.scrollIntoView({ behavior: scrollBehavior, block: 'center' })
   })
 }
 

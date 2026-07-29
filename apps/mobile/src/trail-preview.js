@@ -17,6 +17,11 @@ import { renderProfileSettings } from './screens/profile-settings.js'
 import { renderExperienceSettings } from './screens/experience-settings.js'
 import { getLandmarkPreset } from './config/module-visuals.js'
 import { getChildAvatar } from './config/child-avatars.js'
+import { applySettings, getSettings } from './services/settings.js'
+
+// Mesma chamada que main.js faz antes do app real — senão o harness não
+// reflete movimento reduzido/texto grande salvos de uma sessão anterior.
+applySettings(getSettings())
 
 const modules = [
   { id: 'm1', status: 'concluido', trail_modules: { position: 1, title: 'Números de 1 a 5' } },

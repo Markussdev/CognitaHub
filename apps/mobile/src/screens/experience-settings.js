@@ -4,15 +4,15 @@ import { getSettings, saveSettings } from '../services/settings.js'
 // Preferências da experiência da criança, não conta de usuário — a sessão
 // é anônima por dispositivo, não tem "minha conta" pra ter aqui.
 //
-// Som e vibração ainda não têm efeito nenhum (não existe áudio nem
-// haptics implementados ainda) — mas já persistem agora pra esses
-// recursos não precisarem mexer em storage de novo quando entrarem.
-// Movimento reduzido e texto grande também são só preferência salva por
-// enquanto, sem aplicar no resto do app ainda.
-
+// Som e vibração ficam escondidos por enquanto — não existe áudio nem
+// haptics implementados ainda, e não vale mostrar toggle de coisa que não
+// faz nada. As chaves continuam no schema de settings.js (DEFAULT_SETTINGS)
+// só pra não precisar de migração quando esses recursos existirem de
+// verdade; elas voltam pra cá nesse momento.
+//
+// Movimento reduzido e texto grande já aplicam de verdade em todo o app —
+// ver applySettings() em services/settings.js.
 const ROWS = [
-  { key: 'soundEnabled', label: 'Som', hint: 'Efeitos sonoros da jornada' },
-  { key: 'hapticsEnabled', label: 'Vibração', hint: 'Resposta ao toque nos nós' },
   { key: 'reducedMotion', label: 'Movimento reduzido', hint: 'Menos animação no mapa' },
   { key: 'textSize', label: 'Texto grande', hint: 'Aumenta o texto da jornada', isTextSize: true },
 ]
