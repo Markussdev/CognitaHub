@@ -19,8 +19,9 @@ import { derivarEstadoResumo, ESTADOS_RESUMO, moduloAtualDe } from './resumo-est
 import { closeRailDrawer, wireRailToggle } from '../lib/rail.js'
 import { DIGITAL_PRESETS } from '../data/digital-presets.js'
 import { emblemaUrl, mascoteUrl } from '../lib/trilha-assets.js'
-import gatoMatematicoSrc from '../../assets/gatomatematico-sem-fundo.png'
-import logoIconSrc from '../../assets/logo-icon-transparent.png'
+
+const gatoMatematicoSrc = '/assets/gatomatematico-sem-fundo.png'
+const logoIconSrc = '/assets/logo-icon-transparent.png'
 
 const session = await requireRole('tutor')
 const stateBox = document.querySelector('[data-tutor-state]')

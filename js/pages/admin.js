@@ -1,6 +1,5 @@
 import { requireRole, signOut } from '../lib/auth.js'
 import { wireRailToggle } from '../lib/rail.js'
-import logoIconSrc from '../../assets/logo-icon-transparent.png'
 import {
   getPendingTutors,
   getChildrenWaitingReview,
@@ -23,6 +22,8 @@ import {
   createSupportCycle,
 } from '../data/matching.js'
 import { getTrailTemplateWithModules } from '../data/trilha-formal.js'
+
+const logoIconSrc = '/assets/logo-icon-transparent.png'
 
 // ── Central de operação da equipe Cognita ────────────────────────────────────
 // Admin operacional mínimo, não ERP: quatro áreas que respondem só ao que a

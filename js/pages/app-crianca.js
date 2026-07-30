@@ -20,6 +20,36 @@ import { mascoteUrl } from '../lib/trilha-assets.js'
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY
 
+// Nome do aparelho pra família diferenciar um do outro na lista (painel do
+// responsável) — não pede nada à criança, só lê o user-agent do navegador.
+// Prioridade: modelo Android exposto no UA (mais específico) > "Navegador
+// no Sistema" > só o sistema, se o navegador não for reconhecível.
+function generateDeviceName() {
+  const ua = navigator.userAgent || ''
+
+  const browser = ua.includes('Edg/') ? 'Edge'
+    : (ua.includes('OPR/') || ua.includes('Opera')) ? 'Opera'
+    : ua.includes('Chrome/') ? 'Chrome'
+    : ua.includes('Firefox/') ? 'Firefox'
+    : (ua.includes('Safari/') && !ua.includes('Chrome')) ? 'Safari'
+    : null
+
+  const os = ua.includes('Windows') ? 'Windows'
+    : /iPhone|iPad|iPod/.test(ua) ? 'iOS'
+    : ua.includes('Android') ? 'Android'
+    : ua.includes('Mac OS X') ? 'Mac'
+    : ua.includes('Linux') ? 'Linux'
+    : null
+
+  const androidModel = ua.match(/Android [\d.]+;\s*([^;)]+)\)/)?.[1]?.trim()
+  if (androidModel && !/^(k|wv|build\/)/i.test(androidModel)) return androidModel
+
+  if (browser && os) return `${browser} no ${os}`
+  if (browser) return browser
+  if (os) return `Aplicativo ${os}`
+  return null
+}
+
 const root = document.querySelector('[data-app-root]')
 const params = new URLSearchParams(location.search)
 
@@ -119,7 +149,7 @@ function renderPareamento({ onPareado }) {
         const { error: authError } = await supabase.auth.signInAnonymously({ options: { captchaToken } })
         if (authError) throw authError
       }
-      const { error: claimError } = await claimPairingCode(codigo, navigator.userAgent?.slice(0, 60) || null)
+      const { error: claimError } = await claimPairingCode(codigo, generateDeviceName())
       if (claimError) throw claimError
       onPareado()
     } catch {

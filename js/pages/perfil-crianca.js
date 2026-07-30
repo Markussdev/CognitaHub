@@ -3,7 +3,8 @@ import { setupFocusMode, ageFrom, el, fact, factList, asText, initials } from '.
 import { getGuardianChildren } from '../data/guardian.js'
 import { getTutorCycles } from '../data/tutor.js'
 import { supabase } from '../lib/supabase.js'
-import mascotHeroSrc from '../../assets/mascot-hero-wave.png'
+
+const mascotHeroSrc = '/assets/mascot-hero-wave.png'
 
 const session = await requireRole('guardian', 'tutor', 'admin')
 

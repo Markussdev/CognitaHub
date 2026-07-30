@@ -22,7 +22,7 @@
 body.os-body {
   min-height: 100vh;
   overflow-x: hidden;
-  background: #0c0930 url("../assets/background-purple.png") center center / cover fixed no-repeat;
+  background: #0c0930 url("/assets/background-purple.png") center center / cover fixed no-repeat;
   color: var(--os-text);
 }
 

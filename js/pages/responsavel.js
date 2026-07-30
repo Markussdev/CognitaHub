@@ -5,12 +5,13 @@ import { wireRailToggle } from '../lib/rail.js'
 import { getGuardianChildren, getChildAppIdentity } from '../data/guardian.js'
 import { getLatestChildTrail, getChildTrailModules, getChildTrailMissions } from '../data/trilha-formal.js'
 import { listPairedDevices, revokePairedDevice, createPairingCode } from '../data/pareamento.js'
-import astronautaSrc from '../../assets/cat-astronauta.png'
-import cientistaSrc from '../../assets/cat-cientista.png'
-import magoSrc from '../../assets/cat-mago.png'
-import pintorSrc from '../../assets/cat-pintor.png'
-import mascoteSrc from '../../assets/gatomatematico-sem-fundo.png'
 import { emblemaUrl } from '../lib/trilha-assets.js'
+
+const astronautaSrc = '/assets/cat-astronauta.png'
+const cientistaSrc = '/assets/cat-cientista.png'
+const magoSrc = '/assets/cat-mago.png'
+const pintorSrc = '/assets/cat-pintor.png'
+const mascoteSrc = '/assets/gatomatematico-sem-fundo.png'
 
 // ── Painel da família — devolutiva, não operação ─────────────────────────────
 // A família não é uma versão limitada do tutor: ela responde só a quatro
@@ -48,10 +49,10 @@ const AVATAR_BY_KEY = {
   pintor: pintorSrc,
 }
 const AVATAR_LABEL = {
-  astronauta: 'Gato astronauta',
-  cientista: 'Gato cientista',
-  mago: 'Gato mago',
-  pintor: 'Gato pintor',
+  astronauta: 'Astronauta',
+  cientista: 'Cientista',
+  mago: 'Mago',
+  pintor: 'Artista',
 }
 function childDisplayName(child) {
   if (!child) return ''
@@ -179,7 +180,7 @@ function currentCycleMonth(startDate, endDate) {
 }
 
 // Chaves = enum real de learning_profiles.attention_span (confirmado em
-// js/pages/cadastro-responsavel.js ATTENTION_MAP / js/data/signup.js
+// cadastro-responsavel.html ATTENTION_MAP / js/data/signup.js
 // mapAttentionSpan) — 'curta'/'media'/'longa' nunca existiram no banco,
 // eram um palpite meu não conferido; por isso "medium" vazava cru na tela.
 const ATTENTION_LABEL = {
