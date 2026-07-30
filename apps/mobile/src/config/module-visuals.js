@@ -296,12 +296,14 @@ export const LANDMARK_PRESETS = [
   },
 ]
 
-// Trilhas com mais módulos que presets reaproveitam o último em vez de
-// quebrar — melhor um visual repetido que um mapa sem imagem. Quando
-// visual_key existir de verdade (etapa 3), isso vira uma busca por key
-// com o índice só como fallback.
-export function getLandmarkPreset(moduleIndex) {
-  const preset = LANDMARK_PRESETS[moduleIndex] ?? LANDMARK_PRESETS[LANDMARK_PRESETS.length - 1]
+// visual_key (trail_modules.visual_key, escolhido pelo tutor) manda —
+// índice de posição é só fallback pra módulo antigo sem a coluna
+// preenchida ou resposta incompleta do banco, nunca quebra o app.
+export function getLandmarkPreset(visualKey, fallbackIndex = 0) {
+  const preset =
+    LANDMARK_PRESETS.find((item) => item.key === visualKey) ??
+    LANDMARK_PRESETS[fallbackIndex] ??
+    LANDMARK_PRESETS[0]
 
   // journey.js (etapa 4, ainda não mexida) lê `.title` — mantém como
   // alias de `.label` só pra não regredir silenciosamente o cabeçalho da

@@ -45,7 +45,7 @@ export function renderModules(root, { childName, childAvatar, modules, onOpenMod
       // fora de ordem/reaproveitando um módulo real só — visualIndex fixa
       // qual preset mostrar independente da posição no carrossel.
       const visualIndex = module.visualIndex ?? index
-      const visual = getLandmarkPreset(visualIndex)
+      const visual = getLandmarkPreset(module.trail_modules?.visual_key, visualIndex)
       const env = visual.environment
       const ground = visual.ground ?? {
         type: 'plain',

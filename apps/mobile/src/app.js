@@ -81,6 +81,7 @@ function buildLandmarkShowcaseModules(realModules) {
       position: index + 1,
       title: preset.label,
       objective: `Teste visual do tema ${preset.label}`,
+      visual_key: preset.key,
     },
   }))
 }
@@ -368,7 +369,7 @@ async function showJourney(root, module) {
       trail: appState.trail,
       currentModule: module,
       missions,
-      moduleVisual: getLandmarkPreset(moduleIndex),
+      moduleVisual: getLandmarkPreset(module.trail_modules?.visual_key, moduleIndex),
 
       onBack: () => showModules(root),
 

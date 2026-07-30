@@ -77,7 +77,7 @@ function showJourney(module) {
     trail: { status: 'ativa' },
     currentModule: module,
     missions,
-    moduleVisual: getLandmarkPreset(idx),
+    moduleVisual: getLandmarkPreset(module.trail_modules?.visual_key, idx),
     onBack: showModules,
     onOpenMission: () => {},
     onRefresh: () => {},

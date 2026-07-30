@@ -18,11 +18,7 @@ export function missionNodeHtml({ title, state = 'locked', activityId = null, x,
   const attrs = activityId ? `type="button" data-activity-id="${activityId}"` : ''
   const safeTitle = escapeHtml(title)
 
-  // Checkpoint bloqueado ganha estrela em vez de cadeado — ainda é "não
-  // liberado", mas sinaliza de longe que é um marco (4/8/12), não uma
-  // missão qualquer da fileira. O nó disponível também leva estrela (o
-  // mascote saiu do mapa por enquanto — decisão de arte): o disco aceso
-  // sozinho ficava vazio, sem "toque aqui".
+
   const badge =
     state === 'locked'
       ? `<span class="mission-node__badge mission-node__badge--lock">${isCheckpoint ? STAR_SVG : LOCK_SVG}</span>`
@@ -43,3 +39,4 @@ export function missionNodeHtml({ title, state = 'locked', activityId = null, x,
     </${tag}>
   `
 }
+  

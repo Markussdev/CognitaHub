@@ -21,7 +21,7 @@ export async function getChildTrailModules(childTrailId) {
     .select(`
       id,
       status,
-      trail_modules (id, position, title, objective)
+      trail_modules (id, position, title, objective, visual_key)
     `)
     .eq('child_trail_id', childTrailId)
 
