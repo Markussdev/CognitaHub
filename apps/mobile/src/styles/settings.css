@@ -1,0 +1,565 @@
+.screen--settings {
+  align-items: stretch;
+}
+
+.settings-header {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.settings-header__back {
+  width: 32px;
+  height: 44px;
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--navy);
+  font-size: 32px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.settings-header h1 {
+  margin: 0;
+  text-align: left;
+}
+
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--warm-white);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+}
+
+.settings-row + .settings-row {
+  border-top: 1px solid var(--line);
+}
+
+.settings-row__copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.settings-row__copy strong {
+  color: var(--navy);
+  font-size: 15px;
+}
+
+.settings-row__copy span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.settings-row--static {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.settings-toggle {
+  flex: none;
+  position: relative;
+  width: 48px;
+  height: 28px;
+  border: none;
+  border-radius: var(--r-pill);
+  background: var(--line);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.settings-toggle__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--warm-white);
+  box-shadow: 0 1px 3px rgba(38, 5, 31, 0.25);
+  transition: transform 0.15s ease;
+}
+
+.settings-toggle.is-on {
+  background: #6d4aff;
+}
+
+.settings-toggle.is-on .settings-toggle__thumb {
+  transform: translateX(20px);
+}
+
+/* ---- menu principal: três botões grandes, função clara sem entrar ---- */
+
+.settings-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 420px;
+  margin-top: 16px;
+}
+
+.settings-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 18px 20px;
+  border: none;
+  border-radius: var(--r-lg);
+  background: var(--warm-white);
+  box-shadow: var(--shadow-card);
+  text-align: left;
+  transition: transform 0.1s ease;
+}
+
+.settings-menu-item:active {
+  transform: scale(0.98);
+}
+
+.settings-menu-item.is-disabled {
+  opacity: 0.55;
+}
+
+.settings-menu-item__icon {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--soft-blue);
+  font-size: 22px;
+}
+
+.settings-menu-item__copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-menu-item__copy strong {
+  color: var(--navy);
+  font-size: 16px;
+}
+
+.settings-menu-item__copy span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.settings-menu-item__chevron {
+  flex: none;
+  color: var(--muted);
+  font-size: 22px;
+}
+
+.settings-menu-item__badge {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  background: var(--line);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.settings-version {
+  margin-top: 20px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* ---- Meu perfil ---- */
+
+.profile-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.profile-preview__avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: var(--shadow-card);
+}
+
+.profile-preview__greeting {
+  margin-top: 10px;
+  font-family: var(--display);
+  font-size: 20px;
+  color: var(--navy);
+}
+
+.profile-field {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 380px;
+  margin-top: 24px;
+}
+
+.profile-field__label {
+  color: var(--navy);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.profile-field__input {
+  margin-top: 8px;
+  padding: 14px 16px;
+  border: 2px solid var(--line);
+  border-radius: var(--r-md);
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+}
+
+.profile-field__input:focus {
+  outline: none;
+  border-color: var(--navy);
+}
+
+.profile-field__hint {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.profile-avatars {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 380px;
+  margin-top: 22px;
+}
+
+.profile-avatars__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.profile-avatar-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 10px;
+  border: 3px solid transparent;
+  border-radius: var(--r-lg);
+  background: var(--warm-white);
+  box-shadow: var(--shadow-card);
+  min-height: 96px;
+}
+
+.profile-avatar-option img {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-avatar-option span {
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.profile-avatar-option.is-selected {
+  border-color: var(--gold);
+  background: var(--soft-gold);
+}
+
+.profile-avatar-option:active {
+  transform: scale(0.97);
+}
+
+.screen--profile .btn-primary {
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
+
+/* ---- perfil salvo ---- */
+
+.screen--profile-saved {
+  justify-content: center;
+}
+
+.profile-saved {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-saved__avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: var(--shadow-card);
+}
+
+/* ---- Para responsáveis ---- */
+
+.guardian-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: 40px;
+  text-align: center;
+}
+
+.guardian-gate__title {
+  font-family: var(--display);
+  font-size: 20px;
+  color: var(--navy);
+}
+
+.guardian-gate__hint {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 14px;
+  max-width: 28ch;
+}
+
+.guardian-gate__btn {
+  position: relative;
+  overflow: hidden;
+  margin-top: 28px;
+  width: 100%;
+  max-width: 320px;
+  min-height: 56px;
+  border: 2px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--warm-white);
+  color: var(--navy);
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* Barra só decorativa — o gate de verdade é o setTimeout no JS
+   (guardian-settings.js). Se "movimento reduzido" estiver ligado, o CSS
+   global força transition-duration:1ms e essa barra pula pra 100% quase
+   na hora — mas isso não libera nada sozinho, é só a pintura. */
+.guardian-gate__fill {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 0;
+  background: var(--soft-blue);
+  transition: width 2000ms linear;
+}
+
+.guardian-gate__btn.is-holding .guardian-gate__fill {
+  width: 100%;
+}
+
+.guardian-gate__label {
+  position: relative;
+  z-index: 1;
+}
+
+.guardian-connected {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: 8px;
+  padding: 18px;
+  border-radius: var(--r-lg);
+  background: var(--warm-white);
+  box-shadow: var(--shadow-card);
+}
+
+.guardian-connected__label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.guardian-connected__child {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.guardian-connected__child img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.guardian-connected__child strong {
+  color: var(--navy);
+  font-size: 18px;
+}
+
+.guardian-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 420px;
+  margin-top: 16px;
+}
+
+.guardian-action,
+.guardian-help__toggle {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 18px;
+  border: none;
+  border-radius: var(--r-lg);
+  background: var(--warm-white);
+  box-shadow: var(--shadow-card);
+  text-align: left;
+  transition: transform 0.1s ease;
+}
+
+.guardian-action:active {
+  transform: scale(0.98);
+}
+
+.guardian-action__icon {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--soft-blue);
+  font-size: 20px;
+}
+
+.guardian-action__copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.guardian-action__copy strong {
+  color: var(--navy);
+  font-size: 15px;
+}
+
+.guardian-action__copy span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* Desconectar entra neutro na lista — só a confirmação (.btn-danger)
+   fica vermelha, pra não parecer uma ação perigosa o tempo todo. */
+.guardian-action--neutral .guardian-action__icon {
+  background: var(--line);
+}
+
+.guardian-help__chevron {
+  flex: none;
+  color: var(--muted);
+  font-size: 18px;
+  transition: transform 0.15s ease;
+}
+
+.guardian-help__chevron.is-open {
+  transform: rotate(90deg);
+}
+
+.guardian-help__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 16px 18px;
+  border-radius: var(--r-lg);
+  background: var(--soft-blue);
+}
+
+.guardian-help__body p {
+  margin: 0;
+  color: var(--navy);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ---- confirmação de desconectar ---- */
+
+.guardian-confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 380px;
+  margin-top: 40px;
+  text-align: center;
+}
+
+.guardian-confirm__title {
+  font-family: var(--display);
+  font-size: 20px;
+  color: var(--navy);
+}
+
+.guardian-confirm__body {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.btn-danger {
+  width: 100%;
+  max-width: 320px;
+  min-height: 56px;
+  border: none;
+  border-radius: var(--r-pill);
+  background: var(--wine);
+  color: var(--warm-white);
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 18px;
+  margin-top: 24px;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.btn-danger:disabled {
+  opacity: 0.5;
+}
+
+.btn-danger:not(:disabled):active {
+  transform: scale(0.97);
+}

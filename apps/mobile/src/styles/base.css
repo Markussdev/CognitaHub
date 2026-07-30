@@ -1,0 +1,157 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  color: var(--navy);
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+#app {
+  height: 100svh;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+}
+
+.screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px;
+  overflow-y: auto;
+  animation: screen-in 0.25s ease;
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---- preferências de "Minha experiência" (services/settings.js) ----
+   Aplicadas via atributo no <html>, não classe por tela — funciona pra
+   qualquer componente novo sem precisar lembrar de importar nada. */
+
+/* Movimento reduzido: força tudo pra "instantâneo", inclusive scroll
+   disparado via JS com behavior:'smooth' explícito (scroll-behavior:auto
+   sozinho NÃO pega esse caso — só vale pro comportamento default do
+   navegador. Por isso modules.js/journey.js também checam a preferência
+   antes de pedir 'smooth'). */
+html[data-reduced-motion='true'] *,
+html[data-reduced-motion='true'] *::before,
+html[data-reduced-motion='true'] *::after {
+  animation-duration: 1ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Texto grande: só tipografia (não aumenta nó/landmark/caixa de botão
+   inteira) — cada seletor usa o tamanho REAL daquele elemento hoje (não
+   um valor genérico), só multiplicado pela escala. */
+html[data-text-size='grande'] {
+  --accessibility-text-scale: 1.12;
+}
+
+html[data-text-size='grande'] .modules-header h1,
+html[data-text-size='grande'] .journey-header .title {
+  font-size: calc(18px * var(--accessibility-text-scale));
+}
+
+html[data-text-size='grande'] .settings-header h1 {
+  font-size: calc(24px * var(--accessibility-text-scale));
+}
+
+html[data-text-size='grande'] .modules-header p,
+html[data-text-size='grande'] .settings-row__copy span,
+html[data-text-size='grande'] .settings-menu-item__copy span,
+html[data-text-size='grande'] .profile-field__hint {
+  font-size: calc(12px * var(--accessibility-text-scale));
+}
+
+html[data-text-size='grande'] .journey-header__context {
+  font-size: calc(11px * var(--accessibility-text-scale));
+}
+
+/* Textos da atividade em si — é ali que a criança mais precisa ler, não
+   só no chrome/navegação ao redor. */
+html[data-text-size='grande'] .mission-round,
+html[data-text-size='grande'] .status-message {
+  font-size: calc(15px * var(--accessibility-text-scale));
+}
+
+html[data-text-size='grande'] .profile-field__label,
+html[data-text-size='grande'] .help-text {
+  font-size: calc(14px * var(--accessibility-text-scale));
+}
+
+html[data-text-size='grande'] .counting-counter,
+html[data-text-size='grande'] .identifying-instruction {
+  font-size: calc(18px * var(--accessibility-text-scale));
+}
+
+html[data-text-size='grande'] .settings-menu-item__copy strong {
+  font-size: calc(16px * var(--accessibility-text-scale));
+}
+
+/* .module-scene__copy h2 usa clamp() (responsivo por viewport) — escala
+   os dois limites em vez de travar num valor fixo, senão "grande" perderia
+   o comportamento responsivo que já existe em telas estreitas/largas. */
+html[data-text-size='grande'] .module-scene__copy h2 {
+  font-size: clamp(calc(21px * var(--accessibility-text-scale)), 5.5vw, calc(26px * var(--accessibility-text-scale)));
+}
+
+html[data-text-size='grande'] button,
+html[data-text-size='grande'] input {
+  font-size: calc(1em * var(--accessibility-text-scale));
+}
