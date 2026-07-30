@@ -14,11 +14,14 @@ export async function createPrivateJourney({ title, objective, childId }) {
   })
 }
 
-// modules: [{ title, objective?, missions: [{ source_child_activity_id, title? }] }]
-// Salva a jornada INTEIRA (título/objetivo + estrutura). Devolve o novo
-// updated_at (usar como expectedUpdatedAt no próximo save).
+// modules: [{ title, objective?, visual_key, missions: [{ source_child_activity_id, title? }] }]
+// Salva a jornada INTEIRA (título/objetivo + estrutura + cenário de cada
+// módulo). Devolve o novo updated_at (usar como expectedUpdatedAt no
+// próximo save). v2 registra visual_key por cima da validação pedagógica
+// que save_journey_draft (v1) já fazia — mesma transação, ver
+// docs/supabase-add-module-visual-identity-v1.sql.
 export async function saveJourneyDraft({ templateId, title, objective, modules, expectedUpdatedAt }) {
-  return supabase.rpc('save_journey_draft', {
+  return supabase.rpc('save_journey_draft_v2', {
     p_template_id: templateId,
     p_title: title,
     p_objective: objective ?? null,
@@ -51,7 +54,7 @@ export async function getPrivateJourneyStructure(templateId) {
     .select(`
       id, title, description, status, updated_at, target_child_id,
       trail_modules (
-        id, position, title, objective,
+        id, position, title, objective, visual_key,
         mission_templates ( id, position, title, molde, source_child_activity_id )
       )
     `)

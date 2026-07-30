@@ -21,7 +21,7 @@ export async function listPublishedTrailTemplates() {
 export async function getTrailTemplateWithModules(trailTemplateId) {
   return supabase
     .from('trail_modules')
-    .select('id, position, title, objective, mission_templates ( id, position, title, molde, default_tema, default_config )')
+    .select('id, position, title, objective, visual_key, mission_templates ( id, position, title, molde, default_tema, default_config )')
     .eq('trail_template_id', trailTemplateId)
     .order('position')
 }
@@ -51,7 +51,7 @@ export async function getLatestChildTrail(childId, cycleId) {
 export async function getChildTrailModules(childTrailId) {
   return supabase
     .from('child_trail_modules')
-    .select('id, status, adaptation_config, released_at, completed_at, tutor_decision, trail_modules ( id, position, title, objective )')
+    .select('id, status, adaptation_config, released_at, completed_at, tutor_decision, trail_modules ( id, position, title, objective, visual_key )')
     .eq('child_trail_id', childTrailId)
     .order('position', { foreignTable: 'trail_modules' })
 }

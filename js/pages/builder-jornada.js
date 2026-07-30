@@ -6,6 +6,7 @@ import {
   createPrivateJourney, saveJourneyDraft, publishJourney,
   listMyPrivateJourneys, getPrivateJourneyStructure,
 } from '../data/journey-builder.js'
+import { MODULE_VISUALS, defaultModuleVisualKey, getModuleVisual } from '../data/module-visuals.js'
 
 // Builder de jornada privada do tutor (Fase 15). Duas telas: lista das
 // jornadas privadas da criança e o editor (título → módulos → missões de
@@ -112,8 +113,12 @@ async function renderList() {
 }
 
 // ── Tela: editor ──────────────────────────────────────────────────────────
-// state.modules: [{ title, objective, missions: [{ activityId }] }]
+// state.modules: [{ title, objective, visualKey, missions: [{ activityId }] }]
 let state = null
+
+function createEmptyModule(index) {
+  return { title: '', objective: '', visualKey: defaultModuleVisualKey(index), missions: [] }
+}
 
 async function openEditor(templateId) {
   if (!templateId) {
@@ -125,9 +130,10 @@ async function openEditor(templateId) {
   if (error || !data) return renderError('Não foi possível abrir esta jornada.')
   const modules = (data.trail_modules ?? [])
     .slice().sort((a, b) => a.position - b.position)
-    .map((m) => ({
+    .map((m, index) => ({
       title: m.title,
       objective: m.objective || '',
+      visualKey: m.visual_key ?? defaultModuleVisualKey(index),
       missions: (m.mission_templates ?? [])
         .slice().sort((a, b) => a.position - b.position)
         .map((mt) => ({ activityId: mt.source_child_activity_id, snapshotTitle: mt.title })),
@@ -182,7 +188,7 @@ function renderEditor() {
   if (!published) {
     const addMod = el('button', 'btn btn-ghost btn-sm', '+ Módulo')
     addMod.type = 'button'
-    addMod.addEventListener('click', () => mutate(() => state.modules.push({ title: '', objective: '', missions: [] })))
+    addMod.addEventListener('click', () => mutate(() => state.modules.push(createEmptyModule(state.modules.length))))
     modsHead.append(addMod)
   }
   modsCard.append(modsHead)
@@ -247,6 +253,8 @@ function renderModule(mod, i, published) {
   tin.value = mod.title || ''; tin.placeholder = 'Título do módulo (ex.: Reconhecer)'; tin.disabled = published
   tWrap.append(tin); card.append(tWrap)
 
+  card.append(renderVisualPicker(mod, i, published))
+
   // Missões
   mod.missions.forEach((mis, j) => card.append(renderMission(mod, i, mis, j, published)))
   if (!mod.missions.length) card.append(el('p', 'bj-empty', 'Sem missões neste módulo ainda.'))
@@ -259,6 +267,37 @@ function renderModule(mod, i, published) {
     card.append(addMis)
   }
   return card
+}
+
+// Cenário do módulo — só miniatura + nome pro tutor escolher. A composição
+// completa (céu, terreno, animações) é montada só no app da criança.
+function renderVisualPicker(module, moduleIndex, disabled) {
+  const wrap = el('div', 'bj-visual-field')
+  wrap.append(el('p', 'bj-visual-label', 'Cenário do módulo'))
+  wrap.append(el('p', 'bj-hint', 'Esta será a identidade visual mostrada no aplicativo da criança.'))
+
+  const grid = el('div', 'bj-visual-grid')
+  MODULE_VISUALS.forEach((visual) => {
+    const selected = module.visualKey === visual.key
+    const button = el('button', `bj-visual-option${selected ? ' is-selected' : ''}`)
+    button.type = 'button'
+    button.disabled = disabled
+    button.setAttribute('aria-pressed', String(selected))
+
+    const image = document.createElement('img')
+    image.src = visual.image
+    image.alt = ''
+
+    const copy = el('span', 'bj-visual-copy')
+    copy.append(el('strong', null, visual.label), el('small', null, visual.description))
+
+    button.append(image, copy)
+    button.addEventListener('click', () => mutate(() => { state.modules[moduleIndex].visualKey = visual.key }))
+    grid.append(button)
+  })
+
+  wrap.append(grid)
+  return wrap
 }
 
 function renderMission(mod, modIdx, mis, j, published) {
@@ -326,9 +365,10 @@ function buildPayload() {
     if (!m.title.trim()) { setMsg(`O módulo ${i + 1} precisa de um título.`, 'err'); return null }
     if (!m.missions.length) { setMsg(`O módulo ${i + 1} precisa de pelo menos 1 missão.`, 'err'); return null }
   }
-  return state.modules.map((m) => ({
+  return state.modules.map((m, index) => ({
     title: m.title.trim(),
     objective: m.objective?.trim() || null,
+    visual_key: getModuleVisual(m.visualKey, index).key,
     missions: m.missions.map((mi) => ({ source_child_activity_id: mi.activityId })),
   }))
 }

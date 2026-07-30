@@ -19,6 +19,7 @@ import { derivarEstadoResumo, ESTADOS_RESUMO, moduloAtualDe } from './resumo-est
 import { closeRailDrawer, wireRailToggle } from '../lib/rail.js'
 import { DIGITAL_PRESETS } from '../data/digital-presets.js'
 import { emblemaUrl, mascoteUrl } from '../lib/trilha-assets.js'
+import { getModuleVisual } from '../data/module-visuals.js'
 
 const gatoMatematicoSrc = '/assets/gatomatematico-sem-fundo.png'
 const logoIconSrc = '/assets/logo-icon-transparent.png'
@@ -2477,9 +2478,10 @@ function buildPlanPanel(cycle, state) {
       input.value = m.id
       if (i === 0) input.checked = true
       input.addEventListener('change', () => { selectedModuleId = m.id })
+      const visual = getModuleVisual(m.visual_key, i)
       const txt = el('span', 'journey-radio-text')
       txt.append(el('span', 'journey-radio-title', `Módulo ${m.position} — ${m.title}`))
-      if (m.objective) txt.append(el('span', 'journey-radio-sub', m.objective))
+      txt.append(el('span', 'journey-radio-sub', [visual.label, m.objective].filter(Boolean).join(' · ')))
       opt.append(input, txt)
       radios.append(opt)
     })
