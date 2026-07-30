@@ -62,7 +62,7 @@ async function init() {
   document.title = `Trilha: ${plano.titulo} | Cognita Hub`
 
   // Sprint 6A — modo demonstração infantil (ver docs/V2-DIRECAO.md).
-  testarCriancaLink.href = `app-crianca.html?${new URLSearchParams({ cycle_id: cycle.id, demo: '1' }).toString()}`
+  testarCriancaLink.href = `preview-crianca.html?${new URLSearchParams({ cycle_id: cycle.id }).toString()}`
   testarCriancaLink.hidden = false
 
   const podePreparar = cycle.status === 'active'

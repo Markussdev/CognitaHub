@@ -2292,7 +2292,7 @@ const MISSION_STATUS_LABEL = {
 // como saber que é um teste do tutor, não a credencial final da criança.
 function appendChildAppLink(container, cycle, label) {
   const link = el('a', 'btn btn-ghost btn-sm', label)
-  link.href = `app-crianca.html?${new URLSearchParams({ cycle_id: cycle.id, demo: '1' }).toString()}`
+  link.href = `preview-crianca.html?${new URLSearchParams({ cycle_id: cycle.id }).toString()}`
   container.append(link)
 }
 

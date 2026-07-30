@@ -11,7 +11,7 @@ export async function getTutorProfile(userId) {
 }
 
 const CHILD_SELECT = `
-  id, name, birth_date, school_year, status, main_difficulties,
+  id, name, preferred_name, avatar_key, birth_date, school_year, status, main_difficulties,
   learning_profiles ( preferred_formats, attention_span, math_difficulties,
                       motivators, avoidances )
 `
