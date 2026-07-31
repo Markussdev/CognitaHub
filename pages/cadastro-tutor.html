@@ -275,9 +275,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
 
         <div class="field-row">
           <div class="field">
-            <label for="tt-tel">Telefone</label>
-            <span class="field-hint" id="hint-tt-tel">Visível apenas para a equipe Cognita.</span>
-            <input type="tel" id="tt-tel" name="telefone" autocomplete="tel" inputmode="tel" aria-describedby="hint-tt-tel" placeholder="(00) 00000-0000" required aria-required="true" data-phone-mask />
+            <label for="tt-tel">Telefone <span style="font-weight:400;color:var(--ink-soft)">(opcional)</span></label>
+            <span class="field-hint" id="hint-tt-tel">Use um número no qual a equipe Cognita possa entrar em contato. Visível só para a equipe.</span>
+            <input type="tel" id="tt-tel" name="telefone" autocomplete="tel" inputmode="tel" aria-describedby="hint-tt-tel" placeholder="(00) 00000-0000" data-phone-mask />
           </div>
           <div class="field">
             <label for="tt-nasc">Data de nascimento</label>
@@ -554,10 +554,11 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
 </main>
 
 <script type="module">
-import { signUp } from '../js/lib/auth.js'
+import { signUp, resendConfirmationEmail } from '../js/lib/auth.js'
 import { stashPendingSignup } from '../js/lib/pending-signup.js'
 import { submitTutorApplication } from '../js/data/signup.js'
 import { loadDraft, applyDraft, saveDraft, clearDraft, wireDraftAutosave } from '../js/lib/form-draft.js'
+import { phoneToE164 } from '../js/lib/phone.js'
 
 (function(){
   var DRAFT_KEY = 'cognita:draft:cadastro-tutor';
@@ -565,6 +566,7 @@ import { loadDraft, applyDraft, saveDraft, clearDraft, wireDraftAutosave } from 
   var wizardForm = document.querySelector('[data-tutor-form]');
   var draft = loadDraft(DRAFT_KEY);
   var current = 0;
+  var signedUpEmail = null;
   var panels   = document.querySelectorAll('.step-panel');
   var stpItems = document.querySelectorAll('.stepper-item');
   var counter  = document.getElementById('step-counter');
@@ -594,7 +596,7 @@ import { loadDraft, applyDraft, saveDraft, clearDraft, wireDraftAutosave } from 
     var account = {
       name: valueOf('#tt-nome'),
       email: valueOf('#tt-email'),
-      phone: valueOf('#tt-tel'),
+      phone: phoneToE164(valueOf('#tt-tel')),
       password: valueOf('#tt-senha'),
       role: 'tutor',
     };
@@ -623,6 +625,8 @@ import { loadDraft, applyDraft, saveDraft, clearDraft, wireDraftAutosave } from 
       alert('Não foi possível criar a conta agora. Verifique os dados e tente novamente.');
       return false;
     }
+
+    signedUpEmail = account.email;
 
     if (signup.session) {
       var result = await submitTutorApplication(signup.user.id, application);
@@ -740,10 +744,13 @@ import { loadDraft, applyDraft, saveDraft, clearDraft, wireDraftAutosave } from 
     btn.addEventListener('click', function(){ if (current > 0) goTo(current - 1); });
   });
   document.querySelectorAll('[data-resend]').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      // TODO(wiring): auth.resend({ type: 'signup', email })
-      btn.textContent = 'E-mail reenviado';
+    btn.addEventListener('click', async function(){
+      if (!signedUpEmail) return;
       btn.disabled = true;
+      btn.textContent = 'Enviando...';
+      var result = await resendConfirmationEmail(signedUpEmail);
+      btn.textContent = result.error ? 'Não foi possível reenviar' : 'E-mail reenviado';
+      if (result.error) btn.disabled = false;
     });
   });
 
@@ -796,22 +803,39 @@ import { loadDraft, applyDraft, saveDraft, clearDraft, wireDraftAutosave } from 
     });
   });
 
-  // Validação de idade — tutor ≥ 18
+  // Validação de idade — tutor ≥ 18. Compara data completa e devolve null
+  // pra data futura/inválida (mesma correção do cadastro de responsável —
+  // sem isso, um ano digitado errado vira idade negativa mostrada crua).
+  function calcularIdadeTutor(valor) {
+    var nascimento = new Date(valor + 'T00:00:00');
+    var hoje = new Date();
+    if (isNaN(nascimento.getTime()) || nascimento > hoje) return null;
+    var idade = hoje.getFullYear() - nascimento.getFullYear();
+    var aniversarioNaoOcorreu = hoje.getMonth() < nascimento.getMonth() ||
+      (hoje.getMonth() === nascimento.getMonth() && hoje.getDate() < nascimento.getDate());
+    if (aniversarioNaoOcorreu) idade -= 1;
+    return idade;
+  }
+
   var nascInput = document.getElementById('tt-nasc');
   if (nascInput) {
+    // Limites do input: no máximo 100 anos atrás, no mínimo 18 anos atrás.
+    var hojeLimiteTutor = new Date();
+    nascInput.max = new Date(hojeLimiteTutor.getFullYear() - 18, hojeLimiteTutor.getMonth(), hojeLimiteTutor.getDate()).toISOString().slice(0, 10);
+    nascInput.min = new Date(hojeLimiteTutor.getFullYear() - 100, hojeLimiteTutor.getMonth(), hojeLimiteTutor.getDate()).toISOString().slice(0, 10);
+
     nascInput.addEventListener('change', function(){
-      var dob = new Date(nascInput.value);
-      if (isNaN(dob)) return;
-      var now = new Date();
-      var age = now.getFullYear() - dob.getFullYear();
-      var m = now.getMonth() - dob.getMonth();
-      if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age--;
+      var age = calcularIdadeTutor(nascInput.value);
 
       var box  = document.getElementById('age-alert-tutor');
       var det  = box.querySelector('[data-age-detail]');
       var next = document.querySelector('#panel-1 [data-next]');
 
-      if (age < 18) {
+      if (age === null) {
+        box.classList.add('is-visible');
+        det.textContent = 'A data de nascimento não pode estar no futuro. Confira se o ano foi digitado corretamente.';
+        if (next) next.disabled = true;
+      } else if (age < 18) {
         box.classList.add('is-visible');
         det.textContent = 'Com ' + age + ' anos, o cadastro não pode ser concluído.';
         if (next) next.disabled = true;

@@ -364,6 +364,14 @@ function buildPayload() {
   for (const [i, m] of state.modules.entries()) {
     if (!m.title.trim()) { setMsg(`O módulo ${i + 1} precisa de um título.`, 'err'); return null }
     if (!m.missions.length) { setMsg(`O módulo ${i + 1} precisa de pelo menos 1 missão.`, 'err'); return null }
+    // Atividade pode ter sido arquivada/removida depois de virar missão —
+    // sem esse corte, o payload manda um source_child_activity_id morto
+    // pro servidor em vez de travar aqui com uma mensagem clara.
+    const missaoInvalida = m.missions.find((mi) => !activityById(mi.activityId))
+    if (missaoInvalida) {
+      setMsg(`O módulo ${i + 1} tem uma missão com atividade que não existe mais — remova e escolha outra.`, 'err')
+      return null
+    }
   }
   return state.modules.map((m, index) => ({
     title: m.title.trim(),

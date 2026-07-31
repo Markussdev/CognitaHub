@@ -11,6 +11,15 @@ const TEMAS = {
   numeros: { formatarOpcao: (n) => String(n) },
 }
 
+// O enunciado nunca pode mostrar o algarismo-alvo — senão a criança só
+// copia o símbolo da pergunta pra uma das opções, sem precisar reconhecer
+// número nenhum. Por extenso quebra esse pareamento visual direto (a
+// palavra "cinco" não se parece com o botão "5").
+const NUMEROS_POR_EXTENSO = ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez']
+function porExtenso(numero) {
+  return NUMEROS_POR_EXTENSO[numero] ?? String(numero)
+}
+
 function shuffle(list) {
   const arr = [...list]
   for (let i = arr.length - 1; i > 0; i--) {
@@ -117,6 +126,6 @@ export function mount(slotEl, { tema, config, onResultado }) {
 
   return {
     avaliar: () => (concluido ? 'acerto' : 'dificuldade'),
-    instrucao: `Toque no número ${temaDef.formatarOpcao(alvo)}.`,
+    instrucao: `Toque no número ${porExtenso(alvo)}.`,
   }
 }

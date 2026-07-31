@@ -12,6 +12,8 @@ module.exports = {
         paraFamilias: resolve(__dirname, 'pages/para-familias.html'),
         paraTutores: resolve(__dirname, 'pages/para-tutores.html'),
         seguranca: resolve(__dirname, 'pages/seguranca.html'),
+        termosDeUso: resolve(__dirname, 'pages/termos-de-uso.html'),
+        politicaDePrivacidade: resolve(__dirname, 'pages/politica-de-privacidade.html'),
         cadastroTutor: resolve(__dirname, 'pages/cadastro-tutor.html'),
         cadastroResponsavel: resolve(__dirname, 'pages/cadastro-responsavel.html'),
 

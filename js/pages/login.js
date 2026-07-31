@@ -1,13 +1,16 @@
 import { supabase } from '../lib/supabase.js'
-import { isBlockedStatus, signIn, redirectByRole } from '../lib/auth.js'
+import { isBlockedStatus, signIn, redirectByRole, resendConfirmationEmail } from '../lib/auth.js'
 import { completePendingSignup } from '../lib/pending-signup.js'
 
 const form = document.querySelector('[data-login-form]')
 const emailInput = document.querySelector('[data-login-email]')
 const passwordInput = document.querySelector('[data-login-password]')
 const errorBox = document.querySelector('[data-login-error]')
+const resendBtn = document.querySelector('[data-resend-confirmation]')
 
-function showLoginMessage(message, type = 'error') {
+let pendingConfirmEmail = null
+
+function showLoginMessage(message, type = 'error', { resendEmail = null } = {}) {
   if (!errorBox) return
 
   errorBox.dataset.type = type
@@ -19,6 +22,13 @@ function showLoginMessage(message, type = 'error') {
     detail.textContent = message
   } else {
     errorBox.textContent = message
+  }
+
+  pendingConfirmEmail = resendEmail
+  if (resendBtn) {
+    resendBtn.hidden = !resendEmail
+    resendBtn.disabled = false
+    resendBtn.textContent = 'Reenviar e-mail de confirmação'
   }
 
   errorBox.classList.add('is-visible')
@@ -37,6 +47,28 @@ function clearLoginMessage() {
   } else {
     errorBox.textContent = ''
   }
+
+  pendingConfirmEmail = null
+  if (resendBtn) resendBtn.hidden = true
+}
+
+if (resendBtn) {
+  resendBtn.addEventListener('click', async () => {
+    if (!pendingConfirmEmail) return
+    resendBtn.disabled = true
+    resendBtn.textContent = 'Enviando…'
+    const { error } = await resendConfirmationEmail(pendingConfirmEmail)
+    resendBtn.textContent = error ? 'Não foi possível reenviar' : 'E-mail reenviado'
+    if (!error) setTimeout(() => { resendBtn.disabled = false; resendBtn.textContent = 'Reenviar e-mail de confirmação' }, 4000)
+    else resendBtn.disabled = false
+  })
+}
+
+// Sessão barrada por e-mail não confirmado (ver requireRole em auth.js) —
+// não sabemos o e-mail aqui (o redirect não carrega isso de propósito),
+// então só orienta a entrar de novo, onde o fluxo normal de reenvio aparece.
+if (new URLSearchParams(location.search).get('confirmar') === '1') {
+  showLoginMessage('Confirme seu e-mail para continuar. Entre novamente para receber a opção de reenviar a confirmação.', 'warn')
 }
 
 function getStatusMessage(status) {
@@ -117,7 +149,16 @@ if (form) {
     const email = emailInput.value.trim()
     const password = passwordInput.value
 
-    const { user, profile, error } = await signIn(email, password)
+    const { user, profile, error, emailNotConfirmed } = await signIn(email, password)
+
+    if (emailNotConfirmed) {
+      showLoginMessage(
+        'Confirme seu e-mail antes de entrar — enviamos um link de confirmação quando você se cadastrou.',
+        'warn',
+        { resendEmail: email }
+      )
+      return
+    }
 
     if (error || !profile) {
       showLoginMessage('E-mail ou senha incorretos. Tente novamente.')

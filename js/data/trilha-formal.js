@@ -40,7 +40,7 @@ export async function getTrailTemplateWithModules(trailTemplateId) {
 export async function getLatestChildTrail(childId, cycleId) {
   return supabase
     .from('child_trails')
-    .select('id, trail_template_id, template_version, starting_module_id, status, created_at, trail_templates ( title, description )')
+    .select('id, trail_template_id, template_version, starting_module_id, status, created_at, trail_templates ( title, description, visibility )')
     .eq('child_id', childId)
     .eq('cycle_id', cycleId)
     .order('created_at', { ascending: false })

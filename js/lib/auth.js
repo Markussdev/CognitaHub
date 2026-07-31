@@ -38,16 +38,32 @@ export async function signUp({ email, password, name, phone, role }) {
   return { user: data.user, session: data.session }
 }
 
+// Confirmação de posse do e-mail é obrigatória independente da configuração
+// do projeto Supabase (Confirm email ligado/desligado no painel) — o app
+// barra por conta própria, não confia só na config remota. Dois caminhos
+// levam ao mesmo estado "email não confirmado": o Supabase recusa o login
+// e nem cria sessão (Confirm email ligado), ou cria sessão mas
+// email_confirmed_at vem nulo (Confirm email desligado) — aqui a gente
+// desfaz a sessão na hora, pra não deixar ninguém "meio-logado".
 export async function signIn(email, password) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   })
 
-  if (error || !data?.user) {
-    return {
-      error: error ?? new Error('Usuario nao autenticado'),
-    }
+  if (error) {
+    const isUnconfirmed = error.code === 'email_not_confirmed'
+      || /email not confirmed/i.test(error.message || '')
+    return { error, emailNotConfirmed: isUnconfirmed, email }
+  }
+
+  if (!data?.user) {
+    return { error: new Error('Usuario nao autenticado') }
+  }
+
+  if (!data.user.email_confirmed_at) {
+    await supabase.auth.signOut()
+    return { error: new Error('E-mail nao confirmado'), emailNotConfirmed: true, email: data.user.email }
   }
 
   const { data: profile, error: profileError } = await supabase
@@ -63,6 +79,13 @@ export async function signIn(email, password) {
   return { user: data.user, profile }
 }
 
+// Sem sessão exigida — chamado tanto do login (e-mail errado, sem conta
+// ainda) quanto da tela pós-cadastro (sessão pode nem existir se Confirm
+// email estiver ligado). O Supabase reenvia o mesmo link de confirmação.
+export async function resendConfirmationEmail(email) {
+  return supabase.auth.resend({ type: 'signup', email })
+}
+
 export function redirectByRole(role) {
   window.location.href = HOME_BY_ROLE[role] ?? '/pages/login.html'
 }
@@ -75,6 +98,15 @@ export async function requireRole(...allowedRoles) {
 
   if (error || !user) {
     window.location.replace('/pages/login.html')
+    return null
+  }
+
+  // Defensivo: se alguém chegou com sessão válida mas sem confirmar o
+  // e-mail (ex.: Confirm email foi desligado depois que a sessão já
+  // existia), barra aqui também — não só no momento do login.
+  if (!user.is_anonymous && !user.email_confirmed_at) {
+    await supabase.auth.signOut()
+    window.location.replace('/pages/login.html?confirmar=1')
     return null
   }
 

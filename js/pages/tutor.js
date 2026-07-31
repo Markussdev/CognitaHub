@@ -2593,35 +2593,46 @@ function buildPlanPanel(cycle, state) {
 
     if (current.status === 'bloqueado') {
       if (podePreparar) {
-        const adaptRow = el('div', 'trilha-adapt-row')
-        const rodadasField = el('div', 'trilha-adapt-field')
-        rodadasField.append(el('label', null, 'Rodadas por missão'))
-        const rodadasInput = el('input')
-        rodadasInput.type = 'number'
-        rodadasInput.min = '1'
-        rodadasInput.placeholder = 'Padrão'
-        rodadasField.append(rodadasInput)
-        adaptRow.append(rodadasField)
+        // Jornada privada: as missões já carregam rodadas/nível definidos na
+        // criação de cada atividade — perguntar de novo aqui duplicava a
+        // configuração e criava conflito (qual valor vale, o da atividade ou
+        // o da liberação?). Só a jornada oficial do Cognita mantém o ajuste
+        // aqui, porque as missões dela não têm configuração própria por trás.
+        const isPrivate = childTrail.trail_templates?.visibility === 'private'
+        let rodadasInput = null
+        let nivelInput = null
 
-        const nivelField = el('div', 'trilha-adapt-field')
-        nivelField.append(el('label', null, 'Nível'))
-        const nivelInput = el('input')
-        nivelInput.type = 'number'
-        nivelInput.min = '1'
-        nivelInput.placeholder = 'Padrão'
-        nivelField.append(nivelInput)
-        adaptRow.append(nivelField)
+        if (!isPrivate) {
+          const adaptRow = el('div', 'trilha-adapt-row')
+          const rodadasField = el('div', 'trilha-adapt-field')
+          rodadasField.append(el('label', null, 'Rodadas por missão'))
+          rodadasInput = el('input')
+          rodadasInput.type = 'number'
+          rodadasInput.min = '1'
+          rodadasInput.placeholder = 'Padrão'
+          rodadasField.append(rodadasInput)
+          adaptRow.append(rodadasField)
 
-        adaptRow.append(el('span', 'trilha-adapt-hint', 'Deixe vazio pra usar o padrão do currículo'))
-        currentCard.append(adaptRow)
+          const nivelField = el('div', 'trilha-adapt-field')
+          nivelField.append(el('label', null, 'Nível'))
+          nivelInput = el('input')
+          nivelInput.type = 'number'
+          nivelInput.min = '1'
+          nivelInput.placeholder = 'Padrão'
+          nivelField.append(nivelInput)
+          adaptRow.append(nivelField)
+
+          adaptRow.append(el('span', 'trilha-adapt-hint', 'Deixe vazio pra usar o padrão do currículo'))
+          currentCard.append(adaptRow)
+        }
 
         const btn = el('button', 'btn btn-accent btn-sm', 'Liberar módulo')
         btn.type = 'button'
         btn.addEventListener('click', async () => {
           btn.disabled = true
           const adaptations = {}
-          if (rodadasInput.value) adaptations.rodadas = Number(rodadasInput.value)
-          if (nivelInput.value) adaptations.nivel = Number(nivelInput.value)
+          if (rodadasInput?.value) adaptations.rodadas = Number(rodadasInput.value)
+          if (nivelInput?.value) adaptations.nivel = Number(nivelInput.value)
           const { error: releaseError } = await releaseChildModule({ childTrailModuleId: current.id, adaptations })
           if (releaseError) {
             btn.disabled = false

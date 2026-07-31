@@ -381,9 +381,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
         </div>
 
         <div class="field">
-          <label for="rp-tel">Telefone</label>
-          <span class="field-hint" id="hint-rp-tel">Visível apenas para a equipe Cognita.</span>
-          <input type="tel" id="rp-tel" name="telefone" autocomplete="tel" inputmode="tel" aria-describedby="hint-rp-tel" placeholder="(00) 00000-0000" required aria-required="true" data-phone-mask />
+          <label for="rp-tel">Telefone <span style="font-weight:400;color:var(--ink-soft)">(opcional)</span></label>
+          <span class="field-hint" id="hint-rp-tel">Use um número no qual a equipe Cognita possa entrar em contato. Visível só para a equipe.</span>
+          <input type="tel" id="rp-tel" name="telefone" autocomplete="tel" inputmode="tel" aria-describedby="hint-rp-tel" placeholder="(00) 00000-0000" data-phone-mask />
         </div>
 
         <div class="field-row">
@@ -581,7 +581,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
               aria-describedby="cs-dados-desc" />
             <label for="cs-dados">
               <strong>Uso dos dados para o acompanhamento educacional</strong>
-              <p id="cs-dados-desc">Autorizo o Cognita Hub a usar as informações da criança para organizar e orientar o acompanhamento educacional em matemática, conforme a <a href="#">Política de Privacidade</a>.</p>
+              <p id="cs-dados-desc">Autorizo o Cognita Hub a usar as informações da criança para organizar e orientar o acompanhamento educacional em matemática, conforme a <a href="politica-de-privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a> e os <a href="termos-de-uso.html" target="_blank" rel="noopener">Termos de Uso</a>.</p>
             </label>
             <!-- TODO(wiring): data_use_accepted em consents -->
           </div>
@@ -662,10 +662,11 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
 </main>
 
 <script type="module">
-import { signIn, signUp } from '../js/lib/auth.js'
+import { signIn, signUp, resendConfirmationEmail } from '../js/lib/auth.js'
 import { stashPendingSignup } from '../js/lib/pending-signup.js'
 import { submitGuardianRegistration } from '../js/data/signup.js'
 import { loadDraft, applyDraft, saveDraft, clearDraft, wireDraftAutosave } from '../js/lib/form-draft.js'
+import { phoneToE164 } from '../js/lib/phone.js'
 
 (function(){
   var DRAFT_KEY = 'cognita:draft:cadastro-responsavel';
@@ -673,6 +674,7 @@ import { loadDraft, applyDraft, saveDraft, clearDraft, wireDraftAutosave } from 
   var wizardForm = document.querySelector('[data-guardian-form]');
   var draft = loadDraft(DRAFT_KEY);
   var current = 0;
+  var signedUpEmail = null;
   var panels  = document.querySelectorAll('.step-panel');
   var stpItems = document.querySelectorAll('.stepper-item');
   var counter  = document.getElementById('step-counter');
@@ -722,7 +724,7 @@ import { loadDraft, applyDraft, saveDraft, clearDraft, wireDraftAutosave } from 
     var account = {
       name: valueOf('#rp-nome'),
       email: valueOf('#rp-email'),
-      phone: valueOf('#rp-tel'),
+      phone: phoneToE164(valueOf('#rp-tel')),
       password: valueOf('#rp-senha'),
       role: 'guardian',
     };
@@ -765,8 +767,11 @@ import { loadDraft, applyDraft, saveDraft, clearDraft, wireDraftAutosave } from 
         return false;
       }
 
+      signedUpEmail = account.email;
       return saveGuardianRegistration(signin.user.id, account, registration);
     }
+
+    signedUpEmail = account.email;
 
     if (signup.session) {
       var saved = await saveGuardianRegistration(signup.user.id, account, registration);
@@ -881,10 +886,13 @@ import { loadDraft, applyDraft, saveDraft, clearDraft, wireDraftAutosave } from 
     btn.addEventListener('click', function(){ if (current > 0) goTo(current - 1); });
   });
   document.querySelectorAll('[data-resend]').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      // TODO(wiring): auth.resend({ type: 'signup', email })
-      btn.textContent = 'E-mail reenviado';
+    btn.addEventListener('click', async function(){
+      if (!signedUpEmail) return;
       btn.disabled = true;
+      btn.textContent = 'Enviando...';
+      var result = await resendConfirmationEmail(signedUpEmail);
+      btn.textContent = result.error ? 'Não foi possível reenviar' : 'E-mail reenviado';
+      if (result.error) btn.disabled = false;
     });
   });
 
@@ -954,27 +962,48 @@ import { loadDraft, applyDraft, saveDraft, clearDraft, wireDraftAutosave } from 
     });
   });
 
-  // Validação de idade da criança
+  // Validação de idade da criança — compara data completa (ano/mês/dia),
+  // não só o ano, e devolve null pra data futura ou inválida (sem isso,
+  // um ano digitado errado vira idade negativa ou gigante mostrada crua
+  // na tela, ex.: "Com -1000 anos").
+  function calcularIdade(valor) {
+    var nascimento = new Date(valor + 'T00:00:00');
+    var hoje = new Date();
+    if (isNaN(nascimento.getTime()) || nascimento > hoje) return null;
+    var idade = hoje.getFullYear() - nascimento.getFullYear();
+    var aniversarioNaoOcorreu = hoje.getMonth() < nascimento.getMonth() ||
+      (hoje.getMonth() === nascimento.getMonth() && hoje.getDate() < nascimento.getDate());
+    if (aniversarioNaoOcorreu) idade -= 1;
+    return idade;
+  }
+
   var crNasc = document.getElementById('cr-nasc');
   if (crNasc) {
+    // Limites do próprio input: só deixa escolher datas plausíveis pra
+    // 5–11 anos (a validação de verdade continua no JS abaixo).
+    var hojeLimite = new Date();
+    var crMax = new Date(hojeLimite.getFullYear() - 5, hojeLimite.getMonth(), hojeLimite.getDate());
+    var crMin = new Date(hojeLimite.getFullYear() - 12, hojeLimite.getMonth(), hojeLimite.getDate() + 1);
+    crNasc.max = crMax.toISOString().slice(0, 10);
+    crNasc.min = crMin.toISOString().slice(0, 10);
+
     crNasc.addEventListener('change', function(){
-      var dob = new Date(crNasc.value);
-      if (isNaN(dob)) return;
-      var now = new Date();
-      var age = now.getFullYear() - dob.getFullYear();
-      var m = now.getMonth() - dob.getMonth();
-      if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age--;
+      var age = calcularIdade(crNasc.value);
 
       var box  = document.getElementById('age-feedback');
       var msg  = box.querySelector('[data-age-msg]');
       var det  = box.querySelector('[data-age-detail]');
-      var icon = box.querySelector('.field-alert-icon');
 
       box.classList.remove('is-visible','field-alert--warn','field-alert--ok');
 
       var nextBtn = document.querySelector('#panel-2 [data-next]');
 
-      if (age < 5) {
+      if (age === null) {
+        box.classList.add('is-visible','field-alert--warn');
+        msg.textContent = 'Data de nascimento inválida.';
+        det.textContent = 'A data não pode estar no futuro. Confira se o ano foi digitado corretamente.';
+        if (nextBtn) nextBtn.disabled = true;
+      } else if (age < 5) {
         box.classList.add('is-visible','field-alert--warn');
         msg.textContent = 'Criança fora da faixa de atendimento.';
         det.textContent = 'O Cognita atende crianças de 5 a 11 anos. Com ' + age + ' anos, ela ainda não se enquadra neste ciclo.';

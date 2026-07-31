@@ -1,3 +1,12 @@
+// O enunciado nunca pode mostrar o algarismo-alvo — senão a criança só
+// copia o símbolo da pergunta pra uma das opções, sem precisar reconhecer
+// número nenhum. Por extenso quebra esse pareamento visual direto (a
+// palavra "cinco" não se parece com o botão "5").
+const NUMEROS_POR_EXTENSO = ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez']
+function porExtenso(numero) {
+  return NUMEROS_POR_EXTENSO[numero] ?? String(numero)
+}
+
 function shuffle(list) {
   const arr = [...list]
 
@@ -36,7 +45,7 @@ export function mountIdentifying(stageEl, { config = {}, onSuccess }) {
 
   const instruction = document.createElement('p')
   instruction.className = 'identifying-instruction'
-  instruction.textContent = `Toque no número ${target}.`
+  instruction.textContent = `Toque no número ${porExtenso(target)}.`
 
   const grid = document.createElement('div')
   grid.className = 'identifying-grid'
