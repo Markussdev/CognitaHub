@@ -38,13 +38,16 @@ export async function signUp({ email, password, name, phone, role }) {
   return { user: data.user, session: data.session }
 }
 
-// Confirmação de posse do e-mail é obrigatória independente da configuração
-// do projeto Supabase (Confirm email ligado/desligado no painel) — o app
-// barra por conta própria, não confia só na config remota. Dois caminhos
-// levam ao mesmo estado "email não confirmado": o Supabase recusa o login
-// e nem cria sessão (Confirm email ligado), ou cria sessão mas
-// email_confirmed_at vem nulo (Confirm email desligado) — aqui a gente
-// desfaz a sessão na hora, pra não deixar ninguém "meio-logado".
+// Isto SÓ funciona com "Confirm email" ligado no painel do Supabase
+// (Authentication → Providers → Email). Com a opção desligada, o próprio
+// Supabase considera o e-mail implicitamente confirmado e já preenche
+// email_confirmed_at no signUp — não sobra nenhum sinal aqui pro app
+// distinguir "confirmou de verdade" de "nunca confirmou". O código abaixo
+// cobre os dois formatos de recusa que o Supabase pode devolver com a
+// opção ligada (login rejeitado sem sessão, ou — mais raro — sessão criada
+// com email_confirmed_at nulo) e desfaz a sessão nesse segundo caso, pra
+// não deixar ninguém "meio-logado". Mas a trava de verdade é a config do
+// painel: sem ela ligada, este bloco não impede nada.
 export async function signIn(email, password) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -101,9 +104,10 @@ export async function requireRole(...allowedRoles) {
     return null
   }
 
-  // Defensivo: se alguém chegou com sessão válida mas sem confirmar o
-  // e-mail (ex.: Confirm email foi desligado depois que a sessão já
-  // existia), barra aqui também — não só no momento do login.
+  // Mesma trava de signIn(), redundante aqui pra sessão que já existia
+  // (ex.: aba aberta de antes). Só pega o caso raro de sessão criada sem
+  // email_confirmed_at com "Confirm email" ligado — não substitui a
+  // configuração do painel (ver comentário em signIn()).
   if (!user.is_anonymous && !user.email_confirmed_at) {
     await supabase.auth.signOut()
     window.location.replace('/pages/login.html?confirmar=1')

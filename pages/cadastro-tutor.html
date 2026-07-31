@@ -277,7 +277,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
           <div class="field">
             <label for="tt-tel">Telefone <span style="font-weight:400;color:var(--ink-soft)">(opcional)</span></label>
             <span class="field-hint" id="hint-tt-tel">Use um número no qual a equipe Cognita possa entrar em contato. Visível só para a equipe.</span>
-            <input type="tel" id="tt-tel" name="telefone" autocomplete="tel" inputmode="tel" aria-describedby="hint-tt-tel" placeholder="(00) 00000-0000" data-phone-mask />
+            <input type="tel" id="tt-tel" name="telefone" autocomplete="tel" inputmode="tel" aria-describedby="hint-tt-tel" placeholder="(00) 00000-0000" pattern="^\([1-9][0-9]\) [0-9]{4,5}-[0-9]{4}$" title="Informe o DDD e o número completo." data-phone-mask />
           </div>
           <div class="field">
             <label for="tt-nasc">Data de nascimento</label>
@@ -507,7 +507,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
 
         <div class="consent-list" role="group" aria-label="Aceite dos termos">
           <div class="consent-item">
-            <input type="checkbox" id="tt-termos" name="tt_termos" required aria-required="true" aria-describedby="tt-termos-desc" />
+            <input type="checkbox" id="tt-termos" name="tt_termos" required aria-required="true" aria-describedby="tt-termos-desc" data-legal-document="tutor_terms" />
             <label for="tt-termos">
               <strong>Li e aceito os Termos de Atuação</strong>
               <p id="tt-termos-desc">Confirmo que li os termos acima e me comprometo a atuar dentro das diretrizes do programa Cognita Hub.</p>
@@ -557,6 +557,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
 import { signUp, resendConfirmationEmail } from '../js/lib/auth.js'
 import { stashPendingSignup } from '../js/lib/pending-signup.js'
 import { submitTutorApplication } from '../js/data/signup.js'
+import { recordLegalAcceptances } from '../js/data/legal-acceptances.js'
 import { loadDraft, applyDraft, saveDraft, clearDraft, wireDraftAutosave } from '../js/lib/form-draft.js'
 import { phoneToE164 } from '../js/lib/phone.js'
 
@@ -593,15 +594,27 @@ import { phoneToE164 } from '../js/lib/phone.js'
   }
 
   async function submitTutorSignup() {
+    // O pattern do input já barra telefone incompleto antes de chegar aqui
+    // (validatePreviousSteps roda antes do envio) — o try/catch é só rede
+    // de segurança, pra nunca travar o botão em "Enviando..." pra sempre.
+    var accountPhone;
+    try {
+      accountPhone = phoneToE164(valueOf('#tt-tel'));
+    } catch (e) {
+      alert('Telefone inválido. Confira o DDD e o número completo, ou deixe em branco.');
+      return false;
+    }
+
     var account = {
       name: valueOf('#tt-nome'),
       email: valueOf('#tt-email'),
-      phone: phoneToE164(valueOf('#tt-tel')),
+      phone: accountPhone,
       password: valueOf('#tt-senha'),
       role: 'tutor',
     };
 
     var application = {
+      birthDate: valueOf('#tt-nasc'),
       formation: valueOf('#ap-form') + ' / ' + radioValue('situacao'),
       experience: [
         'Experiência com ensino: ' + (valueOf('#ap-exp') || 'não informado'),
@@ -616,6 +629,14 @@ import { phoneToE164 } from '../js/lib/phone.js'
         ...pressedChips('ap-dispon'),
         ...pressedChips('ap-periodos'),
       ],
+      // Colhido aqui (DOM ainda vivo) porque, se a confirmação de e-mail
+      // estiver pendente, este objeto inteiro vira o payload guardado em
+      // pending-signup — precisa sobreviver ao localStorage até o primeiro
+      // login.
+      legalDocumentKeys: ['privacy_policy', 'terms_of_use'].concat(
+        Array.from(wizardForm.querySelectorAll('[data-legal-document]:checked'))
+          .map(function(el){ return el.dataset.legalDocument; })
+      ),
     };
 
     var signup = await signUp(account);
@@ -635,6 +656,18 @@ import { phoneToE164 } from '../js/lib/phone.js'
         console.error(result.error);
         alert('A conta foi criada, mas não conseguimos salvar a candidatura agora.');
         return false;
+      }
+
+      // Em paralelo — não bloqueia a candidatura se falhar, só fica
+      // registrado no console pra investigar depois.
+      var acceptance = await recordLegalAcceptances({
+        userId: signup.user.id,
+        childId: null,
+        documentKeys: application.legalDocumentKeys,
+        source: 'tutor_signup',
+      });
+      if (acceptance.error) {
+        console.error('Erro ao registrar aceite de termos versionado:', acceptance.error);
       }
     } else {
       stashPendingSignup('tutor', account.email, application);
@@ -661,7 +694,7 @@ import { phoneToE164 } from '../js/lib/phone.js'
 
   function validateStep(panelEl) {
     var ok = true;
-    panelEl.querySelectorAll('input[required]:not([type=checkbox]),select[required],textarea[required]').forEach(function(f){
+    panelEl.querySelectorAll('input[required]:not([type=checkbox]),select[required],textarea[required],input[pattern]').forEach(function(f){
       var invalid = !f.checkValidity();
       f.setAttribute('aria-invalid', invalid ? 'true' : 'false');
       if (invalid) ok = false;

@@ -34,6 +34,7 @@ function mapAttentionSpan(value) {
 export async function submitTutorApplication(tutorId, application) {
   const payload = {
     tutor_id: tutorId,
+    birth_date: application.birthDate || null,
     formation: application.formation,
     experience: application.experience,
     motivation: application.motivation,
