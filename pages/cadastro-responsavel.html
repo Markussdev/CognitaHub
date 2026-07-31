@@ -608,7 +608,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
 
           <div class="consent-item">
             <input type="checkbox" id="cs-contato" name="cs_contato" required aria-required="true"
-              aria-describedby="cs-contato-desc" />
+              aria-describedby="cs-contato-desc" data-legal-document="service_contact" />
             <label for="cs-contato">
               <strong>Contato pela equipe Cognita</strong>
               <p id="cs-contato-desc">Autorizo a equipe Cognita a entrar em contato por e-mail ou telefone para comunicados sobre o acompanhamento.</p>
@@ -715,16 +715,20 @@ import { phoneToE164 } from '../js/lib/phone.js'
     }
 
     // Em paralelo com o `consents` legado (já gravado por
-    // submitGuardianRegistration) — não bloqueia o cadastro se falhar,
-    // só fica registrado no console pra investigar depois.
+    // submitGuardianRegistration acima) — mas o aceite em si não é
+    // opcional: se falhar, não deixa o cadastro seguir como concluído.
     var acceptance = await recordLegalAcceptances({
       userId: userId,
       childId: registration.childId,
       documentKeys: registration.legalDocumentKeys,
       source: 'guardian_signup',
+      audience: 'guardian',
     });
     if (acceptance.error) {
       console.error('Erro ao registrar aceite de termos versionado:', acceptance.error);
+      stashPendingSignup('guardian', account.email, registration);
+      alert('A conta foi criada, mas não conseguimos registrar seu aceite dos termos agora. Vamos tentar de novo no seu próximo login.');
+      return false;
     }
 
     return true;

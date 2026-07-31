@@ -50,18 +50,23 @@ export async function completePendingSignup(user) {
   // Só registra aceite quando a candidatura/cadastro realmente aconteceu
   // agora — se alreadyFinalized (já tinha sido aprovada/rejeitada antes),
   // não é o momento em que a pessoa aceitou nada, é só uma sobra de
-  // pending-signup velha no localStorage. Em paralelo com `consents`
-  // (legado, já gravado dentro de submitGuardianRegistration) — não
-  // bloqueia a conclusão do cadastro se falhar.
+  // pending-signup velha no localStorage.
   if (result.alreadyFinalized !== true && pending.payload?.legalDocumentKeys?.length) {
     const acceptance = await recordLegalAcceptances({
       userId: user.id,
       childId: pending.kind === 'guardian' ? pending.payload.childId : null,
       documentKeys: pending.payload.legalDocumentKeys,
       source: pending.kind === 'guardian' ? 'guardian_signup' : 'tutor_signup',
+      audience: pending.kind === 'guardian' ? 'guardian' : 'tutor',
     })
+
     if (acceptance.error) {
       console.error('Erro ao registrar aceite de termos versionado:', acceptance.error)
+      // Não apaga o localStorage — tenta de novo no próximo login. O
+      // cadastro/candidatura em si (submitTutorApplication/
+      // submitGuardianRegistration acima) já é idempotente por child_id/
+      // tutor_id, então reprocessar no próximo login não duplica nada.
+      return { done: false, error: acceptance.error }
     }
   }
 

@@ -658,16 +658,20 @@ import { phoneToE164 } from '../js/lib/phone.js'
         return false;
       }
 
-      // Em paralelo — não bloqueia a candidatura se falhar, só fica
-      // registrado no console pra investigar depois.
+      // O aceite em si não é opcional: se falhar, não deixa a candidatura
+      // seguir como concluída — guarda pra tentar de novo no próximo login.
       var acceptance = await recordLegalAcceptances({
         userId: signup.user.id,
         childId: null,
         documentKeys: application.legalDocumentKeys,
         source: 'tutor_signup',
+        audience: 'tutor',
       });
       if (acceptance.error) {
         console.error('Erro ao registrar aceite de termos versionado:', acceptance.error);
+        stashPendingSignup('tutor', account.email, application);
+        alert('A candidatura foi criada, mas não conseguimos registrar seu aceite dos termos agora. Vamos tentar de novo no seu próximo login.');
+        return false;
       }
     } else {
       stashPendingSignup('tutor', account.email, application);
