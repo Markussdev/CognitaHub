@@ -156,15 +156,27 @@
       .rail.open { left: 0; }
       .rail-toggle { display: inline-flex; }
       body.rail-drawer-open #main-content { overflow: hidden; }
-      .fam-page { width: min(100% - 32px, 720px); }
+      .fam-page { width: min(720px, calc(100% - 32px)); }
       .fam-cols { grid-template-columns: 1fr; }
     }
     @media (max-width: 560px) {
-      .fam-page { width: min(100% - 24px, 520px); }
+      .fam-page { width: min(520px, calc(100% - 24px)); }
       .fam-head { flex-direction: column; align-items: flex-start; }
       .fam-child-chip { width: 100%; }
       .fam-fact { flex-direction: column; gap: 3px; }
       .fam-fact dt { flex: none; }
+      .fam-hero,
+      .card-pad {
+        padding: 18px 16px;
+      }
+      .fam-meses {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .fam-meses-bar {
+        width: 100%;
+        max-width: none;
+      }
     }
 
     /* Skeleton simples do primeiro carregamento */
