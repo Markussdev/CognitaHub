@@ -71,6 +71,31 @@ if (new URLSearchParams(location.search).get('confirmar') === '1') {
   showLoginMessage('Confirme seu e-mail para continuar. Entre novamente para receber a opção de reenviar a confirmação.', 'warn')
 }
 
+// Link de confirmação expirado/já usado: o Supabase redireciona pra cá
+// (emailRedirectTo) com o erro nos parâmetros da URL em vez de criar
+// sessão — sem tratar isso, a pessoa só via a tela de login normal, sem
+// entender por que clicou no link e "não aconteceu nada". O formato varia
+// (hash no fluxo implícito, query no PKCE), então checa os dois.
+function readAuthUrlError() {
+  const hashParams = new URLSearchParams(location.hash.replace(/^#/, ''))
+  const searchParams = new URLSearchParams(location.search)
+  const errorCode = hashParams.get('error_code') || searchParams.get('error_code')
+  const error = hashParams.get('error') || searchParams.get('error')
+  return error || errorCode ? { error, errorCode } : null
+}
+
+const authUrlError = readAuthUrlError()
+if (authUrlError) {
+  showLoginMessage(
+    authUrlError.errorCode === 'otp_expired'
+      ? 'Este link de confirmação expirou ou já foi usado. Entre com seu e-mail e senha abaixo — se ainda faltar confirmar, a opção de reenviar aparece aqui.'
+      : 'Não foi possível confirmar por esse link. Entre com seu e-mail e senha para tentar de novo.',
+    'warn'
+  )
+  // Limpa a URL pra não repetir a mensagem se a pessoa atualizar a página.
+  history.replaceState(null, '', location.pathname)
+}
+
 function getStatusMessage(status) {
   const messages = {
     waiting_review: 'Seu cadastro esta em analise pela equipe Cognita.',

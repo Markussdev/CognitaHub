@@ -17,10 +17,17 @@ export async function signUp({ email, password, name, phone, role }) {
     return { error: new Error('Tipo de cadastro invalido') }
   }
 
+  // Sem isso, o link do e-mail de confirmação volta pro site inteiro (ou
+  // pro que estiver configurado como Site URL no painel) em vez de cair
+  // direto na tela de login — precisa que esse endereço esteja na lista de
+  // Redirect URLs do projeto (Authentication → URL Configuration).
+  const emailRedirectTo = `${window.location.origin}/pages/login.html`
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
+      emailRedirectTo,
       data: {
         name,
         phone,
@@ -86,7 +93,13 @@ export async function signIn(email, password) {
 // ainda) quanto da tela pós-cadastro (sessão pode nem existir se Confirm
 // email estiver ligado). O Supabase reenvia o mesmo link de confirmação.
 export async function resendConfirmationEmail(email) {
-  return supabase.auth.resend({ type: 'signup', email })
+  return supabase.auth.resend({
+    type: 'signup',
+    email,
+    options: {
+      emailRedirectTo: `${window.location.origin}/pages/login.html`,
+    },
+  })
 }
 
 export function redirectByRole(role) {

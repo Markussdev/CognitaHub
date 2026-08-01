@@ -280,6 +280,17 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
             <input type="tel" id="tt-tel" name="telefone" autocomplete="tel" inputmode="tel" aria-describedby="hint-tt-tel" placeholder="(00) 00000-0000" pattern="^\([1-9][0-9]\) [0-9]{4,5}-[0-9]{4}$" title="Informe o DDD e o número completo." data-phone-mask />
           </div>
           <div class="field">
+            <label for="tt-tel2">Confirmar telefone <span style="font-weight:400;color:var(--ink-soft)">(opcional)</span></label>
+            <input type="tel" id="tt-tel2" name="telefone2" autocomplete="tel" inputmode="tel" placeholder="(00) 00000-0000" pattern="^\([1-9][0-9]\) [0-9]{4,5}-[0-9]{4}$" data-phone-mask />
+            <span class="field-error" id="err-tel2">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1.2" fill="currentColor"/></svg>
+              Os telefones não coincidem.
+            </span>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
             <label for="tt-nasc">Data de nascimento</label>
             <span class="field-hint" id="hint-tt-nasc">Tutores devem ter 18 anos ou mais.</span>
             <input type="date" id="tt-nasc" name="nasc" required aria-required="true" aria-describedby="hint-tt-nasc age-alert-tutor" data-age-check-tutor />
@@ -712,6 +723,19 @@ import { phoneToE164 } from '../js/lib/phone.js'
       ok = false;
     } else if (errS2) {
       errS2.classList.remove('is-visible');
+    }
+    // Telefone é opcional — só exige coincidir se o campo principal tiver
+    // valor. Sem isso, alguém que preenche só o de confirmação (ou nenhum
+    // dos dois) ficaria bloqueado sem necessidade.
+    var tel1 = panelEl.querySelector('#tt-tel');
+    var tel2 = panelEl.querySelector('#tt-tel2');
+    var errTel2 = panelEl.querySelector('#err-tel2');
+    if (tel1 && tel2 && tel1.value && tel1.value !== tel2.value) {
+      tel2.setAttribute('aria-invalid', 'true');
+      if (errTel2) errTel2.classList.add('is-visible');
+      ok = false;
+    } else if (errTel2) {
+      errTel2.classList.remove('is-visible');
     }
     [['ap-dispon','err-ap-dispon'],['ap-periodos','err-ap-periodos']].forEach(function(pair){
       var group = panelEl.querySelector('#' + pair[0]);
