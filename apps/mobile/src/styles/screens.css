@@ -66,22 +66,104 @@
 
 .screen--loading {
   justify-content: center;
+  padding: 32px;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 50% 43%,
+      rgba(87, 74, 179, 0.1),
+      transparent 42%
+    ),
+    var(--paper);
 }
 
-.loading-spinner {
-  width: 40px;
-  height: 40px;
+.loading-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Bloco colorido atrás da marca — cor isolada numa variável só pra ser
+   fácil de trocar num teste rápido, sem precisar reprocessar imagem.
+   aspect-ratio bate com o arquivo original (3634x1732) pra não distorcer. */
+.loading-brand__badge {
+  --loading-badge-bg: #6a3fb5;
+  width: min(270px, 78vw);
+  aspect-ratio: 3634 / 1732;
+  padding: 8% 6%;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  background: var(--loading-badge-bg);
+  box-shadow: 0 12px 24px rgba(20, 17, 98, 0.15);
+  animation: loading-logo-in 420ms ease both;
+}
+
+.loading-brand__logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   margin-top: 28px;
-  border-radius: 50%;
-  border: 5px solid var(--soft-blue);
-  border-top-color: var(--navy);
-  animation: spin 0.9s linear infinite;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+.loading-indicator span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--navy);
+  animation: loading-dot 1.1s ease-in-out infinite;
+}
+
+.loading-indicator span:nth-child(2) {
+  animation-delay: 140ms;
+}
+
+.loading-indicator span:nth-child(3) {
+  animation-delay: 280ms;
+}
+
+@keyframes loading-logo-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
   }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes loading-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.28;
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-5px);
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ---- pairing ---- */
