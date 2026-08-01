@@ -380,20 +380,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
           <!-- TODO(wiring): auth.signUp usa este e-mail -->
         </div>
 
-        <div class="field-row">
-          <div class="field">
-            <label for="rp-tel">Telefone <span style="font-weight:400;color:var(--ink-soft)">(opcional)</span></label>
-            <span class="field-hint" id="hint-rp-tel">Use um número no qual a equipe Cognita possa entrar em contato. Visível só para a equipe.</span>
-            <input type="tel" id="rp-tel" name="telefone" autocomplete="tel" inputmode="tel" aria-describedby="hint-rp-tel" placeholder="(00) 00000-0000" pattern="^\([1-9][0-9]\) [0-9]{4,5}-[0-9]{4}$" title="Informe o DDD e o número completo." data-phone-mask />
-          </div>
-          <div class="field">
-            <label for="rp-tel2">Confirmar telefone <span style="font-weight:400;color:var(--ink-soft)">(opcional)</span></label>
-            <input type="tel" id="rp-tel2" name="telefone2" autocomplete="tel" inputmode="tel" placeholder="(00) 00000-0000" pattern="^\([1-9][0-9]\) [0-9]{4,5}-[0-9]{4}$" data-phone-mask />
-            <span class="field-error" id="err-tel2">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1.2" fill="currentColor"/></svg>
-              Os telefones não coincidem.
-            </span>
-          </div>
+        <div class="field">
+          <label for="rp-tel">Telefone <span style="font-weight:400;color:var(--ink-soft)">(opcional)</span></label>
+          <input type="tel" id="rp-tel" name="telefone" autocomplete="tel" inputmode="tel" placeholder="(00) 00000-0000" pattern="^\([1-9][0-9]\) [0-9]{4,5}-[0-9]{4}$" title="Informe o DDD e o número completo." data-phone-mask />
         </div>
 
         <div class="field-row">
@@ -617,13 +606,22 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offs
           </div>
 
           <div class="consent-item">
-            <input type="checkbox" id="cs-contato" name="cs_contato" required aria-required="true"
+            <input type="checkbox" id="cs-contato" name="cs_contato"
               aria-describedby="cs-contato-desc" data-legal-document="service_contact" />
             <label for="cs-contato">
-              <strong>Contato pela equipe Cognita</strong>
+              <strong>Contato pela equipe Cognita <span style="font-weight:400;color:var(--ink-soft)">(opcional)</span></strong>
               <p id="cs-contato-desc">Autorizo a equipe Cognita a entrar em contato por e-mail ou telefone para comunicados sobre o acompanhamento.</p>
             </label>
             <!-- TODO(wiring): contact_accepted em consents -->
+          </div>
+
+          <div class="consent-item">
+            <input type="checkbox" id="cs-legais" name="cs_legais" required aria-required="true"
+              aria-describedby="cs-legais-desc" />
+            <label for="cs-legais">
+              <strong>Li e aceito os Termos de Uso e a Política de Privacidade</strong>
+              <p id="cs-legais-desc">Li os <a href="termos-de-uso.html">Termos de Uso</a> e a <a href="politica-de-privacidade.html">Política de Privacidade</a>.</p>
+            </label>
           </div>
 
         </div>
@@ -791,9 +789,9 @@ import { phoneToE164 } from '../js/lib/phone.js'
       // Colhido aqui (DOM ainda vivo) porque, se a confirmação de e-mail
       // estiver pendente, este objeto inteiro vira o payload guardado em
       // pending-signup — precisa sobreviver ao localStorage até o primeiro
-      // login. privacy_policy/terms_of_use entram sempre: o texto do
-      // consentimento principal já linka os dois, então marcar a caixa é
-      // aceitar os três ao mesmo tempo.
+      // login. privacy_policy/terms_of_use só chegam aqui porque a
+      // validação acima já exigiu cs-legais marcada — não é mais uma
+      // suposição embutida no texto de outro consentimento.
       legalDocumentKeys: ['privacy_policy', 'terms_of_use'].concat(
         Array.from(wizardForm.querySelectorAll('[data-legal-document]:checked'))
           .map(function(el){ return el.dataset.legalDocument; })
@@ -864,19 +862,6 @@ import { phoneToE164 } from '../js/lib/phone.js'
     } else if (errS2) {
       errS2.classList.remove('is-visible');
     }
-    // Telefone é opcional — só exige coincidir se o campo principal tiver
-    // valor. Sem isso, alguém que preenche só o de confirmação (ou nenhum
-    // dos dois) ficaria bloqueado sem necessidade.
-    var tel1 = panelEl.querySelector('#rp-tel');
-    var tel2 = panelEl.querySelector('#rp-tel2');
-    var errTel2 = panelEl.querySelector('#err-tel2');
-    if (tel1 && tel2 && tel1.value && tel1.value !== tel2.value) {
-      tel2.setAttribute('aria-invalid', 'true');
-      if (errTel2) errTel2.classList.add('is-visible');
-      ok = false;
-    } else if (errTel2) {
-      errTel2.classList.remove('is-visible');
-    }
     panelEl.querySelectorAll('.chip-group').forEach(function(group){
       var unknown = panelEl.querySelector('[data-naosabe="' + group.id + '"]');
       var valid = group.querySelector('[aria-pressed="true"]') || (unknown && unknown.checked);
@@ -915,7 +900,7 @@ import { phoneToE164 } from '../js/lib/phone.js'
         var cs1 = document.getElementById('cs-dados');
         var cs2 = document.getElementById('cs-escopo');
         var cs3 = document.getElementById('cs-revisao');
-        var cs4 = document.getElementById('cs-contato');
+        var cs4 = document.getElementById('cs-legais');
         var errCs = document.getElementById('err-consent');
         if (!cs1.checked || !cs2.checked || !cs3.checked || !cs4.checked) {
           errCs.classList.add('is-visible');
@@ -1046,15 +1031,22 @@ import { phoneToE164 } from '../js/lib/phone.js'
     crNasc.min = crMin.toISOString().slice(0, 10);
 
     crNasc.addEventListener('change', function(){
-      var age = calcularIdade(crNasc.value);
-
       var box  = document.getElementById('age-feedback');
       var msg  = box.querySelector('[data-age-msg]');
       var det  = box.querySelector('[data-age-detail]');
+      var nextBtn = document.querySelector('#panel-2 [data-next]');
 
       box.classList.remove('is-visible','field-alert--warn','field-alert--ok');
 
-      var nextBtn = document.querySelector('#panel-2 [data-next]');
+      // Vazio não é "inválido" — é só ainda não preenchido. O campo é
+      // required, então checkValidity() barra o avanço sem precisar
+      // mostrar o alerta de data errada aqui.
+      if (!crNasc.value) {
+        if (nextBtn) nextBtn.disabled = false;
+        return;
+      }
+
+      var age = calcularIdade(crNasc.value);
 
       if (age === null) {
         box.classList.add('is-visible','field-alert--warn');
