@@ -97,37 +97,20 @@
   transform: translateY(-3vh);
 }
 
-/*
-  A imagem atual tem muito espaço transparente.
-  A janela corta esse espaço sem precisar colocar um card atrás.
-*/
-.loading-brand__window {
-  width: min(300px, 82vw);
-  height: 120px;
-
-  display: grid;
-  place-items: center;
-
-  overflow: hidden;
-}
-
+/* logo-cognita-hub-transparent.webp já vem recortada rente ao conteúdo
+   (sharp().trim() em cima do arquivo-fonte, sem o canvas gigante com a
+   marca pequena no centro) — não precisa mais de janela/scale pra
+   disfarçar espaço vazio. */
 .loading-brand__logo {
-  width: 100%;
+  width: min(310px, 84vw);
   height: auto;
+  object-fit: contain;
 
-  /*
-    Medido a partir do conteúdo real do arquivo (trim(): 2985x907 dentro de
-    um canvas 3634x1732 — bem menos espaço vazio do que a estimativa
-    inicial). 1.15 é o ponto onde "Cognita Hub" inteiro (as duas palavras +
-    o gato) cabe na janela sem cortar nada; testado lado a lado contra
-    1.1/1.2/1.25/1.35/1.5 antes de fechar neste valor.
-  */
-  transform: scale(1.15);
-
-  filter: drop-shadow(
-    0 10px 18px rgba(12, 8, 58, 0.25)
-  );
-
+  /* Sem filter:drop-shadow aqui de propósito — combinado com a animação
+     de scale() no mesmo elemento, esse filtro é um candidato conhecido a
+     criar artefato retangular de camada de composição em WebView/GPU
+     Android (nunca reproduziu no Chrome/Edge desktop usado pra testar,
+     mas apareceu num teste real no aparelho). Sem ele, não tem risco. */
   animation: loading-logo-in 450ms ease-out both;
 }
 
@@ -165,12 +148,12 @@
 @keyframes loading-logo-in {
   from {
     opacity: 0;
-    transform: scale(1.1) translateY(5px);
+    transform: scale(0.97) translateY(7px);
   }
 
   to {
     opacity: 1;
-    transform: scale(1.15) translateY(0);
+    transform: none;
   }
 }
 
