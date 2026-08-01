@@ -288,8 +288,16 @@
 }
 
 .settings-menu-item__chevron {
+  display: grid;
+  place-items: center;
   color: var(--muted);
   font-size: 22px;
+}
+
+.settings-menu-item__chevron svg {
+  width: 19px;
+  height: 19px;
+  display: block;
 }
 
 .settings-menu-item__badge {
@@ -420,8 +428,10 @@
 }
 
 .screen--profile .btn-primary {
-  margin-top: 24px;
-  margin-bottom: 8px;
+  width: 100%;
+  max-width: 380px;
+  margin: 24px auto 8px;
+  flex: none;
 }
 
 /* ---- perfil salvo ---- */
@@ -608,11 +618,25 @@
   background: var(--line);
 }
 
+.guardian-action__icon svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
 .guardian-help__chevron {
   flex: none;
+  display: grid;
+  place-items: center;
   color: var(--muted);
   font-size: 18px;
   transition: transform 0.15s ease;
+}
+
+.guardian-help__chevron svg {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 
 .guardian-help__chevron.is-open {
@@ -700,16 +724,54 @@
    Vários desses blocos tinham max-width sem margin-inline:auto (ex.
    .guardian-actions) — em telas mais largas sobrava vazio à direita em vez
    de centralizar. Uma regra só, depois de todas as outras, pra garantir
-   que o max-width:430px + centralização vencem por último no cascade. */
+   que o max-width + centralização vencem por último no cascade. */
 .settings-header,
 .settings-menu,
 .settings-list,
 .guardian-actions,
 .guardian-connected,
-.guardian-confirm,
-.profile-field,
-.profile-avatars {
+.guardian-confirm {
   width: 100%;
   max-width: 430px;
   margin-inline: auto;
+}
+
+/* Coluna única em "Meu perfil": cabeçalho a 430px, mas formulário/grade de
+   avatares/botão a 380px — mesma largura entre si, um pouco mais estreita
+   que o cabeçalho de propósito (nada gigante colado nas bordas). */
+.profile-field,
+.profile-avatars {
+  width: 100%;
+  max-width: 380px;
+  margin-inline: auto;
+}
+
+@media (max-width: 480px) {
+  .settings-hero {
+    min-height: 180px;
+    padding-inline: 20px;
+  }
+
+  .settings-panel {
+    padding-inline: 18px;
+  }
+
+  .screen--profile,
+  .screen--guardian,
+  .screen--guardian-gate {
+    padding-inline: 20px;
+  }
+
+  .settings-menu-item {
+    grid-template-columns: 48px minmax(0, 1fr) 20px;
+    gap: 12px;
+    min-height: 80px;
+    padding: 12px 14px;
+  }
+
+  .settings-menu-item__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+  }
 }

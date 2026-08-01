@@ -1,9 +1,25 @@
+import { createElement, RefreshCw, Smartphone, FileText, LifeBuoy, ChevronRight } from 'lucide'
 import { escapeHtml } from '../utils/html.js'
 import { statusMessageHtml } from '../components/status-message.js'
 import pkg from '../../package.json'
 
 const HOLD_MS = 2000
 const SUPPORT_EMAIL = 'cognitahub1@gmail.com'
+
+// Strings de SVG geradas uma vez no carregamento do módulo (não a cada
+// render) — createElement() monta o <svg> de verdade via DOM, .outerHTML
+// vira uma string comum que entra no template literal igual a qualquer
+// outro ícone do app (LOCK_SVG/CHECK_SVG em mission-node.js). Sem isso,
+// teríamos que rechamar um scanner de ícones toda vez que renderMain()
+// substitui o innerHTML inteiro (ex.: abrir/fechar "Ajuda e contato") —
+// fácil de esquecer e deixar o ícone sumido.
+const iconSvg = (icon, attrs) => createElement(icon, attrs).outerHTML
+
+const REFRESH_SVG = iconSvg(RefreshCw, { width: 22, height: 22, 'stroke-width': 2.2 })
+const SMARTPHONE_SVG = iconSvg(Smartphone, { width: 22, height: 22, 'stroke-width': 2.2 })
+const FILE_TEXT_SVG = iconSvg(FileText, { width: 22, height: 22, 'stroke-width': 2.2 })
+const LIFE_BUOY_SVG = iconSvg(LifeBuoy, { width: 22, height: 22, 'stroke-width': 2.2 })
+const CHEVRON_SVG = iconSvg(ChevronRight, { width: 19, height: 19, 'stroke-width': 2.2 })
 
 // TODO: apontar pra URL real assim que a página existir no site — a Play
 // Store exige que a política de privacidade esteja acessível a partir do
@@ -86,12 +102,12 @@ export function renderGuardianSettings(
 
     const helpSection = `
       <button class="guardian-help__toggle" type="button" id="guardian-help-toggle" aria-expanded="${helpOpen}">
-        <span class="guardian-action__icon" aria-hidden="true">🛡</span>
+        <span class="guardian-action__icon" aria-hidden="true">${LIFE_BUOY_SVG}</span>
         <span class="guardian-action__copy">
           <strong>Ajuda e contato</strong>
           <span>Como o pareamento e os dados funcionam</span>
         </span>
-        <span class="guardian-help__chevron${helpOpen ? ' is-open' : ''}" aria-hidden="true">›</span>
+        <span class="guardian-help__chevron${helpOpen ? ' is-open' : ''}" aria-hidden="true">${CHEVRON_SVG}</span>
       </button>
       ${
         helpOpen
@@ -139,30 +155,30 @@ export function renderGuardianSettings(
 
         <div class="guardian-actions">
           <button class="guardian-action" type="button" id="guardian-switch">
-            <span class="guardian-action__icon" aria-hidden="true">🔄</span>
+            <span class="guardian-action__icon" aria-hidden="true">${REFRESH_SVG}</span>
             <span class="guardian-action__copy">
               <strong>Trocar criança</strong>
               <span>Usar um novo código de pareamento</span>
             </span>
-            <span class="settings-menu-item__chevron" aria-hidden="true">›</span>
+            <span class="settings-menu-item__chevron" aria-hidden="true">${CHEVRON_SVG}</span>
           </button>
 
           <button class="guardian-action guardian-action--neutral" type="button" id="guardian-disconnect">
-            <span class="guardian-action__icon" aria-hidden="true">📱</span>
+            <span class="guardian-action__icon" aria-hidden="true">${SMARTPHONE_SVG}</span>
             <span class="guardian-action__copy">
               <strong>Desconectar este aparelho</strong>
               <span>Remover o acesso deste dispositivo</span>
             </span>
-            <span class="settings-menu-item__chevron" aria-hidden="true">›</span>
+            <span class="settings-menu-item__chevron" aria-hidden="true">${CHEVRON_SVG}</span>
           </button>
 
           <button class="guardian-action${PRIVACY_POLICY_URL ? '' : ' is-disabled'}" type="button" id="guardian-privacy" ${PRIVACY_POLICY_URL ? '' : 'disabled'}>
-            <span class="guardian-action__icon" aria-hidden="true">📄</span>
+            <span class="guardian-action__icon" aria-hidden="true">${FILE_TEXT_SVG}</span>
             <span class="guardian-action__copy">
               <strong>Política de privacidade e termos</strong>
               <span>${privacyHint}</span>
             </span>
-            <span class="settings-menu-item__chevron" aria-hidden="true">›</span>
+            <span class="settings-menu-item__chevron" aria-hidden="true">${CHEVRON_SVG}</span>
           </button>
 
           <div class="guardian-help">
