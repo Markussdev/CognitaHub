@@ -4,6 +4,7 @@
 // Reproduz o mesmo controle de tela/página do app.js real (showModules /
 // showJourney / showSettings / rememberModulesPage) com dados falsos no
 // lugar do Supabase, pra testar a restauração de página de verdade.
+import './styles/fonts.css'
 import './styles/tokens.css'
 import './styles/base.css'
 import './styles/screens.css'

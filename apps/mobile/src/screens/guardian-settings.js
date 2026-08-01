@@ -1,7 +1,17 @@
 import { escapeHtml } from '../utils/html.js'
 import { statusMessageHtml } from '../components/status-message.js'
+import pkg from '../../package.json'
 
 const HOLD_MS = 2000
+const SUPPORT_EMAIL = 'cognitahub1@gmail.com'
+
+// TODO: apontar pra URL real assim que a página existir no site — a Play
+// Store exige que a política de privacidade esteja acessível a partir do
+// app (o texto legal em si precisa ser escrito/aprovado, não é algo que dá
+// pra gerar aqui). Enquanto vazio, o item fica visível mas desabilitado
+// ("Configuração pendente") — de propósito, pra não esquecer de preencher
+// antes de submeter, em vez de sumir da tela e ser esquecido.
+const PRIVACY_POLICY_URL = ''
 
 // "Para responsáveis" — só 3 ações (trocar criança, desconectar, ajuda).
 // Nada de PIN real: o "segure 2s pra entrar" é só fricção contra toque
@@ -78,7 +88,7 @@ export function renderGuardianSettings(
       <button class="guardian-help__toggle" type="button" id="guardian-help-toggle" aria-expanded="${helpOpen}">
         <span class="guardian-action__icon" aria-hidden="true">🛡</span>
         <span class="guardian-action__copy">
-          <strong>Ajuda e privacidade</strong>
+          <strong>Ajuda e contato</strong>
           <span>Como o pareamento e os dados funcionam</span>
         </span>
         <span class="guardian-help__chevron${helpOpen ? ' is-open' : ''}" aria-hidden="true">›</span>
@@ -100,11 +110,17 @@ export function renderGuardianSettings(
             Pra gerenciar todos os aparelhos pareados, adicionar outro tutor ou revisar dados
             com mais detalhe, use o painel do responsável no site do Cognita.
           </p>
+          <p>
+            Precisa falar com a equipe? Escreva pra
+            <a class="guardian-help__link" href="mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Ajuda no Cognita')}">${SUPPORT_EMAIL}</a>.
+          </p>
         </div>
       `
           : ''
       }
     `
+
+    const privacyHint = PRIVACY_POLICY_URL ? 'Como tratamos os dados da família' : 'Configuração pendente'
 
     root.innerHTML = `
       <div class="screen screen--settings screen--guardian">
@@ -140,10 +156,21 @@ export function renderGuardianSettings(
             <span class="settings-menu-item__chevron" aria-hidden="true">›</span>
           </button>
 
+          <button class="guardian-action${PRIVACY_POLICY_URL ? '' : ' is-disabled'}" type="button" id="guardian-privacy" ${PRIVACY_POLICY_URL ? '' : 'disabled'}>
+            <span class="guardian-action__icon" aria-hidden="true">📄</span>
+            <span class="guardian-action__copy">
+              <strong>Política de privacidade e termos</strong>
+              <span>${privacyHint}</span>
+            </span>
+            <span class="settings-menu-item__chevron" aria-hidden="true">›</span>
+          </button>
+
           <div class="guardian-help">
             ${helpSection}
           </div>
         </div>
+
+        <p class="settings-version">Versão ${escapeHtml(pkg.version)}</p>
       </div>
     `
 
@@ -152,6 +179,9 @@ export function renderGuardianSettings(
     root.querySelector('#guardian-disconnect')?.addEventListener('click', () => {
       view = 'confirm-disconnect'
       renderConfirmDisconnect()
+    })
+    root.querySelector('#guardian-privacy')?.addEventListener('click', () => {
+      if (PRIVACY_POLICY_URL) window.open(PRIVACY_POLICY_URL, '_system')
     })
     root.querySelector('#guardian-help-toggle')?.addEventListener('click', () => {
       helpOpen = !helpOpen

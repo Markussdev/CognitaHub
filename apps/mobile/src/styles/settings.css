@@ -517,6 +517,19 @@
   line-height: 1.5;
 }
 
+.guardian-help__link {
+  color: var(--navy);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* Política de privacidade sem URL configurada ainda — visível (lembrete
+   de que falta preencher antes de submeter pra loja), não escondida. */
+.guardian-action.is-disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
 /* ---- confirmação de desconectar ---- */
 
 .guardian-confirm {

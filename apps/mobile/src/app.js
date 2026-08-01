@@ -43,6 +43,14 @@ function getChildDisplayName() {
   return appState.context?.nome_exibicao ?? appState.context?.primeiro_nome ?? 'Explorador'
 }
 
+// Só um rótulo pra reconhecer o aparelho na lista do responsável — nunca
+// modelo, fabricante nem identificador do celular. Quanto menos dado de
+// dispositivo um app infantil transmite, melhor (política da Play pra
+// apps direcionados a crianças).
+function getDeviceName() {
+  return Capacitor.isNativePlatform() ? 'Aplicativo Cognita no Android' : 'Cognita no navegador'
+}
+
 function getChildIdentity() {
   const avatar = getChildAvatar(appState.context?.avatar_key)
   return {
@@ -95,11 +103,36 @@ export async function initApp(root) {
   // No Android de verdade é o app sendo minimizado/reaberto, que é o que
   // interessa.
   if (Capacitor.isNativePlatform()) {
-    App.addListener('appStateChange', ({ isActive }) => {
-      if (isActive) {
-        renderLoading(root)
-        boot(root)
+    App.addListener('appStateChange', async ({ isActive }) => {
+      if (!isActive || booting) return
+
+      // Telas com estado que boot() destruiria sem avisar: atividade em
+      // andamento, formulário de perfil não salvo, confirmação de
+      // desconectar/troca de criança no meio do caminho. Uma ligação que
+      // minimiza o app não pode apagar isso — a tela só é atualizada de
+      // novo quando a própria pessoa sai dela.
+      if (
+        appState.screen === 'mission' ||
+        appState.screen === 'profile-settings' ||
+        appState.screen === 'experience-settings' ||
+        appState.screen === 'guardian-settings' ||
+        appState.screen === 'pairing-switch'
+      ) {
+        return
       }
+
+      // Na trilha de um módulo aberto: atualiza só a jornada (progresso,
+      // próxima missão liberada), sem voltar pra seleção de módulos.
+      if (appState.screen === 'journey' && appState.openModule) {
+        renderLoading(root)
+        await reloadJourney(root, appState.openModule.id)
+        return
+      }
+
+      // Módulos/configurações/pareamento/erro: seguro reconferir tudo do
+      // zero (é exatamente o que essas telas já fazem ao entrar).
+      renderLoading(root)
+      await boot(root)
     })
 
     App.addListener('backButton', () => handleBackButton(root))
@@ -441,7 +474,7 @@ function showPairing(root, { mode = 'initial', onCancel } = {}) {
     },
     async onSubmit(code) {
       try {
-        await claimPairingCode(code)
+        await claimPairingCode(code, getDeviceName())
         pendingPairingCancel = null
         renderLoading(root)
         await boot(root)

@@ -1,0 +1,50 @@
+/* Fontes embutidas no bundle — antes vinham do Google Fonts (index.html),
+   o que exigia internet na primeira pintura, causava flash de fonte, e é
+   uma chamada a terceiro desnecessária num app infantil. Só o subset
+   "latin" (cobre acentuação do PT-BR: ç ã õ á é í ó ú â ê ô) — sem
+   latin-ext/vietnamese/devanagari, que essa UI nunca usa.
+   Gerado a partir de fonts.googleapis.com/css2, mesmos pesos que o
+   <link> antigo (Atkinson 400/700/italic 400, Baloo 2 600/700). */
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/atkinson-regular-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/atkinson-bold-700.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/atkinson-italic-400.woff2') format('woff2');
+}
+
+/* Baloo 2 600/700 vêm do mesmo arquivo (fatia "latin" da fonte variável) —
+   é assim que o próprio Google Fonts serve, o navegador escolhe a
+   instância certa do eixo de peso. */
+@font-face {
+  font-family: 'Baloo 2';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/baloo2-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Baloo 2';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/baloo2-latin.woff2') format('woff2');
+}

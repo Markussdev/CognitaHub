@@ -1,5 +1,4 @@
 import { escapeHtml } from '../utils/html.js'
-import pkg from '../../package.json'
 
 // Menu principal de Configurações — três botões grandes, função de cada
 // um clara sem precisar entrar.
@@ -60,8 +59,6 @@ export function renderSettings(root, { onBack, onOpenProfile, onOpenExperience, 
       <div class="settings-menu">
         ${itemsHtml}
       </div>
-
-      <p class="settings-version">Versão ${escapeHtml(pkg.version)}</p>
     </div>
   `
 
