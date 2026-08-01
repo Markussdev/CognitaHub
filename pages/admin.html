@@ -1,162 +1,195 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin | CognitaHub</title>
-    <link rel="icon" type="image/png" href="../assets/logo-icon-transparent.png" />
-    <link rel="stylesheet" href="../css/tokens.css" />
-    <link rel="stylesheet" href="../css/styles.css" />
-    <link rel="stylesheet" href="../css/internal.css" />
-    <link rel="stylesheet" href="../css/cognita-os.css" />
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Operação | Cognita Hub</title>
+  <link rel="icon" type="image/png" href="/assets/logo-icon-transparent.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/tutor-shell.css" />
+  <style>
+    /* Shell (tokens/rail/topbar/scrollbar/drawer) vem de tutor-shell.css —
+       mesmo Cognita dos painéis de tutor/família, mudando só a densidade:
+       admin é ferramenta de operação, então linhas compactas, hairlines e
+       zero decoração. Nenhum número inventado: todo contador é uma query. */
 
-  <body class="app-body os-body admin-os-body">
-    <main class="os-page admin-os-page">
-      <header class="os-topbar admin-os-topbar">
-        <a class="os-brand" href="../index.html" aria-label="Voltar para o site Cognita Hub">
-          <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
-          <strong>Cognita Hub</strong>
-        </a>
+    #main-content { padding-bottom: 72px; }
+    .adm-page { width: min(1100px, calc(100% - 48px)); margin-inline: auto; }
 
-        <div class="os-topbar-copy">
-          <p class="os-kicker">Central de operação</p>
-          <h1>Triagem e decisões</h1>
-          <p>Analise cadastros, valide tutores e crie ciclos de acompanhamento.</p>
-        </div>
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); }
+    .card-pad { padding: 18px 20px; }
+    .kicker { font-size: var(--label-sm-size); font-weight: 800; text-transform: uppercase; letter-spacing: var(--label-sm-tracking); color: var(--muted); }
 
-        <div class="os-topbar-actions">
-          <button class="os-icon-button focus-toggle" type="button" data-focus-toggle aria-pressed="false" aria-label="Alternar modo foco">
-            <span class="sr-only" data-focus-label>Modo Foco</span>
-            <i class="focus-dot" aria-hidden="true"></i>
-          </button>
+    .adm-head { padding: 28px 0 20px; }
+    .adm-head h1 { margin-top: 4px; color: var(--brand-deep); font-size: 1.45rem; font-weight: 700; letter-spacing: -.01em; }
+    .adm-head .sub { margin-top: 6px; color: var(--ink-soft); font-size: .9rem; max-width: 64ch; }
 
-          <button class="os-icon-button" type="button" data-logout aria-label="Sair">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M19 12H5" />
-              <path d="M12 19l-7-7" />
-              <path d="M12 5l-7 7" />
-            </svg>
-          </button>
+    .adm-stack { display: grid; gap: 14px; }
 
-          <div class="os-avatar" data-account-avatar>EC</div>
-        </div>
-      </header>
+    /* ── Resumo: contadores reais (cada um navega pra área) ── */
+    .adm-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .adm-stat { display: block; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r); background: var(--card); box-shadow: var(--shadow); cursor: pointer; text-align: left; font-family: var(--font); }
+    .adm-stat:hover { border-color: var(--brand); }
+    .adm-stat .lbl { font-size: var(--label-sm-size); font-weight: 700; text-transform: uppercase; letter-spacing: var(--label-sm-tracking); color: var(--muted); }
+    .adm-stat .val { margin-top: 6px; font-size: 1.6rem; font-weight: 700; color: var(--brand-deep); font-feature-settings: "tnum"; line-height: 1; }
+    .adm-stat .hint { margin-top: 5px; font-size: .74rem; color: var(--muted); }
+    .adm-stat.is-hot { border-color: var(--accent); }
+    .adm-stat.is-hot .val { color: var(--warn); }
 
-      <section class="os-status-strip admin-command-strip" aria-label="Resumo da operação">
-        <span class="os-status-pill os-status-live">
-          <i aria-hidden="true"></i>
-          <strong data-count-context>Carregando…</strong>
-        </span>
-        <a class="os-status-pill" href="#triagem">
-          Triagem <strong data-count-total>—</strong>
-        </a>
-        <a class="os-status-pill" href="#matches">
-          Pareamentos <strong data-count-matches>—</strong>
-        </a>
-        <a class="os-status-pill" href="#ciclos">
-          Ciclos
-        </a>
-      </section>
+    .adm-attention-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+    .adm-attention-row:first-of-type { border-top: none; }
+    .adm-attention-row .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--warn); flex-shrink: 0; }
+    .adm-attention-row .tx { flex: 1; min-width: 0; font-size: .9rem; color: var(--ink); }
+    .adm-attention-row .tx small { display: block; color: var(--muted); font-size: .78rem; }
 
-      <section class="admin-os-metrics" aria-label="Métricas do funil">
-        <a class="admin-os-metric active" href="#triagem">
-          <span>Crianças em análise</span>
-          <strong data-count-children>—</strong>
-          <small>cadastros aguardando a equipe</small>
-        </a>
+    /* ── Linhas de pessoas/ciclos/conteúdo ── */
+    .adm-row { padding: 13px 0; border-top: 1px solid var(--line); }
+    .adm-row:first-of-type { border-top: none; }
+    .adm-row-main { display: flex; align-items: center; gap: 12px; }
+    .adm-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(150deg, #1a1670, #540042); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: .74rem; flex-shrink: 0; }
+    .adm-avatar.soft { background: var(--brand-soft); color: var(--brand); }
+    .adm-row-tx { flex: 1; min-width: 0; }
+    .adm-row-tx b { display: block; font-size: .92rem; color: var(--ink); }
+    .adm-row-tx span { display: block; font-size: .78rem; color: var(--muted); margin-top: 1px; }
+    .adm-row-side { display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
 
-        <a class="admin-os-metric" href="#tutores-validar">
-          <span>Tutores a validar</span>
-          <strong data-count-tutors>—</strong>
-          <small>candidaturas recebidas</small>
-        </a>
+    .badge { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: var(--pill); font-size: .7rem; font-weight: 700; white-space: nowrap; }
+    .badge-ok { background: var(--ok-soft); color: var(--ok); }
+    .badge-warn { background: var(--warn-soft); color: var(--warn); }
+    .badge-info { background: var(--brand-soft); color: var(--brand); }
+    .badge-bad { background: var(--bad-soft); color: var(--bad); }
+    .badge-mid { background: rgba(20,17,98,.06); color: var(--ink-soft); }
 
-        <a class="admin-os-metric" href="#matches">
-          <span>Aguardando pareamento</span>
-          <strong data-count-matches>—</strong>
-          <small>crianças aprovadas sem tutor</small>
-        </a>
+    .btn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: var(--r-sm); font-family: var(--font); font-size: .8rem; font-weight: 700; cursor: pointer; white-space: nowrap; text-decoration: none; border: none; }
+    .btn-primary { background: var(--brand); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--brand-deep); }
+    .btn-ghost { background: var(--card); color: var(--brand); border: 1px solid var(--line-2); }
+    .btn-ghost:hover:not(:disabled) { background: rgba(20,17,98,.04); }
+    .btn-bad { background: var(--card); color: var(--bad); border: 1px solid rgba(163,18,58,.3); }
+    .btn-bad:hover:not(:disabled) { background: var(--bad-soft); }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
 
-        <a class="admin-os-metric muted" href="#relatorios">
-          <span>Relatórios</span>
-          <strong>—</strong>
-          <small>disponível na próxima versão</small>
-        </a>
-      </section>
+    /* Detalhe expansível (perfil resumido / candidatura / estrutura) */
+    .adm-details { margin-top: 9px; }
+    .adm-details summary { cursor: pointer; font-size: .78rem; font-weight: 700; color: var(--brand); }
+    .adm-details[open] summary { margin-bottom: 8px; }
+    .card-facts { display: grid; gap: 0; }
+    .card-facts > div { display: flex; gap: 12px; padding: 7px 0; border-top: 1px solid var(--line); }
+    .card-facts > div:first-child { border-top: none; }
+    .card-facts dt { flex: 0 0 160px; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); padding-top: 2px; }
+    .card-facts dd { flex: 1; font-size: .85rem; color: var(--ink); line-height: 1.45; }
 
-      <section class="admin-os-grid" aria-label="Funil de acompanhamento">
-        <article class="os-panel admin-os-column" id="triagem">
-          <header class="admin-os-column-head">
-            <div>
-              <p class="os-kicker">Etapa 1</p>
-              <h2>Triagem</h2>
-            </div>
-            <span data-count-triagem>—</span>
-          </header>
+    .card-error { margin-top: 8px; font-size: .8rem; font-weight: 700; color: var(--bad); }
+    .row-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 
-          <p class="os-kicker queue-label">Crianças em análise</p>
-          <div class="admin-os-list" data-list-children aria-live="polite"></div>
+    /* Form de pareamento dentro do card */
+    .match-form { display: grid; gap: 10px; margin-top: 10px; }
+    .match-form label { display: grid; gap: 5px; font-size: .78rem; font-weight: 700; color: var(--ink); }
+    .match-form select, .match-form input, .match-form textarea {
+      font-family: var(--font); font-size: .86rem; color: var(--ink);
+      border: 1px solid var(--line-2); border-radius: var(--r-sm); padding: 9px 11px; background: var(--card);
+    }
+    .match-form textarea { min-height: 64px; resize: vertical; }
+    .match-form select:focus, .match-form input:focus, .match-form textarea:focus { outline: 2px solid var(--brand); border-color: transparent; }
 
-          <p class="os-kicker queue-label" id="tutores-validar">Tutores a validar</p>
-          <div class="admin-os-list" data-list-tutors aria-live="polite"></div>
-        </article>
+    /* Trocar tutor inline */
+    .adm-swap { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+    .adm-swap select { font-family: var(--font); font-size: .82rem; border: 1px solid var(--line-2); border-radius: var(--r-sm); padding: 7px 10px; background: var(--card); color: var(--ink); }
 
-        <article class="os-panel admin-os-column" id="matches">
-          <header class="admin-os-column-head">
-            <div>
-              <p class="os-kicker">Etapa 2</p>
-              <h2>Pareamentos</h2>
-            </div>
-            <span data-count-matches>—</span>
-          </header>
+    .adm-empty { display: flex; flex-direction: column; gap: 6px; padding: 26px 8px; text-align: center; align-items: center; }
+    .adm-empty strong { font-size: .9rem; color: var(--ink); }
+    .adm-empty span { font-size: .82rem; color: var(--muted); max-width: 44ch; }
 
-          <p class="os-kicker queue-label">Crianças aguardando tutor</p>
-          <div class="admin-os-list" data-list-matches aria-live="polite"></div>
-        </article>
+    .adm-filters { display: flex; gap: 6px; flex-wrap: wrap; margin: 2px 0 10px; }
+    .adm-chip { height: 26px; padding: 0 11px; border-radius: var(--pill); border: 1px solid var(--line-2); background: var(--card); color: var(--muted); font-family: var(--font); font-size: .74rem; font-weight: 700; cursor: pointer; }
+    .adm-chip:hover { border-color: var(--brand); color: var(--brand); }
+    .adm-chip.on { background: var(--brand); border-color: var(--brand); color: #fff; }
+    .adm-chip .num { opacity: .75; margin-left: 4px; }
 
-        <article class="os-panel admin-os-column" id="ciclos">
-          <header class="admin-os-column-head">
-            <div>
-              <p class="os-kicker">Etapa 3</p>
-              <h2>Ciclos</h2>
-            </div>
-            <span>v1</span>
-          </header>
+    .skel { border-radius: var(--r); background: linear-gradient(100deg, #ece9e6 40%, #f4f2f0 50%, #ece9e6 60%); background-size: 200% 100%; animation: shimmer 1.4s ease infinite; }
+    .skel-a { height: 90px; margin: 28px auto 14px; width: min(1100px, calc(100% - 48px)); }
+    .skel-b { height: 260px; margin: 0 auto; width: min(1100px, calc(100% - 48px)); }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+    @media (prefers-reduced-motion: reduce) { .skel { animation: none; } }
 
-          <div class="empty-state os-empty">
-            <strong>Ciclos ativos aparecem nos painéis de tutor e responsável.</strong>
-            <span>
-              Para o vídeo, use esta etapa como confirmação do fluxo: após criar o ciclo,
-              o tutor visualiza a criança e o responsável acompanha a jornada.
-            </span>
-          </div>
-        </article>
+    @media (max-width: 940px) {
+      .app { grid-template-columns: 1fr; }
+      .rail { position: fixed; top: 0; left: -280px; width: min(280px, 84vw); z-index: 70; box-shadow: 4px 0 24px rgba(45,23,57,.18); transition: left .25s ease; }
+      .rail.open { left: 0; }
+      .rail-toggle { display: inline-flex; }
+      body.rail-drawer-open #main-content { overflow: hidden; }
+      .adm-page { width: min(100% - 32px, 760px); }
+      .adm-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 560px) {
+      .adm-page { width: min(100% - 24px, 520px); }
+      .adm-stats { grid-template-columns: 1fr; }
+      .adm-row-main { flex-wrap: wrap; }
+      .card-facts > div { flex-direction: column; gap: 2px; }
+      .card-facts dt { flex: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
 
-        <article class="os-panel admin-os-column" id="relatorios">
-          <header class="admin-os-column-head">
-            <div>
-              <p class="os-kicker">Próxima versão</p>
-              <h2>Relatórios</h2>
-            </div>
-            <span>—</span>
-          </header>
+  <nav class="rail thin-scroll" data-rail id="adm-rail" aria-label="Navegação da operação">
+    <a class="rail-brand" href="../index.html">
+      <div class="rail-mark"><img src="/assets/logo-icon-transparent.png" alt="" /></div>
+      <div><b>Cognita Hub</b><small>Equipe Cognita</small></div>
+    </a>
 
-          <div class="empty-state os-empty">
-            <strong>Relatórios mensais entram depois do MVP.</strong>
-            <span>
-              A versão atual prioriza cadastro, validação, pareamento, ciclo e registro de sessão.
-            </span>
-          </div>
-        </article>
-      </section>
+    <div class="rail-group">Operação</div>
+    <button type="button" class="rail-link active" data-view-link="resumo">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+      Resumo
+    </button>
+    <button type="button" class="rail-link" data-view-link="pessoas">
+      <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Pessoas
+    </button>
+    <button type="button" class="rail-link" data-view-link="ciclos">
+      <svg viewBox="0 0 24 24"><path d="M17 2l4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
+      Ciclos
+    </button>
+    <button type="button" class="rail-link" data-view-link="conteudo">
+      <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Conteúdo
+    </button>
 
-      <div class="os-hidden-identity" hidden>
-        <span data-account-name>Equipe Cognita</span>
-        <span data-account-email>—</span>
+    <div class="rail-spacer"></div>
+    <div class="rail-account">
+      <div class="rail-account-btn" style="cursor: default;">
+        <div class="av" data-account-avatar aria-hidden="true">?</div>
+        <div><div class="nm" data-account-name>Carregando…</div><div class="rl">Equipe </div></div>
       </div>
-    </main>
+      <button class="icon-btn" type="button" data-logout aria-label="Sair">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </nav>
+  <div class="rail-backdrop" data-rail-backdrop></div>
 
-    <script type="module" src="/js/pages/admin.js"></script>
-  </body>
+  <div class="shell">
+    <div class="topbar">
+      <button type="button" class="rail-toggle" data-rail-toggle aria-label="Abrir menu" aria-expanded="false" aria-controls="adm-rail">
+        <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+      <div class="crumb" data-crumb>Operação</div>
+      <div class="topbar-right">
+        <div class="av" data-topbar-avatar aria-hidden="true">?</div>
+      </div>
+    </div>
+
+    <main id="main-content" class="thin-scroll" data-admin-state aria-live="polite">
+      <div class="skel skel-a"></div>
+      <div class="skel skel-b"></div>
+    </main>
+  </div>
+</div>
+
+<script type="module" src="../js/pages/admin.js"></script>
+</body>
 </html>

@@ -1,719 +1,362 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Biblioteca de Roteiros | CognitaHub</title>
-    <link rel="icon" type="image/png" href="../assets/logo-icon-transparent.png" />
-    <link rel="stylesheet" href="../css/tokens.css" />
-    <link rel="stylesheet" href="../css/styles.css" />
-    <link rel="stylesheet" href="../css/internal.css" />
-    <link rel="stylesheet" href="../css/cognita-os.css" />
-  </head>
-  <body class="app-body os-body library-os-body">
-    <main class="os-page library-os-page" id="conteudo">
-      <header class="os-topbar">
-        <a class="os-brand" href="../index.html" aria-label="Voltar para o site Cognita Hub">
-          <img src="../assets/logo-icon-transparent.png" alt="" aria-hidden="true" />
-          <strong>Cognita Hub</strong>
-        </a>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Biblioteca de Atividades | Cognita Hub</title>
+  <link rel="icon" type="image/png" href="/assets/logo-icon-transparent.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/tutor-shell.css" />
+  <style>
+    /* Tokens, rail (com drawer mobile), topbar/busca, scrollbar interna e
+       drawer genérico vêm de tutor-shell.css (compartilhado com
+       tutor.html) — aqui só o que é específico da Biblioteca. */
+    :root { --baloo: "Baloo 2", var(--font); }
 
-        <div class="os-topbar-copy">
-          <p class="os-kicker">Recursos pedagógicos</p>
-          <h1>Biblioteca de roteiros</h1>
-          <p>
-            Roteiros guiados para tutores e responsáveis conduzirem o apoio matemático com
-            previsibilidade, adaptação e baixa estimulação.
-          </p>
-        </div>
+    #main-content { padding-bottom: 72px; }
 
-        <div class="os-topbar-actions">
-          <a class="os-link-btn" href="tutor.html">
-            <span aria-hidden="true">←</span>
-            Voltar ao painel
-          </a>
-          <a class="os-link-btn os-link-ghost" href="../index.html">Site Cognita</a>
-          <button class="os-icon-button focus-toggle" type="button" data-focus-toggle aria-pressed="false" aria-label="Alternar modo foco">
-            <span class="sr-only" data-focus-label>Modo Foco</span>
-            <i class="focus-dot" aria-hidden="true"></i>
-          </button>
-        </div>
-      </header>
+    /* Container com largura controlada — antes a página esticava até a
+       borda da tela (quase 1700px), sem intenção nenhuma no respiro. */
+    .lib-page { width: min(1240px, calc(100% - 48px)); margin-inline: auto; }
 
-      <section class="os-status-strip" aria-label="Resumo da biblioteca">
-        <span class="os-status-pill os-status-live">
-          <i aria-hidden="true"></i>
-          <strong>9 roteiros demonstrativos</strong>
-        </span>
-        <span class="os-status-pill">novos roteiros entram conforme os ciclos</span>
-      </section>
+    /* ── Cabeçalho ── */
+    .lib-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; padding: 32px 0 24px; flex-wrap: wrap; }
+    .lib-head .kicker { color: var(--brand); font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .lib-head h1 { margin-top: 5px; color: var(--brand-deep); font-family: var(--baloo); font-size: clamp(1.7rem, 2.6vw, 2.2rem); line-height: 1.08; letter-spacing: -.02em; }
+    .lib-subtitle { max-width: 58ch; margin-top: 8px; color: var(--ink-soft); font-size: .92rem; line-height: 1.55; }
 
-      <section class="os-panel library-structure-card" aria-labelledby="estrutura-roteiros">
-        <div>
-          <p class="os-kicker">Estrutura previsível</p>
-          <h2 id="estrutura-roteiros">Cada roteiro segue a mesma condução.</h2>
-        </div>
-        <ul class="library-structure-steps">
-          <li>Objetivo</li>
-          <li>Antes de começar</li>
-          <li>Passo a passo</li>
-          <li>Se ficar difícil</li>
-          <li>Se ficar fácil</li>
-          <li>Sinal observável</li>
-        </ul>
-      </section>
+    .lib-child-context { flex: 0 0 auto; min-width: 200px; border: 1px solid var(--line); border-radius: 16px; padding: 12px 16px; background: var(--card); }
+    .lib-child-context[hidden] { display: none; }
+    .lib-child-context span { display: block; color: var(--muted); font-size: .68rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+    .lib-child-context strong { display: block; margin-top: 3px; color: var(--brand-deep); font-size: .94rem; }
 
-      <div class="library-filters" aria-label="Filtrar roteiros por idade e habilidade">
-        <button class="filter-chip active" type="button" data-filter="todos">Todos</button>
-        <button class="filter-chip" type="button" data-filter="5-6">5–6 anos</button>
-        <button class="filter-chip" type="button" data-filter="7-8">7–8 anos</button>
-        <button class="filter-chip" type="button" data-filter="9">9 anos</button>
-        <button class="filter-chip" type="button" data-filter="contagem">Contagem</button>
-        <button class="filter-chip" type="button" data-filter="formas">Formas</button>
-        <button class="filter-chip" type="button" data-filter="soma">Soma</button>
-        <button class="filter-chip" type="button" data-filter="problemas">Problemas simples</button>
+    /* ── Recomendação principal — só UMA, não um segundo grid ── */
+    .lib-featured[hidden] { display: none; }
+    .lib-featured {
+      display: grid; grid-template-columns: 72px minmax(0, 1fr) minmax(220px, 280px);
+      gap: 20px; align-items: center; border: 1px solid rgba(20,17,98,.16); border-radius: 22px;
+      padding: 24px; margin-bottom: 22px;
+      background: radial-gradient(circle at 0 0, rgba(255,168,0,.14), transparent 32%), linear-gradient(135deg, #fffefc, #f3f0ff);
+      box-shadow: 0 2px 5px rgba(20,17,98,.05), 0 16px 34px rgba(20,17,98,.07);
+    }
+    .lib-featured-icon { display: grid; width: 72px; height: 72px; place-items: center; border-radius: 20px; background: #fff; box-shadow: 0 8px 24px rgba(20,17,98,.1); font-size: 2.1rem; flex-shrink: 0; }
+    .lib-featured-eyebrow { color: var(--brand); font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .lib-featured h2 { margin-top: 4px; color: var(--brand-deep); font-family: var(--baloo); font-size: 1.4rem; line-height: 1.12; }
+    .lib-featured-summary { max-width: 60ch; margin-top: 6px; color: var(--ink-soft); font-size: .87rem; }
+    .lib-featured-meta { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+    .lib-featured-meta span { border-radius: 999px; padding: 3px 9px; background: rgba(20,17,98,.06); color: var(--ink-soft); font-size: .7rem; font-weight: 700; }
+    .lib-featured-reason { border-left: 1px solid var(--line); padding-left: 20px; }
+    .lib-featured-reason span { color: var(--muted); font-size: .66rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+    .lib-featured-reason p { margin: 6px 0 14px; color: var(--ink-soft); font-size: .82rem; line-height: 1.45; }
+    .lib-featured-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ── Catálogo ── */
+    .lib-catalog { margin-top: 4px; }
+    .lib-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+    .lib-modes { display: flex; flex-wrap: wrap; gap: 8px; }
+    .lib-mode { min-height: 36px; border: 1px solid var(--line-2); border-radius: 999px; padding: 0 15px; background: var(--card); color: var(--ink-soft); font: inherit; font-size: .83rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .lib-mode:hover { border-color: var(--brand); color: var(--brand); }
+    .lib-mode.is-active { border-color: var(--brand); background: var(--brand); color: #fff; }
+    .lib-mode .n { opacity: .75; font-size: .77rem; }
+    .btn-filter { min-height: 36px; border: 1px solid var(--line-2); border-radius: 10px; padding: 0 14px; background: var(--card); color: var(--brand); font: inherit; font-size: .81rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-filter:hover { border-color: var(--brand); }
+    .btn-filter.on { background: var(--brand-soft); border-color: transparent; }
+    .btn-filter svg { width: 14px; height: 14px; }
+
+    /* ── Filtros secundários (recolhidos por padrão) ── */
+    .lib-filters { padding-bottom: 4px; display: none; flex-direction: column; gap: 8px; }
+    .lib-filters.open { display: flex; }
+    .filter-secondary-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
+    .filter-sec-group { display: flex; align-items: center; gap: 5px; }
+    .filter-sec-divider { width: 1px; height: 18px; background: var(--line-2); align-self: center; }
+    .fchip-sm { height: 26px; padding: 0 10px; border-radius: var(--pill); border: 1px solid var(--line-2); background: var(--card); color: var(--muted); font-family: var(--font); font-size: .74rem; font-weight: 700; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; }
+    .fchip-sm:hover { border-color: var(--brand); color: var(--brand); }
+    .fchip-sm.on { background: var(--brand-soft); border-color: transparent; color: var(--brand); }
+
+    /* ── Grade ── */
+    .lib-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+
+    /* article, não button-com-botão-dentro */
+    .activity-card {
+      display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 16px; min-height: 200px;
+      border: 1px solid var(--line); border-radius: 18px; padding: 20px; background: var(--card);
+      box-shadow: var(--shadow); transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+    }
+    .activity-card:hover { transform: translateY(-2px); border-color: rgba(20,17,98,.22); box-shadow: 0 12px 28px rgba(20,17,98,.09); }
+    .activity-card-icon { display: grid; width: 56px; height: 56px; place-items: center; border-radius: 17px; background: var(--brand-soft); font-size: 1.7rem; flex-shrink: 0; }
+    .activity-card-body { display: flex; min-width: 0; flex-direction: column; }
+    .activity-mode { align-self: flex-start; font-size: .67rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+    .activity-mode.digital { color: var(--brand); }
+    .activity-mode.guiada { color: var(--warn); }
+    .activity-card h3 { margin-top: 5px; color: var(--brand-deep); font-family: var(--baloo); font-size: 1.14rem; line-height: 1.2; }
+    .activity-card-description { margin-top: 5px; color: var(--ink-soft); font-size: .84rem; line-height: 1.45; }
+    .activity-card-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 11px; }
+    .activity-card-meta span { border-radius: 999px; padding: 4px 8px; background: rgba(20,17,98,.055); color: var(--ink-soft); font-size: .7rem; font-weight: 700; }
+    .activity-card-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: auto; padding-top: 16px; }
+    .activity-details-link { border: 0; padding: 0; background: none; color: var(--brand); font: inherit; font-size: .8rem; font-weight: 700; text-decoration: underline; cursor: pointer; }
+    .activity-primary-action { min-height: 36px; border: 0; border-radius: 10px; padding: 0 14px; background: var(--brand); color: #fff; font: inherit; font-size: .81rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .activity-primary-action:hover { background: var(--brand-deep); }
+    .activity-primary-action[aria-disabled="true"] { opacity: .5; cursor: not-allowed; pointer-events: none; }
+
+    /* Botão utilitário pequeno — gaveta de roteiro e navegação do Modo
+       Condução (contextos de ação simples, não os cards do catálogo). */
+    .btn-brand-sm { height: 34px; padding: 0 14px; border-radius: var(--r-sm); background: var(--brand); color: #fff; border: none; font-family: var(--font); font-size: .82rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .btn-brand-sm:hover { background: var(--brand-deep); }
+    .btn-ghost-sm { height: 34px; padding: 0 12px; border-radius: var(--r-sm); background: var(--card); color: var(--brand); border: 1px solid var(--line-2); font-family: var(--font); font-size: .8rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+    .btn-ghost-sm:hover { background: rgba(20,17,98,.04); }
+
+    /* ── Estado vazio ── */
+    .lib-empty { grid-column: 1/-1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 48px 20px; }
+    .lib-empty strong { font-size: .95rem; color: var(--ink); }
+    .lib-empty span { font-size: .84rem; color: var(--muted); max-width: 36ch; line-height: 1.55; }
+    .lib-empty button { margin-top: 8px; }
+
+    /* Badges pequenos (nível/carga/idade) — usados no cabeçalho da gaveta
+       de roteiro. */
+    .acb { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: var(--pill); font-size: .68rem; font-weight: 700; }
+    .acb-ok { background: var(--ok-soft); color: var(--ok); }
+    .acb-warn { background: var(--warn-soft); color: var(--warn); }
+    .acb-bad { background: var(--bad-soft); color: var(--bad); }
+    .acb-soft { background: rgba(20,17,98,.06); color: var(--ink-soft); }
+
+    /* ── Gaveta de atividade (roteiro) ── */
+    .act-drawer { position: fixed; top: 0; right: 0; height: 100vh; width: min(500px, 94vw); background: var(--card); border-left: 1px solid var(--line); box-shadow: -16px 0 36px rgba(45,23,57,.14); z-index: 61; transform: translateX(110%); transition: transform .25s ease; display: flex; flex-direction: column; }
+    .act-drawer.open { transform: translateX(0); }
+    .ad-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 22px 16px; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+    .ad-head h2 { font-size: 1.2rem; font-weight: 800; color: var(--brand-deep); font-family: var(--baloo); line-height: 1.2; margin-bottom: 10px; }
+    .ad-body { flex: 1; overflow-y: auto; padding-bottom: 24px; }
+    .ds { padding: 18px 22px 0; }
+    .ds + .ds { padding-top: 16px; }
+    .ds-label { font-size: var(--label-sm-size); font-weight: 700; text-transform: uppercase; letter-spacing: var(--label-sm-tracking); color: var(--muted); margin-bottom: 6px; display: block; }
+    .ds-obj { font-size: .93rem; font-weight: 700; color: var(--ink); line-height: 1.45; padding: 12px 15px; background: rgba(20,17,98,.03); border-left: 3px solid var(--brand); border-radius: var(--r-sm); }
+    .ds p { font-size: .88rem; color: var(--ink-soft); line-height: 1.55; }
+    .ds ul, .ds ol { padding-left: 18px; display: flex; flex-direction: column; gap: 5px; }
+    .ds li { font-size: .88rem; color: var(--ink-soft); line-height: 1.5; }
+    .ds-adapt { padding: 18px 22px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .ds-adapt-box { padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-sm); }
+    .ds-adapt-box .lbl { font-size: .63rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px; display: block; }
+    .ds-adapt-box p { font-size: .84rem; color: var(--ink-soft); line-height: 1.45; }
+    .hard { border-left: 3px solid var(--warn); }
+    .hard .lbl { color: var(--warn); }
+    .easy { border-left: 3px solid var(--ok); }
+    .easy .lbl { color: var(--ok); }
+    .ds-signal { font-size: .88rem; color: var(--ink-soft); line-height: 1.55; padding: 12px 15px; background: var(--ok-soft); border-radius: var(--r-sm); border-left: 3px solid var(--ok); }
+    .ds-say { display: flex; flex-direction: column; gap: 6px; }
+    .ds-say-item { font-size: .86rem; color: var(--brand-deep); font-style: italic; padding: 8px 12px; background: rgba(20,17,98,.04); border-radius: var(--r-sm); }
+    .ds-avoid { display: flex; flex-direction: column; gap: 5px; }
+    .ds-avoid-item { display: flex; align-items: flex-start; gap: 7px; font-size: .86rem; color: var(--ink-soft); line-height: 1.4; }
+    .ds-avoid-item::before { content: '✕'; font-size: .7rem; color: var(--bad); font-weight: 700; flex-shrink: 0; margin-top: 3px; }
+    .ds-obs { font-size: .86rem; color: var(--warn); line-height: 1.5; padding: 10px 14px; background: var(--warn-soft); border-radius: var(--r-sm); border-left: 3px solid var(--warn); }
+    .ad-footer { position: sticky; bottom: 0; padding: 14px 22px; border-top: 1px solid var(--line); background: var(--card); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .ad-sep { height: 1px; background: var(--line); margin: 16px 22px 0; }
+
+    /* ── Modo Condução — overlay full-bleed sobre a página inteira ── */
+    .cnd-overlay { position: fixed; inset: 0; z-index: 65; background: var(--canvas); display: flex; flex-direction: column; }
+    .cnd-overlay[hidden] { display: none; }
+    .cnd-top { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 24px; border-bottom: 1px solid var(--line); background: var(--card); }
+    .cnd-top-tx { display: grid; gap: 2px; min-width: 0; }
+    .cnd-title { font-size: 1.05rem; font-weight: 700; color: var(--brand-deep); }
+    .cnd-sub { font-size: .8rem; color: var(--muted); font-feature-settings: "tnum"; }
+    .cnd-steps { display: flex; gap: 14px; flex-wrap: wrap; padding: 12px 24px 0; }
+    .cnd-step { display: flex; align-items: center; gap: 7px; font-size: .8rem; font-weight: 600; color: var(--muted); }
+    .cnd-step-dot { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: .72rem; font-weight: 700; background: var(--rail); color: var(--ink-soft); flex-shrink: 0; }
+    .cnd-step.is-current { color: var(--ink); }
+    .cnd-step.is-current .cnd-step-dot { background: var(--brand); color: #fff; }
+    .cnd-step.is-done { color: var(--ok); }
+    .cnd-step.is-done .cnd-step-dot { background: var(--ok-soft); color: var(--ok); }
+    .cnd-body { flex: 1; min-height: 0; overflow-y: auto; padding: 24px; display: flex; justify-content: center; }
+    .cnd-inner { width: 100%; max-width: 640px; display: grid; gap: 18px; align-content: start; }
+    .cnd-block { display: grid; gap: 10px; }
+    .cnd-q { font-size: 1rem; font-weight: 700; color: var(--ink); }
+    .cnd-hint { font-size: .84rem; color: var(--muted); line-height: 1.5; }
+    .cnd-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 16px 18px; }
+    .cnd-steplist { display: grid; gap: 0; }
+    .cnd-steplist-item { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); font-size: .9rem; color: var(--ink-soft); line-height: 1.5; }
+    .cnd-steplist-item:first-child { border-top: none; }
+    .cnd-steplist-item.is-current { color: var(--ink); font-weight: 600; }
+    .cnd-steplist-num { width: 24px; height: 24px; border-radius: 50%; background: var(--rail); color: var(--ink-soft); display: grid; place-items: center; font-size: .76rem; font-weight: 700; flex-shrink: 0; }
+    .cnd-steplist-item.is-current .cnd-steplist-num { background: var(--brand); color: #fff; }
+    .cnd-say-item { font-size: .88rem; color: var(--brand-deep); font-style: italic; padding: 9px 13px; background: rgba(20,17,98,.04); border-radius: var(--r-sm); }
+    .cnd-adapt-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .cnd-adapt-reveal { margin-top: 10px; padding: 12px 14px; border-radius: var(--r-sm); border-left: 3px solid var(--line-2); background: rgba(20,17,98,.03); font-size: .86rem; color: var(--ink-soft); line-height: 1.5; }
+    .cnd-signal-toggle { display: flex; align-items: flex-start; gap: 10px; padding: 13px 15px; border: 1px solid var(--line); border-radius: var(--r-sm); cursor: pointer; }
+    .cnd-signal-toggle input { width: 17px; height: 17px; margin-top: 2px; accent-color: var(--ok); flex-shrink: 0; }
+    .cnd-field textarea { width: 100%; min-height: 90px; font-family: var(--font); font-size: .88rem; color: var(--ink); border: 1px solid var(--line-2); border-radius: var(--r-sm); padding: 10px 12px; resize: vertical; }
+    .cnd-field label { display: block; font-size: .78rem; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+    .cnd-nav { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 24px; border-top: 1px solid var(--line); background: var(--card); }
+
+    /* ── Responsive ── */
+    @media (max-width: 980px) {
+      .lib-page { width: min(100% - 32px, 760px); }
+      .lib-head { align-items: flex-start; flex-direction: column; }
+      .lib-child-context { width: 100%; }
+      .lib-featured { grid-template-columns: 60px minmax(0, 1fr); }
+      .lib-featured-reason { grid-column: 1 / -1; border-top: 1px solid var(--line); border-left: 0; padding-top: 16px; padding-left: 0; }
+      .lib-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 940px) {
+      .app { grid-template-columns: 1fr; }
+      .rail { position: fixed; top: 0; left: -280px; width: min(280px, 84vw); z-index: 70; box-shadow: 4px 0 24px rgba(45,23,57,.18); transition: left .25s ease; }
+      .rail.open { left: 0; }
+      .rail-toggle { display: inline-flex; }
+      body.rail-drawer-open #main-content { overflow: hidden; }
+    }
+    @media (max-width: 560px) {
+      .lib-page { width: min(100% - 24px, 520px); }
+      .lib-featured { grid-template-columns: 1fr; }
+      .lib-featured-icon { width: 54px; height: 54px; font-size: 1.6rem; }
+      .activity-card { grid-template-columns: 1fr; }
+      .activity-card-actions { align-items: stretch; flex-direction: column-reverse; }
+      .activity-primary-action { width: 100%; }
+      .ds-adapt { grid-template-columns: 1fr; }
+      .act-drawer { width: 100vw; }
+      .cnd-body { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <nav class="rail thin-scroll" data-rail id="lib-rail" aria-label="Navegação">
+    <a class="rail-brand" href="../index.html">
+      <div class="rail-mark"><img src="/assets/logo-icon-transparent.png" alt="" /></div>
+      <div><b>Cognita Hub</b><small data-rail-role>Tutor</small></div>
+    </a>
+
+    <div class="rail-group">Navegação</div>
+    <a class="rail-link" href="tutor.html" data-rail-home>
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+      Início
+    </a>
+
+    <div class="rail-group" data-rail-acomp-group hidden>Acompanhamento</div>
+    <div data-rail-child-slot></div>
+
+    <div class="rail-group">Recursos</div>
+    <a class="rail-link active" href="atividades.html">
+      <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Biblioteca
+    </a>
+    <a class="rail-link" href="#" data-rail-sessions>
+      <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-7"/></svg>
+      Sessões
+    </a>
+
+    <div class="rail-group">Suporte</div>
+    <a class="rail-link" href="#" data-rail-team>
+      <svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
+      Falar com equipe
+    </a>
+
+    <div class="rail-spacer"></div>
+    <div class="rail-account">
+      <button type="button" class="rail-account-btn" data-rail-profile>
+        <div class="av" data-account-avatar aria-hidden="true">?</div>
+        <div><div class="nm" data-account-name>Carregando…</div><div class="rl" data-account-role>—</div></div>
+      </button>
+      <button class="icon-btn" type="button" data-logout aria-label="Sair">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </nav>
+  <div class="rail-backdrop" data-rail-backdrop></div>
+
+  <div class="shell">
+    <div class="topbar">
+      <button type="button" class="rail-toggle" data-rail-toggle aria-label="Abrir menu" aria-expanded="false" aria-controls="lib-rail">
+        <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+      <div class="crumb">Biblioteca</div>
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input type="text" id="lib-search" placeholder="Buscar atividade…" autocomplete="off" aria-label="Buscar atividade" />
       </div>
+      <div class="topbar-right">
+        <div class="av" data-topbar-avatar aria-hidden="true">?</div>
+      </div>
+    </div>
 
-      <section class="library-grid" aria-label="Roteiros de apoio matemático">
-        <article class="script-card" data-card-filter="5-6 contagem">
-          <div class="script-meta">
-            <span>5–6 anos</span>
-            <span>15 min</span>
+    <main id="main-content" class="thin-scroll">
+      <div class="lib-page">
+
+        <header class="lib-head">
+          <div>
+            <p class="kicker">Biblioteca Cognita</p>
+            <h1 id="lib-title">O que vamos trabalhar hoje?</h1>
+            <p class="lib-subtitle" id="lib-subtitle">Encontre uma experiência pronta e escolha como ela será aplicada.</p>
           </div>
-          <h2>Reconhecendo números</h2>
-          <p>Roteiro para reconhecer os números de 1 a 5 com cartões e objetos da rotina.</p>
-          <div class="script-tags">
-            <span>Visual</span>
-            <span>Iniciante</span>
+          <div class="lib-child-context" id="lib-context" hidden>
+            <span>Planejando para</span>
+            <strong id="lib-context-label"></strong>
           </div>
-          <div class="script-includes">
-            <span>Roteiro inclui:</span>
-            <p>Objetivo · Passos · Adaptação</p>
-          </div>
-          <div class="card-action">
-            <button class="btn btn-primary btn-sm" type="button" data-drawer-open="roteiro-numeros">
-              Ver roteiro
+        </header>
+
+        <section class="lib-featured" id="lib-recommended" hidden></section>
+
+        <section class="lib-catalog">
+          <div class="lib-toolbar">
+            <div class="lib-modes" id="lib-modes"></div>
+            <button class="btn-filter" type="button" id="lib-filters-toggle">
+              <svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+              Filtros
             </button>
           </div>
-        </article>
 
-        <article class="script-card" data-card-filter="5-6 contagem">
-          <div class="script-meta">
-            <span>5–6 anos</span>
-            <span>15 min</span>
-          </div>
-          <h2>Contando objetos da casa</h2>
-          <p>Roteiro para contar pequenas quantidades usando objetos reais da rotina.</p>
-          <div class="script-tags">
-            <span>Concreto</span>
-            <span>Baixa estimulação</span>
-          </div>
-          <div class="script-includes">
-            <span>Roteiro inclui:</span>
-            <p>Objetivo · Passos · Adaptação</p>
-          </div>
-          <div class="card-action">
-            <button class="btn btn-primary btn-sm" type="button" data-drawer-open="roteiro-contar">
-              Ver roteiro
-            </button>
-          </div>
-        </article>
+          <div class="lib-filters" id="lib-filters" aria-label="Filtros adicionais"></div>
 
-        <article class="script-card" data-card-filter="5-6 comparacao">
-          <div class="script-meta">
-            <span>5–6 anos</span>
-            <span>10 min</span>
-          </div>
-          <h2>Mais ou menos</h2>
-          <p>Roteiro para perceber qual grupo tem mais usando dois conjuntos de objetos.</p>
-          <div class="script-tags">
-            <span>Concreto</span>
-            <span>Comparação</span>
-          </div>
-          <div class="script-includes">
-            <span>Roteiro inclui:</span>
-            <p>Objetivo · Passos · Adaptação</p>
-          </div>
-          <div class="card-action">
-            <button class="btn btn-primary btn-sm" type="button" data-drawer-open="roteiro-comparar">
-              Ver roteiro
-            </button>
-          </div>
-        </article>
+          <div class="lib-grid" id="lib-grid" aria-label="Atividades" aria-live="polite"></div>
+        </section>
 
-        <article class="script-card" data-card-filter="7-8 formas">
-          <div class="script-meta">
-            <span>7–8 anos</span>
-            <span>15 min</span>
-          </div>
-          <h2>Formas pela casa</h2>
-          <p>Roteiro para reconhecer círculo, quadrado e triângulo em objetos reais.</p>
-          <div class="script-tags">
-            <span>Concreto</span>
-            <span>Espacial</span>
-          </div>
-          <div class="script-includes">
-            <span>Roteiro inclui:</span>
-            <p>Objetivo · Passos · Adaptação</p>
-          </div>
-          <div class="card-action">
-            <button class="btn btn-primary btn-sm" type="button" data-drawer-open="roteiro-formas">
-              Ver roteiro
-            </button>
-          </div>
-        </article>
-
-        <article class="script-card" data-card-filter="7-8 sequencia">
-          <div class="script-meta">
-            <span>7–8 anos</span>
-            <span>10 min</span>
-          </div>
-          <h2>Sequência com cores suaves</h2>
-          <p>Roteiro para continuar um padrão simples de duas cores e antecipar o próximo passo.</p>
-          <div class="script-tags">
-            <span>Visual</span>
-            <span>Padrões</span>
-          </div>
-          <div class="script-includes">
-            <span>Roteiro inclui:</span>
-            <p>Objetivo · Passos · Adaptação</p>
-          </div>
-          <div class="card-action">
-            <button class="btn btn-primary btn-sm" type="button" data-drawer-open="roteiro-sequencia">
-              Ver roteiro
-            </button>
-          </div>
-        </article>
-
-        <article class="script-card" data-card-filter="7-8 soma">
-          <div class="script-meta">
-            <span>7–8 anos</span>
-            <span>15 min</span>
-          </div>
-          <h2>Juntando quantidades</h2>
-          <p>Roteiro para entender a soma como juntar dois grupos de objetos.</p>
-          <div class="script-tags">
-            <span>Concreto</span>
-            <span>Soma simples</span>
-          </div>
-          <div class="script-includes">
-            <span>Roteiro inclui:</span>
-            <p>Objetivo · Passos · Adaptação</p>
-          </div>
-          <div class="card-action">
-            <button class="btn btn-primary btn-sm" type="button" data-drawer-open="roteiro-soma">
-              Ver roteiro
-            </button>
-          </div>
-        </article>
-
-        <article class="script-card" data-card-filter="9 problemas">
-          <div class="script-meta">
-            <span>9 anos</span>
-            <span>20 min</span>
-          </div>
-          <h2>Problemas simples do cotidiano</h2>
-          <p>Roteiro para interpretar perguntas matemáticas dentro de situações reais da rotina.</p>
-          <div class="script-tags">
-            <span>Leitura</span>
-            <span>Cotidiano</span>
-          </div>
-          <div class="script-includes">
-            <span>Roteiro inclui:</span>
-            <p>Objetivo · Passos · Adaptação</p>
-          </div>
-          <div class="card-action">
-            <button class="btn btn-primary btn-sm" type="button" data-drawer-open="roteiro-problemas">
-              Ver roteiro
-            </button>
-          </div>
-        </article>
-
-        <article class="script-card" data-card-filter="9 medidas">
-          <div class="script-meta">
-            <span>9 anos</span>
-            <span>15 min</span>
-          </div>
-          <h2>Medindo com objetos</h2>
-          <p>Roteiro para comparar tamanhos usando uma unidade de medida não convencional.</p>
-          <div class="script-tags">
-            <span>Concreto</span>
-            <span>Medidas</span>
-          </div>
-          <div class="script-includes">
-            <span>Roteiro inclui:</span>
-            <p>Objetivo · Passos · Adaptação</p>
-          </div>
-          <div class="card-action">
-            <button class="btn btn-primary btn-sm" type="button" data-drawer-open="roteiro-medir">
-              Ver roteiro
-            </button>
-          </div>
-        </article>
-
-        <article class="script-card" data-card-filter="9 problemas soma">
-          <div class="script-meta">
-            <span>9 anos</span>
-            <span>20 min</span>
-          </div>
-          <h2>Organizando uma pequena compra</h2>
-          <p>Roteiro para somar valores pequenos numa compra simulada com itens da casa.</p>
-          <div class="script-tags">
-            <span>Cotidiano</span>
-            <span>Soma simples</span>
-          </div>
-          <div class="script-includes">
-            <span>Roteiro inclui:</span>
-            <p>Objetivo · Passos · Adaptação</p>
-          </div>
-          <div class="card-action">
-            <button class="btn btn-primary btn-sm" type="button" data-drawer-open="roteiro-compra">
-              Ver roteiro
-            </button>
-          </div>
-        </article>
-      </section>
+      </div>
     </main>
+  </div>
+</div>
 
-    <div class="drawer-backdrop" data-drawer-close hidden></div>
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<aside class="act-drawer thin-scroll" id="act-drawer" aria-hidden="true" aria-label="Detalhes da atividade">
+  <div class="ad-head">
+    <div id="ad-head-content"></div>
+    <button class="icon-btn" id="drawer-close" type="button" aria-label="Fechar">
+      <svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="ad-body thin-scroll" id="ad-body"></div>
+  <div class="ad-footer" id="ad-footer"></div>
+</aside>
 
-    <!-- Roteiro 1 · Reconhecendo números -->
-    <aside class="side-drawer script-drawer" data-drawer="roteiro-numeros" aria-hidden="true">
-      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-roteiro-numeros">
-        <header class="drawer-header">
-          <div>
-            <p class="app-kicker">Roteiro guiado · 15 min</p>
-            <h2 id="titulo-roteiro-numeros">Reconhecendo números</h2>
-          </div>
-          <button class="drawer-close" type="button" data-drawer-close aria-label="Fechar roteiro">×</button>
-        </header>
+<div class="drawer-backdrop" data-support-backdrop></div>
+<aside class="support-drawer" data-support-drawer aria-hidden="true" aria-label="Central Cognita">
+  <div class="support-drawer-head">
+    <div>
+      <p class="kicker">Central Cognita</p>
+      <h2>Falar com a equipe</h2>
+    </div>
+    <button class="icon-btn" type="button" data-support-close aria-label="Fechar">
+      <svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="support-drawer-body thin-scroll" data-support-body></div>
+</aside>
 
-        <section class="script-block">
-          <h3>Objetivo</h3>
-          <p>Reconhecer os números de 1 a 5 com apoio visual.</p>
-        </section>
+<!-- Modo Condução — atividade "Com o tutor". Full-bleed, some sobre tudo.
+     Preparar → Conduzir (passo a passo + "dizer", Adapte embutido como
+     atalho não sequencial) → Finalizar (sinal de sucesso + observação) →
+     "Registrar como foi" leva pra Sessões com o que foi observado. -->
+<section class="cnd-overlay" id="cnd-overlay" hidden aria-label="Conduzir atividade">
+  <div class="cnd-top">
+    <div class="cnd-top-tx">
+      <div class="cnd-title" id="cnd-title">Atividade</div>
+      <div class="cnd-sub" id="cnd-sub">Passo 1 de 3</div>
+    </div>
+    <button type="button" class="btn-filter" id="cnd-cancel">Cancelar</button>
+  </div>
+  <div class="cnd-steps" id="cnd-steps"></div>
+  <div class="cnd-body"><div class="cnd-inner" id="cnd-inner"></div></div>
+  <div class="cnd-nav" id="cnd-nav"></div>
+</section>
 
-        <section class="script-block">
-          <h3>Antes de começar</h3>
-          <ul>
-            <li>Prepare cartões com os números de 1 a 5 (papel comum serve)</li>
-            <li>Escolha um lugar com pouca distração</li>
-          </ul>
-        </section>
-
-        <section class="script-block">
-          <h3>Passo a passo</h3>
-          <ol class="script-steps">
-            <li>Mostre o cartão do 1 e fale "um", apontando.</li>
-            <li>Peça para a criança repetir.</li>
-            <li>Coloque 1 objeto ao lado do cartão.</li>
-            <li>Repita com o 2 e o 3, sempre com os objetos.</li>
-            <li>Termine revendo os três cartões juntos.</li>
-          </ol>
-        </section>
-
-        <section class="script-block script-adapt">
-          <h3>Se ficar difícil</h3>
-          <p>Fique só nos números 1 e 2 hoje. Repetir está ótimo.</p>
-          <h3>Se ficar fácil</h3>
-          <p>Embaralhe os cartões e peça para apontar o número que você falar.</p>
-        </section>
-
-        <section class="script-block script-signal">
-          <h3>Como saber se funcionou</h3>
-          <p>A criança aponta o número certo quando você fala, mesmo com ajuda.</p>
-        </section>
-      </div>
-    </aside>
-
-    <!-- Roteiro 2 · Contando objetos da casa -->
-    <aside class="side-drawer script-drawer" data-drawer="roteiro-contar" aria-hidden="true">
-      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-roteiro-contar">
-        <header class="drawer-header">
-          <div>
-            <p class="app-kicker">Roteiro guiado · 15 min</p>
-            <h2 id="titulo-roteiro-contar">Contando objetos da casa</h2>
-          </div>
-          <button class="drawer-close" type="button" data-drawer-close aria-label="Fechar roteiro">×</button>
-        </header>
-
-        <section class="script-block">
-          <h3>Objetivo</h3>
-          <p>Contar até 10 com apoio de objetos reais.</p>
-        </section>
-
-        <section class="script-block">
-          <h3>Antes de começar</h3>
-          <ul>
-            <li>Separe 10 tampinhas ou brinquedos pequenos</li>
-            <li>Escolha um lugar com pouca distração</li>
-          </ul>
-        </section>
-
-        <section class="script-block">
-          <h3>Passo a passo</h3>
-          <ol class="script-steps">
-            <li>Coloque 3 objetos na mesa e conte junto, apontando.</li>
-            <li>Peça: "agora você conta".</li>
-            <li>Acrescente 1 objeto e pergunte quantos ficaram.</li>
-            <li>Repita aumentando devagar, até 10.</li>
-          </ol>
-        </section>
-
-        <section class="script-block script-adapt">
-          <h3>Se ficar difícil</h3>
-          <p>Volte para 3 objetos e conte junto mais uma vez. Tudo bem repetir.</p>
-          <h3>Se ficar fácil</h3>
-          <p>Separe dois grupos e pergunte qual tem mais.</p>
-        </section>
-
-        <section class="script-block script-signal">
-          <h3>Como saber se funcionou</h3>
-          <p>A criança aponta os objetos enquanto conta, mesmo com ajuda.</p>
-        </section>
-      </div>
-    </aside>
-
-    <!-- Roteiro 3 · Mais ou menos -->
-    <aside class="side-drawer script-drawer" data-drawer="roteiro-comparar" aria-hidden="true">
-      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-roteiro-comparar">
-        <header class="drawer-header">
-          <div>
-            <p class="app-kicker">Roteiro guiado · 10 min</p>
-            <h2 id="titulo-roteiro-comparar">Mais ou menos</h2>
-          </div>
-          <button class="drawer-close" type="button" data-drawer-close aria-label="Fechar roteiro">×</button>
-        </header>
-
-        <section class="script-block">
-          <h3>Objetivo</h3>
-          <p>Perceber qual grupo tem mais.</p>
-        </section>
-
-        <section class="script-block">
-          <h3>Antes de começar</h3>
-          <ul>
-            <li>Separe objetos iguais para montar dois grupos (ex.: tampinhas)</li>
-            <li>Deixe a mesa livre, só com os objetos da atividade</li>
-          </ul>
-        </section>
-
-        <section class="script-block">
-          <h3>Passo a passo</h3>
-          <ol class="script-steps">
-            <li>Monte dois grupos bem diferentes: 3 e 6 objetos.</li>
-            <li>Conte cada grupo junto com a criança.</li>
-            <li>Pergunte: "qual grupo tem mais?".</li>
-            <li>Troque os tamanhos dos grupos e repita.</li>
-          </ol>
-        </section>
-
-        <section class="script-block script-adapt">
-          <h3>Se ficar difícil</h3>
-          <p>Aumente a diferença entre os grupos (2 e 8) — fica mais visível.</p>
-          <h3>Se ficar fácil</h3>
-          <p>Aproxime as quantidades (4 e 5) e pergunte também "qual tem menos?".</p>
-        </section>
-
-        <section class="script-block script-signal">
-          <h3>Como saber se funcionou</h3>
-          <p>A criança aponta o grupo maior sem precisar contar de novo.</p>
-        </section>
-      </div>
-    </aside>
-
-    <!-- Roteiro 4 · Formas pela casa -->
-    <aside class="side-drawer script-drawer" data-drawer="roteiro-formas" aria-hidden="true">
-      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-roteiro-formas">
-        <header class="drawer-header">
-          <div>
-            <p class="app-kicker">Roteiro guiado · 15 min</p>
-            <h2 id="titulo-roteiro-formas">Formas pela casa</h2>
-          </div>
-          <button class="drawer-close" type="button" data-drawer-close aria-label="Fechar roteiro">×</button>
-        </header>
-
-        <section class="script-block">
-          <h3>Objetivo</h3>
-          <p>Reconhecer círculo, quadrado e triângulo em objetos reais.</p>
-        </section>
-
-        <section class="script-block">
-          <h3>Antes de começar</h3>
-          <ul>
-            <li>Desenhe as três formas num papel</li>
-            <li>Combine com a criança em qual cômodo vão procurar</li>
-          </ul>
-        </section>
-
-        <section class="script-block">
-          <h3>Passo a passo</h3>
-          <ol class="script-steps">
-            <li>Mostre o desenho do círculo.</li>
-            <li>Procurem juntos um objeto redondo (prato, relógio).</li>
-            <li>Repita com o quadrado e o triângulo.</li>
-            <li>No fim, revisem o que encontraram apontando no papel.</li>
-          </ol>
-        </section>
-
-        <section class="script-block script-adapt">
-          <h3>Se ficar difícil</h3>
-          <p>Procure só círculos hoje, num único cômodo.</p>
-          <h3>Se ficar fácil</h3>
-          <p>Peça para a criança desenhar a forma do objeto que encontrou.</p>
-        </section>
-
-        <section class="script-block script-signal">
-          <h3>Como saber se funcionou</h3>
-          <p>A criança liga o objeto à forma do papel sem você nomear primeiro.</p>
-        </section>
-      </div>
-    </aside>
-
-    <!-- Roteiro 5 · Sequência com cores suaves -->
-    <aside class="side-drawer script-drawer" data-drawer="roteiro-sequencia" aria-hidden="true">
-      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-roteiro-sequencia">
-        <header class="drawer-header">
-          <div>
-            <p class="app-kicker">Roteiro guiado · 10 min</p>
-            <h2 id="titulo-roteiro-sequencia">Sequência com cores suaves</h2>
-          </div>
-          <button class="drawer-close" type="button" data-drawer-close aria-label="Fechar roteiro">×</button>
-        </header>
-
-        <section class="script-block">
-          <h3>Objetivo</h3>
-          <p>Continuar um padrão simples de duas cores.</p>
-        </section>
-
-        <section class="script-block">
-          <h3>Antes de começar</h3>
-          <ul>
-            <li>Separe peças de duas cores (tampinhas, blocos ou papéis)</li>
-            <li>Prefira cores suaves, sem contraste forte</li>
-          </ul>
-        </section>
-
-        <section class="script-block">
-          <h3>Passo a passo</h3>
-          <ol class="script-steps">
-            <li>Monte a sequência: azul, amarelo, azul, amarelo.</li>
-            <li>Leia a sequência junto, apontando cada peça.</li>
-            <li>Pergunte: "qual vem agora?".</li>
-            <li>Deixe a criança colocar a próxima peça.</li>
-            <li>Repita até a fileira ter 8 peças.</li>
-          </ol>
-        </section>
-
-        <section class="script-block script-adapt">
-          <h3>Se ficar difícil</h3>
-          <p>Use só 4 peças e leiam a sequência mais uma vez juntos.</p>
-          <h3>Se ficar fácil</h3>
-          <p>Crie um padrão com três cores e peça para a criança continuar.</p>
-        </section>
-
-        <section class="script-block script-signal">
-          <h3>Como saber se funcionou</h3>
-          <p>A criança antecipa a próxima peça antes de você perguntar.</p>
-        </section>
-      </div>
-    </aside>
-
-    <!-- Roteiro 6 · Juntando quantidades -->
-    <aside class="side-drawer script-drawer" data-drawer="roteiro-soma" aria-hidden="true">
-      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-roteiro-soma">
-        <header class="drawer-header">
-          <div>
-            <p class="app-kicker">Roteiro guiado · 15 min</p>
-            <h2 id="titulo-roteiro-soma">Juntando quantidades</h2>
-          </div>
-          <button class="drawer-close" type="button" data-drawer-close aria-label="Fechar roteiro">×</button>
-        </header>
-
-        <section class="script-block">
-          <h3>Objetivo</h3>
-          <p>Entender a soma como juntar dois grupos.</p>
-        </section>
-
-        <section class="script-block">
-          <h3>Antes de começar</h3>
-          <ul>
-            <li>Separe 10 objetos pequenos iguais</li>
-            <li>Escolha um lugar com pouca distração</li>
-          </ul>
-        </section>
-
-        <section class="script-block">
-          <h3>Passo a passo</h3>
-          <ol class="script-steps">
-            <li>Monte um grupo de 2 e um grupo de 3 objetos.</li>
-            <li>Conte cada grupo apontando.</li>
-            <li>Junte os dois grupos no centro da mesa.</li>
-            <li>Conte o total junto com a criança.</li>
-            <li>Repita com outras quantidades, até 10.</li>
-          </ol>
-        </section>
-
-        <section class="script-block script-adapt">
-          <h3>Se ficar difícil</h3>
-          <p>Volte para grupos de 1 e 2 e junte devagar.</p>
-          <h3>Se ficar fácil</h3>
-          <p>Fale a soma em voz alta ("2 mais 3") antes de juntar e pergunte o total.</p>
-        </section>
-
-        <section class="script-block script-signal">
-          <h3>Como saber se funcionou</h3>
-          <p>A criança junta os grupos e conta o total sem pular objetos.</p>
-        </section>
-      </div>
-    </aside>
-
-    <!-- Roteiro 7 · Problemas simples do cotidiano -->
-    <aside class="side-drawer script-drawer" data-drawer="roteiro-problemas" aria-hidden="true">
-      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-roteiro-problemas">
-        <header class="drawer-header">
-          <div>
-            <p class="app-kicker">Roteiro guiado · 20 min</p>
-            <h2 id="titulo-roteiro-problemas">Problemas simples do cotidiano</h2>
-          </div>
-          <button class="drawer-close" type="button" data-drawer-close aria-label="Fechar roteiro">×</button>
-        </header>
-
-        <section class="script-block">
-          <h3>Objetivo</h3>
-          <p>Interpretar uma pergunta matemática dentro de uma situação real.</p>
-        </section>
-
-        <section class="script-block">
-          <h3>Antes de começar</h3>
-          <ul>
-            <li>Pense em duas situações da rotina da criança (lanche, brinquedos)</li>
-            <li>Tenha objetos por perto para encenar, se precisar</li>
-          </ul>
-        </section>
-
-        <section class="script-block">
-          <h3>Passo a passo</h3>
-          <ol class="script-steps">
-            <li>Conte a situação: "você tem 3 biscoitos e ganha mais 2".</li>
-            <li>Pergunte: "com quantos você fica?".</li>
-            <li>Se precisar, encene com os objetos reais.</li>
-            <li>Peça para a criança explicar como pensou.</li>
-            <li>Repita com a segunda situação.</li>
-          </ol>
-        </section>
-
-        <section class="script-block script-adapt">
-          <h3>Se ficar difícil</h3>
-          <p>Encene tudo com objetos antes de fazer a pergunta.</p>
-          <h3>Se ficar fácil</h3>
-          <p>Deixe a criança inventar um problema para você resolver.</p>
-        </section>
-
-        <section class="script-block script-signal">
-          <h3>Como saber se funcionou</h3>
-          <p>A criança traduz a história em quantidades, mesmo usando os dedos.</p>
-        </section>
-      </div>
-    </aside>
-
-    <!-- Roteiro 8 · Medindo com objetos -->
-    <aside class="side-drawer script-drawer" data-drawer="roteiro-medir" aria-hidden="true">
-      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-roteiro-medir">
-        <header class="drawer-header">
-          <div>
-            <p class="app-kicker">Roteiro guiado · 15 min</p>
-            <h2 id="titulo-roteiro-medir">Medindo com objetos</h2>
-          </div>
-          <button class="drawer-close" type="button" data-drawer-close aria-label="Fechar roteiro">×</button>
-        </header>
-
-        <section class="script-block">
-          <h3>Objetivo</h3>
-          <p>Comparar tamanhos usando um objeto como unidade de medida.</p>
-        </section>
-
-        <section class="script-block">
-          <h3>Antes de começar</h3>
-          <ul>
-            <li>Escolha o objeto-medida (lápis, palmo ou tampinha)</li>
-            <li>Escolha duas coisas para medir (livro, mesa)</li>
-          </ul>
-        </section>
-
-        <section class="script-block">
-          <h3>Passo a passo</h3>
-          <ol class="script-steps">
-            <li>Mostre como medir o livro com o lápis.</li>
-            <li>Contem juntos quantos lápis o livro tem.</li>
-            <li>Peça para a criança medir a mesa do mesmo jeito.</li>
-            <li>Comparem: "qual precisou de mais lápis?".</li>
-          </ol>
-        </section>
-
-        <section class="script-block script-adapt">
-          <h3>Se ficar difícil</h3>
-          <p>Meça objetos menores, que precisem de poucas repetições.</p>
-          <h3>Se ficar fácil</h3>
-          <p>Estimem antes ("quantos lápis você acha?") e confiram medindo.</p>
-        </section>
-
-        <section class="script-block script-signal">
-          <h3>Como saber se funcionou</h3>
-          <p>A criança repete a unidade sem deixar espaços entre as medidas.</p>
-        </section>
-      </div>
-    </aside>
-
-    <!-- Roteiro 9 · Organizando uma pequena compra -->
-    <aside class="side-drawer script-drawer" data-drawer="roteiro-compra" aria-hidden="true">
-      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-roteiro-compra">
-        <header class="drawer-header">
-          <div>
-            <p class="app-kicker">Roteiro guiado · 20 min</p>
-            <h2 id="titulo-roteiro-compra">Organizando uma pequena compra</h2>
-          </div>
-          <button class="drawer-close" type="button" data-drawer-close aria-label="Fechar roteiro">×</button>
-        </header>
-
-        <section class="script-block">
-          <h3>Objetivo</h3>
-          <p>Somar valores pequenos numa situação de compra simulada.</p>
-        </section>
-
-        <section class="script-block">
-          <h3>Antes de começar</h3>
-          <ul>
-            <li>Monte uma "lojinha" com 4 itens da casa e preços de 1 a 5 reais em papel</li>
-            <li>Prepare dinheiro de papel ou desenhado</li>
-          </ul>
-        </section>
-
-        <section class="script-block">
-          <h3>Passo a passo</h3>
-          <ol class="script-steps">
-            <li>Apresente a lojinha e os preços.</li>
-            <li>Peça para a criança escolher 2 itens.</li>
-            <li>Somem juntos o total da compra.</li>
-            <li>"Paguem" com o dinheiro de papel.</li>
-            <li>Troquem os papéis: agora você é quem compra.</li>
-          </ol>
-        </section>
-
-        <section class="script-block script-adapt">
-          <h3>Se ficar difícil</h3>
-          <p>Use só 2 itens, com preços de 1 e 2 reais.</p>
-          <h3>Se ficar fácil</h3>
-          <p>Introduza o troco: pague com 10 e pergunte quanto volta.</p>
-        </section>
-
-        <section class="script-block script-signal">
-          <h3>Como saber se funcionou</h3>
-          <p>A criança soma os dois preços antes de pagar, mesmo com apoio.</p>
-        </section>
-      </div>
-    </aside>
-
-    <script src="../js/app.js"></script>
-  </body>
+<script type="module" src="../js/pages/atividades.js"></script>
+</body>
 </html>

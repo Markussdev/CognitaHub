@@ -1,4 +1,5 @@
 import { submitTutorApplication, submitGuardianRegistration } from '../data/signup.js'
+import { recordLegalAcceptances } from '../data/legal-acceptances.js'
 
 // Quando a confirmação de email está LIGADA no Supabase, o signUp não
 // retorna sessão — e sem sessão o RLS bloqueia os inserts do cadastro
@@ -9,7 +10,12 @@ import { submitTutorApplication, submitGuardianRegistration } from '../data/sign
 const KEY = 'cognita:pending-signup'
 
 export function stashPendingSignup(kind, email, payload) {
-  localStorage.setItem(KEY, JSON.stringify({ kind, email, payload }))
+  const nextPayload = { ...payload }
+  if (kind === 'guardian' && !nextPayload.childId) {
+    nextPayload.childId = crypto.randomUUID()
+  }
+
+  localStorage.setItem(KEY, JSON.stringify({ kind, email, payload: nextPayload }))
 }
 
 export async function completePendingSignup(user) {
@@ -41,6 +47,29 @@ export async function completePendingSignup(user) {
     return { done: false, error: result.error }
   }
 
+  // Só registra aceite quando a candidatura/cadastro realmente aconteceu
+  // agora — se alreadyFinalized (já tinha sido aprovada/rejeitada antes),
+  // não é o momento em que a pessoa aceitou nada, é só uma sobra de
+  // pending-signup velha no localStorage.
+  if (result.alreadyFinalized !== true && pending.payload?.legalDocumentKeys?.length) {
+    const acceptance = await recordLegalAcceptances({
+      userId: user.id,
+      childId: pending.kind === 'guardian' ? pending.payload.childId : null,
+      documentKeys: pending.payload.legalDocumentKeys,
+      source: pending.kind === 'guardian' ? 'guardian_signup' : 'tutor_signup',
+      audience: pending.kind === 'guardian' ? 'guardian' : 'tutor',
+    })
+
+    if (acceptance.error) {
+      console.error('Erro ao registrar aceite de termos versionado:', acceptance.error)
+      // Não apaga o localStorage — tenta de novo no próximo login. O
+      // cadastro/candidatura em si (submitTutorApplication/
+      // submitGuardianRegistration acima) já é idempotente por child_id/
+      // tutor_id, então reprocessar no próximo login não duplica nada.
+      return { done: false, error: acceptance.error }
+    }
+  }
+
   localStorage.removeItem(KEY)
-  return { done: true, kind: pending.kind }
+  return { done: true, kind: pending.kind, alreadyFinalized: result.alreadyFinalized === true }
 }

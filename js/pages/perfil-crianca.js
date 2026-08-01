@@ -4,6 +4,8 @@ import { getGuardianChildren } from '../data/guardian.js'
 import { getTutorCycles } from '../data/tutor.js'
 import { supabase } from '../lib/supabase.js'
 
+const mascotHeroSrc = '/assets/mascot-hero-wave.png'
+
 const session = await requireRole('guardian', 'tutor', 'admin')
 
 const content = document.querySelector('[data-profile-content]')
@@ -177,7 +179,7 @@ function render({ child, cycle, tutorName, lastSession }) {
 
   const mascot = document.createElement('img')
   mascot.className = 'os-mascot'
-  mascot.src = '../assets/mascot-hero-wave.png'
+  mascot.src = mascotHeroSrc
   mascot.alt = ''
   hero.append(copy, mascot)
 

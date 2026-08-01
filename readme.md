@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/logo-retangular-transparent.png" alt="Cognita Hub" width="100%" />
+  <img src="./public/assets/logo-retangular-transparent.png" alt="Cognita Hub" width="100%" />
 </p>
 
 <h1 align="center">Cognita Hub</h1>
@@ -56,7 +56,7 @@
 ## Prévia do projeto
 
 <p align="center">
-  <img src="./assets/preview-home.png" alt="Prévia da página inicial do Cognita Hub" width="80%" />
+  <img src="./public/assets/preview-home.png" alt="Prévia da página inicial do Cognita Hub" width="80%" />
 </p>
 
 <p align="center">
@@ -182,20 +182,21 @@ A identidade visual do Cognita Hub combina azul, roxo/vinho, amarelo e fundos cl
 
 ```txt
 cognita-hub/
-|-- assets/
-|   |-- background.png
-|   |-- logo-header.png
-|   |-- logo-icon-transparent.png
-|   |-- logo-retangular-transparent.png
-|   |-- logo.jpeg
-|   |-- mascot-hero-wave.png
-|   |-- pattern-math.png
-|   |-- preview-home.png
-|   `-- sticker.png
+|-- public/
+|   `-- assets/
+|       |-- background.png
+|       |-- logo-icon-transparent.png
+|       |-- logo-retangular-transparent.png
+|       |-- logo.jpeg
+|       |-- mascot-hero-wave.png
+|       |-- preview-home.png
+|       `-- trilha/
 |-- css/
 |   `-- styles.css
 |-- js/
-|   `-- app.js
+|   |-- data/
+|   |-- lib/
+|   `-- pages/
 |-- pages/
 |   |-- admin.html
 |   |-- atividades.html

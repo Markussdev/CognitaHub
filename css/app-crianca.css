@@ -1,0 +1,190 @@
+/* App infantil (Sprint 6A — modo demonstração) — reusa a geometria e os
+   assets do mapa do tutor (mesma composição de .trail-map em css/trilha.css)
+   mas com regras de interação bem diferentes: só a missão "disponível" é
+   clicável, sem painel técnico, mascote com função narrativa (ver
+   js/components/trilha-crianca.js). Arquivo isolado — não depende de
+   css/trilha.css, só repete os poucos tokens de cor que usa. */
+
+:root {
+  --trail-path: #d8cfe8;
+  --trail-path-done: #b9a8d9;
+  --trail-node-bg: #fffefc;
+  --trail-node-border: rgba(20, 17, 98, 0.16);
+  --trail-node-done-bg: #ece8f8;
+}
+
+.crianca-loading { padding: var(--sp-8); }
+.crianca-skel-block {
+  border-radius: var(--r-sm);
+  background: linear-gradient(90deg, var(--rail) 25%, #ece7f2 37%, var(--rail) 63%);
+  background-size: 400% 100%;
+  animation: crianca-shimmer 1.4s ease infinite;
+}
+@keyframes crianca-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+.crianca-sair {
+  position: fixed; top: 10px; right: 10px; z-index: 30;
+  font-size: 0.72rem; color: var(--muted); text-decoration: none;
+  padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,.7);
+}
+.crianca-sair:hover { text-decoration: underline; }
+
+/* ── Abertura: uma tela, uma mensagem, uma ação ── */
+
+.crianca-abertura {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: var(--sp-8) var(--sp-6);
+  gap: var(--sp-4);
+}
+.crianca-abertura-mascote { width: 160px; height: 160px; object-fit: contain; }
+.crianca-abertura h1 { font-size: 1.5rem; font-weight: 800; color: var(--ink); }
+.crianca-abertura p { font-size: 1rem; color: var(--ink-soft); max-width: 30ch; }
+
+/* ── Pareamento de dispositivo (Fase 13) ── */
+
+.crianca-codigo-input {
+  width: 100%;
+  max-width: 260px;
+  height: 56px;
+  padding: 0 var(--sp-4);
+  border: 2px solid var(--line-2);
+  border-radius: var(--r-lg);
+  background: var(--card);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.crianca-codigo-input:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+
+.crianca-turnstile { min-height: 65px; display: flex; justify-content: center; }
+
+.crianca-pareamento-erro { font-size: 0.9rem; color: var(--bad, #a3123a); max-width: 30ch; }
+
+/* ── Trilha infantil ── */
+
+.crianca-topo {
+  padding: var(--sp-6) var(--sp-6) var(--sp-3);
+  text-align: center;
+}
+.crianca-topo h2 { font-size: 1.2rem; font-weight: 800; color: var(--ink); }
+.crianca-trilha-titulo { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.crianca-modulo-legenda { font-size: .82rem; color: var(--ink-soft); margin-top: 2px; }
+
+/* Fase 12 — indicador de módulos: só orientação, nada clicável. */
+.crianca-modulos-indicador {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: var(--sp-3);
+}
+.crianca-modulo-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: .7rem;
+  font-weight: 800;
+  color: #fff;
+  background: var(--line-2);
+}
+.crianca-modulo-dot--concluido { background: var(--ok); }
+.crianca-modulo-dot--atual { background: var(--accent); color: var(--ink); box-shadow: 0 0 0 3px rgba(255,168,0,.25); }
+.crianca-modulo-dot--futuro { background: var(--line-2); }
+.crianca-modulo-linha { width: 18px; height: 2px; background: var(--line-2); }
+
+.crianca-map {
+  position: relative;
+  width: min(100%, 720px);
+  margin: 0 auto;
+  min-height: 1250px;
+  border-radius: var(--r-lg);
+  background: radial-gradient(120% 60% at 50% 0%, #f4f0fb 0%, #f7f4ee 55%);
+  overflow: hidden;
+}
+
+.crianca-path { position: absolute; inset: 0; width: 100%; height: 100%; }
+.crianca-path-seg { stroke-width: 7; stroke-linecap: round; fill: none; }
+.crianca-path-seg--concluida { stroke: var(--trail-path-done, #b9a8d9); opacity: 0.6; }
+.crianca-path-seg--atual { stroke: var(--accent); opacity: 0.7; stroke-width: 8; }
+.crianca-path-seg--futuro { stroke: var(--trail-path, #d8cfe8); opacity: 0.9; stroke-dasharray: 1 16; }
+
+.crianca-deco-layer { position: absolute; inset: 0; z-index: 1; }
+.crianca-deco { position: absolute; pointer-events: none; object-fit: contain; }
+
+.crianca-nodes { position: absolute; inset: 0; z-index: 2; }
+
+.crianca-step {
+  position: absolute;
+  left: var(--trail-x, 50%);
+  top: var(--trail-y, 50%);
+  transform: translate(-50%, -50%);
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--trail-node-bg, #fffefc);
+  border: 3px solid var(--trail-node-border, rgba(20,17,98,.16));
+  padding: 0;
+  transition: transform 0.15s ease;
+}
+
+.crianca-step-badge { width: 70%; height: 70%; display: grid; place-items: center; }
+.crianca-emblem-img { width: 100%; height: 100%; object-fit: contain; }
+
+.crianca-step--bloqueada { opacity: 0.5; cursor: not-allowed; }
+.crianca-step--bloqueada .crianca-step-badge { width: 40%; height: 40%; color: var(--muted); }
+
+.crianca-step--disponivel {
+  width: 124px; height: 124px;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 6px rgba(255, 168, 0, 0.2), 0 6px 18px rgba(255, 168, 0, 0.28);
+  cursor: pointer;
+}
+.crianca-step--disponivel:hover { transform: translate(-50%, -50%) translateY(-3px); }
+.crianca-step--disponivel:active { transform: translate(-50%, -50%) scale(0.97); }
+
+.crianca-step--concluida { background: var(--trail-node-done-bg, #ece8f8); border-color: transparent; cursor: default; }
+
+.crianca-step-check {
+  position: absolute; top: -6px; right: -6px;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--ok); border: 3px solid var(--card);
+  display: grid; place-items: center;
+}
+.crianca-step-check svg { width: 16px; height: 16px; }
+
+/* Mascote — só um por mapa, sempre abaixo da missão em foco (evita
+   estourar a largura do mapa em telas estreitas, mesmo raciocínio do
+   mapa do tutor). */
+.crianca-guia {
+  position: absolute; top: 100%; left: 50%;
+  transform: translate(-50%, -6%);
+  width: 150px; height: 150px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+@media (max-width: 480px) {
+  .crianca-map { min-height: 1050px; }
+  .crianca-step { width: 84px; height: 84px; }
+  .crianca-step--disponivel { width: 104px; height: 104px; }
+  .crianca-guia { width: 120px; height: 120px; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes crianca-pulse {
+    0%, 100% { box-shadow: 0 0 0 6px rgba(255, 168, 0, 0.2), 0 6px 18px rgba(255, 168, 0, 0.28); }
+    50% { box-shadow: 0 0 0 10px rgba(255, 168, 0, 0.12), 0 6px 18px rgba(255, 168, 0, 0.28); }
+  }
+  .crianca-step--disponivel { animation: crianca-pulse 2.4s ease-in-out infinite; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crianca-step, .crianca-skel-block { transition: none; animation: none; }
+}

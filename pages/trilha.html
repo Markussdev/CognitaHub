@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trilha | Cognita Hub</title>
+  <link rel="icon" type="image/png" href="/assets/logo-icon-transparent.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/trilha.css" />
+  <style>
+    :root {
+      --ink: #2d1739; --ink-soft: #5b4a58; --muted: #756c7d;
+      --canvas: #f7f4ee; --card: #fffefc; --rail: #f4f0f6;
+      --brand: #141162; --brand-deep: #3b0a35; --brand-soft: #ece8f8; --accent: #ffa800;
+      --ok: #1c7c54; --ok-soft: #e8f2ed;
+      --warn: #b3590a; --warn-soft: #fbf0e6;
+      --bad: #a3123a; --bad-soft: rgba(163,18,58,.08);
+      --line: rgba(32,26,102,.10); --line-2: rgba(32,26,102,.18);
+      --shadow: 0 1px 2px rgba(45,23,57,.06);
+      --r: 14px; --r-sm: 10px; --r-lg: 20px; --pill: 999px;
+      --font: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+      --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-6: 24px; --sp-8: 32px;
+      --label-sm-size: .7rem; --label-sm-tracking: .07em;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+    body { font-family: var(--font); color: var(--ink); background: var(--canvas); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    svg { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 4px; }
+    a { color: inherit; }
+    [hidden] { display: none !important; }
+
+    .btn { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 15px; border-radius: var(--r-sm); font-family: var(--font); font-size: .84rem; font-weight: 700; cursor: pointer; white-space: nowrap; text-decoration: none; border: none; }
+    .btn-ghost { background: var(--card); color: var(--brand); border: 1px solid var(--line-2); }
+    .btn-ghost:hover { background: var(--rail); }
+    .btn-accent { background: var(--accent); color: var(--ink); box-shadow: 0 1px 6px rgba(255,168,0,.3); }
+    .btn-accent:hover:not(:disabled) { filter: brightness(.97); }
+    .btn-sm { height: 32px; padding: 0 12px; font-size: .8rem; }
+
+    /* ── Topbar mínima — sem rail, sem 7 abas: só voltar + título + progresso ── */
+    .trilha-topbar {
+      position: sticky; top: 0; z-index: 20;
+      display: flex; align-items: center; gap: var(--sp-4);
+      height: 60px; padding: 0 var(--sp-6);
+      background: rgba(247,244,238,.9); backdrop-filter: blur(6px);
+      border-bottom: 1px solid var(--line);
+    }
+    .trilha-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: .84rem; font-weight: 700; color: var(--brand); text-decoration: none;
+      flex-shrink: 0;
+    }
+    .trilha-back svg { width: 17px; height: 17px; }
+    .trilha-back:hover { text-decoration: underline; }
+    .trilha-topbar-title { min-width: 0; flex: 1; }
+    .trilha-topbar-title h1 { font-size: 1rem; font-weight: 800; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .trilha-topbar-progress {
+      flex-shrink: 0; font-size: var(--label-sm-size); letter-spacing: var(--label-sm-tracking);
+      text-transform: uppercase; font-weight: 700; color: var(--brand);
+    }
+    [data-trilha-testar-crianca] { flex-shrink: 0; }
+    /* "Testar como criança" é uma conveniência de dev/demo, não faz parte da
+       experiência do tutor de verdade — em vez de brigar por espaço no
+       topbar estreito, some abaixo de 700px. Quem for abrir no celular
+       recebe o link direto de app-crianca.html, não precisa do botão. */
+    @media (max-width: 699px) {
+      [data-trilha-testar-crianca] { display: none; }
+    }
+
+    .trilha-main { max-width: 1440px; margin: 0 auto; padding: var(--sp-6); }
+
+    .trilha-skel { display: grid; gap: var(--sp-6); }
+    .skel-block { border-radius: var(--r-lg); background: linear-gradient(90deg, var(--rail) 25%, #ece7f2 37%, var(--rail) 63%); background-size: 400% 100%; animation: skel-shimmer 1.4s ease infinite; }
+    @keyframes skel-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+    .skel-map { height: 1250px; }
+
+    .trilha-error {
+      max-width: 420px; margin: 80px auto; text-align: center;
+      background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
+      padding: var(--sp-8) var(--sp-6);
+    }
+    .trilha-error strong { display: block; font-size: 1rem; color: var(--bad); margin-bottom: 6px; }
+    .trilha-error p { font-size: .88rem; color: var(--ink-soft); margin-bottom: 16px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .skel-block { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="trilha-topbar">
+    <a class="trilha-back" data-trilha-back href="tutor.html?view=record&amp;tab=plan">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      <span data-trilha-back-label>Voltar</span>
+    </a>
+    <div class="trilha-topbar-title">
+      <h1 data-trilha-title>Trilha</h1>
+    </div>
+    <a class="btn btn-ghost btn-sm" data-trilha-testar-crianca hidden>Testar como criança</a>
+    <div class="trilha-topbar-progress" data-trilha-progress hidden></div>
+  </div>
+
+  <main class="trilha-main" data-trilha-root>
+    <div class="trilha-skel">
+      <div class="skel-block" style="height:28px;width:220px;"></div>
+      <div class="skel-block skel-map"></div>
+    </div>
+  </main>
+
+  <script type="module" src="../js/pages/trilha.js"></script>
+</body>
+</html>

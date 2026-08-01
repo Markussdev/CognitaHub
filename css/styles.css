@@ -564,7 +564,7 @@ h3 {
   z-index: 0;
   background:
     linear-gradient(90deg, rgba(20, 17, 98, 0.88) 0%, rgba(20, 17, 98, 0.68) 42%, rgba(35, 2, 32, 0.18) 100%),
-    url("../assets/background.png") center / cover no-repeat;
+    url("/assets/background.png") center / cover no-repeat;
   content: "";
 }
 
@@ -740,7 +740,7 @@ h3 {
 .platform-redesign .dashboard-preview {
   background:
     linear-gradient(135deg, rgba(20, 17, 98, 0.94), rgba(84, 0, 66, 0.86)),
-    url("../assets/background.png") center / cover no-repeat;
+    url("/assets/background.png") center / cover no-repeat;
 }
 
 .header-floating {
@@ -2832,7 +2832,7 @@ h3 {
   padding: 120px 24px 56px;
   background:
     linear-gradient(135deg, rgba(20, 17, 98, 0.94) 0%, rgba(20, 17, 98, 0.64) 55%, rgba(35, 2, 32, 0.5) 100%),
-    url("../assets/background.png") center / cover no-repeat;
+    url("/assets/background.png") center / cover no-repeat;
 }
 
 .login-card {
@@ -3707,7 +3707,7 @@ h3 {
   min-height: 100vh;
   background:
     linear-gradient(135deg, rgba(255, 168, 0, 0.08), rgba(20, 17, 98, 0.08)),
-    url("../assets/background.png") center / cover fixed no-repeat;
+    url("/assets/background.png") center / cover fixed no-repeat;
 }
 
 .app-main {
@@ -3768,7 +3768,7 @@ h3 {
   padding: 24px;
   background:
     linear-gradient(135deg, rgba(20, 17, 98, 0.96), rgba(84, 0, 66, 0.86)),
-    url("../assets/background.png") center / cover;
+    url("/assets/background.png") center / cover;
   color: var(--warm-white);
   box-shadow: 0 22px 70px rgba(20, 17, 98, 0.18);
 }
@@ -4035,7 +4035,7 @@ h3 {
   min-height: 100vh;
   background:
     linear-gradient(135deg, rgba(20, 17, 98, 0.86), rgba(84, 0, 66, 0.62)),
-    url("../assets/background.png") center / cover fixed no-repeat;
+    url("/assets/background.png") center / cover fixed no-repeat;
 }
 
 .app-shell {
@@ -4157,7 +4157,7 @@ h3 {
   background:
     radial-gradient(circle at 86% 20%, rgba(255, 168, 0, 0.28), transparent 24%),
     linear-gradient(135deg, rgba(20, 17, 98, 0.98), rgba(84, 0, 66, 0.88)),
-    url("../assets/background.png") center / cover;
+    url("/assets/background.png") center / cover;
   color: var(--warm-white);
 }
 
@@ -4290,7 +4290,7 @@ h3 {
   padding: 24px;
   background:
     linear-gradient(135deg, rgba(20, 17, 98, 0.96), rgba(20, 17, 98, 0.82)),
-    url("../assets/background.png") center / cover;
+    url("/assets/background.png") center / cover;
   color: var(--warm-white);
 }
 

@@ -1,0 +1,43 @@
+body {
+  background: #222f78;
+}
+
+#app {
+  width: min(100%, 480px);
+  margin-inline: auto;
+  box-shadow: 0 0 40px rgb(5 12 54 / 24%);
+}
+
+.tutor-preview-exit {
+  position: fixed;
+  z-index: 1000;
+  top: 20px;
+  left: max(16px, calc(50% - 430px));
+
+  padding: 9px 13px;
+  border-radius: 999px;
+
+  background: rgb(255 255 255 / 92%);
+  color: #141162;
+
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+
+  box-shadow: 0 4px 16px rgb(0 0 0 / 15%);
+}
+
+#app .modules-header__settings {
+  display: none;
+}
+
+.preview-error {
+  min-height: 100svh;
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+  background: white;
+}

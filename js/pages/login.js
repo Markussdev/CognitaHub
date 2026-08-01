@@ -1,20 +1,111 @@
 import { supabase } from '../lib/supabase.js'
-import { signIn, redirectByRole } from '../lib/auth.js'
+import { isBlockedStatus, signIn, redirectByRole, resendConfirmationEmail } from '../lib/auth.js'
 import { completePendingSignup } from '../lib/pending-signup.js'
 
 const form = document.querySelector('[data-login-form]')
 const emailInput = document.querySelector('[data-login-email]')
 const passwordInput = document.querySelector('[data-login-password]')
 const errorBox = document.querySelector('[data-login-error]')
+const resendBtn = document.querySelector('[data-resend-confirmation]')
+
+let pendingConfirmEmail = null
+
+function showLoginMessage(message, type = 'error', { resendEmail = null } = {}) {
+  if (!errorBox) return
+
+  errorBox.dataset.type = type
+  const title = errorBox.querySelector('[data-login-error-title]')
+  const detail = errorBox.querySelector('[data-login-error-detail]')
+
+  if (title && detail) {
+    title.textContent = type === 'warn' ? 'Acesso em analise' : 'Nao foi possivel entrar'
+    detail.textContent = message
+  } else {
+    errorBox.textContent = message
+  }
+
+  pendingConfirmEmail = resendEmail
+  if (resendBtn) {
+    resendBtn.hidden = !resendEmail
+    resendBtn.disabled = false
+    resendBtn.textContent = 'Reenviar e-mail de confirmação'
+  }
+
+  errorBox.classList.add('is-visible')
+}
+
+function clearLoginMessage() {
+  if (!errorBox) return
+
+  errorBox.classList.remove('is-visible')
+  const title = errorBox.querySelector('[data-login-error-title]')
+  const detail = errorBox.querySelector('[data-login-error-detail]')
+
+  if (title && detail) {
+    title.textContent = ''
+    detail.textContent = ''
+  } else {
+    errorBox.textContent = ''
+  }
+
+  pendingConfirmEmail = null
+  if (resendBtn) resendBtn.hidden = true
+}
+
+if (resendBtn) {
+  resendBtn.addEventListener('click', async () => {
+    if (!pendingConfirmEmail) return
+    resendBtn.disabled = true
+    resendBtn.textContent = 'Enviando…'
+    const { error } = await resendConfirmationEmail(pendingConfirmEmail)
+    resendBtn.textContent = error ? 'Não foi possível reenviar' : 'E-mail reenviado'
+    if (!error) setTimeout(() => { resendBtn.disabled = false; resendBtn.textContent = 'Reenviar e-mail de confirmação' }, 4000)
+    else resendBtn.disabled = false
+  })
+}
+
+// Sessão barrada por e-mail não confirmado (ver requireRole em auth.js) —
+// não sabemos o e-mail aqui (o redirect não carrega isso de propósito),
+// então só orienta a entrar de novo, onde o fluxo normal de reenvio aparece.
+if (new URLSearchParams(location.search).get('confirmar') === '1') {
+  showLoginMessage('Confirme seu e-mail para continuar. Entre novamente para receber a opção de reenviar a confirmação.', 'warn')
+}
+
+// Link de confirmação expirado/já usado: o Supabase redireciona pra cá
+// (emailRedirectTo) com o erro nos parâmetros da URL em vez de criar
+// sessão — sem tratar isso, a pessoa só via a tela de login normal, sem
+// entender por que clicou no link e "não aconteceu nada". O formato varia
+// (hash no fluxo implícito, query no PKCE), então checa os dois.
+function readAuthUrlError() {
+  const hashParams = new URLSearchParams(location.hash.replace(/^#/, ''))
+  const searchParams = new URLSearchParams(location.search)
+  const errorCode = hashParams.get('error_code') || searchParams.get('error_code')
+  const error = hashParams.get('error') || searchParams.get('error')
+  return error || errorCode ? { error, errorCode } : null
+}
+
+const authUrlError = readAuthUrlError()
+if (authUrlError) {
+  showLoginMessage(
+    authUrlError.errorCode === 'otp_expired'
+      ? 'Este link de confirmação expirou ou já foi usado. Entre com seu e-mail e senha abaixo — se ainda faltar confirmar, a opção de reenviar aparece aqui.'
+      : 'Não foi possível confirmar por esse link. Entre com seu e-mail e senha para tentar de novo.',
+    'warn'
+  )
+  // Limpa a URL pra não repetir a mensagem se a pessoa atualizar a página.
+  history.replaceState(null, '', location.pathname)
+}
 
 function getStatusMessage(status) {
   const messages = {
-    pending: 'Seu cadastro ainda está em análise pela equipe Cognita.',
-    rejected: 'Seu cadastro não foi aprovado. Entre em contato com a equipe Cognita.',
-    inactive: 'Seu acesso está inativo. Entre em contato com a equipe Cognita.',
+    waiting_review: 'Seu cadastro esta em analise pela equipe Cognita.',
+    tutor_pending: 'Sua candidatura de tutor esta em analise pela equipe Cognita.',
+    pending: 'Seu cadastro ainda esta em analise pela equipe Cognita.',
+    rejected: 'Seu cadastro nao foi aprovado. Entre em contato com a equipe Cognita.',
+    inactive: 'Seu acesso esta inativo. Entre em contato com a equipe Cognita.',
   }
 
-  return messages[status] ?? 'Seu acesso ainda não está liberado.'
+  return messages[status] ?? 'Seu acesso ainda nao esta liberado.'
 }
 
 async function getProfile(userId) {
@@ -39,14 +130,20 @@ async function redirectExistingSession() {
 
   if (!user) return
 
-  // Completa cadastro pendente (confirmação de email ligada ou falha anterior).
+  // Sessão anônima (dispositivo pareado da criança, Fase 13) não é "já
+  // logado" no sentido que esta tela verifica — login.html é só pra
+  // adulto com email/senha. Sem este corte, profile.role vem
+  // 'child_device' (sem entrada em HOME_BY_ROLE), redirectByRole cai no
+  // fallback... que é esta própria página — loop infinito de reload.
+  if (user.is_anonymous) return
+
   const pendingResult = await completePendingSignup(user)
 
   if (pendingResult.error) {
-    // Não deixa o responsável entrar no painel sem a criança gravada.
     await supabase.auth.signOut()
-    errorBox.textContent =
-      'Sua conta foi acessada, mas não foi possível concluir o cadastro. Tente novamente ou fale com a equipe Cognita.'
+    showLoginMessage(
+      'Sua conta foi acessada, mas nao foi possivel concluir o cadastro. Tente novamente ou fale com a equipe Cognita.'
+    )
     return
   }
 
@@ -57,9 +154,9 @@ async function redirectExistingSession() {
     return
   }
 
-  if (profile.status !== 'active') {
+  if (isBlockedStatus(profile.status)) {
     await supabase.auth.signOut()
-    errorBox.textContent = getStatusMessage(profile.status)
+    showLoginMessage(getStatusMessage(profile.status), 'warn')
     return
   }
 
@@ -68,38 +165,47 @@ async function redirectExistingSession() {
 
 await redirectExistingSession()
 
-form.addEventListener('submit', async (event) => {
-  event.preventDefault()
+if (form) {
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault()
 
-  errorBox.textContent = ''
+    clearLoginMessage()
 
-  const email = emailInput.value.trim()
-  const password = passwordInput.value
+    const email = emailInput.value.trim()
+    const password = passwordInput.value
 
-  const { user, profile, error } = await signIn(email, password)
+    const { user, profile, error, emailNotConfirmed } = await signIn(email, password)
 
-  if (error || !profile) {
-    errorBox.textContent = 'E-mail ou senha incorretos. Tente novamente.'
-    return
-  }
+    if (emailNotConfirmed) {
+      showLoginMessage(
+        'Confirme seu e-mail antes de entrar — enviamos um link de confirmação quando você se cadastrou.',
+        'warn',
+        { resendEmail: email }
+      )
+      return
+    }
 
-  // Completa cadastro pendente ANTES da checagem de status: o tutor fica
-  // "pending" até a aprovação, mas a candidatura precisa ser gravada.
-  const pendingResult = await completePendingSignup(user)
+    if (error || !profile) {
+      showLoginMessage('E-mail ou senha incorretos. Tente novamente.')
+      return
+    }
 
-  if (pendingResult.error) {
-    // Não deixa o responsável entrar no painel sem a criança gravada.
-    await supabase.auth.signOut()
-    errorBox.textContent =
-      'Sua conta foi acessada, mas não foi possível concluir o cadastro. Tente novamente ou fale com a equipe Cognita.'
-    return
-  }
+    const pendingResult = await completePendingSignup(user)
 
-  if (profile.status !== 'active') {
-    await supabase.auth.signOut()
-    errorBox.textContent = getStatusMessage(profile.status)
-    return
-  }
+    if (pendingResult.error) {
+      await supabase.auth.signOut()
+      showLoginMessage(
+        'Sua conta foi acessada, mas nao foi possivel concluir o cadastro. Tente novamente ou fale com a equipe Cognita.'
+      )
+      return
+    }
 
-  redirectByRole(profile.role)
-})
+    if (isBlockedStatus(profile.status)) {
+      await supabase.auth.signOut()
+      showLoginMessage(getStatusMessage(profile.status), 'warn')
+      return
+    }
+
+    redirectByRole(profile.role)
+  })
+}

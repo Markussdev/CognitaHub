@@ -11,7 +11,7 @@ export async function getTutorProfile(userId) {
 }
 
 const CHILD_SELECT = `
-  id, name, birth_date, school_year, status, main_difficulties,
+  id, name, preferred_name, avatar_key, birth_date, school_year, status, main_difficulties,
   learning_profiles ( preferred_formats, attention_span, math_difficulties,
                       motivators, avoidances )
 `
@@ -25,7 +25,7 @@ export async function getTutorCycles(tutorId) {
     .from('support_cycles')
     .select('id, status, start_date, end_date, child_id, main_goal, current_plan')
     .eq('tutor_id', tutorId)
-    .in('status', ['planned', 'active'])
+    .in('status', ['planned', 'active', 'paused', 'completed'])
     .order('created_at', { ascending: false })
 
   if (error) return { data: null, error }

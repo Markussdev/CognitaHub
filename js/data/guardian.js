@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase.js'
+import { getFamilySessions } from './sessions.js'
 
 const CHILDREN_SELECT = `
   id,
@@ -20,6 +21,19 @@ const CHILDREN_SELECT = `
 
 export async function getGuardianChildren(guardianId) {
   return getGuardianChildrenInSteps(guardianId)
+}
+
+// Consulta separada (não faz parte de CHILDREN_SELECT) porque preferred_name
+// e avatar_key vêm da personalização feita no app da criança — uma feature
+// mais nova, sem confirmação de estar aplicada em todo ambiente. Isolada
+// assim, se as colunas não existirem em algum banco, só este card degrada
+// (fallback pro nome/mascote determinístico), sem derrubar o painel inteiro.
+export async function getChildAppIdentity(childId) {
+  return supabase
+    .from('children')
+    .select('preferred_name, avatar_key')
+    .eq('id', childId)
+    .maybeSingle()
 }
 
 async function getGuardianChildrenInSteps(guardianId) {
@@ -48,39 +62,45 @@ async function getGuardianChildrenInSteps(guardianId) {
     return { data: null, error: cyclesError }
   }
 
-  const tutorIds = [...new Set((cycles ?? []).map((cycle) => cycle.tutor_id).filter(Boolean))]
-  let profiles = []
+  // Perfil do tutor via RPC (security definer, docs/supabase-fase-16-*.sql)
+  // — não via .from('profiles').in('id', ...), que depende de RLS de
+  // leitura em profiles pro responsável e não tinha confirmação de estar
+  // aplicada no projeto real. A RPC escopa por auth.uid() como guardian
+  // e devolve só o que o card do tutor usa (nem email/phone/disponibilidade).
+  const { data: guardianTutorProfiles, error: tutorProfilesError } = await supabase
+    .rpc('get_guardian_tutor_profiles')
 
-  if (tutorIds.length) {
-    const { data: tutorProfiles, error: profilesError } = await supabase
-      .from('profiles')
-      .select('id, name, email, phone')
-      .in('id', tutorIds)
-
-    if (profilesError) {
-      return { data: null, error: profilesError }
-    }
-
-    profiles = tutorProfiles ?? []
+  if (tutorProfilesError) {
+    return { data: null, error: tutorProfilesError }
   }
 
-  const cycleIds = [...new Set((cycles ?? []).map((cycle) => cycle.id).filter(Boolean))]
-  let sessions = []
+  const tutorByCycleId = new Map(
+    (guardianTutorProfiles ?? []).map((row) => [
+      row.cycle_id,
+      {
+        id: row.tutor_id,
+        name: row.tutor_name,
+        avatar_path: row.avatar_path,
+        tutor_presentation: row.tutor_presentation,
+        tutor_formation: row.tutor_formation,
+      },
+    ])
+  )
 
-  if (cycleIds.length) {
-    const { data: cycleSessions, error: sessionsError } = await supabase
-      .from('sessions')
-      .select('id, cycle_id, date, duration_minutes, activity_title, focus_area, notes, next_step, created_at')
-      .in('cycle_id', cycleIds)
-      .order('date', { ascending: false })
-      .order('created_at', { ascending: false })
+  // A família nunca lê a tabela sessions direto — só pela função
+  // get_family_sessions (security definer), que devolve níveis 1+2 e
+  // jamais a coluna notes (nível 3, nota interna do tutor). Ver
+  // docs/supabase-fase-4c-registro-sessao.sql.
+  const familySessionsResults = await Promise.all(
+    childIds.map((childId) => getFamilySessions(childId))
+  )
 
-    if (sessionsError) {
-      return { data: null, error: sessionsError }
-    }
-
-    sessions = cycleSessions ?? []
+  const sessionsError = familySessionsResults.find((r) => r.error)?.error
+  if (sessionsError) {
+    return { data: null, error: sessionsError }
   }
+
+  const sessions = familySessionsResults.flatMap((r) => r.data ?? [])
 
   const sessionsByCycleId = new Map()
   sessions.forEach((sessionRow) => {
@@ -89,13 +109,12 @@ async function getGuardianChildrenInSteps(guardianId) {
     sessionsByCycleId.set(sessionRow.cycle_id, list)
   })
 
-  const profileById = new Map(profiles.map((profile) => [profile.id, profile]))
   const cyclesByChildId = new Map()
 
   ;(cycles ?? []).forEach((cycle) => {
     const enrichedCycle = {
       ...cycle,
-      profiles: cycle.tutor_id ? profileById.get(cycle.tutor_id) ?? null : null,
+      profiles: tutorByCycleId.get(cycle.id) ?? null,
       sessions: sessionsByCycleId.get(cycle.id) ?? [],
     }
     const list = cyclesByChildId.get(cycle.child_id) ?? []

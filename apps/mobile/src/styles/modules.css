@@ -1,0 +1,786 @@
+/* Seleção de módulos: uma cena por módulo, navegação HORIZONTAL (Duolingo
+   ABC) — setas, swipe e pontos, nunca rolagem vertical. Cada landmark traz
+   seu próprio ambiente (céu/sol-lua/estrelas/nuvens/horizonte), definido
+   como custom properties por cena em module-visuals.js + modules.js.
+
+   Camadas de trás pra frente: .module-scene__sky (estrelas) →
+   .module-scene::after (sol/lua) → .module-scene__clouds (nuvens) →
+   .module-scene__ground (terreno) → .module-scene__content (landmark +
+   título), z-index 0/1/1/1/2 nessa ordem. */
+
+.screen--modules {
+  position: relative;
+  height: 100dvh;
+  padding: 0;
+  overflow: hidden;
+  background: #202a76;
+}
+
+.modules-header {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 20;
+  width: min(100%, 480px);
+  min-height: 86px;
+  padding: calc(12px + env(safe-area-inset-top)) 18px 18px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 10px;
+  transform: translateX(-50%);
+  color: var(--warm-white);
+  background: linear-gradient(180deg, rgba(10, 14, 58, 0.45), transparent);
+}
+
+.modules-header img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(6, 10, 35, 0.28);
+}
+
+.modules-header h1,
+.modules-header p {
+  color: var(--warm-white);
+  text-shadow: 0 2px 5px rgba(38, 5, 31, 0.3);
+}
+
+.modules-header h1 {
+  margin: 0;
+  overflow: hidden;
+  font-size: 18px;
+  line-height: 1.2;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.modules-header p {
+  margin: 2px 0 0;
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.modules-header button {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--navy);
+  font-size: 20px;
+  box-shadow: 0 4px 0 rgba(38, 5, 31, 0.14);
+  cursor: pointer;
+}
+
+/* ---- carrossel horizontal ---- */
+
+.modules-scenes {
+  width: min(100%, 480px);
+  height: 100dvh;
+  margin-inline: auto;
+  flex-shrink: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.modules-scenes::-webkit-scrollbar {
+  display: none;
+}
+
+.module-scene {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  padding: calc(100px + env(safe-area-inset-top)) 18px 0;
+  display: grid;
+  align-items: stretch;
+  justify-items: center;
+  overflow: hidden;
+  border: 0;
+  color: inherit;
+  text-align: center;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
+}
+
+/* Sol ou lua — mesmo elemento, cor/textura decide qual é. */
+.module-scene::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  top: 12%;
+  right: -40px;
+  width: 130px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.module-scene--sun::after {
+  background: radial-gradient(circle at 35% 30%, #fff8dc, var(--glow) 55%, transparent 75%);
+}
+
+.module-scene--moon::after {
+  background: radial-gradient(circle at 35% 30%, #ffffff, var(--glow) 70%, transparent 80%);
+  opacity: 0.85;
+}
+
+/* Tema decide não ter astro no céu (ex.: Cinema, que troca o astro por
+   holofotes) — sem isso, todo tema cai num sol/lua genérico do mesmo
+   tamanho, mesmo quando a identidade pede outra coisa. */
+.module-scene--none::after {
+  display: none;
+}
+
+/* Observatório: lua pequena e discreta, não a esfera roxa gigante — o
+   protagonismo é do prédio e das estrelas, não do astro. */
+.module-scene--theme-observation::after {
+  top: 9%;
+  right: -14px;
+  width: 74px;
+  opacity: 0.75;
+}
+
+/* Cinema: holofotes de estreia no lugar do astro — dois feixes cruzando
+   devagar atrás do prédio, feitos só com os pseudo-elementos da cena (sem
+   asset novo). Vem depois de --none pra vencer o display:none. */
+.module-scene--theme-cinema::before,
+.module-scene--theme-cinema::after {
+  content: '';
+  display: block;
+  position: absolute;
+  z-index: 1;
+  bottom: 50%;
+  width: 110px;
+  height: 72%;
+  clip-path: polygon(48% 100%, 52% 100%, 100% 0, 0 0);
+  background: linear-gradient(
+    to top,
+    rgba(255, 235, 170, 0.24),
+    rgba(255, 221, 145, 0.11) 52%,
+    transparent 100%
+  );
+  filter: blur(8px);
+  mix-blend-mode: screen;
+  opacity: 0.8;
+  transform-origin: 50% 100%;
+  pointer-events: none;
+}
+
+.module-scene--theme-cinema::before {
+  left: 35%;
+  animation: cinema-searchlight-left 7s ease-in-out infinite;
+}
+
+.module-scene--theme-cinema::after {
+  right: 35%;
+  animation: cinema-searchlight-right 7s ease-in-out infinite;
+}
+
+@keyframes cinema-searchlight-left {
+  0%,
+  100% {
+    transform: rotate(-16deg);
+  }
+
+  50% {
+    transform: rotate(5deg);
+  }
+}
+
+@keyframes cinema-searchlight-right {
+  0%,
+  100% {
+    transform: rotate(16deg);
+  }
+
+  50% {
+    transform: rotate(-5deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .module-scene--theme-cinema::before,
+  .module-scene--theme-cinema::after {
+    animation: none;
+  }
+
+  /* Sem animação os dois viram um ângulo fixo — mas precisam continuar
+     espelhados (sinais opostos), senão os dois giram pro mesmo lado e
+     parecem um feixe só torto em vez de um "V". */
+  .module-scene--theme-cinema::before {
+    transform: rotate(-8deg);
+  }
+
+  .module-scene--theme-cinema::after {
+    transform: rotate(8deg);
+  }
+}
+
+/* Estrelas — densidade por tema via --stars (0-1), independente do
+   horizonte/sol-lua (por isso é elemento próprio, não pseudo-elemento
+   compartilhado com eles). */
+.module-scene__sky {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: var(--stars, 0);
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.85) 0 2px, transparent 3px),
+    radial-gradient(circle, rgba(255, 238, 176, 0.8) 0 1px, transparent 2px);
+  background-position: 12% 24%, 79% 18%;
+  background-size: 170px 210px, 220px 180px;
+}
+
+/* Nuvens — densidade por tema via --clouds (0-1) na opacidade do
+   elemento pai. Cada bolha é #fff sólido (via box-shadow, não
+   radial-gradient semitransparente) pra interseção entre bolhas não
+   aparecer — a transparência só existe uma vez, na nuvem inteira. */
+.module-scene__clouds {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: var(--clouds, 0);
+  background: none;
+}
+
+/* Cluster de círculos, não um pill com "solavancos" — box-shadow copia a
+   FORMA do elemento base (spread inclusive), então só fica redondo se a
+   base já for um círculo. Um pill como base faz as cópias saírem pill
+   também, lidas como blob, não nuvem. */
+.module-scene__clouds::before,
+.module-scene__clouds::after {
+  content: '';
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    16px 3px 0 3px #fff,
+    32px 5px 0 -3px #fff,
+    -13px 6px 0 -6px #fff,
+    6px -7px 0 -8px #fff;
+}
+
+.module-scene__clouds::before {
+  top: 20%;
+  left: 10%;
+}
+
+.module-scene__clouds::after {
+  top: 14%;
+  right: 14%;
+  transform: scale(0.82);
+}
+
+.module-scene__ground {
+  position: absolute;
+  top: var(--ground-start, 67%);
+  right: -18%;
+  bottom: -8%;
+  left: -18%;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: 50% 50% 0 0 / 11% 11% 0 0;
+  background: linear-gradient(180deg, var(--ground-top), var(--ground-bottom));
+  box-shadow: inset 0 10px 18px rgba(255, 255, 255, 0.13);
+  opacity: var(--ground-opacity, 1);
+  transform-origin: bottom;
+  pointer-events: none;
+}
+
+.module-scene__ground--plain {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 18%),
+    linear-gradient(180deg, var(--ground-top), var(--ground-bottom));
+}
+
+.module-scene__ground--lunar {
+  background:
+    radial-gradient(ellipse 38px 15px at 24% 17%, rgba(76, 94, 151, 0.46) 0 43%, rgba(220, 230, 250, 0.18) 48% 57%, transparent 61%),
+    radial-gradient(ellipse 26px 11px at 72% 31%, rgba(76, 94, 151, 0.38) 0 43%, rgba(220, 230, 250, 0.14) 48% 57%, transparent 61%),
+    radial-gradient(ellipse 48px 18px at 88% 70%, rgba(76, 94, 151, 0.3) 0 43%, transparent 53%),
+    linear-gradient(180deg, var(--ground-top), var(--ground-bottom));
+}
+
+.module-scene__ground--schoolyard {
+  background:
+    radial-gradient(circle at 18% 20%, rgba(232, 246, 199, 0.52) 0 3px, transparent 4px),
+    radial-gradient(circle at 81% 34%, rgba(232, 246, 199, 0.42) 0 3px, transparent 4px),
+    linear-gradient(180deg, var(--ground-top), var(--ground-bottom));
+}
+
+.module-scene__ground--schoolyard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 54%;
+  transform: translateX(-50%);
+  clip-path: polygon(43% 0, 57% 0, 100% 100%, 0 100%);
+  background:
+    repeating-linear-gradient(180deg, transparent 0 36px, rgba(105, 115, 125, 0.14) 37px 39px),
+    linear-gradient(180deg, #f0f2f4, var(--ground-detail));
+}
+
+/* Observatório: colina de pedra escura, sem caminho — só as crateras/
+   pedregulhos (mesmo truque do --lunar, cores mais frias e escuras). */
+.module-scene__ground--rocky {
+  background:
+    radial-gradient(ellipse 42px 16px at 20% 22%, rgba(18, 20, 42, 0.4) 0 45%, transparent 58%),
+    radial-gradient(ellipse 30px 13px at 68% 38%, rgba(18, 20, 42, 0.32) 0 45%, transparent 58%),
+    radial-gradient(ellipse 52px 20px at 85% 68%, rgba(18, 20, 42, 0.26) 0 45%, transparent 55%),
+    linear-gradient(180deg, var(--ground-top), var(--ground-bottom));
+}
+
+/* Biblioteca: praça de pedra clara com um caminho até a porta — mesma
+   ideia do --schoolyard, tom quente de pedra em vez de grama. */
+.module-scene__ground--plaza {
+  background:
+    radial-gradient(circle at 16% 24%, rgba(255, 255, 255, 0.4) 0 3px, transparent 4px),
+    radial-gradient(circle at 83% 40%, rgba(255, 255, 255, 0.3) 0 3px, transparent 4px),
+    linear-gradient(180deg, var(--ground-top), var(--ground-bottom));
+}
+
+.module-scene__ground--plaza::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 40%;
+  transform: translateX(-50%);
+  clip-path: polygon(43% 0, 57% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, var(--ground-detail), var(--ground-bottom));
+}
+
+/* Cinema: calçada escura + tapete vermelho (com barrinha dourada) até a
+   entrada — a única cena com "evento" acontecendo no chão. */
+.module-scene__ground--carpet {
+  background: linear-gradient(180deg, var(--ground-top), var(--ground-bottom));
+}
+
+.module-scene__ground--carpet::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 32%;
+  transform: translateX(-50%);
+  clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
+  background: #e8b84b;
+}
+
+.module-scene__ground--carpet::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 27%;
+  transform: translateX(-50%);
+  clip-path: polygon(43% 0, 57% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, var(--ground-detail), #7c0e1f);
+}
+
+/* Museu dos Dinossauros: grama viva com trilha de terra — vira parque
+   paleontológico, não só um gramado genérico. */
+.module-scene__ground--wild {
+  background:
+    radial-gradient(circle at 20% 22%, rgba(255, 255, 255, 0.22) 0 4px, transparent 5px),
+    radial-gradient(circle at 78% 36%, rgba(255, 255, 255, 0.18) 0 3px, transparent 4px),
+    radial-gradient(circle at 60% 16%, rgba(255, 255, 255, 0.16) 0 3px, transparent 4px),
+    linear-gradient(180deg, var(--ground-top), var(--ground-bottom));
+}
+
+.module-scene__ground--wild::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 32%;
+  transform: translateX(-50%);
+  clip-path: polygon(41% 0, 59% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, var(--ground-detail), var(--ground-bottom));
+  opacity: 0.62;
+}
+
+/* Parque de Diversões: praça colorida com caminho dourado — festivo, não
+   um planeta liso. */
+.module-scene__ground--carnival {
+  background:
+    radial-gradient(circle at 22% 20%, rgba(255, 255, 255, 0.3) 0 3px, transparent 4px),
+    radial-gradient(circle at 76% 32%, rgba(255, 255, 255, 0.24) 0 3px, transparent 4px),
+    linear-gradient(180deg, var(--ground-top), var(--ground-bottom));
+}
+
+.module-scene__ground--carnival::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 50%;
+  transform: translateX(-50%);
+  clip-path: polygon(44% 0, 56% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, var(--ground-detail), var(--ground-bottom));
+  opacity: 0.8;
+}
+
+/* ---- cenário entre o terreno e o prédio (árvores, folhagem, pegadas) ---- */
+
+.module-scene__scenery {
+  position: absolute;
+  z-index: 1;
+  top: var(--scenery-top, auto);
+  right: var(--scenery-right, auto);
+  bottom: var(--scenery-bottom, auto);
+  left: var(--scenery-left, auto);
+  width: var(--scenery-width, 200px);
+  opacity: var(--scenery-opacity, 1);
+  transform: rotate(var(--scenery-rotate, 0deg));
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Camadas largas de fundo (árvores, folhagem) — sempre centralizadas
+   atrás do prédio, não posicionadas ponto a ponto como pegadas/páginas. */
+.module-scene__scenery--backdrop {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.module-scene__scenery--float {
+  animation: module-scenery-float 6s ease-in-out infinite;
+}
+
+@keyframes module-scenery-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .module-scene__scenery--float {
+    animation: none;
+  }
+}
+
+/* ---- conteúdo: landmark ancorado, título preso no rodapé ---- */
+
+.module-scene__content {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Âncora vertical previsível — o landmark fica a ~54-56dvh do topo,
+   independente do tamanho do título ou de quantas linhas ele quebra. */
+.module-scene__art {
+  position: absolute;
+  z-index: 2;
+  top: var(--landmark-y, clamp(330px, 56dvh, 480px));
+  left: 50%;
+  width: min(68vw, var(--landmark-width, 300px));
+  margin: 0;
+  transform: translate(-50%, -50%);
+  transition: transform 120ms ease;
+}
+
+.module-scene--current:active .module-scene__art {
+  transform: translate(-50%, -50%) scale(0.985);
+}
+
+.module-scene__station {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: auto;
+  opacity: var(--station-opacity, 1);
+  filter:
+    drop-shadow(0 5px 5px rgba(7, 12, 45, 0.18))
+    drop-shadow(0 0 14px color-mix(in srgb, var(--glow) 18%, transparent));
+}
+
+/* Sombra de contato — cola o prédio no chão em vez de deixá-lo flutuando
+   sobre uma sombra longa. z-index:0, fica atrás do prédio (z-index:1) e
+   na frente do terreno. */
+.module-scene__art::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  bottom: var(--contact-bottom, 10%);
+  width: var(--contact-width, 58%);
+  height: 12px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(20, 29, 70, 0.72), transparent 72%);
+  filter: blur(3px);
+  opacity: var(--contact-opacity, 0.18);
+  pointer-events: none;
+}
+
+.module-scene.is-active-page .module-scene__ground {
+  animation: module-ground-enter 240ms ease-out both;
+}
+
+.module-scene.is-active-page .module-scene__station {
+  animation: module-landmark-enter 280ms 45ms ease-out both;
+}
+
+@keyframes module-ground-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scaleY(0.98);
+  }
+
+  to {
+    opacity: var(--ground-opacity, 1);
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+@keyframes module-landmark-enter {
+  from {
+    opacity: 0.72;
+    transform: translateY(8px) scale(0.97);
+  }
+
+  to {
+    opacity: var(--station-opacity, 1);
+    transform: translateY(0) scale(1);
+  }
+}
+
+.module-scene__copy {
+  position: absolute;
+  right: 18px;
+  bottom: calc(46px + env(safe-area-inset-bottom));
+  left: 18px;
+  z-index: 4;
+  min-height: auto;
+  margin: 0;
+  padding: 0;
+  color: var(--warm-white);
+  text-align: center;
+  text-shadow: 0 3px 7px rgba(38, 5, 31, 0.3);
+}
+
+.module-scene__eyebrow {
+  display: block;
+  margin-bottom: 4px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.module-scene__copy h2 {
+  margin: 0;
+  color: var(--warm-white);
+  font-family: var(--display);
+  font-size: clamp(21px, 5.5vw, 26px);
+}
+
+.module-scene__copy p {
+  margin: 5px 0 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Temas com fundo mais claro no rodapé (tarde/dia/pôr do sol) perdem
+   contraste com o texto branco padrão — sombra mais forte em vez de
+   escurecer o texto, pra manter os 7 temas com a mesma cor de texto. */
+.module-scene--theme-biblio .module-scene__copy,
+.module-scene--theme-dinossauro .module-scene__copy,
+.module-scene--theme-parque .module-scene__copy {
+  text-shadow:
+    0 2px 10px rgba(20, 16, 8, 0.55),
+    0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+.module-scene--current {
+  cursor: pointer;
+}
+
+/* Bloqueado dorme, não morre — continua visível, só claramente não é o
+   foco (atual = nítido, concluído = colorido, bloqueado = distante). */
+.module-scene--locked::after {
+  /* combina o sol/lua do tema com o escurecimento — mesmo pseudo, dois
+     backgrounds empilhados via mask não vale a pena aqui, então o
+     overlay vem de um segundo mecanismo: reduzir a opacidade do próprio
+     sol/lua e escurecer a cena com um box-shadow inset. */
+  opacity: 0.4;
+}
+
+.module-scene--locked {
+  --station-opacity: 0.74;
+  --ground-opacity: 0.88;
+  box-shadow: inset 0 0 0 999px rgba(14, 20, 65, 0.08);
+}
+
+.module-scene--locked .module-scene__station {
+  filter: saturate(0.62) brightness(0.86) drop-shadow(0 12px 12px rgba(7, 12, 45, 0.14));
+}
+
+.module-scene--locked .module-scene__ground {
+  filter: saturate(0.74) brightness(0.9);
+}
+
+.module-scene__lock,
+.module-scene__check {
+  position: absolute;
+  top: 48%;
+  left: 50%;
+  z-index: 3;
+  width: 58px;
+  height: 58px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.module-scene__lock svg,
+.module-scene__check svg {
+  width: 28px;
+  height: 28px;
+}
+
+.module-scene__lock {
+  background: rgba(38, 5, 31, 0.68);
+  color: var(--warm-white);
+}
+
+.module-scene__check {
+  background: var(--gold);
+  color: var(--warm-white);
+  box-shadow: 0 6px 0 #cc8600;
+}
+
+/* ---- setas + pontos (navegação, não rolagem) ---- */
+
+.modules-arrow {
+  position: fixed;
+  top: 50%;
+  z-index: 25;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(10, 14, 58, 0.55);
+  color: var(--warm-white);
+  font-size: 24px;
+  line-height: 1;
+  backdrop-filter: blur(6px);
+}
+
+.modules-arrow:disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.modules-arrow--prev {
+  left: max(12px, calc(50% - 296px));
+}
+
+.modules-arrow--next {
+  right: max(12px, calc(50% - 296px));
+}
+
+.modules-dots {
+  position: fixed;
+  left: 50%;
+  bottom: calc(17px + env(safe-area-inset-bottom));
+  z-index: 25;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+
+.modules-dots__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.68);
+  transition:
+    width 180ms ease,
+    background 150ms ease,
+    transform 150ms ease;
+}
+
+.modules-dots__dot.is-active {
+  width: 24px;
+  border-radius: 999px;
+  background: var(--warm-white);
+  transform: none;
+}
+
+@media (max-width: 360px) {
+  .module-scene__art {
+    width: min(66vw, 260px);
+  }
+
+  .modules-arrow {
+    width: 38px;
+    height: 38px;
+    font-size: 20px;
+  }
+}
+
+@media (max-height: 700px) {
+  .module-scene__ground {
+    top: var(--ground-start-small, 64%);
+  }
+
+  .module-scene__art {
+    top: var(--landmark-y-small, 53dvh);
+    width: min(62vw, var(--landmark-width, 280px));
+  }
+
+  .module-scene__copy h2 {
+    font-size: 21px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .module-scene.is-active-page .module-scene__ground,
+  .module-scene.is-active-page .module-scene__station {
+    animation: none;
+  }
+}

@@ -1,0 +1,123 @@
+import { supabase } from '../lib/supabase.js'
+
+// Currículo formal da trilha (Trilha → Módulo → Missão) — ver
+// docs/supabase-fase-5-trilha-formal.sql em diante. Substitui
+// PLANOS_REGISTRO (js/data/planos-registro.js), que fica só como
+// histórico/seed até todos os pontos de leitura migrarem.
+
+// ── Catálogo (conteúdo pedagógico, igual pra qualquer criança) ────────────
+
+// visibility + target_child_id no select pra o painel distinguir "Recomendada"
+// (oficial) de "Sua jornada" (privada do tutor) — a RLS já só devolve as
+// privadas que o tutor pode ver (as dele). Filtro por criança fica no chamador.
+export async function listPublishedTrailTemplates() {
+  return supabase
+    .from('trail_templates')
+    .select('id, slug, title, description, track_type, age_min, age_max, visibility, target_child_id')
+    .eq('status', 'published')
+    .order('title')
+}
+
+export async function getTrailTemplateWithModules(trailTemplateId) {
+  return supabase
+    .from('trail_modules')
+    .select('id, position, title, objective, visual_key, mission_templates ( id, position, title, molde, default_tema, default_config )')
+    .eq('trail_template_id', trailTemplateId)
+    .order('position')
+}
+
+// ── Instância (progresso real de uma criança) ──────────────────────────────
+
+// A mais recente, não só a 'ativa' — senão uma trilha 'concluida' vira
+// invisível pra UI (parece "nunca atribuída" de novo, escondendo que a
+// criança acabou de terminar tudo). Quem chama decide o que fazer com
+// cada status (ativa/concluida/pausada); null só quando não existe
+// nenhuma linha ainda (nunca foi atribuída).
+// Escopado por cycleId também, não só childId — child_trails pertence
+// formalmente a um ciclo (docs/supabase-fase-5-trilha-formal.sql); sem
+// isso, um ciclo novo do mesmo filho poderia herdar a trilha concluída de
+// um ciclo anterior.
+export async function getLatestChildTrail(childId, cycleId) {
+  return supabase
+    .from('child_trails')
+    .select('id, trail_template_id, template_version, starting_module_id, status, created_at, trail_templates ( title, description, visibility )')
+    .eq('child_id', childId)
+    .eq('cycle_id', cycleId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+}
+
+export async function getChildTrailModules(childTrailId) {
+  return supabase
+    .from('child_trail_modules')
+    .select('id, status, adaptation_config, released_at, completed_at, tutor_decision, trail_modules ( id, position, title, objective, visual_key )')
+    .eq('child_trail_id', childTrailId)
+    .order('position', { foreignTable: 'trail_modules' })
+}
+
+export async function getChildTrailMissions(childTrailModuleId) {
+  return supabase
+    .from('child_trail_missions')
+    .select('id, status, unlocked_at, completed_at, attempts_count, mission_templates ( id, position, title, molde, emblema, default_tema, default_config )')
+    .eq('child_trail_module_id', childTrailModuleId)
+    .order('position', { foreignTable: 'mission_templates' })
+}
+
+// Igual a getChildTrailMissions, mas junto com a child_activity vinculada —
+// o app infantil precisa saber exatamente qual atividade abrir quando a
+// missão está 'disponivel', sem query extra por nó. Reverse-FK
+// (child_activities.child_trail_mission_id -> child_trail_missions.id):
+// vem como array. Desde a Fase 11 (repetir/adaptar) uma missão pode ter
+// mais de uma child_activity ao longo do tempo (a antiga vira 'archived',
+// a nova nasce 'ready') — por isso o filtro por status aqui, pra sempre
+// pegar a vigente, nunca uma versão velha arquivada.
+export async function getChildTrailMissionsWithActivity(childTrailModuleId) {
+  return supabase
+    .from('child_trail_missions')
+    .select('id, status, unlocked_at, completed_at, attempts_count, mission_templates ( id, position, title, molde, emblema ), child_activities ( id )')
+    .eq('child_trail_module_id', childTrailModuleId)
+    .eq('child_activities.status', 'ready')
+    .order('position', { foreignTable: 'mission_templates' })
+}
+
+// Repetir (adaptations = {}) ou adaptar (adaptations = { rodadas, nivel })
+// uma missão já concluída — só válido com o módulo em 'aguardando_revisao'.
+// Arquiva a child_activity atual e cria uma nova 'ready' com o mesmo
+// molde/tema/instrução, mesclando só rodadas/nivel por cima. Devolve o id
+// da nova child_activity. Ver docs/supabase-fase-11-repetir-adaptar-missao.sql.
+export async function reopenChildTrailMission({ missionId, adaptations = {} }) {
+  return supabase.rpc('reopen_child_trail_mission', {
+    p_mission_id: missionId,
+    p_adaptations: adaptations,
+  })
+}
+
+// ── Mutações (sempre via RPC — as tabelas de instância não aceitam
+// insert/update direto, ver docs/supabase-fase-5-trilha-formal.sql Passo C) ──
+
+export async function assignChildTrail({ childId, cycleId, trailTemplateId, startingModuleId }) {
+  return supabase.rpc('assign_child_trail', {
+    p_child_id: childId,
+    p_cycle_id: cycleId,
+    p_trail_template_id: trailTemplateId,
+    p_starting_module_id: startingModuleId,
+  })
+}
+
+// adaptations: só { rodadas, nivel } são aceitos (allowlist na RPC) —
+// ver docs/supabase-fase-7-liberar-modulo.sql.
+export async function releaseChildModule({ childTrailModuleId, adaptations = {} }) {
+  return supabase.rpc('release_child_module', {
+    p_child_trail_module_id: childTrailModuleId,
+    p_adaptations: adaptations,
+  })
+}
+
+// Devolve { completed_module_id, next_module_id, trail_completed } — ver
+// docs/supabase-fase-9-avancar-modulo.sql.
+export async function advanceChildTrailModule({ childTrailModuleId }) {
+  return supabase.rpc('advance_child_trail_module', {
+    p_child_trail_module_id: childTrailModuleId,
+  })
+}
