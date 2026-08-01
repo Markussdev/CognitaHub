@@ -10,10 +10,9 @@ function mapAttentionSpan(value) {
     '5-10': 'medium',
     medium: 'medium',
 
-    // Temporario: o enum do banco ainda nao aceita "long".
-    mais10: 'medium',
-    'mais-10': 'medium',
-    long: 'medium',
+    mais10: 'long',
+    'mais-10': 'long',
+    long: 'long',
 
     naosei: 'unknown',
     'nao-sei': 'unknown',

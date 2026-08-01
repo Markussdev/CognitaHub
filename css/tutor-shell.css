@@ -239,3 +239,181 @@ a { color: inherit; }
 .btn-outline { height: 36px; padding: 0 16px; border-radius: var(--r-sm); background: var(--card); color: var(--brand); border: 1px solid var(--line-2); font-family: var(--font); font-size: .84rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 .btn-outline:hover { background: var(--brand-soft); border-color: transparent; }
 @media (max-width: 480px) { .support-drawer { width: 100vw; } }
+
+/* ============================================================
+   RESPONSIVO DO SHELL INTERNO
+   ============================================================ */
+
+@media (max-width: 940px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .app,
+  .shell,
+  #main-content {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .app {
+    overflow-x: hidden;
+  }
+
+  .shell > *,
+  .topbar > * {
+    min-width: 0;
+  }
+
+  .topbar {
+    width: 100%;
+    min-width: 0;
+    min-height: 58px;
+    height: auto;
+
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .search,
+  .search-wrap {
+    /*
+      width: 0 permite que o item flex realmente encolha.
+      Sem isso, o conteúdo textual define uma largura mínima enorme.
+    */
+    width: 0;
+    min-width: 0;
+    max-width: none;
+    flex: 1 1 0;
+  }
+
+  .search {
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .search-wrap input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .topbar-right {
+    flex: 0 0 auto;
+    margin-left: 0;
+  }
+
+  .home-head,
+  .home-stats,
+  .home-list,
+  .panel,
+  .record,
+  .card,
+  .stack {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .home-head h1,
+  .home-head p,
+  .home-stat .val,
+  .card {
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 560px) {
+  .topbar {
+    padding-inline: 10px;
+  }
+
+  /*
+    No celular o breadcrumb não acrescenta quase nada e disputa
+    espaço com a busca e o avatar.
+  */
+  .crumb {
+    display: none;
+  }
+
+  /*
+    A busca completa é grande demais para o celular.
+    Escondemos o texto original e exibimos apenas "Buscar".
+  */
+  button.search {
+    font-size: 0;
+  }
+
+  button.search::after {
+    content: "Buscar";
+    overflow: hidden;
+
+    color: var(--muted);
+    font-family: var(--font);
+    font-size: 0.82rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  button.search .kbd {
+    display: none;
+  }
+
+  button.search svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .search-wrap input {
+    font-size: 0.82rem;
+  }
+
+  .topbar-right .av {
+    width: 32px;
+    height: 32px;
+  }
+
+  .home-head {
+    padding: 18px 16px 0;
+    gap: 12px;
+  }
+
+  .home-head .mascot {
+    width: 52px;
+    height: 52px;
+  }
+
+  .home-head h1 {
+    margin-top: 3px;
+    font-size: 1.3rem;
+    line-height: 1.15;
+  }
+
+  .home-head p {
+    margin-top: 4px;
+    font-size: 0.86rem;
+  }
+
+  .home-stat {
+    padding: 14px;
+  }
+
+  .panel {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .record {
+    margin-right: 12px;
+    margin-left: 12px;
+    padding: 14px;
+  }
+
+  .skel-rec,
+  .skel-panel {
+    margin-right: 12px;
+    margin-left: 12px;
+  }
+}
