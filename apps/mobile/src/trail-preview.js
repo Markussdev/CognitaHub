@@ -87,7 +87,10 @@ function showJourney(module) {
 
 function showSettings() {
   rememberModulesPage()
+  const identity = getIdentity()
   renderSettings(root, {
+    childName: identity.name,
+    childAvatar: identity.avatarSrc,
     onBack: showModules,
     onOpenProfile: showProfileSettings,
     onOpenExperience: showExperienceSettings,

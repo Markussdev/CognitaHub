@@ -105,6 +105,103 @@
   transform: translateX(20px);
 }
 
+/* ---- página inicial de configurações: hero azul + painel creme ----
+   A tela deixa de ser um menu genérico solto no papel — o hero conecta com
+   a paleta da jornada (mesmo azul-navy), o avatar/nome tornam a tela
+   pessoal, e o painel curvo por baixo mantém a legibilidade dos cards.
+   Nenhum asset novo, só cor/forma + os três ícones próprios. */
+
+.screen--settings-home {
+  padding: 0;
+  overflow: hidden;
+  background: var(--paper);
+}
+
+.settings-hero {
+  flex: none;
+  min-height: 190px;
+  padding: calc(20px + var(--safe-top)) 24px 42px;
+  color: var(--warm-white);
+  background:
+    radial-gradient(circle at 88% 24%, rgba(255, 255, 255, 0.16) 0 34px, transparent 35px),
+    linear-gradient(155deg, #11175d 0%, #3d65a8 100%);
+}
+
+.settings-hero__top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 430px;
+  margin-inline: auto;
+}
+
+.settings-hero__back {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--warm-white);
+  font-size: 22px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+
+.settings-hero__title {
+  margin: 0;
+  font-size: 19px;
+  color: var(--warm-white);
+}
+
+.settings-hero__identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 430px;
+  margin: 26px auto 0;
+}
+
+.settings-hero__avatar {
+  width: 64px;
+  height: 64px;
+  flex: none;
+  border: 4px solid rgba(255, 255, 255, 0.75);
+  border-radius: 20px;
+  object-fit: cover;
+  box-shadow: 0 8px 18px rgba(8, 11, 50, 0.28);
+}
+
+.settings-hero__copy strong {
+  display: block;
+  font-family: var(--display);
+  font-size: 19px;
+  color: var(--warm-white);
+}
+
+.settings-hero__copy span {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.settings-panel {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  margin-top: -26px;
+  padding: 28px 24px calc(24px + var(--safe-bottom));
+  overflow-y: auto;
+  border-radius: 30px 30px 0 0;
+  background: var(--paper);
+}
+
 /* ---- menu principal: três botões grandes, função clara sem entrar ---- */
 
 .settings-menu {
@@ -112,26 +209,36 @@
   flex-direction: column;
   gap: 14px;
   width: 100%;
-  max-width: 420px;
-  margin-top: 16px;
+  max-width: 430px;
+  margin-inline: auto;
 }
 
 .settings-menu-item {
-  display: flex;
+  position: relative;
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) 24px;
   align-items: center;
   gap: 14px;
   width: 100%;
-  padding: 18px 20px;
-  border: none;
-  border-radius: var(--r-lg);
+  min-height: 86px;
+  padding: 14px 16px;
+  border: 1px solid rgba(20, 17, 98, 0.08);
+  border-radius: 22px;
   background: var(--warm-white);
-  box-shadow: var(--shadow-card);
+  box-shadow:
+    0 5px 0 rgba(20, 17, 98, 0.08),
+    0 12px 24px rgba(35, 2, 32, 0.07);
   text-align: left;
-  transition: transform 0.1s ease;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
 }
 
 .settings-menu-item:active {
-  transform: scale(0.98);
+  transform: translateY(3px);
+  box-shadow:
+    0 2px 0 rgba(20, 17, 98, 0.08),
+    0 7px 14px rgba(35, 2, 32, 0.06);
 }
 
 .settings-menu-item.is-disabled {
@@ -139,18 +246,31 @@
 }
 
 .settings-menu-item__icon {
-  flex: none;
-  width: 44px;
-  height: 44px;
+  width: 54px;
+  height: 54px;
   display: grid;
   place-items: center;
-  border-radius: 50%;
-  background: var(--soft-blue);
-  font-size: 22px;
+  border-radius: 18px;
+}
+
+/* Uma cor por área — nada de emoji, ícone próprio em duas cores no
+   máximo (fundo claro + traço/currentColor). */
+.settings-menu-item--profile .settings-menu-item__icon {
+  background: #eeeaff;
+  color: #5c43c8;
+}
+
+.settings-menu-item--experience .settings-menu-item__icon {
+  background: #fff1cb;
+  color: #d97800;
+}
+
+.settings-menu-item--guardians .settings-menu-item__icon {
+  background: #e4f2ff;
+  color: #276fa6;
 }
 
 .settings-menu-item__copy {
-  flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -168,19 +288,18 @@
 }
 
 .settings-menu-item__chevron {
-  flex: none;
   color: var(--muted);
   font-size: 22px;
 }
 
 .settings-menu-item__badge {
-  flex: none;
   padding: 4px 10px;
   border-radius: var(--r-pill);
   background: var(--line);
   color: var(--muted);
   font-size: 11px;
   font-weight: 700;
+  justify-self: end;
 }
 
 .settings-version {
@@ -575,4 +694,22 @@
 
 .btn-danger:not(:disabled):active {
   transform: scale(0.97);
+}
+
+/* ---- centralização consolidada ----
+   Vários desses blocos tinham max-width sem margin-inline:auto (ex.
+   .guardian-actions) — em telas mais largas sobrava vazio à direita em vez
+   de centralizar. Uma regra só, depois de todas as outras, pra garantir
+   que o max-width:430px + centralização vencem por último no cascade. */
+.settings-header,
+.settings-menu,
+.settings-list,
+.guardian-actions,
+.guardian-connected,
+.guardian-confirm,
+.profile-field,
+.profile-avatars {
+  width: 100%;
+  max-width: 430px;
+  margin-inline: auto;
 }

@@ -283,7 +283,11 @@ function showSettings(root) {
   rememberModulesPage(root)
   appState.screen = 'settings'
 
+  const child = getChildIdentity()
+
   renderSettings(root, {
+    childName: child.name,
+    childAvatar: child.avatarSrc,
     onBack: () => showModules(root),
     onOpenProfile: () => showProfileSettings(root),
     onOpenExperience: () => showExperienceSettings(root),

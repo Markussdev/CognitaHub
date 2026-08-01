@@ -23,6 +23,17 @@ const STATUS_TEXT = {
 const LOCK_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="9" rx="3" fill="currentColor"/><path d="M7 11V7a5 5 0 0 1 10 0v4" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>`
 const CHECK_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`
 
+// Ícone de "controles" (sliders) no lugar do caractere Unicode ⚙ — a
+// engrenagem depende de fonte/SO pra desenhar, e dentro de um círculo
+// branco o resultado lia como um olho/íris, não uma engrenagem.
+const SETTINGS_SVG = `
+  <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none">
+    <path d="M4 7h7M15 7h5M4 17h3M11 17h9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+    <circle cx="13" cy="7" r="2.2" stroke="currentColor" stroke-width="2.4" />
+    <circle cx="9" cy="17" r="2.2" stroke="currentColor" stroke-width="2.4" />
+  </svg>
+`
+
 function stationState(status) {
   if (status === 'concluido') return 'completed'
   if (status === 'bloqueado') return 'locked'
@@ -154,7 +165,7 @@ export function renderModules(root, { childName, childAvatar, modules, onOpenMod
           <h1>Jornada de ${escapeHtml(childName)}</h1>
           <p>Escolha seu próximo módulo</p>
         </div>
-        <button class="modules-header__settings" type="button" aria-label="Abrir configurações">⚙</button>
+        <button class="modules-header__settings" type="button" aria-label="Abrir configurações">${SETTINGS_SVG}</button>
       </header>
 
       <main class="modules-scenes">
