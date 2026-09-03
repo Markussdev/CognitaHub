@@ -5,7 +5,7 @@ import { PLANOS_REGISTRO, computeStatusEtapas } from '../data/planos-registro.js
 import { renderTrilhaPlano } from '../components/trilha-plano.js'
 
 // Tela própria de exploração da trilha — separada do painel do tutor de
-// propósito (ver docs/V2-DIRECAO.md): a aba Plano em tutor.html virou um
+// propósito: a aba Plano em tutor.html é um
 // resumo compacto; esta página é onde o mapa grande de verdade vive. Shell
 // mínimo: sem rail, sem as 7 abas do painel, só voltar + título + progresso.
 
@@ -61,7 +61,7 @@ async function init() {
   titleEl.textContent = plano.titulo
   document.title = `Trilha: ${plano.titulo} | Cognita Hub`
 
-  // Sprint 6A — modo demonstração infantil (ver docs/V2-DIRECAO.md).
+  // Modo de demonstração da experiência infantil.
   testarCriancaLink.href = `preview-crianca.html?${new URLSearchParams({ cycle_id: cycle.id }).toString()}`
   testarCriancaLink.hidden = false
 

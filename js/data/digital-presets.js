@@ -1,5 +1,5 @@
-// Ponte Biblioteca → Modo Criança: quais atividades da Biblioteca (tabela
-// `activities`, docs/activities-seed.sql) já têm um equivalente digital
+// Ponte Biblioteca → Modo Criança: quais atividades da tabela `activities`
+// já têm um equivalente digital
 // pronto no Modo Criança, e com qual configuração inicial abrir o
 // assistente de Atividades (js/pages/tutor.js#renderActivityWizard).
 //

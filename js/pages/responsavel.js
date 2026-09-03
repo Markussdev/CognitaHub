@@ -20,8 +20,7 @@ const mascoteSrc = '/assets/gatomatematico-sem-fundo.png'
 // Sessões · Criança. Tudo dado real:
 //   · children/support_cycles/tutor/learning_profiles (js/data/guardian.js)
 //   · sessões via get_family_sessions_v2 (níveis 1+2, NUNCA a nota interna)
-//   · jornada formal via RLS de guardian (ct/ctm/ctmi_guardian_select,
-//     docs/supabase-fase-5-trilha-formal.sql)
+//   · jornada formal via RLS de guardian (ct/ctm/ctmi_guardian_select)
 // Poda honesta (a versão anterior era mock com dado real remendado por
 // cima): Relatórios (não existe monthly_reports), "Atividades para casa" e
 // "Próxima atividade sugerida" (não existe curadoria/motor), tutor e sessões

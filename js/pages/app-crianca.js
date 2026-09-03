@@ -13,8 +13,7 @@ import { mascoteUrl } from '../lib/trilha-assets.js'
 //     sessão do tutor, só pra ele testar/mostrar a trilha sem precisar de
 //     um dispositivo pareado de verdade.
 //   sem ?demo=1 → fluxo real: dispositivo pareado (auth anônimo do
-//     Supabase + paired_devices, ver docs/supabase-fase-13-pareamento-
-//     dispositivo.sql). Sem pareamento ainda, mostra a tela de código.
+//     Supabase + paired_devices). Sem pareamento ainda, mostra a tela de código.
 // As duas portas convergem no mesmo mostrarTrilhaComum() depois de
 // resolver quem é a criança — o resto (módulos, missões, mapa) é idêntico.
 

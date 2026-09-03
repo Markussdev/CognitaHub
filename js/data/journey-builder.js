@@ -4,7 +4,6 @@ import { supabase } from '../lib/supabase.js'
 // SEMPRE via RPC security definer — nunca DML direto (o tutor não tem policy
 // de insert/update em trail_templates/modules/mission_templates). O snapshot
 // pedagógico é copiado no servidor a partir do source_child_activity_id.
-// Ver docs/supabase-fase-15-jornada-personalizada.sql.
 
 export async function createPrivateJourney({ title, objective, childId }) {
   return supabase.rpc('create_private_journey', {
@@ -18,8 +17,7 @@ export async function createPrivateJourney({ title, objective, childId }) {
 // Salva a jornada INTEIRA (título/objetivo + estrutura + cenário de cada
 // módulo). Devolve o novo updated_at (usar como expectedUpdatedAt no
 // próximo save). v2 registra visual_key por cima da validação pedagógica
-// que save_journey_draft (v1) já fazia — mesma transação, ver
-// docs/supabase-add-module-visual-identity-v1.sql.
+// que save_journey_draft (v1) já fazia, na mesma transação.
 export async function saveJourneyDraft({ templateId, title, objective, modules, expectedUpdatedAt }) {
   return supabase.rpc('save_journey_draft_v2', {
     p_template_id: templateId,
@@ -35,7 +33,7 @@ export async function publishJourney(templateId) {
 }
 
 // Jornadas privadas do tutor para uma criança (draft + published). RLS já
-// garante que só o autor vê os drafts (docs/supabase-fase-15 Passo B).
+// garante que só o autor vê os drafts.
 export async function listMyPrivateJourneys(childId) {
   return supabase
     .from('trail_templates')

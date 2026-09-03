@@ -13,8 +13,7 @@ import { emblemaUrl, mascoteUrl, espacoUrl } from '../lib/trilha-assets.js'
 // futuras — por isso as posições dos nós e os segmentos do caminho são
 // GERADOS pra N missões, não uma tabela de 5 posições hand-tuned como no
 // mapa do tutor. É uma troca deliberada: menos refinado visualmente por
-// enquanto, mas correto pra qualquer N. Lapidar isso é trabalho futuro
-// (ver docs/PLANO-SPRINT-4-TRILHA.md — "Fase 6, mapa de mundos").
+// enquanto, mas correto pra qualquer N. Lapidar isso é trabalho futuro.
 //
 // Continua igual ao antigo em tudo que não depende da contagem: só a
 // missão 'disponivel' é clicável, sem painel técnico, mascote com função

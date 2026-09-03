@@ -2,7 +2,6 @@
 // O CSS (@media em cada página) já esconde o rail fora da tela em ≤940px;
 // isto é só o toggle: no desktop o botão nem aparece (display:none fora da
 // media query), então .open nunca é aplicada lá e o menu não muda.
-// Ver docs/V2-DIRECAO.md §13 (Sprint 5A) para o histórico da correção.
 
 export function openRailDrawer() {
   document.querySelector('[data-rail]')?.classList.add('open')

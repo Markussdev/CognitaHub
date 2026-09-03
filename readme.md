@@ -9,242 +9,92 @@
 </p>
 
 <p align="center">
-  Plataforma educacional inclusiva que conecta crianças com TEA, responsáveis e tutores voluntários
-  para apoiar o desenvolvimento de habilidades matemáticas.
+  Plataforma educacional inclusiva que conecta crianças com TEA, responsáveis e tutores voluntários para apoiar a aprendizagem matemática.
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/status-em%20desenvolvimento-FFA800?style=for-the-badge" alt="Status: em desenvolvimento" />
-  <img src="https://img.shields.io/badge/foco-educacao%20inclusiva-141162?style=for-the-badge" alt="Foco: educação inclusiva" />
+  <img src="https://img.shields.io/badge/foco-educa%C3%A7%C3%A3o%20inclusiva-141162?style=for-the-badge" alt="Foco: educação inclusiva" />
   <img src="https://img.shields.io/badge/projeto-C--FORCE-540042?style=for-the-badge" alt="Projeto: C-FORCE" />
 </p>
 
-<p align="center">
-  <a href="#previa-do-projeto">Prévia</a> &bull;
-  <a href="#sobre-o-projeto">Sobre</a> &bull;
-  <a href="#problema">Problema</a> &bull;
-  <a href="#solucao">Solução</a> &bull;
-  <a href="#como-funciona">Como funciona</a> &bull;
-  <a href="#funcionalidades">Funcionalidades</a> &bull;
-  <a href="#tecnologias">Tecnologias</a> &bull;
-  <a href="#status-do-projeto">Status</a>
-</p>
+## Sobre o projeto
 
----
+O Cognita Hub apoia crianças com TEA de 5 a 9 anos que encontram barreiras na aprendizagem matemática. A plataforma organiza a colaboração entre a família, tutores voluntários e a equipe Cognita, com atividades adaptadas, trilhas de aprendizagem e acompanhamento do progresso.
 
-## Visão geral
+O produto tem duas experiências integradas:
 
-<table>
-  <tr>
-    <td width="33%">
-      <h3>Para quem?</h3>
-      <p>Crianças com TEA entre 5 e 9 anos com dificuldades em Matemática.</p>
-    </td>
-    <td width="33%">
-      <h3>O que faz?</h3>
-      <p>Conecta responsáveis e tutores voluntários em ciclos de acompanhamento.</p>
-    </td>
-    <td width="33%">
-      <h3>Objetivo</h3>
-      <p>Tornar a aprendizagem matemática mais acessível, humana e adaptada.</p>
-    </td>
-  </tr>
-</table>
-
----
-
-## Prévia do projeto
+- um hub web para responsáveis, tutores e administração;
+- uma experiência infantil com missões, atividades e jornada visual.
 
 <p align="center">
   <img src="./public/assets/preview-home.png" alt="Prévia da página inicial do Cognita Hub" width="80%" />
 </p>
 
-<p align="center">
-  <em>Interface inicial do Cognita Hub com foco em acolhimento, clareza visual e acessibilidade cognitiva.</em>
-</p>
-
----
-
-## Sobre o projeto
-
-O **Cognita Hub** é uma proposta de plataforma educacional voltada à inclusão de crianças com **TEA - Transtorno do Espectro Autista** no processo de aprendizagem matemática.
-
-A ideia nasce no contexto de **Inclusão e Direitos Humanos**, reconhecendo a neurodiversidade e defendendo que estudantes neurodivergentes tenham acesso a recursos, métodos e apoios educacionais adequados às suas necessidades.
-
-Mais do que uma plataforma de estudos tradicional, o Cognita Hub busca criar uma ponte organizada entre quem precisa de apoio e quem pode oferecer acompanhamento educacional voluntário.
-
-## Problema
-
-A Matemática é uma habilidade essencial para o desenvolvimento educacional, social e cotidiano. Para muitas crianças com TEA, porém, o ensino tradicional pode trazer barreiras importantes.
-
-Essas barreiras podem envolver conceitos abstratos, organização espacial e temporal, comunicação, interação social, rigidez na apresentação dos conteúdos, falta de recursos adaptados e práticas pedagógicas pouco inclusivas.
-
-<a id="solucao"></a>
-
-## Solução
-
-O Cognita Hub propõe um site que conecta crianças com TEA a tutores voluntários com formação ou experiência em aprendizagem inclusiva.
-
-Cada criança é cadastrada por uma pessoa responsável. A equipe Cognita analisa os perfis, valida tutores e organiza os matches para ciclos de acompanhamento de até **6 meses**, com encontros semanais e registro de progresso.
-
 ## Como funciona
 
 ```mermaid
-flowchart TD
-    A[Responsável cadastra a criança] --> B[Equipe Cognita analisa o perfil]
-    B --> C[Tutor voluntário é validado]
-    C --> D[Match entre criança e tutor]
-    D --> E[Acompanhamento semanal por até 6 meses]
-    E --> F[Registro de progresso e atividades]
-
-    style A fill:#141162,color:#FFFFFC
-    style B fill:#540042,color:#FFFFFC
-    style C fill:#FFA800,color:#230220
-    style D fill:#141162,color:#FFFFFC
-    style E fill:#540042,color:#FFFFFC
-    style F fill:#FFA800,color:#230220
+flowchart LR
+    A[Responsável cadastra a criança] --> B[Equipe valida o tutor]
+    B --> C[Equipe realiza o match]
+    C --> D[Tutor organiza a jornada]
+    D --> E[Criança realiza missões]
+    E --> F[Família e tutor acompanham a evolução]
 ```
 
----
-
-## Funcionalidades
-
-| Área | Funcionalidades planejadas |
-|---|---|
-| Site público | Apresentação do projeto, problema, solução e chamadas para responsáveis e tutores |
-| Responsável | Cadastro da criança, acompanhamento, atividades, informações do tutor e progresso |
-| Tutor voluntário | Perfil do tutor, disponibilidade semanal e registro de sessões |
-| Administração | Validação de tutores, organização dos matches e controle dos ciclos |
-
-## Acessibilidade e experiência
-
-O projeto considera princípios de acessibilidade cognitiva importantes para crianças com TEA:
-
-| Diretriz | Aplicação |
-|---|---|
-| Previsibilidade | Navegação consistente e organização por rotina |
-| Clareza | Linguagem simples, botões grandes e ações diretas |
-| Conforto visual | Contraste adequado e redução de estímulos excessivos |
-| Acompanhamento | Registro de atividades, observações e progresso |
+Atualmente o projeto inclui autenticação por papel, cadastro de crianças e tutores, triagem administrativa, match, ciclos de acompanhamento, sessões, atividades, trilhas, progresso e pareamento da experiência infantil.
 
 ## Tecnologias
 
-| Camada | Tecnologia |
-|---|---|
-| Estrutura | HTML5 |
-| Estilo | CSS3 |
-| Interação | JavaScript (ES Modules) |
-| Servidor de desenvolvimento | Vite |
-| Backend | Supabase (Auth + Postgres) |
-| Assets | Identidade visual própria e imagens do projeto |
+- HTML5, CSS3 e JavaScript com ES Modules;
+- Vite para desenvolvimento e build;
+- Supabase Auth, PostgreSQL, Row Level Security e funções RPC;
+- Cloudflare Turnstile no fluxo de autenticação anônima infantil.
 
-## Status do projeto
+## Executar localmente
 
-| Etapa | Situação |
-|---|---|
-| Identidade visual | Concluída |
-| Página inicial | Em refinamento |
-| Autenticação (login por papel) | Em implementação |
-| Cadastro de tutor | Em implementação (grava no Supabase) |
-| Cadastro de responsável | Em implementação (grava no Supabase) |
-| Dashboard do responsável | Status real do cadastro (Supabase) |
-| Dashboard do tutor | Estado real (sem crianças até o pareamento) |
-| Painel administrativo | Triagem + pareamento funcionais (aprova, recusa e cria ciclo pelo site) |
-| Banco de dados | Em implementação (Supabase) |
-
-## Próximos passos
-
-* [x] Painel admin listando cadastros pendentes reais (triagem).
-* [x] Aprovação de criança e tutor pelo admin.
-* [x] Pareamento criança↔tutor e criação do ciclo de 6 meses pelo admin.
-* [ ] Registro de sessões do tutor no banco.
-* [ ] Painel do responsável lendo o andamento do ciclo (sessões/progresso).
-* [ ] Biblioteca de atividades vinda do Supabase.
-* [ ] Validar o projeto com professores, responsáveis e instituições.
-
-<details>
-  <summary><strong>Identidade visual</strong></summary>
-
-A identidade visual do Cognita Hub combina azul, roxo/vinho, amarelo e fundos claros para transmitir acolhimento, confiança e criatividade.
-
-| Cor | Hexadecimal | Uso |
-|---|---|---|
-| Azul principal | `#141162` | Base institucional e confiança |
-| Amarelo/dourado | `#FFA800` | Destaques e energia visual |
-| Roxo/vinho | `#540042` | Contraste e profundidade |
-| Escuro | `#230220` | Textos fortes e elementos de apoio |
-| Branco quente | `#FFFFFC` | Fundos e áreas de leitura |
-
-</details>
-
-<details>
-  <summary><strong>Estrutura do projeto</strong></summary>
-
-```txt
-cognita-hub/
-|-- public/
-|   `-- assets/
-|       |-- background.png
-|       |-- logo-icon-transparent.png
-|       |-- logo-retangular-transparent.png
-|       |-- logo.jpeg
-|       |-- mascot-hero-wave.png
-|       |-- preview-home.png
-|       `-- trilha/
-|-- css/
-|   `-- styles.css
-|-- js/
-|   |-- data/
-|   |-- lib/
-|   `-- pages/
-|-- pages/
-|   |-- admin.html
-|   |-- atividades.html
-|   |-- cadastro.html
-|   |-- cadastro-responsavel.html
-|   |-- cadastro-tutor.html
-|   |-- login.html
-|   |-- tutor.html
-|   `-- responsavel.html
-|-- index.html
-`-- readme.md
-```
-
-</details>
-
-## Como executar localmente
-
-Clone o repositório e entre na pasta:
+Requisitos: Node.js e npm.
 
 ```bash
 git clone https://github.com/markussdev/CognitaHub.git
 cd CognitaHub
+npm install
 ```
 
-Crie um arquivo `.env` na raiz com as credenciais do Supabase:
+Crie um arquivo `.env` na raiz:
 
 ```env
 VITE_SUPABASE_URL=https://SEU-PROJETO.supabase.co
-VITE_SUPABASE_ANON_KEY=SUA-CHAVE-PUBLICAVEL
+VITE_SUPABASE_ANON_KEY=SUA_CHAVE_PUBLICAVEL
+VITE_TURNSTILE_SITE_KEY=SUA_SITE_KEY
 ```
 
-Instale as dependências e suba o servidor de desenvolvimento:
+Use somente a chave publicável do Supabase no frontend. Nunca coloque a `service_role` no `.env` usado pelo Vite.
+
+Inicie o servidor:
 
 ```bash
-npm install
 npm run dev
 ```
 
-O Vite abre o site em `http://localhost:5173`.
+Para validar o build de produção:
 
-## Aviso importante
+```bash
+npm run build
+```
 
-O Cognita Hub é uma proposta de apoio educacional. A plataforma não substitui acompanhamento clínico, psicológico, terapêutico, médico ou diagnóstico profissional.
+## Documentação
 
-O objetivo é oferecer uma ponte de apoio pedagógico para o desenvolvimento de habilidades matemáticas de crianças com TEA.
+- [Arquitetura](./docs/ARCHITECTURE.md): componentes, estrutura, papéis e fluxos.
+- [Banco de dados](./docs/DATABASE.md): schema real organizado por domínio.
+- [Roadmap](./docs/ROADMAP.md): estado atual, prioridades e dívida técnica.
+
+## Responsabilidade
+
+O Cognita Hub é uma ferramenta de apoio educacional. Não substitui acompanhamento clínico, psicológico, terapêutico, médico nem diagnóstico profissional.
 
 ## Equipe
 
-Projeto desenvolvido pela equipe **C-FORCE** para o **Desafio Liga Jovem - 4ª edição**.
+Projeto desenvolvido pela equipe **C-FORCE** para o **Desafio Liga Jovem — 4ª edição**.
 
-Belém/Pará - 2026
+Belém, Pará — 2026.

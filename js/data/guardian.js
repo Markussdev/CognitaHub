@@ -62,7 +62,7 @@ async function getGuardianChildrenInSteps(guardianId) {
     return { data: null, error: cyclesError }
   }
 
-  // Perfil do tutor via RPC (security definer, docs/supabase-fase-16-*.sql)
+  // Perfil do tutor via RPC security definer
   // — não via .from('profiles').in('id', ...), que depende de RLS de
   // leitura em profiles pro responsável e não tinha confirmação de estar
   // aplicada no projeto real. A RPC escopa por auth.uid() como guardian
@@ -89,8 +89,7 @@ async function getGuardianChildrenInSteps(guardianId) {
 
   // A família nunca lê a tabela sessions direto — só pela função
   // get_family_sessions (security definer), que devolve níveis 1+2 e
-  // jamais a coluna notes (nível 3, nota interna do tutor). Ver
-  // docs/supabase-fase-4c-registro-sessao.sql.
+  // jamais a coluna notes (nível 3, nota interna do tutor).
   const familySessionsResults = await Promise.all(
     childIds.map((childId) => getFamilySessions(childId))
   )

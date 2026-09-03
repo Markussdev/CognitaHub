@@ -742,7 +742,7 @@ function renderTemplateRow(template) {
       // Arquivar um template com jornadas atribuídas apagaria módulos e
       // missões da tela de tutor/família/dispositivo NO MEIO do caminho —
       // o RLS do catálogo só libera 'published' pra esses papéis
-      // (can_read_trail_template, docs/supabase-fase-15). Bloqueio honesto.
+      // por meio de can_read_trail_template. Bloqueio honesto.
       archive.disabled = true
       errorBox.textContent = `Não dá para arquivar: ${usage} ${usage === 1 ? 'jornada atribuída usa' : 'jornadas atribuídas usam'} esta trilha — arquivar a esconderia das famílias no meio do caminho.`
       errorBox.hidden = false
@@ -765,7 +765,7 @@ function viewConteudo() {
   const card = cardPad(el('p', 'kicker', 'Jornadas oficiais'))
   if (!D.templates.length) {
     card.append(admEmpty('Nenhuma jornada oficial cadastrada.',
-      'As trilhas do catálogo (docs/supabase-fase-5 em diante) aparecem aqui.'))
+      'As trilhas publicadas do catálogo aparecem aqui.'))
   } else {
     D.templates.forEach((t) => card.append(renderTemplateRow(t)))
   }

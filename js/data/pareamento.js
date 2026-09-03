@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabase.js'
 
 // Pareamento de dispositivo infantil — auth anônimo do Supabase
 // (signInAnonymously) + vínculo em paired_devices, não um sistema de
-// sessão paralelo. Ver docs/supabase-fase-13-pareamento-dispositivo.sql.
+// sessão paralelo.
 
 // Chamado pelo tutor/responsável/admin. Devolve o código já formatado
 // (ex.: "7K4M-9P2D") — só existe nesse retorno, a tabela guarda só o hash.

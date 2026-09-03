@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabase.js'
 
 // Grava o sinal de saída do Modo Criança (montarAtividadeExecucao() em
 // js/pages/modo-crianca.js) — o Nível 1 (dado estruturado) do Registro de
-// Sessão em 3 níveis. Ver docs/supabase-fase-4b-corrente.sql.
+// Sessão em 3 níveis.
 // RLS exige child_id (via is_tutor_of/is_guardian_of) e executed_by =
 // auth.uid() simultaneamente.
 // Execuções do Modo Criança que ainda não viraram Registro de Sessão

@@ -2,7 +2,7 @@
 // A secret key NUNCA entra em código client-side: fica configurada no
 // Dashboard do Supabase (Authentication → Attack Protection), que verifica
 // o captchaToken no servidor quando signInAnonymously({ options: { captchaToken } })
-// é chamado. Ver docs/supabase-fase-13-pareamento-dispositivo.sql.
+// é chamado.
 
 const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js'
 let scriptPromise = null

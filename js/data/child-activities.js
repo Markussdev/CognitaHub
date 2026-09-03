@@ -1,7 +1,7 @@
 import { supabase } from '../lib/supabase.js'
 
 // child_activities é a instância autorada pelo tutor (molde + tema + config +
-// instrução) para uma criança específica — ver docs/supabase-fase-4b-corrente.sql.
+// instrução) para uma criança específica.
 // RLS (ca_tutor_insert) exige child_id (via is_tutor_of) e created_by = auth.uid()
 // simultaneamente; quem chama createChildActivity precisa fornecer os dois.
 
@@ -38,8 +38,7 @@ export async function createChildActivity({
 // atividade avulsa (child_trail_mission_id null, sempre executável) de
 // atividade de missão de trilha — que só deve virar "Fazer com a criança"
 // quando a missão estiver 'disponivel' (a criança não pode pular pra uma
-// missão 2/3 só porque o tutor liberou o módulo em lote, ver
-// docs/supabase-fase-7-liberar-modulo.sql).
+// missão 2/3 só porque o tutor liberou o módulo em lote).
 // incluirArquivadas: o acervo do tutor mostra o filtro "Arquivadas" —
 // os demais chamadores (builder de jornada etc.) seguem só com as ativas.
 export async function listChildActivities(childId, { incluirArquivadas = false } = {}) {
@@ -65,8 +64,7 @@ export async function updateChildActivity(id, { molde, tema, config, instrucao, 
     .single()
 }
 
-// "Arquivar" — status já previa esse valor desde a Fase 4B
-// (docs/supabase-fase-4b-corrente.sql: check (status in ('draft','ready','archived'))).
+// "Arquivar" — o status aceita draft, ready e archived.
 // listChildActivities já filtra archived; não precisa de coluna nova.
 export async function archiveChildActivity(id) {
   return supabase

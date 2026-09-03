@@ -7,8 +7,8 @@ import dinossauroSrc from '../../assets/landmarks/dinossauro.png'
 import parqueSrc from '../../assets/landmarks/parque.png'
 
 // Identidade visual dos módulos (trail_modules.visual_key) — fonte única
-// entre site e banco (mesmas 7 chaves da constraint em trail_modules_visual_key_ck,
-// docs/supabase-add-module-visual-identity-v1.sql). O site só usa miniatura +
+// entre site e banco (mesmas 7 chaves da constraint trail_modules_visual_key_ck).
+// O site só usa miniatura +
 // nome; a composição completa (céu, terreno, animação) é só do app da criança.
 export const MODULE_VISUALS = [
   { key: 'base', label: 'Base Espacial', description: 'Espaço, lua e exploração', image: baseSrc },

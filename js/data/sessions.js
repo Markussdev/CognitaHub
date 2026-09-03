@@ -63,7 +63,7 @@ export async function createSessionRecord({
 // createSessionRecord + linkExecucaoToSession: (1) uma devolutiva pode cobrir
 // várias execuções (a criança faz várias missões numa experiência) e (2) o
 // link antigo dependia de um UPDATE em atividade_execucao sem policy de tutor
-// — falhava calado. Ver docs/supabase-fase-14-sessao-multi-execucao.sql.
+// e falhava sem erro visível.
 export async function createSessionWithExecucoes({
   cycleId, activityId, sessionDate, durationMinutes,
   activityTitle, focusArea, familySummary, notes, nextStep, execucaoIds = [],
@@ -82,8 +82,7 @@ export async function createSessionWithExecucoes({
   })
 }
 
-// Fecha a ponte prevista em docs/supabase-fase-4b-corrente.sql (PASSO B1):
-// liga a execução do Modo Criança à sessão que acabou de nascer dela.
+// Liga a execução do Modo Criança à sessão que acabou de nascer dela.
 // (Legado — substituída por createSessionWithExecucoes; ver nota acima.)
 export async function linkExecucaoToSession(execucaoId, sessionId) {
   return supabase
@@ -97,7 +96,7 @@ export async function linkExecucaoToSession(execucaoId, sessionId) {
 // Leitura da família — nunca a tabela sessions direto. get_family_sessions_v2
 // é security definer e devolve só níveis 1+2, nunca `notes` (nível 3). A v2
 // devolve UMA linha por sessão (a v1 duplicava quando a sessão tinha N
-// execuções) + um array `execucoes`. Ver docs/supabase-fase-14b-*.sql.
+// execuções) + um array `execucoes`.
 export async function getFamilySessions(childId) {
   return supabase.rpc('get_family_sessions_v2', { p_child: childId })
 }

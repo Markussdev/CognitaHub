@@ -1,7 +1,6 @@
 import { supabase } from '../lib/supabase.js'
 
-// Currículo formal da trilha (Trilha → Módulo → Missão) — ver
-// docs/supabase-fase-5-trilha-formal.sql em diante. Substitui
+// Currículo formal da trilha (Trilha → Módulo → Missão). Substitui
 // PLANOS_REGISTRO (js/data/planos-registro.js), que fica só como
 // histórico/seed até todos os pontos de leitura migrarem.
 
@@ -34,7 +33,7 @@ export async function getTrailTemplateWithModules(trailTemplateId) {
 // cada status (ativa/concluida/pausada); null só quando não existe
 // nenhuma linha ainda (nunca foi atribuída).
 // Escopado por cycleId também, não só childId — child_trails pertence
-// formalmente a um ciclo (docs/supabase-fase-5-trilha-formal.sql); sem
+// formalmente a um ciclo; sem
 // isso, um ciclo novo do mesmo filho poderia herdar a trilha concluída de
 // um ciclo anterior.
 export async function getLatestChildTrail(childId, cycleId) {
@@ -85,7 +84,7 @@ export async function getChildTrailMissionsWithActivity(childTrailModuleId) {
 // uma missão já concluída — só válido com o módulo em 'aguardando_revisao'.
 // Arquiva a child_activity atual e cria uma nova 'ready' com o mesmo
 // molde/tema/instrução, mesclando só rodadas/nivel por cima. Devolve o id
-// da nova child_activity. Ver docs/supabase-fase-11-repetir-adaptar-missao.sql.
+// da nova child_activity.
 export async function reopenChildTrailMission({ missionId, adaptations = {} }) {
   return supabase.rpc('reopen_child_trail_mission', {
     p_mission_id: missionId,
@@ -93,8 +92,8 @@ export async function reopenChildTrailMission({ missionId, adaptations = {} }) {
   })
 }
 
-// ── Mutações (sempre via RPC — as tabelas de instância não aceitam
-// insert/update direto, ver docs/supabase-fase-5-trilha-formal.sql Passo C) ──
+// ── Mutações (sempre via RPC; as tabelas de instância não aceitam
+// insert/update direto) ────────────────────────────────────────────────────
 
 export async function assignChildTrail({ childId, cycleId, trailTemplateId, startingModuleId }) {
   return supabase.rpc('assign_child_trail', {
@@ -105,8 +104,7 @@ export async function assignChildTrail({ childId, cycleId, trailTemplateId, star
   })
 }
 
-// adaptations: só { rodadas, nivel } são aceitos (allowlist na RPC) —
-// ver docs/supabase-fase-7-liberar-modulo.sql.
+// adaptations: só { rodadas, nivel } são aceitos pela allowlist da RPC.
 export async function releaseChildModule({ childTrailModuleId, adaptations = {} }) {
   return supabase.rpc('release_child_module', {
     p_child_trail_module_id: childTrailModuleId,
@@ -114,8 +112,7 @@ export async function releaseChildModule({ childTrailModuleId, adaptations = {} 
   })
 }
 
-// Devolve { completed_module_id, next_module_id, trail_completed } — ver
-// docs/supabase-fase-9-avancar-modulo.sql.
+// Devolve { completed_module_id, next_module_id, trail_completed }.
 export async function advanceChildTrailModule({ childTrailModuleId }) {
   return supabase.rpc('advance_child_trail_module', {
     p_child_trail_module_id: childTrailModuleId,

@@ -2,8 +2,7 @@
    por pages/trilha.html (tela própria de exploração do tutor). Escopo: só
    `.trail-*`. O shell da página (topbar, voltar, bottom sheet mobile) vive
    inline em trilha.html, no mesmo padrão self-contained de tutor.html.
-   Sem mascote no mapa — quebrava a leitura do caminho entre os nós (feedback
-   do Marcus, 2026-07-11). Ver docs/V2-DIRECAO.md pro histórico da revisão. */
+   Sem mascote no mapa para preservar a leitura do caminho entre os nós. */
 
 :root {
   --trail-path: #d8cfe8;

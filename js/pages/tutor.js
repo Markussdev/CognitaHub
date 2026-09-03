@@ -1253,7 +1253,7 @@ async function loadSessionsTable(cycleId, tbody, emptyWrap, table) {
 // Substitui o antigo dossiê. A tela inteira deriva de derivarEstadoResumo()
 // (js/pages/resumo-estado.js): um estado dominante, no máximo um CTA. Nada aqui
 // inventa dado — tudo vem de sessions/atividade_execucao/child_trails já
-// existentes. Ver docs/TELA-RESUMO-PAINEL-TUTOR.md.
+// existentes.
 function buildResumoPanel(cycle, { openForm }) {
   const panel = el('section', 'panel')
   panel.dataset.panel = 'overview' // id interno mantido — switchTab/tabs seguem funcionando
@@ -1619,7 +1619,7 @@ function buildSessionsPanel(cycle, state, sessionForm) {
 // editar/duplicar abre um assistente de 3 passos (mesma casca visual das
 // Sessões) com a prévia REAL do Modo Criança fixa à direita — o iframe roda a
 // própria casca (?preview=1) e recebe o contrato ao vivo via postMessage.
-// O que salva é a instância child_activities (docs/supabase-fase-4b). O motor
+// O que salva é a instância child_activities. O motor
 // (moldes declarativos em MOLDES_REGISTRO, buildContractFromParts) não mudou.
 // "Últimas execuções" saiu daqui — essa informação vive no Resumo (timeline)
 // e em Sessões (aguardando registro); cada aba com um trabalho só.
@@ -2270,8 +2270,7 @@ function buildActivitiesPanel(cycle, state, onSaved) {
 // ── Painel: Plano — resumo compacto (o mapa grande mora em trilha.html) ─────
 // Não é navegação livre da criança — é o tutor decidindo a próxima etapa.
 // Dado pedagógico e cálculo de status moram em data/planos-registro.js.
-// Esta aba não tenta mais mostrar o mapa inteiro (isso sufocava a trilha
-// num card de ~420px de altura, ver docs/V2-DIRECAO.md) — responde rápido
+// Esta aba não tenta mostrar o mapa inteiro em um card compacto — responde rápido
 // "qual é o plano, quanto já foi feito, qual a próxima ação", com um botão
 // pra abrir a exploração de verdade em tela própria.
 
@@ -2296,8 +2295,8 @@ function appendChildAppLink(container, cycle, label) {
   container.append(link)
 }
 
-// Currículo formal (Trilha → Módulo → Missão) — ver docs/supabase-fase-5
-// em diante. Passagem funcional, sem redesenhar o mapa visual ainda (isso
+// Currículo formal (Trilha → Módulo → Missão). Passagem funcional,
+// sem redesenhar o mapa visual ainda (isso
 // é a "Fase 6 — mapa de mundos" do roadmap, só depois de provar o dado
 // real ponta a ponta). PLANOS_REGISTRO/trilha-plano.js/trilha.html
 // continuam existindo mas não são mais alimentados por este painel.
@@ -3106,7 +3105,7 @@ function renderRecordHeader(cycle, state) {
   main.append(meta)
 
   // Cabeçalho é só identidade e consulta — a ação dominante mora na mesa de
-  // trabalho do Resumo (docs/TELA-RESUMO-PAINEL-TUTOR.md §2.2). Sem "Registrar
+  // trabalho do Resumo. Sem "Registrar
   // sessão"/"Preparar atividade" aqui: CTA repetido é ruído, não ênfase.
   const actions = el('div', 'rec-actions')
   const profileLink = el('a', 'btn btn-ghost', 'Ver perfil')
