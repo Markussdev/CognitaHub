@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../css/tutor-shell.css" />
+  <link rel="stylesheet" href="../css/activity-guide.css" />
   <style>
     /* Tokens, rail (com drawer mobile), topbar/busca, scrollbar interna e
        drawer genérico vêm de tutor-shell.css (compartilhado com
@@ -313,6 +314,19 @@
     </main>
   </div>
 </div>
+
+<!-- Camada pedagógica entre a Biblioteca e os modos de aplicação. O conteúdo
+     e a navegação são montados por js/components/activity-guide.js. -->
+<section
+  id="activity-guide"
+  class="guide"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="activity-guide-title"
+  aria-hidden="true"
+  tabindex="-1"
+  hidden
+></section>
 
 <div class="drawer-backdrop" id="drawer-backdrop"></div>
 <aside class="act-drawer thin-scroll" id="act-drawer" aria-hidden="true" aria-label="Detalhes da atividade">

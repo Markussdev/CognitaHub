@@ -4,6 +4,7 @@ import { getAvatarUrl, setAvatarImage } from '../lib/avatar.js'
 import { wireRailToggle } from '../lib/rail.js'
 import { getActivities } from '../data/activities.js'
 import { hasDigitalPreset } from '../data/digital-presets.js'
+import { canOpenActivityGuide, openActivityGuide } from '../components/activity-guide.js'
 
 // ── Papel de cada área (não duplicar responsabilidade) ───────────────────────
 // Biblioteca = conteúdo-base e inspiração da Cognita. NÃO guarda o que o
@@ -151,6 +152,37 @@ function svgFormats(formats) {
 
 function buildTutorPresetUrl(slug) {
   return `tutor.html?${new URLSearchParams({ view: 'record', tab: 'activities', preset: slug })}`
+}
+
+function primaryActionLabel(a) {
+  if (a.path === 'digital') return CTX_CHILD ? `Personalizar para ${CTX_CHILD}` : 'Personalizar'
+  return CTX_CHILD ? `Conduzir com ${CTX_CHILD}` : 'Conduzir atividade'
+}
+
+function primaryActionDisabled(a) {
+  return a.path === 'digital' && !CTX_CHILD_ID
+}
+
+function startActivity(a) {
+  if (a.path === 'digital') {
+    if (!CTX_CHILD_ID) return
+    window.location.href = buildTutorPresetUrl(a.slug)
+    return
+  }
+  openConducao(a)
+}
+
+function openGuide(a) {
+  closeDrawer()
+  openActivityGuide(a, {
+    icon: SKILL_EMOJI[a.skill] || '✨',
+    startLabel: primaryActionLabel(a),
+    startDisabled: primaryActionDisabled(a),
+    startDisabledReason: primaryActionDisabled(a)
+      ? 'Abra a Biblioteca a partir do painel de um acompanhamento para personalizar.'
+      : '',
+    onStart: startActivity,
+  })
 }
 
 // ── Identidade do rail ───────────────────────────────────────────────────────
@@ -322,9 +354,10 @@ function buildFeaturedActivity(a, reasons) {
   reason.append(el('p', null, `Recomendada porque ${reasons.join(', ')}.`))
   const actions = el('div', 'lib-featured-actions')
   actions.append(buildPrimaryCta(a))
-  const roteiro = el('button', 'btn-ghost-sm', 'Ver roteiro')
+  const hasGuide = canOpenActivityGuide(a)
+  const roteiro = el('button', 'btn-ghost-sm', hasGuide ? 'Conhecer atividade' : 'Ver roteiro')
   roteiro.type = 'button'
-  roteiro.addEventListener('click', () => openDrawer(a))
+  roteiro.addEventListener('click', () => hasGuide ? openGuide(a) : openDrawer(a))
   actions.append(roteiro)
   reason.append(actions)
   frag.append(reason)
@@ -465,8 +498,8 @@ function filterActivities() {
 // Modo Criança — em breve": o Modo Criança já existe, então a ponte é real.
 function buildPrimaryCta(a) {
   if (a.path === 'digital') {
-    const btn = el('a', 'activity-primary-action', CTX_CHILD ? `Personalizar para ${CTX_CHILD}` : 'Personalizar')
-    if (!CTX_CHILD_ID) {
+    const btn = el('a', 'activity-primary-action', primaryActionLabel(a))
+    if (primaryActionDisabled(a)) {
       btn.setAttribute('aria-disabled', 'true')
       btn.title = 'Abra a Biblioteca a partir do painel de um acompanhamento pra personalizar.'
       btn.addEventListener('click', (e) => e.preventDefault())
@@ -475,9 +508,9 @@ function buildPrimaryCta(a) {
     }
     return btn
   }
-  const btn = el('button', 'activity-primary-action', CTX_CHILD ? `Conduzir com ${CTX_CHILD}` : 'Conduzir atividade')
+  const btn = el('button', 'activity-primary-action', primaryActionLabel(a))
   btn.type = 'button'
-  btn.addEventListener('click', () => openConducao(a))
+  btn.addEventListener('click', () => startActivity(a))
   return btn
 }
 
@@ -501,9 +534,10 @@ function buildCard(a) {
   body.append(meta)
 
   const actions = el('div', 'activity-card-actions')
-  const details = el('button', 'activity-details-link', 'Ver roteiro')
+  const hasGuide = canOpenActivityGuide(a)
+  const details = el('button', 'activity-details-link', hasGuide ? 'Conhecer atividade' : 'Ver roteiro')
   details.type = 'button'
-  details.addEventListener('click', () => openDrawer(a))
+  details.addEventListener('click', () => hasGuide ? openGuide(a) : openDrawer(a))
   actions.append(details, buildPrimaryCta(a))
   body.append(actions)
 
