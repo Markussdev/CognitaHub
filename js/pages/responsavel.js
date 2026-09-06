@@ -6,6 +6,7 @@ import { getGuardianChildren, getChildAppIdentity } from '../data/guardian.js'
 import { getLatestChildTrail, getChildTrailModules, getChildTrailMissions } from '../data/trilha-formal.js'
 import { listPairedDevices, revokePairedDevice, createPairingCode } from '../data/pareamento.js'
 import { emblemaUrl } from '../lib/trilha-assets.js'
+import { formatSchoolYear } from '../lib/school-year.js'
 
 const astronautaSrc = '/assets/cat-astronauta.png'
 const cientistaSrc = '/assets/cat-cientista.png'
@@ -660,7 +661,7 @@ function viewCrianca() {
   const idTx = el('div')
   idTx.append(el('h2', null, childDisplayName(child)))
   const idade = ageFrom(child.birth_date)
-  idTx.append(el('p', 'meta', [idade != null ? `${idade} anos` : null, child.school_year].filter(Boolean).join(' · ') || '—'))
+  idTx.append(el('p', 'meta', [idade != null ? `${idade} anos` : null, child.school_year ? formatSchoolYear(child.school_year) : null].filter(Boolean).join(' · ') || '—'))
   idRow.append(img, idTx)
   idCard.append(idRow)
   stack.append(idCard)

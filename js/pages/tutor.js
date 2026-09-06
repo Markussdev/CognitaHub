@@ -22,6 +22,7 @@ import { emblemaUrl, mascoteUrl } from '../lib/trilha-assets.js'
 import { getModuleVisual } from '../data/module-visuals.js'
 import { getTutorRegistrationState } from '../data/tutor-registration.js'
 import { hasActiveTutorCycle } from '../lib/library-access.mjs'
+import { formatSchoolYear } from '../lib/school-year.js'
 
 const gatoMatematicoSrc = '/assets/gatomatematico-sem-fundo.png'
 const logoIconSrc = '/assets/logo-icon-transparent.png'
@@ -3118,7 +3119,7 @@ function renderRecordHeader(cycle, state) {
 
   const meta = el('div', 'rec-meta')
   if (age != null) meta.append(el('span', 'meta-chip', `${age} anos`))
-  if (child.school_year) meta.append(el('span', 'meta-chip', child.school_year))
+  if (child.school_year) meta.append(el('span', 'meta-chip', formatSchoolYear(child.school_year)))
 
   const STATUS_CHIP = {
     cycle_active: { dot: 'ok', text: `Ciclo ativo · Mês ${currentCycleMonth(cycle.start_date, cycle.end_date)}/${monthsBetween(cycle.start_date, cycle.end_date)}` },
@@ -3285,7 +3286,7 @@ function buildProfileView() {
 
   const head = el('div', 'profile-head')
   const headCopy = el('div')
-  headCopy.append(el('p', 'kicker', 'Meu perfil'), el('h1', null, 'Identidade do tutor'))
+  headCopy.append(el('p', 'kicker', 'Meu perfil'), el('h1', null, 'Perfil do tutor'))
   head.append(headCopy)
   if (currentDerived?.state === 'cycle_active' && profileReturn && !profileReturn.startsWith('//') && !/^https?:\/\//i.test(profileReturn)) {
     const backLink = el('a', 'btn btn-ghost btn-sm', 'Voltar para Biblioteca')
@@ -3310,53 +3311,67 @@ function buildProfileView() {
     })
   }
 
-  const photoCopy = el('p')
   const avatarInput = document.createElement('input')
   avatarInput.type = 'file'; avatarInput.accept = 'image/png,image/jpeg,image/webp'; avatarInput.hidden = true
   const avatarBtn = el('button', 'btn btn-ghost btn-sm', 'Alterar foto')
   avatarBtn.type = 'button'
   const avatarError = el('p', 'form-error'); avatarError.hidden = true; avatarError.style.marginTop = '6px'
+  const previewName = el('div', 'nm', name)
   const photoInfo = el('div')
-  photoInfo.append(el('strong', null, 'Foto de perfil'), photoCopy, avatarInput, avatarBtn, avatarError)
+  photoInfo.append(
+    previewName,
+    el('div', 'rl', 'Tutor voluntário · Cognita Hub'),
+    avatarInput,
+    avatarBtn,
+    avatarError
+  )
   const photoRow = el('div', 'profile-photo-row')
   photoRow.append(previewAvatar, photoInfo)
   preview.append(photoRow)
-
-  const previewName = el('div', 'nm', name)
-  preview.append(previewName, el('div', 'rl', 'Tutor voluntário · Cognita Hub'))
 
   const quote = el('div', 'quote')
   const quoteEyebrow = el('div', 'quote-eyebrow')
   quoteEyebrow.innerHTML = `<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
   quoteEyebrow.append(document.createTextNode('Prévia para a família'))
   const quoteText = el('span', 'quote-text', '')
-  quote.append(quoteEyebrow, quoteText)
+  const formationText = el(
+    'p',
+    'profile-preview-formation',
+    session.profile.tutor_formation || 'Formação não informada'
+  )
+  quote.append(quoteEyebrow, quoteText, formationText)
   preview.append(quote)
 
   const chips = el('div', 'profile-chips')
   const statusChip = el('span', 'meta-chip')
-  statusChip.append(el('span', `dot ${isPending ? 'warn' : 'ok'}`), document.createTextNode(isPending ? 'Em análise pela equipe' : 'Validado pela equipe'))
+  statusChip.append(el('span', `dot ${isPending ? 'warn' : 'ok'}`), document.createTextNode(isPending ? 'Em análise' : 'Validado'))
   const visibleChip = el('span', 'meta-chip')
-  visibleChip.append(el('span', 'dot info'), document.createTextNode('Visível após pareamento'))
-  const privateChip = el('span', 'meta-chip', 'Contato privado')
-  chips.append(statusChip, visibleChip, privateChip)
-  preview.append(chips)
+  visibleChip.append(el('span', 'dot info'), document.createTextNode('Após pareamento'))
+  chips.append(statusChip, visibleChip)
+  preview.append(
+    chips,
+    el('p', 'profile-privacy', 'Seus contatos nunca aparecem para a família.')
+  )
   grid.append(preview)
 
   const stack = el('div', 'stack')
 
   const publicCard = el('div', 'card')
-  publicCard.append(simpleHead('Informações públicas para a família'))
+  publicCard.append(simpleHead('Perfil público'))
   const publicBody = el('div', 'card-b')
 
   const nameField = buildProfileField('Nome exibido', { value: name })
   const nameInput = nameField.querySelector('input')
-  publicBody.append(nameField)
 
-  const guide = el('div', 'guide')
-  guide.style.marginTop = '12px'
-  guide.innerHTML = '<strong>A família verá essa apresentação apenas após o pareamento e validação da equipe Cognita.</strong> Não inclua telefone, redes sociais ou contato pessoal direto.'
-  publicBody.append(guide)
+  const formField = buildProfileField('Formação resumida', {
+    value: session.profile.tutor_formation || '',
+    placeholder: 'Ex.: Pedagogia, 2 anos de experiência com alfabetização matemática.',
+  })
+  const formInput = formField.querySelector('input')
+
+  const publicRow = el('div', 'row')
+  publicRow.append(nameField, formField)
+  publicBody.append(publicRow)
 
   const presField = buildProfileField('Como a família verá você', {
     textarea: true,
@@ -3365,21 +3380,30 @@ function buildProfileView() {
   })
   presField.style.marginTop = '12px'
   const presInput = presField.querySelector('textarea')
-  publicBody.append(presField)
-
-  const formField = buildProfileField('Formação / experiência resumida', {
-    value: session.profile.tutor_formation || '',
-    placeholder: 'Ex.: Pedagogia, 2 anos de experiência com alfabetização matemática.',
-  })
-  const formInput = formField.querySelector('input')
-  formField.style.marginTop = '12px'
-  publicBody.append(formField)
+  publicBody.append(
+    presField,
+    el(
+      'p',
+      'profile-field-hint',
+      'Use uma apresentação curta e não inclua telefone ou redes sociais.'
+    )
+  )
 
   publicCard.append(publicBody)
   stack.append(publicCard)
 
-  const internalCard = el('div', 'card')
-  internalCard.append(simpleHead('Informações internas da equipe'))
+  const internalCard = document.createElement('details')
+  internalCard.className = 'card profile-details'
+  const internalSummary = document.createElement('summary')
+  internalSummary.innerHTML = `
+    <span>
+      <strong>Contato e preferências</strong>
+      <small>Uso interno da equipe</small>
+    </span>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6 9l6 6 6-6"/>
+    </svg>
+  `
   const internalBody = el('div', 'card-b')
   const row = el('div', 'row')
   const phoneField = buildProfileField('Telefone de contato', {
@@ -3411,7 +3435,7 @@ function buildProfileView() {
   const prefInput = prefField.querySelector('textarea')
   prefField.style.marginTop = '12px'
   internalBody.append(prefField)
-  internalCard.append(internalBody)
+  internalCard.append(internalSummary, internalBody)
   stack.append(internalCard)
 
   const okBox = el('p', 'form-ok'); okBox.hidden = true
@@ -3424,13 +3448,14 @@ function buildProfileView() {
   grid.append(stack)
   panel.append(grid)
 
-  const updateQuote = () => {
-    const text = presInput.value.trim()
-    quoteText.textContent = text ? `"${text}"` : 'Escreva como você se apresenta — a prévia aparece aqui.'
-    quoteText.classList.toggle('filled', !!text)
+  const updatePreview = () => {
+    quoteText.textContent = presInput.value.trim() || 'Sua apresentação aparecerá aqui.'
+    formationText.textContent = formInput.value.trim() || 'Formação não informada'
+    quoteText.classList.toggle('filled', !!presInput.value.trim())
   }
-  presInput.addEventListener('input', updateQuote)
-  updateQuote()
+  presInput.addEventListener('input', updatePreview)
+  formInput.addEventListener('input', updatePreview)
+  updatePreview()
 
   nameInput.addEventListener('input', () => {
     const v = nameInput.value.trim() || name

@@ -3,6 +3,7 @@ import { setupFocusMode, ageFrom, el, fact, factList, asText, initials } from '.
 import { getGuardianChildren } from '../data/guardian.js'
 import { getTutorCycles } from '../data/tutor.js'
 import { supabase } from '../lib/supabase.js'
+import { formatSchoolYear } from '../lib/school-year.js'
 
 const mascotHeroSrc = '/assets/mascot-hero-wave.png'
 
@@ -186,7 +187,7 @@ function render({ child, cycle, tutorName, lastSession }) {
   const factsRow = el('section', 'profile-os-facts')
   factsRow.append(
     miniFact('Idade', age != null ? `${age} anos` : '—'),
-    miniFact('Ano escolar', asText(child.school_year) ?? '—'),
+    miniFact('Ano escolar', child.school_year ? formatSchoolYear(child.school_year) : '—'),
     miniFact('Foco atual', asText(learning?.math_difficulties) ?? asText(child.main_difficulties) ?? '—'),
     miniFact('Tempo de atenção', asText(learning?.attention_span) ?? '—')
   )

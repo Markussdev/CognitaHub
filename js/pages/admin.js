@@ -22,6 +22,7 @@ import {
 } from '../data/matching.js'
 import { getTrailTemplateWithModules } from '../data/trilha-formal.js'
 import { formatTutorFormation } from '../lib/tutor-application-format.mjs'
+import { formatSchoolYear } from '../lib/school-year.js'
 
 const logoIconSrc = '/assets/logo-icon-transparent.png'
 
@@ -337,7 +338,7 @@ function renderChildRow(child) {
 
   // Perfil resumido (o pedagógico completo vive na triagem — aqui é consulta)
   row.append(admDetails('Perfil resumido', factList([
-    fact('Ano escolar', child.school_year),
+    fact('Ano escolar', child.school_year ? formatSchoolYear(child.school_year) : null),
     fact('Principais dificuldades', child.main_difficulties),
     fact('Responsável', guardian.name),
     fact('Contato', [guardian.email, guardian.phone].filter(Boolean).join(' · ')),
@@ -497,7 +498,7 @@ function renderMatchCard(child) {
   row.append(main)
 
   row.append(admDetails('Perfil pedagógico', factList([
-    fact('Ano escolar', child.school_year),
+    fact('Ano escolar', child.school_year ? formatSchoolYear(child.school_year) : null),
     fact('Dificuldades em matemática', learning?.math_difficulties),
     fact('Formatos preferidos', learning?.preferred_formats),
     fact('Tempo de atenção', learning?.attention_span),
