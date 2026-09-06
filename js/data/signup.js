@@ -26,9 +26,7 @@ function mapAttentionSpan(value) {
 }
 
 // Camada de gravação dos cadastros no Supabase.
-// Usada em dois momentos: logo após o signUp (quando já existe sessão)
-// ou no primeiro login (quando a confirmação de email está ligada e o
-// cadastro ficou pendente — ver js/lib/pending-signup.js).
+// A candidatura do tutor só é gravada na página autenticada de candidatura.
 
 export async function submitTutorApplication(tutorId, application) {
   const payload = {
@@ -42,9 +40,8 @@ export async function submitTutorApplication(tutorId, application) {
     status: 'pending',
   }
 
-  // Se a candidatura já existe (ex.: retry no primeiro login após
-  // confirmação de email), não reinsere — evita o 409 por chave
-  // duplicada que travava o fluxo em loop.
+  // Consulta e gravação são separadas para preservar decisões já tomadas.
+  // A policy de UPDATE também restringe a edição às candidaturas pendentes.
   const { data: existing, error: selectError } = await supabase
     .from('tutor_applications')
     .select('id, status')
@@ -56,13 +53,27 @@ export async function submitTutorApplication(tutorId, application) {
   }
 
   if (existing) {
-    // Candidatura pendente é o caso esperado do retry: nada a fazer.
     if (existing.status === 'pending') {
-      return {}
+      const { tutor_id: _tutorId, status: _status, ...editableFields } = payload
+      const { data, error } = await supabase
+        .from('tutor_applications')
+        .update(editableFields)
+        .eq('id', existing.id)
+        .eq('tutor_id', tutorId)
+        .eq('status', 'pending')
+        .select('id')
+
+      if (error) return { error, step: 'tutor_applications_update' }
+      if (!data?.length) {
+        return {
+          error: new Error('A candidatura pendente não pôde ser atualizada.'),
+          step: 'tutor_applications_update',
+        }
+      }
+      return { updated: true }
     }
 
-    // Ja analisada (approved/rejected): nao sobrescreve a decisao da equipe
-    // e nao mantem pending-signup em loop no login.
+    // Já analisada (approved/rejected): nunca sobrescreve a decisão da equipe.
     return { alreadyFinalized: true, step: 'tutor_applications_existing' }
   }
 

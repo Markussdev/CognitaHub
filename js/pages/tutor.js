@@ -20,12 +20,17 @@ import { closeRailDrawer, wireRailToggle } from '../lib/rail.js'
 import { DIGITAL_PRESETS } from '../data/digital-presets.js'
 import { emblemaUrl, mascoteUrl } from '../lib/trilha-assets.js'
 import { getModuleVisual } from '../data/module-visuals.js'
+import { getTutorRegistrationState } from '../data/tutor-registration.js'
 
 const gatoMatematicoSrc = '/assets/gatomatematico-sem-fundo.png'
 const logoIconSrc = '/assets/logo-icon-transparent.png'
 
 const session = await requireRole('tutor')
 const stateBox = document.querySelector('[data-tutor-state]')
+const tutorRegistration = session ? await getTutorRegistrationState(session.user.id) : null
+if (session && !tutorRegistration.error && !tutorRegistration.complete) {
+  window.location.replace('/pages/candidatura-tutor.html')
+}
 const profileReturn = new URLSearchParams(location.search).get('return') || ''
 
 // Detecta ?activity=<uuid> e pré-busca a atividade (vem da Biblioteca via "Usar no registro")
@@ -459,7 +464,7 @@ function wireTabs() {
 // ── Estados sem record (sem criança vinculada ainda) ──────────────────────────
 
 function buildStatusCard({ kicker, title, desc, icon, tone = 'info' }) {
-  const card = el('div', 'card')
+  const card = el('div', 'card status-state-card')
   const inner = el('div', 'status-card')
   const ico = el('div', `status-ico ${tone}`)
   ico.innerHTML = icon
@@ -485,7 +490,7 @@ function renderPending() {
   const steps = el('div', 'steps')
   steps.style.marginTop = '14px'
   ;[
-    { n: '✓', label: 'Cadastro enviado', desc: 'Suas informações foram recebidas.', cls: 'done' },
+    { n: '✓', label: 'Candidatura enviada', desc: 'Suas informações e seus aceites foram recebidos.', cls: 'done' },
     { n: '2', label: 'Revisão pela equipe', desc: 'A equipe analisa formação e disponibilidade.', cls: 'now' },
     { n: '3', label: 'Orientação inicial', desc: 'Encontro introdutório com a equipe Cognita.', cls: '' },
     { n: '4', label: 'Pareamento com criança', desc: 'Você recebe o perfil pedagógico e começa o acompanhamento.', cls: '' },
@@ -540,6 +545,17 @@ function renderAvailable() {
   return card
 }
 
+function renderRejected() {
+  const { card, body } = buildStatusCard({
+    kicker: 'Painel do tutor', tone: 'info',
+    title: 'Candidatura recusada',
+    desc: 'A equipe Cognita concluiu a análise e não foi possível aprovar sua candidatura neste momento.',
+    icon: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 8l8 8M16 8l-8 8"/></svg>`,
+  })
+  body.append(el('p', 'card-copy', 'Se precisar entender a decisão ou os próximos passos, fale com a equipe Cognita.'))
+  return card
+}
+
 function renderNoRecordError(retry) {
   const card = el('div', 'card')
   const inner = el('div', 'error-card')
@@ -559,6 +575,7 @@ function renderNoRecord(state, retry) {
   const wrap = el('div', 'panel')
   if (state === 'pending') wrap.append(renderPending())
   else if (state === 'orientation_pending') wrap.append(renderOrientationPending())
+  else if (state === 'application_rejected') wrap.append(renderRejected())
   else if (state === 'error') wrap.append(renderNoRecordError(retry))
   else wrap.append(renderAvailable())
   return wrap
@@ -3209,7 +3226,8 @@ function renderRecord(state, cycle, initialTab) {
 
 // ── Máquina de estados ────────────────────────────────────────────────────────
 
-function deriveTutorState(profileStatus, cycles) {
+function deriveTutorState(profileStatus, cycles, applicationState) {
+  if (applicationState === 'rejected') return { state: 'application_rejected' }
   if (REVIEW_STATUSES.includes(profileStatus)) return { state: 'pending' }
   if (profileStatus === 'orientation_pending') return { state: 'orientation_pending' } // TODO(wiring:profiles)
 
@@ -3542,7 +3560,7 @@ async function bootstrap() {
     return
   }
 
-  currentDerived = deriveTutorState(session.profile.status, cycles)
+  currentDerived = deriveTutorState(session.profile.status, cycles, tutorRegistration.state)
   const hasRecord = RECORD_STATES.includes(currentDerived.state)
   renderRail(hasRecord, hasRecord ? firstName(currentDerived.cycle.children?.name) : '')
   const _urlParams = new URLSearchParams(location.search)
@@ -3569,7 +3587,10 @@ async function bootstrap() {
   await renderCurrentView()
 }
 
-if (session && stateBox) {
+if (session && stateBox && tutorRegistration?.error) {
+  console.error(`Erro ao verificar candidatura do tutor (${tutorRegistration.step}):`, tutorRegistration.error)
+  stateBox.replaceChildren(renderNoRecordError(() => window.location.reload()))
+} else if (session && stateBox && tutorRegistration?.complete) {
   fillIdentity()
   await bootstrap()
 }

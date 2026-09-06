@@ -1,7 +1,6 @@
 import { requireRole, signOut } from '../lib/auth.js'
 import { wireRailToggle } from '../lib/rail.js'
 import {
-  getPendingTutors,
   getChildrenWaitingReview,
   approveTutor,
   rejectTutor,
@@ -170,10 +169,12 @@ const CHILD_BADGE = {
   completed: ['badge-ok', 'Concluído'],
   rejected: ['badge-bad', 'Recusado'],
 }
-const TUTOR_BADGE = {
-  pending: ['badge-warn', 'A validar'],
-  active: ['badge-ok', 'Ativo'],
-  rejected: ['badge-bad', 'Recusado'],
+const TUTOR_REGISTRATION_BADGE = {
+  missing: ['badge-mid', 'Cadastro incompleto'],
+  incomplete: ['badge-mid', 'Cadastro incompleto'],
+  pending: ['badge-warn', 'Em análise'],
+  approved: ['badge-ok', 'Aprovada'],
+  rejected: ['badge-bad', 'Recusada'],
 }
 const CYCLE_BADGE = {
   planned: ['badge-info', 'Planejado'],
@@ -368,6 +369,7 @@ function renderChildRow(child) {
 
 function renderTutorRow(tutor) {
   const app = tutor.application
+  const registration = tutor.registration ?? { state: 'incomplete', canReview: false }
   const row = el('div', 'adm-row')
   const main = el('div', 'adm-row-main')
   main.append(el('span', 'adm-avatar', initialsOf(tutor.name)))
@@ -381,11 +383,12 @@ function renderTutorRow(tutor) {
   main.append(tx)
 
   const side = el('div', 'adm-row-side')
-  side.append(badgeOf(TUTOR_BADGE, tutor.status))
+  side.append(badgeOf(TUTOR_REGISTRATION_BADGE, registration.state))
   main.append(side)
   row.append(main)
 
   row.append(admDetails('Candidatura e contato', factList([
+    fact('Nascimento', app?.birth_date),
     fact('Formação', app?.formation),
     fact('Experiência', app?.experience),
     fact('Motivação', app?.motivation),
@@ -394,11 +397,19 @@ function renderTutorRow(tutor) {
     fact('Telefone', tutor.phone),
   ])))
 
+  if (registration.state === 'missing' || registration.state === 'incomplete') {
+    const missing = [
+      ...(registration.missingFields ?? []),
+      ...(registration.missingLegalDocumentKeys?.length ? ['aceites obrigatórios'] : []),
+    ]
+    row.append(el('p', 'card-copy', `Cadastro incompleto${missing.length ? `: falta ${missing.join(', ')}.` : '.'}`))
+  }
+
   const errorBox = el('p', 'card-error')
   errorBox.hidden = true
   row.append(errorBox)
 
-  if (app?.status === 'pending') {
+  if (registration.canReview) {
     const actions = el('div', 'row-actions')
     const approve = el('button', 'btn btn-primary', 'Aprovar tutor')
     approve.type = 'button'
@@ -798,10 +809,9 @@ function switchView(view) {
 
 async function loadAll() {
   const [
-    pendingTutors, waitingChildren, matchChildren, availableTutors,
+    waitingChildren, matchChildren, availableTutors,
     allChildren, allTutors, allCycles, templates, templateUsage,
   ] = await Promise.all([
-    getPendingTutors(),
     getChildrenWaitingReview(),
     getChildrenWaitingMatch(),
     getAvailableTutors(),
@@ -816,7 +826,9 @@ async function loadAll() {
   // lista o que falhou em "Precisa da sua atenção" (recarregar resolve o
   // transitório; persistindo, é policy).
   D = {
-    pendingTutors: pendingTutors.error ? [] : (pendingTutors.data ?? []),
+    pendingTutors: allTutors.error
+      ? []
+      : (allTutors.data ?? []).filter((tutor) => tutor.registration?.canReview),
     waitingChildren: waitingChildren.error ? [] : (waitingChildren.data ?? []),
     matchChildren: matchChildren.error ? [] : (matchChildren.data ?? []),
     availableTutors: availableTutors.error ? [] : (availableTutors.data ?? []),
@@ -826,7 +838,6 @@ async function loadAll() {
     templates: templates.error ? [] : (templates.data ?? []),
     templateUsage: templateUsage.error ? new Map() : (templateUsage.data ?? new Map()),
     errors: [
-      pendingTutors.error && 'Falha ao carregar candidaturas de tutor.',
       waitingChildren.error && 'Falha ao carregar cadastros em análise.',
       matchChildren.error && 'Falha ao carregar a fila de pareamento.',
       availableTutors.error && 'Falha ao carregar tutores aprovados.',

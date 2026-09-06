@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js'
+import { buildEmailConfirmationRedirect } from './auth-routes.mjs'
 
 const HOME_BY_ROLE = {
   guardian: '/pages/responsavel.html',
@@ -6,7 +7,9 @@ const HOME_BY_ROLE = {
   admin: '/pages/admin.html',
 }
 
-const BLOCKED_STATUSES = ['rejected', 'inactive']
+// A recusa do tutor pertence à candidatura e continua visível no painel.
+// `inactive` é o único estado do perfil que bloqueia autenticação.
+const BLOCKED_STATUSES = ['inactive']
 
 export function isBlockedStatus(status) {
   return BLOCKED_STATUSES.includes(status)
@@ -21,7 +24,7 @@ export async function signUp({ email, password, name, phone, role }) {
   // pro que estiver configurado como Site URL no painel) em vez de cair
   // direto na tela de login — precisa que esse endereço esteja na lista de
   // Redirect URLs do projeto (Authentication → URL Configuration).
-  const emailRedirectTo = `${window.location.origin}/pages/login.html`
+  const emailRedirectTo = buildEmailConfirmationRedirect(window.location.origin)
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -97,7 +100,7 @@ export async function resendConfirmationEmail(email) {
     type: 'signup',
     email,
     options: {
-      emailRedirectTo: `${window.location.origin}/pages/login.html`,
+      emailRedirectTo: buildEmailConfirmationRedirect(window.location.origin),
     },
   })
 }

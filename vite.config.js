@@ -15,6 +15,7 @@ module.exports = {
         termosDeUso: resolve(__dirname, 'pages/termos-de-uso.html'),
         politicaDePrivacidade: resolve(__dirname, 'pages/politica-de-privacidade.html'),
         cadastroTutor: resolve(__dirname, 'pages/cadastro-tutor.html'),
+        candidaturaTutor: resolve(__dirname, 'pages/candidatura-tutor.html'),
         cadastroResponsavel: resolve(__dirname, 'pages/cadastro-responsavel.html'),
 
         admin: resolve(__dirname, 'pages/admin.html'),

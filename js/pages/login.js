@@ -1,16 +1,19 @@
 import { supabase } from '../lib/supabase.js'
 import { isBlockedStatus, signIn, redirectByRole, resendConfirmationEmail } from '../lib/auth.js'
 import { completePendingSignup } from '../lib/pending-signup.js'
+import { getTutorRegistrationState } from '../data/tutor-registration.js'
 
 const form = document.querySelector('[data-login-form]')
 const emailInput = document.querySelector('[data-login-email]')
 const passwordInput = document.querySelector('[data-login-password]')
 const errorBox = document.querySelector('[data-login-error]')
 const resendBtn = document.querySelector('[data-resend-confirmation]')
+const retryBtn = document.querySelector('[data-login-retry]')
 
 let pendingConfirmEmail = null
+let pendingRetry = null
 
-function showLoginMessage(message, type = 'error', { resendEmail = null } = {}) {
+function showLoginMessage(message, type = 'error', { resendEmail = null, retry = null } = {}) {
   if (!errorBox) return
 
   errorBox.dataset.type = type
@@ -25,10 +28,16 @@ function showLoginMessage(message, type = 'error', { resendEmail = null } = {}) 
   }
 
   pendingConfirmEmail = resendEmail
+  pendingRetry = retry
   if (resendBtn) {
     resendBtn.hidden = !resendEmail
     resendBtn.disabled = false
     resendBtn.textContent = 'Reenviar e-mail de confirmação'
+  }
+  if (retryBtn) {
+    retryBtn.hidden = !retry
+    retryBtn.disabled = false
+    retryBtn.textContent = 'Tentar novamente'
   }
 
   errorBox.classList.add('is-visible')
@@ -49,7 +58,9 @@ function clearLoginMessage() {
   }
 
   pendingConfirmEmail = null
+  pendingRetry = null
   if (resendBtn) resendBtn.hidden = true
+  if (retryBtn) retryBtn.hidden = true
 }
 
 if (resendBtn) {
@@ -61,6 +72,17 @@ if (resendBtn) {
     resendBtn.textContent = error ? 'Não foi possível reenviar' : 'E-mail reenviado'
     if (!error) setTimeout(() => { resendBtn.disabled = false; resendBtn.textContent = 'Reenviar e-mail de confirmação' }, 4000)
     else resendBtn.disabled = false
+  })
+}
+
+if (retryBtn) {
+  retryBtn.addEventListener('click', async () => {
+    if (!pendingRetry) return
+    retryBtn.disabled = true
+    retryBtn.textContent = 'Verificando…'
+    await pendingRetry()
+    retryBtn.disabled = false
+    retryBtn.textContent = 'Tentar novamente'
   })
 }
 
@@ -123,6 +145,44 @@ async function getProfile(userId) {
   return data
 }
 
+async function routeAuthenticatedUser(user, profile) {
+  const pendingResult = await completePendingSignup(user)
+  if (pendingResult.error) {
+    showLoginMessage(
+      'Sua conta foi acessada, mas não foi possível concluir uma gravação pendente. Nenhum dado foi interpretado como ausente.',
+      'error',
+      { retry: () => routeAuthenticatedUser(user, profile) }
+    )
+    return
+  }
+
+  if (isBlockedStatus(profile.status)) {
+    await supabase.auth.signOut()
+    showLoginMessage(getStatusMessage(profile.status), 'warn')
+    return
+  }
+
+  if (profile.role === 'tutor') {
+    const registration = await getTutorRegistrationState(user.id)
+    if (registration.error) {
+      console.error(`Erro ao verificar cadastro do tutor (${registration.step}):`, registration.error)
+      showLoginMessage(
+        'Não foi possível consultar sua candidatura agora. Tente novamente; sua conta continua conectada.',
+        'error',
+        { retry: () => routeAuthenticatedUser(user, profile) }
+      )
+      return
+    }
+
+    window.location.href = registration.complete
+      ? '/pages/tutor.html'
+      : '/pages/candidatura-tutor.html'
+    return
+  }
+
+  redirectByRole(profile.role)
+}
+
 async function redirectExistingSession() {
   const {
     data: { user },
@@ -137,16 +197,6 @@ async function redirectExistingSession() {
   // fallback... que é esta própria página — loop infinito de reload.
   if (user.is_anonymous) return
 
-  const pendingResult = await completePendingSignup(user)
-
-  if (pendingResult.error) {
-    await supabase.auth.signOut()
-    showLoginMessage(
-      'Sua conta foi acessada, mas nao foi possivel concluir o cadastro. Tente novamente ou fale com a equipe Cognita.'
-    )
-    return
-  }
-
   const profile = await getProfile(user.id)
 
   if (!profile) {
@@ -154,13 +204,7 @@ async function redirectExistingSession() {
     return
   }
 
-  if (isBlockedStatus(profile.status)) {
-    await supabase.auth.signOut()
-    showLoginMessage(getStatusMessage(profile.status), 'warn')
-    return
-  }
-
-  redirectByRole(profile.role)
+  await routeAuthenticatedUser(user, profile)
 }
 
 await redirectExistingSession()
@@ -190,22 +234,6 @@ if (form) {
       return
     }
 
-    const pendingResult = await completePendingSignup(user)
-
-    if (pendingResult.error) {
-      await supabase.auth.signOut()
-      showLoginMessage(
-        'Sua conta foi acessada, mas nao foi possivel concluir o cadastro. Tente novamente ou fale com a equipe Cognita.'
-      )
-      return
-    }
-
-    if (isBlockedStatus(profile.status)) {
-      await supabase.auth.signOut()
-      showLoginMessage(getStatusMessage(profile.status), 'warn')
-      return
-    }
-
-    redirectByRole(profile.role)
+    await routeAuthenticatedUser(user, profile)
   })
 }

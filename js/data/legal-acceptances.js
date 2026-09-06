@@ -52,20 +52,54 @@ export async function recordLegalAcceptances({ userId, childId = null, documentK
     return { error: new Error(`Sem versão ativa cadastrada para: ${missing.join(', ')}`) }
   }
 
-  const rows = documents.map((doc) => ({
-    user_id: userId,
-    child_id: childId,
-    legal_document_id: doc.id,
-    source,
-    accepted_at: new Date().toISOString(),
-  }))
+  let existingQuery = supabase
+    .from('legal_acceptances')
+    .select('legal_document_id')
+    .eq('user_id', userId)
+    .in('legal_document_id', documents.map((doc) => doc.id))
+    .is('revoked_at', null)
+  existingQuery = childId
+    ? existingQuery.eq('child_id', childId)
+    : existingQuery.is('child_id', null)
 
-  const { error } = await supabase.from('legal_acceptances').insert(rows)
+  const { data: existing, error: existingError } = await existingQuery
+  if (existingError) return { error: existingError }
 
-  // Reenvio (pending-signup tentando de novo, ex.) batendo em linhas que já
-  // existem — unique violation não é falha real, é o mesmo aceite de novo.
-  if (error?.code === '23505') return {}
-  if (error) return { error }
+  const existingIds = new Set((existing ?? []).map((row) => row.legal_document_id))
+  const missingDocuments = documents.filter((doc) => !existingIds.has(doc.id))
 
-  return {}
+  // Um insert por documento torna o retry parcial seguro: se o primeiro
+  // aceite salvar e o segundo falhar, a próxima tentativa insere só o que
+  // falta. Uma colisão por corrida também é tratada como já concluída.
+  for (const doc of missingDocuments) {
+    const { error } = await supabase.from('legal_acceptances').insert({
+      user_id: userId,
+      child_id: childId,
+      legal_document_id: doc.id,
+      source,
+      accepted_at: new Date().toISOString(),
+    })
+    if (error && error.code !== '23505') return { error }
+  }
+
+  let verificationQuery = supabase
+    .from('legal_acceptances')
+    .select('legal_document_id')
+    .eq('user_id', userId)
+    .in('legal_document_id', documents.map((doc) => doc.id))
+    .is('revoked_at', null)
+  verificationQuery = childId
+    ? verificationQuery.eq('child_id', childId)
+    : verificationQuery.is('child_id', null)
+
+  const { data: verified, error: verificationError } = await verificationQuery
+  if (verificationError) return { error: verificationError }
+
+  const verifiedIds = new Set((verified ?? []).map((row) => row.legal_document_id))
+  const notRecorded = documents.filter((doc) => !verifiedIds.has(doc.id))
+  if (notRecorded.length) {
+    return { error: new Error('Nem todos os aceites foram registrados. Tente novamente.') }
+  }
+
+  return { recorded: missingDocuments.length }
 }

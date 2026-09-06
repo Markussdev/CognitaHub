@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Completar candidatura | Cognita Hub</title>
+  <link rel="icon" type="image/png" href="/assets/logo-icon-transparent.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Baloo+2:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/tutor-onboarding.css" />
+</head>
+<body>
+  <header class="auth-hd">
+    <div class="wrap row">
+      <a class="brand" href="../index.html" aria-label="Cognita Hub — página inicial">
+        <span class="brand-mark"><img src="/assets/logo-icon-transparent.png" alt="" /></span>
+        <span class="brand-copy"><strong>Cognita Hub</strong><small>Candidatura de tutor</small></span>
+      </a>
+      <div class="auth-hd-right">
+        <span class="back-link-text" data-account-name></span>
+        <button type="button" class="btn btn--outline btn--sm" data-logout>Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="auth-main">
+    <section class="wizard-card loading-card" data-page-loading aria-live="polite">Verificando seu cadastro…</section>
+
+    <section class="wizard-card" data-page-error hidden>
+      <div class="success-body">
+        <h1 class="success-title">Não foi possível carregar a candidatura</h1>
+        <p class="success-lead" data-page-error-copy>Seus dados não foram considerados ausentes. Tente consultar o banco novamente.</p>
+        <button type="button" class="btn btn--primary" data-page-retry>Tentar novamente</button>
+      </div>
+    </section>
+
+    <div class="stepper-wrap" data-candidatura-stepper hidden>
+      <span class="stepper-announce" data-step-announce role="status" aria-live="polite"></span>
+      <p class="step-counter" data-step-counter aria-hidden="true">Etapa 1 de 2</p>
+      <ol class="stepper" aria-label="Progresso da candidatura de tutor">
+        <li class="stepper-item is-active" data-step-item>
+          <span class="stepper-dot" aria-hidden="true">1</span>
+          <span class="stepper-label">Sobre você</span>
+        </li>
+        <li class="stepper-item" data-step-item>
+          <span class="stepper-dot" aria-hidden="true">2</span>
+          <span class="stepper-label">Termos de atuação</span>
+        </li>
+      </ol>
+    </div>
+
+    <form class="wizard-card" data-tutor-application-form hidden novalidate>
+      <section class="step-panel is-active" data-step-panel aria-labelledby="application-title">
+        <div class="step-head">
+          <p class="step-eyebrow">Etapa 1</p>
+          <h1 class="step-title" id="application-title">Complete sua candidatura</h1>
+          <p class="step-desc">Sua conta já está autenticada. Agora conte um pouco sobre seu perfil e sua disponibilidade.</p>
+        </div>
+
+        <div class="step-body">
+          <div class="field">
+            <label for="tt-nasc">Data de nascimento</label>
+            <input type="date" id="tt-nasc" name="nasc" required aria-required="true" aria-describedby="hint-tt-nasc age-alert-tutor" />
+            <span class="field-hint" id="hint-tt-nasc">Tutores devem ter 18 anos ou mais.</span>
+            <div class="field-alert field-alert--warn" id="age-alert-tutor" role="alert" aria-live="polite">
+              <svg class="field-alert-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="2" /><line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="2" /><circle cx="12" cy="17" r="1.2" fill="currentColor" /></svg>
+              <div><span>É preciso ter 18 anos ou mais para ser tutor voluntário.</span><p data-age-detail></p></div>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="ap-form">Formação ou área</label>
+              <select id="ap-form" name="formacao" required aria-required="true">
+                <option value="" disabled selected>Selecione</option>
+                <option value="em">Ensino Médio completo</option>
+                <option value="est-lic">Estudante de licenciatura</option>
+                <option value="lic-mat">Licenciatura em Matemática</option>
+                <option value="ped">Pedagogia</option>
+                <option value="mat">Matemática</option>
+                <option value="outra-grad">Outra graduação</option>
+                <option value="outra">Outra formação</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Situação</label>
+              <div class="radio-group" role="radiogroup" aria-label="Situação da formação" style="margin-top:0">
+                <label class="radio-item"><input type="radio" name="situacao" value="cursando" /> Cursando</label>
+                <label class="radio-item"><input type="radio" name="situacao" value="concluido" /> Concluído</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="ap-exp">Experiência com ensino <span style="font-weight:400;color:var(--ink-soft)">(opcional)</span></label>
+            <span class="field-hint" id="hint-ap-exp">Pode ser informal — reforço escolar, monitoria ou trabalho voluntário. Não é eliminatório.</span>
+            <textarea id="ap-exp" name="experiencia" aria-describedby="hint-ap-exp" placeholder="Conte um pouco sobre experiências anteriores…"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="ap-motiv">Por que você quer ser tutor voluntário?</label>
+            <textarea id="ap-motiv" name="motivacao" required aria-required="true" placeholder="Fique à vontade para escrever com suas próprias palavras…"></textarea>
+          </div>
+
+          <div class="field">
+            <label>Você já teve experiência com crianças?</label>
+            <div class="radio-group" role="radiogroup" aria-label="Experiência com crianças">
+              <label class="radio-item"><input type="radio" name="exp_criancas" value="ensino" /> Sim, em ensino ou monitoria</label>
+              <label class="radio-item"><input type="radio" name="exp_criancas" value="cuidado" /> Sim, em cuidado ou convivência</label>
+              <label class="radio-item"><input type="radio" name="exp_criancas" value="pouca" /> Pouca experiência</label>
+              <label class="radio-item"><input type="radio" name="exp_criancas" value="nao" /> Não ainda</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Você já teve contato com crianças com TEA?</label>
+            <span class="field-hint" id="hint-exp-tea">Não é preciso ser especialista em TEA. Essa informação ajuda a equipe a orientar sua participação.</span>
+            <div class="radio-group" role="radiogroup" aria-label="Contato com crianças com TEA" aria-describedby="hint-exp-tea">
+              <label class="radio-item"><input type="radio" name="exp_tea" value="sim" /> Sim</label>
+              <label class="radio-item"><input type="radio" name="exp_tea" value="pouco" /> Pouco</label>
+              <label class="radio-item"><input type="radio" name="exp_tea" value="nao" /> Não</label>
+              <label class="radio-item"><input type="radio" name="exp_tea" value="nao_informar" /> Prefiro não informar</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Disponibilidade semanal</label>
+            <div class="chip-group" id="ap-dispon" role="group" aria-label="Disponibilidade semanal">
+              <button type="button" class="chip" aria-pressed="false">1 hora/semana</button>
+              <button type="button" class="chip" aria-pressed="false">2 horas/semana</button>
+              <button type="button" class="chip" aria-pressed="false">3+ horas/semana</button>
+            </div>
+            <span class="field-error" id="err-ap-dispon">Selecione ao menos uma opção.</span>
+          </div>
+
+          <div class="field">
+            <label>Melhores períodos</label>
+            <div class="chip-group" id="ap-periodos" role="group" aria-label="Melhores períodos">
+              <button type="button" class="chip" aria-pressed="false">Manhã</button>
+              <button type="button" class="chip" aria-pressed="false">Tarde</button>
+              <button type="button" class="chip" aria-pressed="false">Noite</button>
+              <button type="button" class="chip" aria-pressed="false">Fins de semana</button>
+            </div>
+            <span class="field-error" id="err-ap-periodos">Selecione ao menos um período.</span>
+          </div>
+
+          <div class="field">
+            <label>Condição para participar das sessões</label>
+            <span class="field-hint" id="hint-participacao">As sessões são online. Isso nos ajuda a entender se há algo a combinar com a equipe.</span>
+            <div class="radio-group" role="radiogroup" aria-label="Condição para participar" aria-describedby="hint-participacao">
+              <label class="radio-item"><input type="radio" name="participacao" value="online" /> Consigo participar online pela plataforma</label>
+              <label class="radio-item"><input type="radio" name="participacao" value="combinar" /> Preciso combinar disponibilidade com a equipe</label>
+              <label class="radio-item"><input type="radio" name="participacao" value="duvidas" /> Tenho dúvidas sobre como funcionam as sessões</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Como você se sente seguindo um roteiro pronto?</label>
+            <span class="field-hint" id="hint-roteiro">Essa resposta não bloqueia a candidatura — é um sinal para a equipe orientar melhor sua participação.</span>
+            <div class="radio-group" role="radiogroup" aria-label="Conforto com roteiro" aria-describedby="hint-roteiro">
+              <label class="radio-item"><input type="radio" name="roteiro" value="ok" /> Consigo seguir um roteiro sem dificuldade</label>
+              <label class="radio-item"><input type="radio" name="roteiro" value="adaptar" /> Consigo seguir, mas gosto de adaptar com orientação</label>
+              <label class="radio-item"><input type="radio" name="roteiro" value="dificuldade" /> Tenho dificuldade em seguir roteiro pronto</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="ap-li">LinkedIn <span style="font-weight:400;color:var(--ink-soft)">(opcional)</span></label>
+            <input type="url" id="ap-li" name="linkedin" inputmode="url" placeholder="https://linkedin.com/in/seuperfil" />
+          </div>
+        </div>
+
+        <div class="step-nav step-nav--first">
+          <button type="button" class="btn btn--primary" data-next>Continuar</button>
+        </div>
+      </section>
+
+      <section class="step-panel" data-step-panel aria-labelledby="terms-title">
+        <div class="step-head">
+          <p class="step-eyebrow">Etapa 2</p>
+          <h2 class="step-title" id="terms-title">Termos de atuação</h2>
+          <p class="step-desc">Leia os compromissos do tutor voluntário antes de enviar a candidatura.</p>
+        </div>
+
+        <div class="step-body">
+          <ol class="terms-list" aria-label="Compromissos do tutor voluntário">
+            <li class="terms-list-item"><span class="terms-list-n">1</span><div><strong>Respeitar a estrutura do programa</strong><p>As sessões seguem um plano definido pela equipe Cognita.</p></div></li>
+            <li class="terms-list-item"><span class="terms-list-n">2</span><div><strong>Manter a confidencialidade</strong><p>As informações da criança e da família não podem ser compartilhadas fora da plataforma.</p></div></li>
+            <li class="terms-list-item"><span class="terms-list-n">3</span><div><strong>Atuar nos limites do voluntariado educacional</strong><p>O tutor não oferece orientação clínica, terapêutica ou médica.</p></div></li>
+            <li class="terms-list-item"><span class="terms-list-n">4</span><div><strong>Comunicar dificuldades</strong><p>Situações desconhecidas devem ser comunicadas à equipe antes de qualquer decisão.</p></div></li>
+            <li class="terms-list-item"><span class="terms-list-n">5</span><div><strong>Manter contato mediado</strong><p>Todo contato com a família é mediado pela equipe Cognita.</p></div></li>
+            <li class="terms-list-item"><span class="terms-list-n">6</span><div><strong>Registrar as sessões com honestidade</strong><p>Os registros devem refletir o que aconteceu de fato.</p></div></li>
+            <li class="terms-list-item"><span class="terms-list-n">7</span><div><strong>Respeitar a criança</strong><p>Linguagem simples, paciência e respeito ao ritmo da criança são inegociáveis.</p></div></li>
+          </ol>
+          <p class="field-hint" style="margin-bottom:18px">Versão 1.0 · Junho de 2026</p>
+
+          <div class="consent-list" role="group" aria-label="Aceites da candidatura">
+            <div class="consent-item">
+              <input type="checkbox" id="tt-termos" name="tt_termos" required aria-required="true" />
+              <label for="tt-termos"><strong>Li e aceito os Termos de Atuação</strong><p>Comprometo-me a atuar dentro das diretrizes do programa Cognita Hub.</p></label>
+            </div>
+            <div class="consent-item">
+              <input type="checkbox" id="tt-legais" name="tt_legais" required aria-required="true" />
+              <label for="tt-legais"><strong>Termos de Uso e Política de Privacidade</strong><p>Confirmo os aceites aplicáveis à minha conta. Leia os <a href="termos-de-uso.html" target="_blank" rel="noopener">Termos de Uso</a> e a <a href="politica-de-privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a>.</p></label>
+            </div>
+          </div>
+          <span class="field-error" data-terms-error style="margin-top:8px">Confirme os aceites obrigatórios para enviar.</span>
+        </div>
+
+        <p class="form-message" data-form-message role="alert"></p>
+        <div class="step-nav">
+          <button type="button" class="btn btn--outline" data-prev>Voltar</button>
+          <button type="submit" class="btn btn--primary" data-submit-application>Enviar candidatura</button>
+        </div>
+      </section>
+    </form>
+  </main>
+
+  <script type="module" src="../js/pages/candidatura-tutor.js"></script>
+</body>
+</html>
