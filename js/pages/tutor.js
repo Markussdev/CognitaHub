@@ -21,6 +21,7 @@ import { DIGITAL_PRESETS } from '../data/digital-presets.js'
 import { emblemaUrl, mascoteUrl } from '../lib/trilha-assets.js'
 import { getModuleVisual } from '../data/module-visuals.js'
 import { getTutorRegistrationState } from '../data/tutor-registration.js'
+import { hasActiveTutorCycle } from '../lib/library-access.mjs'
 
 const gatoMatematicoSrc = '/assets/gatomatematico-sem-fundo.png'
 const logoIconSrc = '/assets/logo-icon-transparent.png'
@@ -103,7 +104,7 @@ document.querySelector('[data-rail-sessions]')?.addEventListener('click', (e) =>
 // um montava um subconjunto diferente de params; child_id sozinho já
 // quebrava "Personalizar para Mateus"/recomendações se faltasse).
 function buildLibraryHref(cycle) {
-  if (!cycle) return 'atividades.html'
+  if (!hasActiveTutorCycle(cycle)) return null
   const child = cycle.children ?? {}
   const lp = child.learning_profiles ?? {}
   const params = new URLSearchParams()
@@ -124,7 +125,8 @@ function buildLibraryHref(cycle) {
 
 document.querySelector('[data-rail-library]')?.addEventListener('click', (e) => {
   e.preventDefault()
-  window.location.href = buildLibraryHref(currentDerived?.cycle)
+  const href = buildLibraryHref(currentDerived?.cycle)
+  if (href) window.location.href = href
 })
 document.querySelector('[data-rail-team]')?.addEventListener('click', (e) => {
   e.preventDefault()
@@ -399,11 +401,17 @@ function fillIdentity() {
 
 // ── Rail / breadcrumb ─────────────────────────────────────────────────────────
 
-function renderRail(hasRecord, childName) {
+function renderRail(hasRecord, childName, activeCycle = null) {
   const group = document.querySelector('[data-rail-acomp-group]')
   const slot = document.querySelector('[data-rail-child-slot]')
+  const resourcesGroup = document.querySelector('[data-rail-resources-group]')
+  const libraryLink = document.querySelector('[data-rail-library]')
   const sessionsLink = document.querySelector('[data-rail-sessions]')
   if (!slot) return
+
+  const libraryAvailable = hasActiveTutorCycle(activeCycle)
+  libraryLink.hidden = !libraryAvailable
+  resourcesGroup.hidden = !libraryAvailable && !hasRecord
 
   // "Falar com equipe" é suporte global — fica sempre visível, com ou sem ciclo.
   if (!hasRecord) {
@@ -533,15 +541,12 @@ function renderOrientationPending() {
 }
 
 function renderAvailable() {
-  const { card, body } = buildStatusCard({
+  const { card } = buildStatusCard({
     kicker: 'Painel do tutor', tone: 'ok',
     title: 'Pronto para acompanhar',
     desc: 'Seu cadastro foi aprovado e a orientação inicial foi concluída. A equipe Cognita vai criar o pareamento quando houver compatibilidade de perfil e agenda.',
     icon: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>`,
   })
-  const link = el('a', 'lib-link', 'Explorar biblioteca de atividades →')
-  link.href = 'atividades.html'
-  body.append(link)
   return card
 }
 
@@ -1288,7 +1293,7 @@ function buildResumoPanel(cycle, { openForm }) {
   function decisaoDe(estado, dados) {
     switch (estado) {
       case E.CICLO_PLANEJADO:
-        return { ti: 'O ciclo começa em breve.', ds: 'Leia o perfil pedagógico e explore a biblioteca antes da primeira sessão.',
+        return { ti: 'O ciclo começa em breve.', ds: 'Leia o perfil pedagógico e revise as informações antes da primeira sessão.',
           cta: { label: 'Ver perfil pedagógico', href: `perfil-crianca.html?id=${cycle.child_id ?? ''}` } }
       case E.EXECUCAO_PENDENTE: {
         const titulo = dados.execucao?.child_activities?.titulo || 'uma atividade'
@@ -2868,6 +2873,7 @@ const CMDK_ICONS = {
 function getCommandGroups() {
   const hasRecord = currentDerived && RECORD_STATES.includes(currentDerived.state)
   const cycle = hasRecord ? currentDerived.cycle : null
+  const libraryAvailable = hasActiveTutorCycle(cycle)
   const childName = cycle ? firstName(cycle.children?.name) : null
 
   const quick = []
@@ -2875,9 +2881,11 @@ function getCommandGroups() {
     quick.push({ label: 'Registrar sessão', icon: CMDK_ICONS.plus, action: () => goRecord('sessions') })
     quick.push({ label: 'Ver perfil pedagógico', icon: CMDK_ICONS.user, action: () => { window.location.href = `perfil-crianca.html?id=${cycle.child_id ?? ''}` } })
   }
-  quick.push({ label: 'Abrir biblioteca de atividades', icon: CMDK_ICONS.book, action: () => {
-    window.location.href = buildLibraryHref(hasRecord ? currentDerived.cycle : null)
-  } })
+  if (libraryAvailable) {
+    quick.push({ label: 'Abrir biblioteca de atividades', icon: CMDK_ICONS.book, action: () => {
+      window.location.href = buildLibraryHref(cycle)
+    } })
+  }
   quick.push({ label: 'Falar com a equipe', icon: CMDK_ICONS.team, action: () => openSupportDrawer(childName) })
 
   const groups = [{ label: 'Ações rápidas', items: quick }]
@@ -2888,14 +2896,16 @@ function getCommandGroups() {
       items: [{ label: cycle.children?.name ?? 'Criança', icon: CMDK_ICONS.user, action: () => goRecord() }],
     })
 
-    groups.push({
-      label: 'Atividades',
-      items: Object.values(ACTIVITY_LIBRARY).map((activity) => ({
-        label: activity.title,
-        icon: CMDK_ICONS.book,
-        action: () => { window.location.href = 'atividades.html' },
-      })),
-    })
+    if (libraryAvailable) {
+      groups.push({
+        label: 'Atividades',
+        items: Object.values(ACTIVITY_LIBRARY).map((activity) => ({
+          label: activity.title,
+          icon: CMDK_ICONS.book,
+          action: () => { window.location.href = buildLibraryHref(cycle) },
+        })),
+      })
+    }
 
     if (recentSessionsCache.length) {
       groups.push({
@@ -3061,11 +3071,13 @@ async function buildHomeView(state, cycle, openRecord) {
   const shortcutsBody = el('div', 'card-b')
   const shortcuts = el('div', 'shortcut-list')
 
-  const biblio = el('a', 'shortcut-item')
-  biblio.href = buildLibraryHref(cycle)
-  biblio.innerHTML = `<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`
-  biblio.append(document.createTextNode('Biblioteca'))
-  shortcuts.append(biblio)
+  if (hasActiveTutorCycle(cycle)) {
+    const biblio = el('a', 'shortcut-item')
+    biblio.href = buildLibraryHref(cycle)
+    biblio.innerHTML = `<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`
+    biblio.append(document.createTextNode('Biblioteca'))
+    shortcuts.append(biblio)
+  }
 
   const teamShortcut = el('button', 'shortcut-item')
   teamShortcut.type = 'button'
@@ -3275,7 +3287,7 @@ function buildProfileView() {
   const headCopy = el('div')
   headCopy.append(el('p', 'kicker', 'Meu perfil'), el('h1', null, 'Identidade do tutor'))
   head.append(headCopy)
-  if (profileReturn && !profileReturn.startsWith('//') && !/^https?:\/\//i.test(profileReturn)) {
+  if (currentDerived?.state === 'cycle_active' && profileReturn && !profileReturn.startsWith('//') && !/^https?:\/\//i.test(profileReturn)) {
     const backLink = el('a', 'btn btn-ghost btn-sm', 'Voltar para Biblioteca')
     backLink.href = profileReturn
     head.append(backLink)
@@ -3549,7 +3561,7 @@ async function bootstrap() {
   if (!stateBox) return
 
   stateBox.replaceChildren(el('div', 'skel skel-rec'), el('div', 'skel skel-panel'))
-  renderRail(false, '')
+  renderRail(false, '', null)
   renderCrumb('home', '')
 
   const { data: cycles, error } = await getTutorCycles(session.user.id)
@@ -3562,7 +3574,11 @@ async function bootstrap() {
 
   currentDerived = deriveTutorState(session.profile.status, cycles, tutorRegistration.state)
   const hasRecord = RECORD_STATES.includes(currentDerived.state)
-  renderRail(hasRecord, hasRecord ? firstName(currentDerived.cycle.children?.name) : '')
+  renderRail(
+    hasRecord,
+    hasRecord ? firstName(currentDerived.cycle.children?.name) : '',
+    currentDerived.state === 'cycle_active' ? currentDerived.cycle : null
+  )
   const _urlParams = new URLSearchParams(location.search)
   const _viewParam = _urlParams.get('view')
   if (_viewParam === 'profile') {

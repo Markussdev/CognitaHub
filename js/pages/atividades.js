@@ -5,6 +5,8 @@ import { wireRailToggle } from '../lib/rail.js'
 import { getActivities } from '../data/activities.js'
 import { hasDigitalPreset } from '../data/digital-presets.js'
 import { canOpenActivityGuide, openActivityGuide } from '../components/activity-guide.js'
+import { getActiveTutorCycle } from '../data/tutor.js'
+import { canAccessLibrary } from '../lib/library-access.mjs'
 
 // ── Papel de cada área (não duplicar responsabilidade) ───────────────────────
 // Biblioteca = conteúdo-base e inspiração da Cognita. NÃO guarda o que o
@@ -192,8 +194,8 @@ const ROLE_HOME   = { tutor: 'tutor.html', guardian: 'responsavel.html', admin: 
 
 async function loadIdentity() {
   try {
-    session = await requireRole('tutor', 'guardian', 'admin')
-    if (!session) return
+    session = await requireRole('tutor', 'admin')
+    if (!session) return null
 
     const { profile, user } = session
     const name = profile.name || user.email || 'Usuário'
@@ -253,9 +255,27 @@ async function loadIdentity() {
     document.querySelectorAll('[data-logout]').forEach((btn) => {
       btn.addEventListener('click', async (e) => { e.preventDefault(); await signOut() })
     })
+
+    return session
   } catch (error) {
     console.warn('Biblioteca: erro ao carregar identidade.', error)
+    return null
   }
+}
+
+async function ensureLibraryAccess(identity) {
+  const role = identity.profile.role
+  if (canAccessLibrary(role, null)) return true
+
+  const { data: activeCycle, error } = await getActiveTutorCycle(identity.user.id, CTX_CYCLE)
+  if (error) console.warn('Biblioteca: falha ao confirmar o ciclo ativo do tutor.', error)
+
+  if (!error && canAccessLibrary(role, activeCycle)) return true
+
+  // Falha fechada: sem confirmação positiva do banco, o catálogo não é
+  // consultado. O painel mostra o estado atual do ciclo e permite tentar de novo.
+  window.location.replace('tutor.html')
+  return false
 }
 
 // ── Suporte drawer ───────────────────────────────────────────────────────────
@@ -926,9 +946,15 @@ async function init() {
     grid.replaceChildren(skel)
   }
 
-  const results = await Promise.allSettled([loadIdentity(), loadActivities()])
-  if (results[0].status === 'rejected') console.warn('Biblioteca: falha ao carregar identidade.', results[0].reason)
-  if (results[1].status === 'rejected') console.warn('Biblioteca: falha ao carregar atividades.', results[1].reason)
+  const identity = await loadIdentity()
+  if (!identity) return
+
+  // Autenticação e confirmação do ciclo terminam antes de qualquer leitura do
+  // catálogo. Um cycle_id recebido pela URL é apenas um filtro, nunca prova de acesso.
+  const allowed = await ensureLibraryAccess(identity)
+  if (!allowed) return
+
+  await loadActivities()
 
   if (CTX_SKILL && SKILL_LABELS[CTX_SKILL]) { state.skill = CTX_SKILL; _filtersOpen = true }
 

@@ -10,6 +10,24 @@ export async function getTutorProfile(userId) {
     .single()
 }
 
+// Portão da Biblioteca: a URL pode trazer um cycle_id, mas a permissão vem
+// sempre de uma linha ativa pertencente ao tutor autenticado. Sem cycleId,
+// confirma se existe qualquer ciclo ativo do tutor.
+export async function getActiveTutorCycle(tutorId, cycleId = '') {
+  let query = supabase
+    .from('support_cycles')
+    .select('id, tutor_id, child_id, status')
+    .eq('tutor_id', tutorId)
+    .eq('status', 'active')
+
+  if (cycleId) query = query.eq('id', cycleId)
+
+  return await query
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+}
+
 const CHILD_SELECT = `
   id, name, preferred_name, avatar_key, birth_date, school_year, status, main_difficulties,
   learning_profiles ( preferred_formats, attention_span, math_difficulties,

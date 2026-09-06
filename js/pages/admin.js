@@ -21,6 +21,7 @@ import {
   createSupportCycle,
 } from '../data/matching.js'
 import { getTrailTemplateWithModules } from '../data/trilha-formal.js'
+import { formatTutorFormation } from '../lib/tutor-application-format.mjs'
 
 const logoIconSrc = '/assets/logo-icon-transparent.png'
 
@@ -104,7 +105,9 @@ function fact(label, value) {
   const text = asText(value)
   if (!text) return null
   const row = el('div')
-  row.append(el('dt', null, label), el('dd', null, text))
+  const detail = el('dd', null, text)
+  if (text.includes('\n')) detail.classList.add('preserve-lines')
+  row.append(el('dt', null, label), detail)
   return row
 }
 
@@ -377,7 +380,7 @@ function renderTutorRow(tutor) {
   const tx = el('div', 'adm-row-tx')
   tx.append(el('b', null, tutor.name ?? 'Sem nome'))
   tx.append(el('span', null, [
-    asText(app?.formation) ?? 'formação não informada',
+    formatTutorFormation(app?.formation) ?? 'formação não informada',
     tutor.created_at ? `desde ${formatDate(tutor.created_at)}` : null,
   ].filter(Boolean).join(' · ')))
   main.append(tx)
@@ -388,8 +391,8 @@ function renderTutorRow(tutor) {
   row.append(main)
 
   row.append(admDetails('Candidatura e contato', factList([
-    fact('Nascimento', app?.birth_date),
-    fact('Formação', app?.formation),
+    fact('Nascimento', formatDate(app?.birth_date)),
+    fact('Formação', formatTutorFormation(app?.formation)),
     fact('Experiência', app?.experience),
     fact('Motivação', app?.motivation),
     fact('Disponibilidade semanal', app?.weekly_availability),
@@ -511,8 +514,9 @@ function renderMatchCard(child) {
   select.append(new Option('Selecione um tutor…', ''))
   D.availableTutors.forEach((tutor) => {
     const app = Array.isArray(tutor.tutor_applications) ? tutor.tutor_applications[0] : tutor.tutor_applications
-    const formation = app?.formation ? ` · ${app.formation}` : ''
-    select.append(new Option(`${tutor.name ?? 'Tutor'}${formation}`, tutor.id))
+    const formation = formatTutorFormation(app?.formation)
+    const formationSuffix = formation ? ` · ${formation}` : ''
+    select.append(new Option(`${tutor.name ?? 'Tutor'}${formationSuffix}`, tutor.id))
   })
   tutorLabel.append(select)
 
