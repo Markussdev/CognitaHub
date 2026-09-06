@@ -3285,7 +3285,11 @@ function buildProfileView() {
 
   const head = el('div', 'profile-head')
   const headCopy = el('div')
-  headCopy.append(el('p', 'kicker', 'Meu perfil'), el('h1', null, 'Identidade do tutor'))
+  headCopy.append(
+    el('p', 'kicker', 'Meu perfil'),
+    el('h1', null, 'Perfil do tutor'),
+    el('p', 'profile-subtitle', 'Atualize como você aparece para a família e para a equipe.')
+  )
   head.append(headCopy)
   if (currentDerived?.state === 'cycle_active' && profileReturn && !profileReturn.startsWith('//') && !/^https?:\/\//i.test(profileReturn)) {
     const backLink = el('a', 'btn btn-ghost btn-sm', 'Voltar para Biblioteca')
@@ -3295,10 +3299,8 @@ function buildProfileView() {
   panel.append(head)
 
   const grid = el('div', 'profile-grid')
+  const preview = el('aside', 'card profile-preview')
 
-  const preview = el('div', 'card profile-preview')
-
-  // Linha de foto: avatar (squircle) + controles de troca
   const previewAvatar = el('div', 'profile-avatar')
   previewAvatar.setAttribute('data-profile-avatar', '')
   previewAvatar.textContent = initials(name)
@@ -3306,136 +3308,156 @@ function buildProfileView() {
     getAvatarUrl(session.profile.avatar_path).then((url) => {
       if (!url) return
       previewAvatar.textContent = ''
-      const img = document.createElement('img'); img.src = url; img.alt = ''; previewAvatar.append(img)
+      const img = document.createElement('img')
+      img.src = url
+      img.alt = ''
+      previewAvatar.append(img)
     })
   }
 
-  const photoCopy = el('p')
   const avatarInput = document.createElement('input')
-  avatarInput.type = 'file'; avatarInput.accept = 'image/png,image/jpeg,image/webp'; avatarInput.hidden = true
-  const avatarBtn = el('button', 'btn btn-ghost btn-sm', 'Alterar foto')
+  avatarInput.type = 'file'
+  avatarInput.accept = 'image/png,image/jpeg,image/webp'
+  avatarInput.hidden = true
+
+  const avatarBtn = el('button', 'btn btn-ghost btn-sm', 'Trocar foto')
   avatarBtn.type = 'button'
-  const avatarError = el('p', 'form-error'); avatarError.hidden = true; avatarError.style.marginTop = '6px'
-  const photoInfo = el('div')
-  photoInfo.append(el('strong', null, 'Foto de perfil'), photoCopy, avatarInput, avatarBtn, avatarError)
-  const photoRow = el('div', 'profile-photo-row')
-  photoRow.append(previewAvatar, photoInfo)
-  preview.append(photoRow)
+  const avatarError = el('p', 'form-error')
+  avatarError.hidden = true
 
+  const identityCopy = el('div', 'profile-identity-copy')
   const previewName = el('div', 'nm', name)
-  preview.append(previewName, el('div', 'rl', 'Tutor voluntário · Cognita Hub'))
+  identityCopy.append(previewName, el('div', 'rl', 'Tutor voluntário'))
+  const identityRow = el('div', 'profile-identity-row')
+  identityRow.append(previewAvatar, identityCopy)
+  preview.append(identityRow, avatarInput, avatarBtn, avatarError)
 
-  const quote = el('div', 'quote')
-  const quoteEyebrow = el('div', 'quote-eyebrow')
-  quoteEyebrow.innerHTML = `<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
-  quoteEyebrow.append(document.createTextNode('Prévia para a família'))
-  const quoteText = el('span', 'quote-text', '')
-  quote.append(quoteEyebrow, quoteText)
-  preview.append(quote)
+  const familyPreview = el('div', 'profile-family-preview')
+  familyPreview.append(el('span', 'profile-preview-label', 'A família verá'))
+  const quoteText = el('p', 'profile-preview-text', '')
+  const formationText = el('p', 'profile-preview-formation', '')
+  familyPreview.append(quoteText, formationText)
+  preview.append(familyPreview)
 
   const chips = el('div', 'profile-chips')
   const statusChip = el('span', 'meta-chip')
-  statusChip.append(el('span', `dot ${isPending ? 'warn' : 'ok'}`), document.createTextNode(isPending ? 'Em análise pela equipe' : 'Validado pela equipe'))
+  statusChip.append(
+    el('span', 'dot ' + (isPending ? 'warn' : 'ok')),
+    document.createTextNode(isPending ? 'Em análise' : 'Validado')
+  )
   const visibleChip = el('span', 'meta-chip')
-  visibleChip.append(el('span', 'dot info'), document.createTextNode('Visível após pareamento'))
-  const privateChip = el('span', 'meta-chip', 'Contato privado')
-  chips.append(statusChip, visibleChip, privateChip)
-  preview.append(chips)
+  visibleChip.append(el('span', 'dot info'), document.createTextNode('Após pareamento'))
+  chips.append(statusChip, visibleChip)
+  preview.append(chips, el('p', 'profile-privacy', 'Seus contatos nunca aparecem para a família.'))
   grid.append(preview)
 
   const stack = el('div', 'stack')
+  const publicCard = el('div', 'card profile-edit-card')
+  const publicHead = el('div', 'profile-section-head')
+  publicHead.append(
+    el('div', null, 'Perfil público'),
+    el('span', null, '3 campos')
+  )
+  publicCard.append(publicHead)
 
-  const publicCard = el('div', 'card')
-  publicCard.append(simpleHead('Informações públicas para a família'))
-  const publicBody = el('div', 'card-b')
-
+  const publicBody = el('div', 'card-b profile-public-body')
+  const publicRow = el('div', 'row')
   const nameField = buildProfileField('Nome exibido', { value: name })
   const nameInput = nameField.querySelector('input')
-  publicBody.append(nameField)
-
-  const guide = el('div', 'guide')
-  guide.style.marginTop = '12px'
-  guide.innerHTML = '<strong>A família verá essa apresentação apenas após o pareamento e validação da equipe Cognita.</strong> Não inclua telefone, redes sociais ou contato pessoal direto.'
-  publicBody.append(guide)
-
-  const presField = buildProfileField('Como a família verá você', {
-    textarea: true,
-    value: session.profile.tutor_presentation || '',
-    placeholder: 'Olá, sou tutor voluntário no Cognita Hub. Meu foco é apoiar atividades de matemática inicial com calma, previsibilidade e respeito ao ritmo da criança.',
-  })
-  presField.style.marginTop = '12px'
-  const presInput = presField.querySelector('textarea')
-  publicBody.append(presField)
-
-  const formField = buildProfileField('Formação / experiência resumida', {
+  const formField = buildProfileField('Formação resumida', {
     value: session.profile.tutor_formation || '',
-    placeholder: 'Ex.: Pedagogia, 2 anos de experiência com alfabetização matemática.',
+    placeholder: 'Ex.: Pedagogia ou Matemática'
   })
   const formInput = formField.querySelector('input')
-  formField.style.marginTop = '12px'
-  publicBody.append(formField)
+  publicRow.append(nameField, formField)
+  publicBody.append(publicRow)
 
+  const presField = buildProfileField('Apresentação para a família', {
+    textarea: true,
+    value: session.profile.tutor_presentation || '',
+    placeholder: 'Conte brevemente como você pretende apoiar a criança.'
+  })
+  const presInput = presField.querySelector('textarea')
+  publicBody.append(presField, el('p', 'profile-field-hint', 'Use uma apresentação curta e não inclua telefone ou redes sociais.'))
   publicCard.append(publicBody)
   stack.append(publicCard)
 
-  const internalCard = el('div', 'card')
-  internalCard.append(simpleHead('Informações internas da equipe'))
-  const internalBody = el('div', 'card-b')
-  const row = el('div', 'row')
-  const phoneField = buildProfileField('Telefone de contato', {
+  const internalCard = document.createElement('details')
+  internalCard.className = 'card profile-details'
+  const internalSummary = document.createElement('summary')
+  const summaryCopy = el('span', 'profile-details-copy')
+  summaryCopy.append(
+    el('strong', null, 'Contato e preferências'),
+    el('small', null, 'Uso interno da equipe')
+  )
+  internalSummary.append(summaryCopy)
+  const summaryIcon = document.createElement('span')
+  summaryIcon.className = 'profile-details-icon'
+  summaryIcon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>'
+  internalSummary.append(summaryIcon)
+  internalCard.append(internalSummary)
+
+  const internalBody = el('div', 'card-b profile-internal-body')
+  const contactRow = el('div', 'row')
+  const phoneField = buildProfileField('Telefone', {
     type: 'tel',
     value: session.profile.phone || '',
-    placeholder: 'Só a equipe Cognita vê',
+    placeholder: 'Somente para a equipe'
   })
   const phoneInput = phoneField.querySelector('input')
-  const emailField = buildProfileField('E-mail de contato', {
+  const emailField = buildProfileField('E-mail', {
     type: 'email',
-    value: session.user.email ?? '',
+    value: session.user.email ?? ''
   })
   const emailInput = emailField.querySelector('input')
   emailInput.disabled = true
-  row.append(phoneField, emailField)
-  internalBody.append(row)
+  contactRow.append(phoneField, emailField)
+  internalBody.append(contactRow)
+
   const availField = buildProfileField('Disponibilidade semanal', {
     value: session.profile.tutor_availability || '',
-    placeholder: 'Ex.: Terças e quintas, à noite',
+    placeholder: 'Ex.: Terças e quintas, à noite'
   })
   const availInput = availField.querySelector('input')
-  availField.style.marginTop = '12px'
   internalBody.append(availField)
+
   const prefField = buildProfileField('Preferências de atuação', {
     textarea: true,
     value: session.profile.tutor_preferences || '',
-    placeholder: 'Ex.: Prefiro crianças mais novas, com apoio visual forte.',
+    placeholder: 'Ex.: crianças mais novas e atividades com apoio visual.'
   })
   const prefInput = prefField.querySelector('textarea')
-  prefField.style.marginTop = '12px'
   internalBody.append(prefField)
   internalCard.append(internalBody)
   stack.append(internalCard)
 
-  const okBox = el('p', 'form-ok'); okBox.hidden = true
-  const saveBtnBottom = el('button', 'btn btn-brand', 'Salvar alterações')
+  const okBox = el('p', 'form-ok')
+  okBox.hidden = true
+  const saveBtnBottom = el('button', 'btn btn-brand', 'Salvar perfil')
   saveBtnBottom.type = 'button'
-  const actions = el('div', 'form-actions')
+  const actions = el('div', 'form-actions profile-actions')
   actions.append(okBox, saveBtnBottom)
   stack.append(actions)
 
   grid.append(stack)
   panel.append(grid)
 
-  const updateQuote = () => {
-    const text = presInput.value.trim()
-    quoteText.textContent = text ? `"${text}"` : 'Escreva como você se apresenta — a prévia aparece aqui.'
-    quoteText.classList.toggle('filled', !!text)
+  const updatePreview = () => {
+    const presentation = presInput.value.trim()
+    const formation = formInput.value.trim()
+    quoteText.textContent = presentation || 'Sua apresentação aparecerá aqui.'
+    quoteText.classList.toggle('is-empty', !presentation)
+    formationText.textContent = formation || 'Formação não informada'
+    formationText.classList.toggle('is-empty', !formation)
   }
-  presInput.addEventListener('input', updateQuote)
-  updateQuote()
+  presInput.addEventListener('input', updatePreview)
+  formInput.addEventListener('input', updatePreview)
+  updatePreview()
 
   nameInput.addEventListener('input', () => {
-    const v = nameInput.value.trim() || name
-    previewName.textContent = v
-    if (!previewAvatar.querySelector('img')) previewAvatar.textContent = initials(v)
+    const value = nameInput.value.trim() || name
+    previewName.textContent = value
+    if (!previewAvatar.querySelector('img')) previewAvatar.textContent = initials(value)
   })
 
   avatarBtn.addEventListener('click', () => avatarInput.click())
@@ -3444,20 +3466,23 @@ function buildProfileView() {
     if (!file) return
     avatarError.hidden = true
     try {
-      avatarBtn.disabled = true; avatarBtn.textContent = 'Enviando…'
+      avatarBtn.disabled = true
+      avatarBtn.textContent = 'Enviando…'
       const objectUrl = URL.createObjectURL(file)
       previewAvatar.textContent = ''
-      const previewImg = document.createElement('img'); previewImg.src = objectUrl; previewImg.alt = ''; previewAvatar.append(previewImg)
+      const previewImg = document.createElement('img')
+      previewImg.src = objectUrl
+      previewImg.alt = ''
+      previewAvatar.append(previewImg)
       setAvatarImage('[data-account-avatar]', objectUrl)
       setAvatarImage('[data-topbar-avatar]', objectUrl)
       setAvatarImage('[data-profile-avatar]', objectUrl)
-      // TODO(wiring:storage): requer bucket 'profile-photos' e coluna avatar_path em profiles.
       await uploadTutorAvatar(file)
       avatarBtn.textContent = 'Foto salva'
     } catch (err) {
       avatarError.textContent = err.message || 'Não foi possível enviar a foto.'
       avatarError.hidden = false
-      avatarBtn.textContent = 'Alterar foto'
+      avatarBtn.textContent = 'Trocar foto'
     } finally {
       avatarBtn.disabled = false
       avatarInput.value = ''
@@ -3474,9 +3499,11 @@ function buildProfileView() {
       tutor_availability: availInput.value.trim() || null,
       tutor_preferences: prefInput.value.trim() || null,
     }
-    saveBtnBottom.disabled = true; saveBtnBottom.textContent = 'Salvando…'
+    saveBtnBottom.disabled = true
+    saveBtnBottom.textContent = 'Salvando…'
     const { error } = await supabase.from('profiles').update(payload).eq('id', session.user.id)
-    saveBtnBottom.disabled = false; saveBtnBottom.textContent = 'Salvar alterações'
+    saveBtnBottom.disabled = false
+    saveBtnBottom.textContent = 'Salvar perfil'
     if (error) {
       okBox.textContent = 'Não conseguimos salvar agora. Tente novamente.'
       okBox.className = 'form-error'
@@ -3489,7 +3516,7 @@ function buildProfileView() {
     if (nameEl) nameEl.textContent = payload.name
     previewName.textContent = payload.name
     if (!previewAvatar.querySelector('img')) previewAvatar.textContent = initials(payload.name)
-    okBox.textContent = 'Perfil atualizado com sucesso.'
+    okBox.textContent = 'Perfil salvo.'
     okBox.className = 'form-ok'
     okBox.hidden = false
   }
