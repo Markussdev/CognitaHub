@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabase.js'
 import { requireRole, signOut } from '../lib/auth.js'
 import { greeting, initials, ageFrom, el } from '../lib/ui.js'
 import { getAvatarUrl, setAvatarImage } from '../lib/avatar.js'
-import { getTutorCycles } from '../data/tutor.js'
+import { getTutorCycles, cancelTutorCycle } from '../data/tutor.js'
 import { getCycleSessions, createSessionWithExecucoes } from '../data/sessions.js'
 import { getActivityById } from '../data/activities.js'
 import { createChildActivity, listChildActivities, updateChildActivity, archiveChildActivity, restoreChildActivity } from '../data/child-activities.js'
@@ -2350,7 +2350,41 @@ function buildPlanPanel(cycle, state) {
   mascot.src = mascoteUrl('planejar')
   mascot.alt = ''
   mascot.hidden = true // só no estado vazio — dá identidade Cognita aos dois caminhos
-  header.append(headerText, mascot)
+
+  const journeyActions = el('div', 'journey-head-actions')
+
+  if (['planned', 'active', 'paused'].includes(cycle.status)) {
+    journeyActions.append(
+      kebabMenu([
+        {
+          label: 'Cancelar ciclo',
+          tone: 'bad',
+          run: async () => {
+            const confirmed = window.confirm(
+              `Cancelar o acompanhamento de ${childFirst}?\n\n` +
+              'O ciclo deixará de aparecer como ativo, mas os registros já feitos serão preservados.'
+            )
+
+            if (!confirmed) return
+
+            const { error } = await cancelTutorCycle(cycle.id)
+
+            if (error) {
+              console.error('Erro ao cancelar ciclo:', error)
+              window.alert(
+                'Não foi possível cancelar o ciclo agora. Nenhuma alteração foi feita.'
+              )
+              return
+            }
+
+            window.location.reload()
+          },
+        },
+      ])
+    )
+  }
+
+  header.append(headerText, journeyActions, mascot)
   const body = el('div', 'journey-body')
   const deviceCard = renderDeviceCard()
   container.append(header, body, deviceCard)

@@ -68,3 +68,9 @@ export async function getTutorCycles(tutorId) {
     error: null,
   }
 }
+
+export async function cancelTutorCycle(cycleId) {
+  return await supabase.rpc('cancel_support_cycle', {
+    p_cycle_id: cycleId,
+  })
+}
