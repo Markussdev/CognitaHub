@@ -1,7 +1,7 @@
 // Ponte Biblioteca → Modo Criança: quais atividades da tabela `activities`
 // já têm um equivalente digital
 // pronto no Modo Criança, e com qual configuração inicial abrir o
-// assistente de Atividades (js/pages/tutor.js#renderActivityWizard).
+// assistente de Atividades (js/pages/tutor/atividades.js#renderActivityWizard).
 //
 // Client-side de propósito — não precisa de coluna nova em `activities`.
 // Chave = activities.slug (estável, já é o identificador natural do

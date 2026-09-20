@@ -74,3 +74,32 @@ export async function cancelTutorCycle(cycleId) {
     p_cycle_id: cycleId,
   })
 }
+
+// ── Perfil do tutor (js/pages/tutor/perfil.js) ────────────────────────────
+
+// Upload de avatar (bucket privado 'profile-photos') + atualização de
+// profiles.avatar_path na mesma operação — o caminho salvo em avatar_path
+// só faz sentido se o objeto já existe no bucket, por isso o update só roda
+// depois do upload confirmar. Validação de tipo/tamanho do arquivo é
+// responsabilidade de quem chama (perfil.js), não desta função.
+export async function uploadTutorAvatar(userId, file) {
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'png'
+  const filePath = `${userId}/avatar-${Date.now()}.${ext}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('profile-photos')
+    .upload(filePath, file, { cacheControl: '3600', contentType: file.type, upsert: false })
+  if (uploadError) return { data: null, error: uploadError }
+
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .update({ avatar_path: filePath })
+    .eq('id', userId)
+  if (profileError) return { data: null, error: profileError }
+
+  return { data: filePath, error: null }
+}
+
+export async function updateTutorProfile(userId, payload) {
+  return supabase.from('profiles').update(payload).eq('id', userId)
+}
