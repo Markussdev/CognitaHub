@@ -1,7 +1,6 @@
-CLAUDE.md
-.claude/
-claude.md
 .env
 node_modules
 dist
 js/test/
+CLAUDE.local.md
+.claude/settings.local.json.
