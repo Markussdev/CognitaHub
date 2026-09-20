@@ -1,10 +1,8 @@
 import { requireRole, signOut } from '../lib/auth.js'
-import { greeting, initials, ageFrom, el } from '../lib/ui.js'
+import { initials, ageFrom, el } from '../lib/ui.js'
 import { getAvatarUrl, setAvatarImage } from '../lib/avatar.js'
 import { getTutorCycles, cancelTutorCycle } from '../data/tutor.js'
-import { getCycleSessions } from '../data/sessions.js'
 import { getActivityById } from '../data/activities.js'
-import { listPendingExecucoes } from '../data/atividade-execucao.js'
 import { PLANOS_REGISTRO } from '../data/planos-registro.js'
 import {
   listPublishedTrailTemplates, getTrailTemplateWithModules, getLatestChildTrail,
@@ -12,7 +10,6 @@ import {
   advanceChildTrailModule, reopenChildTrailMission,
 } from '../data/trilha-formal.js'
 import { createPairingCode, listPairedDevices } from '../data/pareamento.js'
-import { derivarEstadoResumo, ESTADOS_RESUMO, moduloAtualDe } from './resumo-estado.js'
 import { closeRailDrawer, wireRailToggle } from '../lib/rail.js'
 import { DIGITAL_PRESETS } from '../data/digital-presets.js'
 import { emblemaUrl, mascoteUrl } from '../lib/trilha-assets.js'
@@ -23,9 +20,9 @@ import { formatSchoolYear } from '../lib/school-year.js'
 import { renderSessionForm, buildSessionsPanel } from './tutor/sessoes.js'
 import { buildProfileView } from './tutor/perfil.js'
 import { buildActivitiesPanel } from './tutor/atividades.js'
-import { firstName, pickEmbedded, formatDate, formatExecucaoQuando, gatoMatematicoSrc, simpleHead, REVIEW_STATUSES, kebabMenu, MISSION_STATUS_LABEL, formatLastSession } from './tutor/shared.js'
-
-const logoIconSrc = '/assets/logo-icon-transparent.png'
+import { buildResumoPanel } from './tutor/resumo.js'
+import { buildHomeView } from './tutor/home.js'
+import { firstName, formatDate, formatExecucaoQuando, simpleHead, REVIEW_STATUSES, kebabMenu, MISSION_STATUS_LABEL, formatLastSession, toList, monthsBetween, currentCycleMonth } from './tutor/shared.js'
 
 const session = await requireRole('tutor')
 const stateBox = document.querySelector('[data-tutor-state]')
@@ -150,64 +147,6 @@ document.addEventListener('keydown', (e) => {
 })
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function monthsBetween(start, end) {
-  if (!start || !end) return 6
-  const s = new Date(`${start}T00:00:00Z`), e = new Date(`${end}T00:00:00Z`)
-  if (isNaN(s.getTime()) || isNaN(e.getTime())) return 6
-  return Math.max(1, (e.getUTCFullYear() - s.getUTCFullYear()) * 12 + (e.getUTCMonth() - s.getUTCMonth()))
-}
-
-function currentCycleMonth(start, end) {
-  if (!start) return 1
-  const now = new Date(), s = new Date(`${start}T00:00:00Z`)
-  if (isNaN(s.getTime())) return 1
-  const total = monthsBetween(start, end)
-  const elapsed = (now.getUTCFullYear() - s.getUTCFullYear()) * 12 + (now.getUTCMonth() - s.getUTCMonth()) + 1
-  return Math.min(Math.max(elapsed, 1), total)
-}
-
-function renderFeedItems(container, items) {
-  container.replaceChildren()
-  items.forEach((item) => {
-    const row = el('div', 'feed-item')
-    const ico = el('div', `feed-ico ${item.tone}`)
-    ico.innerHTML = item.icon
-    const tx = el('div', 'feed-tx')
-    tx.innerHTML = item.html
-    if (item.sub) tx.append(el('span', 'sub', item.sub))
-    row.append(ico, tx)
-    if (item.time) row.append(el('div', 'feed-time', item.time))
-    container.append(row)
-  })
-}
-
-// Normaliza valores que podem chegar como array real, JSON stringificado
-// ("[\"a\",\"b\"]") ou literal de array do Postgres ("{a,\"b c\"}") — o
-// schema real mistura os três conforme a coluna foi preenchida.
-function toList(value) {
-  if (value == null || value === '') return []
-  if (Array.isArray(value)) return value.filter(Boolean)
-  if (typeof value !== 'string') return [String(value)]
-
-  const trimmed = value.trim()
-  if (!trimmed) return []
-
-  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
-    const inner = trimmed.slice(1, -1)
-    if (!inner) return []
-    return (inner.match(/"(?:[^"\\]|\\.)*"|[^,]+/g) || [])
-      .map((s) => s.trim().replace(/^"|"$/g, '').replace(/\\"/g, '"'))
-      .filter(Boolean)
-  }
-  if (trimmed.startsWith('[')) {
-    try {
-      const parsed = JSON.parse(trimmed)
-      if (Array.isArray(parsed)) return parsed.filter(Boolean)
-    } catch { /* não era JSON válido — trata como texto simples abaixo */ }
-  }
-  return [trimmed]
-}
 
 function formatList(value, fallback) {
   const list = toList(value)
@@ -482,246 +421,6 @@ function renderNoRecord(state, retry) {
 }
 
 // ── Painel: Visão geral ───────────────────────────────────────────────────────
-
-// ── Painel: Resumo (mesa de trabalho) ─────────────────────────────────────────
-// Substitui o antigo dossiê. A tela inteira deriva de derivarEstadoResumo()
-// (js/pages/resumo-estado.js): um estado dominante, no máximo um CTA. Nada aqui
-// inventa dado — tudo vem de sessions/atividade_execucao/child_trails já
-// existentes.
-function buildResumoPanel(cycle, { openForm }) {
-  const panel = el('section', 'panel')
-  panel.dataset.panel = 'overview' // id interno mantido — switchTab/tabs seguem funcionando
-
-  const wrap = el('div', 'resumo')
-  wrap.append(el('p', 'card-copy', 'Carregando resumo…'))
-  panel.append(wrap)
-
-  const child = cycle.children ?? {}
-  const lp = child.learning_profiles ?? {}
-  const nome = firstName(child.name) || 'a criança'
-  const E = ESTADOS_RESUMO
-
-  // ── Bloco 2: copy da "Próxima decisão" por estado (§5). cta pode ser null. ──
-  function decisaoDe(estado, dados) {
-    switch (estado) {
-      case E.CICLO_PLANEJADO:
-        return { ti: 'O ciclo começa em breve.', ds: 'Leia o perfil pedagógico e revise as informações antes da primeira sessão.',
-          cta: { label: 'Ver perfil pedagógico', href: `perfil-crianca.html?id=${cycle.child_id ?? ''}` } }
-      case E.EXECUCAO_PENDENTE: {
-        const titulo = dados.execucao?.child_activities?.titulo || 'uma atividade'
-        const quando = dados.execucao?.created_at ? formatExecucaoQuando(dados.execucao.created_at) : 'há pouco'
-        const ti = dados.total > 1
-          ? `${nome} concluiu ${dados.total} atividades que ainda não viraram registro — a mais recente foi "${titulo}" ${quando}.`
-          : `${nome} completou "${titulo}" ${quando} e a execução ainda não virou registro.`
-        return { ti,
-          ds: 'Transforme o que a criança fez numa sessão para a família acompanhar.',
-          cta: { label: `Revisar o que ${nome} fez`, onClick: openForm } }
-      }
-      case E.MODULO_EM_REVISAO:
-        return { ti: `O módulo ${dados.modulo?.trail_modules?.position} terminou. Hora de decidir como ${nome} segue.`,
-          ds: 'Avançar para o próximo, repetir ou adaptar — a decisão é sua.',
-          cta: { label: 'Decidir: avançar, repetir ou adaptar', onClick: () => switchTab('plan') } }
-      case E.MODULO_BLOQUEADO:
-        return { ti: `O módulo ${dados.modulo?.trail_modules?.position} está pronto para ser preparado e liberado para ${nome}.`,
-          ds: 'Libere o módulo para a primeira missão ficar disponível no aparelho.',
-          cta: { label: 'Preparar e liberar módulo', onClick: () => switchTab('plan') } }
-      case E.JORNADA_CONCLUIDA:
-        return { ti: `${nome} concluiu a jornada "${dados.trail?.trail_templates?.title || 'atual'}". 🎉 O histórico está guardado.`,
-          ds: 'Escolha a próxima jornada quando fizer sentido — nada se perde.',
-          cta: { label: 'Atribuir próxima jornada', onClick: () => switchTab('plan') },
-          secondary: { label: 'Ver histórico', onClick: () => switchTab('sessions') } }
-      case E.SEM_JORNADA:
-        return { ti: `${nome} ainda não tem uma jornada.`, ds: 'Escolha uma jornada da biblioteca para começar o acompanhamento.',
-          cta: { label: 'Atribuir jornada', onClick: () => switchTab('plan') } }
-      case E.MISSAO_DISPONIVEL:
-        return { ti: `Tudo preparado. ${nome} tem uma missão disponível no aparelho.`,
-          ds: 'Nada esperando decisão sua agora — é a vez da criança.',
-          cta: { label: 'Ver jornada', onClick: () => switchTab('plan'), discreto: true } }
-      case E.CICLO_PAUSADO:
-        return { ti: 'O ciclo está pausado.', ds: 'A equipe acompanha e avisa os próximos passos.', cta: null }
-      case E.CICLO_CONCLUIDO:
-        return { ti: `Ciclo concluído. Obrigado pelo cuidado com ${nome}.`, ds: 'O histórico permanece nas Sessões.',
-          cta: { label: 'Ver histórico de sessões', onClick: () => switchTab('sessions') } }
-      case E.EM_DIA:
-      default:
-        return { ti: 'Tudo em dia por aqui.', ds: 'Nada esperando decisão sua no momento.', cta: null }
-    }
-  }
-
-  function renderDecisao(estado, dados) {
-    const d = decisaoDe(estado, dados)
-    const card = el('div', 'card card--accent resumo-decisao')
-    card.append(simpleHead('Próxima decisão'))
-    const body = el('div', 'card-b')
-    body.append(el('div', 'decisao-ti', d.ti))
-    if (d.ds) body.append(el('p', 'card-copy', d.ds))
-    if (d.cta) {
-      const actions = el('div', 'decisao-actions')
-      const cls = d.cta.discreto ? 'resumo-link' : 'btn btn-accent'
-      let primary
-      if (d.cta.href) {
-        primary = el('a', cls, d.cta.label); primary.href = d.cta.href
-      } else {
-        primary = el('button', cls, d.cta.label); primary.type = 'button'
-        primary.addEventListener('click', d.cta.onClick)
-      }
-      actions.append(primary)
-      if (d.secondary) {
-        const sec = el('button', 'btn btn-ghost btn-sm', d.secondary.label)
-        sec.type = 'button'; sec.addEventListener('click', d.secondary.onClick)
-        actions.append(sec)
-      }
-      body.append(actions)
-    }
-    card.append(body)
-    return card
-  }
-
-  // ── Bloco 1: Pulso — uma linha, fatos derivados ──────────────────────────
-  function renderPulso({ sessions, execucoesPendentes, trail, modules }) {
-    const parts = []
-    const last = sessions[0]
-    parts.push(last ? `Última sessão ${formatLastSession(last.date)}` : 'Nenhuma sessão registrada')
-    if (execucoesPendentes.length) {
-      parts.push(`${execucoesPendentes.length} ${execucoesPendentes.length === 1 ? 'atividade aguardando' : 'atividades aguardando'} registro`)
-    }
-    if (trail && modules.length) {
-      const pos = moduloAtualDe(modules)?.trail_modules?.position ?? modules.length
-      parts.push(`Módulo ${pos} de ${modules.length}`)
-    }
-    const pulso = el('div', 'resumo-pulso')
-    parts.forEach((p, i) => {
-      if (i) pulso.append(el('span', 'sep', '·'))
-      pulso.append(el('span', null, p))
-    })
-    return pulso
-  }
-
-  // ── Bloco 3: O que aconteceu — merge de sessões + execuções + atribuição ──
-  function renderTimeline({ sessions, execucoesPendentes, trail }) {
-    const items = []
-    sessions.forEach((s) => items.push({
-      _t: new Date(s.created_at || s.date).getTime(),
-      tone: 'you',
-      icon: `<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>`,
-      html: '<b>Você</b> registrou a sessão',
-      sub: [s.activity_title, s.focus_area ? `foco em ${s.focus_area}` : null].filter(Boolean).join(' · '),
-      time: formatLastSession(s.date),
-    }))
-    execucoesPendentes.forEach((e) => items.push({
-      _t: new Date(e.created_at).getTime(),
-      tone: 'team',
-      icon: `<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/></svg>`,
-      html: `<b>${nome}</b> concluiu ${e.child_activities?.titulo ? `"${e.child_activities.titulo}"` : 'uma atividade'}`,
-      sub: 'Aguardando você registrar a sessão',
-      time: formatExecucaoQuando(e.created_at),
-    }))
-    if (trail) items.push({
-      _t: new Date(trail.created_at).getTime(),
-      tone: 'team',
-      icon: `<svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.6.6-5 4.4 1.5 6.5L12 17l-6 3.3 1.5-6.5-5-4.4 6.6-.6z"/></svg>`,
-      html: `<b>Jornada</b> ${trail.trail_templates?.title ? `"${trail.trail_templates.title}"` : ''} atribuída`,
-      sub: '',
-      time: formatDate(trail.created_at?.slice(0, 10)) ?? '',
-    })
-    items.sort((a, b) => b._t - a._t)
-
-    const card = el('div', 'card')
-    card.append(simpleHead('O que aconteceu'))
-    const cbody = el('div', 'card-b')
-    if (!items.length) {
-      cbody.append(el('p', 'card-copy', 'Nada por aqui ainda — o histórico aparece assim que a criança fizer uma atividade ou você registrar uma sessão.'))
-    } else {
-      const feed = el('div', 'feed')
-      renderFeedItems(feed, items.slice(0, 5))
-      cbody.append(feed)
-    }
-    card.append(cbody)
-    return card
-  }
-
-  // ── Bloco 4: Contexto — 3 chips + link + meta (só se existir) ─────────────
-  function renderContexto() {
-    const card = el('div', 'card')
-    card.append(simpleHead(`Contexto de ${nome}`))
-    const cbody = el('div', 'card-b')
-    const chips = el('div', 'resumo-contexto chips')
-    const difficulties = toList(lp.math_difficulties).length ? toList(lp.math_difficulties) : toList(child.main_difficulties)
-    const addChip = (label, val, cls) => { if (val) chips.append(el('span', `chip ${cls}`, `${label}: ${val}`)) }
-    addChip('foco', difficulties[0], 'chip--1')
-    addChip('prefere', toList(lp.preferred_formats)[0], 'chip--2')
-    addChip('evita', toList(lp.avoidances)[0], 'chip--3')
-    if (!chips.children.length) chips.append(el('span', 'chip chip--1', 'Perfil pedagógico ainda não detalhado'))
-    cbody.append(chips)
-    const link = el('a', 'resumo-link', 'Ver perfil pedagógico completo →')
-    link.href = `perfil-crianca.html?id=${cycle.child_id ?? ''}`
-    cbody.append(link)
-    if (cycle.main_goal) cbody.append(el('div', 'resumo-meta', `Meta do ciclo: ${cycle.main_goal}`))
-    card.append(cbody)
-    return card
-  }
-
-  function renderErro() {
-    const card = el('div', 'card')
-    card.append(simpleHead('Resumo'))
-    const cbody = el('div', 'card-b')
-    cbody.append(el('p', 'card-copy', 'Não foi possível carregar o resumo agora. Verifique a conexão e tente de novo.'))
-    const btn = el('button', 'btn btn-ghost btn-sm', 'Tentar novamente')
-    btn.type = 'button'; btn.addEventListener('click', reload)
-    cbody.append(btn)
-    card.append(cbody)
-    return card
-  }
-
-  async function reload() {
-    // sessions sempre (pulso/timeline/histórico). trail/módulos/missões/
-    // execuções só quando o ciclo está ativo — nos estados P/Z/F a cascata
-    // nem roda (o portão de ciclo decide antes).
-    const isActive = cycle.status === 'active'
-    const [sessRes, trailRes] = await Promise.all([
-      getCycleSessions(cycle.id),
-      isActive ? getLatestChildTrail(cycle.child_id, cycle.id) : Promise.resolve({ data: null, error: null }),
-    ])
-    const trail = trailRes?.data ?? null
-
-    let modRes = { data: [], error: null }
-    let exeRes = { data: [], error: null }
-    let missions = []
-    if (isActive) {
-      ;[modRes, exeRes] = await Promise.all([
-        trail ? getChildTrailModules(trail.id) : Promise.resolve({ data: [], error: null }),
-        listPendingExecucoes(cycle.child_id, cycle.id),
-      ])
-      // Erro nas missões afeta só o sinal informativo MISSAO_DISPONIVEL, não
-      // é crítico pra derivar o estado — não bloqueia o Resumo.
-      const mod = moduloAtualDe(modRes.data ?? [])
-      if (mod) missions = (await getChildTrailMissions(mod.id))?.data ?? []
-    }
-
-    // Consulta crítica falhou → NÃO derivar estado de dado incompleto (erro
-    // viraria "Tudo em dia" indevido). Erro honesto + tentar novamente.
-    if (sessRes.error || trailRes?.error || modRes.error || exeRes.error) {
-      wrap.replaceChildren(renderErro())
-      return
-    }
-
-    const sessions = sessRes.data ?? []
-    const modules = modRes.data ?? []
-    const execucoesPendentes = exeRes.data ?? []
-    const { estado, dados } = derivarEstadoResumo({ cycle, trail, modules, missions, execucoesPendentes })
-
-    // P/Z/F reduzem para "Próxima decisão" + histórico (quando existir). §5.
-    const reduced = !isActive
-    wrap.replaceChildren()
-    if (!reduced) wrap.append(renderPulso({ sessions, execucoesPendentes, trail, modules }))
-    wrap.append(renderDecisao(estado, dados))
-    if (!reduced || sessions.length) wrap.append(renderTimeline({ sessions, execucoesPendentes, trail }))
-    if (!reduced) wrap.append(renderContexto())
-  }
-
-  panel.reload = reload
-  return panel
-}
 
 // ── Painel: Plano — resumo compacto (o mapa grande mora em trilha.html) ─────
 // Não é navegação livre da criança — é o tutor decidindo a próxima etapa.
@@ -1433,137 +1132,6 @@ function closeCommandPalette() {
   document.querySelector('[data-cmdk-backdrop]')?.classList.remove('open')
 }
 
-// ── Tela Início (home antes do record) ────────────────────────────────────────
-
-const HOME_SUMMARY = {
-  cycle_active: 'Você tem 1 acompanhamento ativo.',
-  cycle_planned: 'Seu próximo acompanhamento ainda não começou.',
-  cycle_paused: 'Seu acompanhamento está pausado no momento.',
-  cycle_completed: 'Seu acompanhamento foi concluído — obrigado pelo cuidado.',
-}
-
-const NEXT_ACTION_LABEL = {
-  cycle_active: 'Registrar a sessão desta semana',
-  cycle_planned: 'Aguardando a equipe ativar o ciclo',
-  cycle_paused: 'Ciclo pausado — fale com a equipe',
-  cycle_completed: 'Nenhuma — ciclo concluído',
-}
-
-const CYCLE_LABEL = {
-  cycle_active: 'Ciclo ativo',
-  cycle_planned: 'Ciclo planejado',
-  cycle_paused: 'Ciclo pausado',
-  cycle_completed: 'Ciclo concluído',
-}
-
-async function buildHomeView(state, cycle, openRecord) {
-  const panel = el('section', 'panel')
-  const child = cycle.children ?? {}
-  const lp = child.learning_profiles ?? {}
-
-  const head = el('div', 'home-head')
-  const mascot = document.createElement('img')
-  mascot.className = 'mascot'
-  mascot.src = logoIconSrc
-  mascot.alt = ''
-  const headCopy = el('div')
-  headCopy.append(
-    el('p', 'kicker', 'Hoje'),
-    el('h1', null, greeting(session.profile.name || 'tutor')),
-    el('p', null, HOME_SUMMARY[state] ?? HOME_SUMMARY.cycle_active)
-  )
-  head.append(mascot, headCopy)
-  panel.append(head)
-
-  const { data, error } = await getCycleSessions(cycle.id)
-  const rows = error ? [] : (data ?? [])
-  const last = rows[0]
-  recentSessionsCache = rows
-
-  const difficulties = toList(lp.math_difficulties).length ? lp.math_difficulties : child.main_difficulties
-  const activity = pickSuggestedActivity(difficulties)
-
-  const stack = el('div', 'stack')
-  stack.style.cssText = 'padding:18px 26px 60px'
-
-  const buildStat = (label, value, accent) => {
-    const stat = el('div', `card home-stat${accent ? ' card--accent' : ''}`)
-    stat.append(el('div', 'lbl', label), el('div', 'val', value))
-    return stat
-  }
-
-  const statsRow = el('div', 'home-stats')
-  statsRow.append(
-    buildStat('Próxima ação', NEXT_ACTION_LABEL[state] ?? NEXT_ACTION_LABEL.cycle_active, true),
-    buildStat('Última sessão', last
-      ? `${formatLastSession(last.date)} · ${last.activity_title ?? 'sessão registrada'}`
-      : 'Ainda sem sessões registradas.'),
-    buildStat('Atividade sugerida', activity.title)
-  )
-  stack.append(statsRow)
-
-  const accCard = el('div', 'card')
-  accCard.append(simpleHead('Acompanhamentos'))
-  const accBody = el('div', 'card-b')
-  const list = el('div', 'home-list')
-
-  const item = el('button', 'home-item')
-  item.type = 'button'
-  const av = el('div', 'av', initials(child.name ?? 'Criança'))
-  const tx = el('div', 'tx')
-  const monthText = state === 'cycle_active'
-    ? ` · Mês ${currentCycleMonth(cycle.start_date, cycle.end_date)}/${monthsBetween(cycle.start_date, cycle.end_date)}`
-    : ''
-  const pendingText = state === 'cycle_active' && !rows.length ? ' · sessão pendente' : ''
-  tx.append(
-    el('b', null, child.name ?? 'Criança'),
-    el('span', null, `${CYCLE_LABEL[state] ?? ''}${monthText}${pendingText}`)
-  )
-  const chevron = document.createElement('span')
-  chevron.innerHTML = `<svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>`
-  item.append(av, tx, chevron.firstElementChild)
-  item.addEventListener('click', () => openRecord())
-  list.append(item)
-
-  accBody.append(list)
-  accCard.append(accBody)
-  stack.append(accCard)
-
-  const shortcutsCard = el('div', 'card')
-  shortcutsCard.append(simpleHead('Atalhos'))
-  const shortcutsBody = el('div', 'card-b')
-  const shortcuts = el('div', 'shortcut-list')
-
-  if (hasActiveTutorCycle(cycle)) {
-    const biblio = el('a', 'shortcut-item')
-    biblio.href = buildLibraryHref(cycle)
-    biblio.innerHTML = `<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`
-    biblio.append(document.createTextNode('Biblioteca'))
-    shortcuts.append(biblio)
-  }
-
-  const teamShortcut = el('button', 'shortcut-item')
-  teamShortcut.type = 'button'
-  teamShortcut.innerHTML = `<svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>`
-  teamShortcut.append(document.createTextNode('Falar com equipe'))
-  teamShortcut.addEventListener('click', () => openSupportDrawer(firstName(child.name)))
-  shortcuts.append(teamShortcut)
-
-  const sessionsShortcut = el('button', 'shortcut-item')
-  sessionsShortcut.type = 'button'
-  sessionsShortcut.innerHTML = `<svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-7"/></svg>`
-  sessionsShortcut.append(document.createTextNode('Ver sessões'))
-  sessionsShortcut.addEventListener('click', () => openRecord('sessions'))
-  shortcuts.append(sessionsShortcut)
-
-  shortcutsBody.append(shortcuts)
-  shortcutsCard.append(shortcutsBody)
-  stack.append(shortcutsCard)
-
-  panel.append(stack)
-  return panel
-}
-
 // ── Record completo (estado com ciclo) ───────────────────────────────────────
 
 function renderRecordHeader(cycle, state) {
@@ -1659,7 +1227,11 @@ function renderRecord(state, cycle, initialTab) {
 
   const header = renderRecordHeader(cycle, state)
   const tabs = renderTabs(0, 0)
-  const resumoPanel = buildResumoPanel(cycle, { openForm })
+  const resumoPanel = buildResumoPanel(cycle, {
+    openForm,
+    openPlan: () => switchTab('plan'),
+    openSessions: () => switchTab('sessions'),
+  })
   const sessionsPanel = buildSessionsPanel(cycle, state, sessionForm)
   const activitiesPanel = buildActivitiesPanel(cycle, state, { onSaved: refreshActivities, tutorId: session.user.id })
   const planPanel = buildPlanPanel(cycle, state)
@@ -1757,7 +1329,18 @@ async function renderCurrentView() {
     stateBox.replaceChildren(renderRecord(currentDerived.state, currentDerived.cycle, tab))
   } else {
     stateBox.replaceChildren(el('div', 'skel skel-rec'), el('div', 'skel skel-panel'))
-    const frag = await buildHomeView(currentDerived.state, currentDerived.cycle, (tab) => goRecord(tab))
+    const cycle = currentDerived.cycle
+    const homeChild = cycle.children ?? {}
+    const lp = homeChild.learning_profiles ?? {}
+    const difficulties = toList(lp.math_difficulties).length ? lp.math_difficulties : homeChild.main_difficulties
+    const frag = await buildHomeView(currentDerived.state, cycle, {
+      tutorName: session.profile.name || 'tutor',
+      openRecord: (tab) => goRecord(tab),
+      openSupport: () => openSupportDrawer(firstName(homeChild.name)),
+      libraryHref: buildLibraryHref(cycle),
+      suggestedActivity: pickSuggestedActivity(difficulties).title,
+      onSessionsLoaded: (rows) => { recentSessionsCache = rows },
+    })
     stateBox.replaceChildren(frag)
   }
 }

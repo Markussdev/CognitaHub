@@ -1,9 +1,10 @@
 // Helpers e constantes compartilhados entre os domínios extraídos de
-// js/pages/tutor.js (sessões em tutor/sessoes.js, perfil em tutor/perfil.js)
-// e os painéis que continuam no próprio tutor.js (Resumo, Plano, Atividades,
-// Início, rail). Nada aqui tem lógica exclusiva de um único domínio — por
-// isso fica num módulo-folha à parte, em vez de dentro de qualquer um dos
-// dois, o que evitaria import circular entre eles.
+// js/pages/tutor.js (sessões em tutor/sessoes.js, perfil em tutor/perfil.js,
+// atividades em tutor/atividades.js, resumo em tutor/resumo.js, início em
+// tutor/home.js) e os painéis que continuam no próprio tutor.js (Plano,
+// command palette, rail). Nada aqui tem lógica exclusiva de um único
+// domínio — por isso fica num módulo-folha à parte, em vez de dentro de
+// qualquer um dos outros, o que evitaria import circular entre eles.
 
 import { el } from '../../lib/ui.js'
 
@@ -83,6 +84,54 @@ export const MISSION_STATUS_LABEL = {
   bloqueada: 'Bloqueada',
   disponivel: 'Disponível',
   concluida: 'Concluída',
+}
+
+// Normaliza valores que podem chegar como array real, JSON stringificado
+// ("[\"a\",\"b\"]") ou literal de array do Postgres ("{a,\"b c\"}") — o
+// schema real mistura os três conforme a coluna foi preenchida. Usado pelo
+// Resumo (contexto/chips) e por tutor.js (buildLibraryHref, atividade
+// sugerida do Início).
+export function toList(value) {
+  if (value == null || value === '') return []
+  if (Array.isArray(value)) return value.filter(Boolean)
+  if (typeof value !== 'string') return [String(value)]
+
+  const trimmed = value.trim()
+  if (!trimmed) return []
+
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    const inner = trimmed.slice(1, -1)
+    if (!inner) return []
+    return (inner.match(/"(?:[^"\\]|\\.)*"|[^,]+/g) || [])
+      .map((s) => s.trim().replace(/^"|"$/g, '').replace(/\\"/g, '"'))
+      .filter(Boolean)
+  }
+  if (trimmed.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(trimmed)
+      if (Array.isArray(parsed)) return parsed.filter(Boolean)
+    } catch { /* não era JSON válido — trata como texto simples abaixo */ }
+  }
+  return [trimmed]
+}
+
+// Aritmética de meses do ciclo ("Mês 3/6") — usada pelo card Acompanhamentos
+// do Início (tutor/home.js) e pelo chip de status do cabeçalho do Record
+// (renderRecordHeader, tutor.js).
+export function monthsBetween(start, end) {
+  if (!start || !end) return 6
+  const s = new Date(`${start}T00:00:00Z`), e = new Date(`${end}T00:00:00Z`)
+  if (isNaN(s.getTime()) || isNaN(e.getTime())) return 6
+  return Math.max(1, (e.getUTCFullYear() - s.getUTCFullYear()) * 12 + (e.getUTCMonth() - s.getUTCMonth()))
+}
+
+export function currentCycleMonth(start, end) {
+  if (!start) return 1
+  const now = new Date(), s = new Date(`${start}T00:00:00Z`)
+  if (isNaN(s.getTime())) return 1
+  const total = monthsBetween(start, end)
+  const elapsed = (now.getUTCFullYear() - s.getUTCFullYear()) * 12 + (now.getUTCMonth() - s.getUTCMonth()) + 1
+  return Math.min(Math.max(elapsed, 1), total)
 }
 
 // Menu contextual "⋯" (Duplicar/Editar/Arquivar, Cancelar ciclo…) — usado
