@@ -15,14 +15,16 @@ import { DIGITAL_PRESETS } from '../data/digital-presets.js'
 import { emblemaUrl, mascoteUrl } from '../lib/trilha-assets.js'
 import { getModuleVisual } from '../data/module-visuals.js'
 import { getTutorRegistrationState } from '../data/tutor-registration.js'
-import { hasActiveTutorCycle } from '../lib/library-access.mjs'
 import { formatSchoolYear } from '../lib/school-year.js'
 import { renderSessionForm, buildSessionsPanel } from './tutor/sessoes.js'
 import { buildProfileView } from './tutor/perfil.js'
 import { buildActivitiesPanel } from './tutor/atividades.js'
 import { buildResumoPanel } from './tutor/resumo.js'
 import { buildHomeView } from './tutor/home.js'
-import { firstName, formatDate, formatExecucaoQuando, simpleHead, REVIEW_STATUSES, kebabMenu, MISSION_STATUS_LABEL, formatLastSession, toList, monthsBetween, currentCycleMonth } from './tutor/shared.js'
+import { openSupportDrawer, closeSupportDrawer } from './tutor/support.js'
+import { openCommandPalette, closeCommandPalette, wireCommandPalette, setRecentSessions } from './tutor/command-palette.js'
+import { renderRail, setActiveNav, renderCrumb, switchTab, wireTabs } from './tutor/navigation.js'
+import { firstName, formatDate, formatExecucaoQuando, simpleHead, REVIEW_STATUSES, kebabMenu, MISSION_STATUS_LABEL, formatLastSession, toList, monthsBetween, currentCycleMonth, buildLibraryHref, pickSuggestedActivity } from './tutor/shared.js'
 
 const session = await requireRole('tutor')
 const stateBox = document.querySelector('[data-tutor-state]')
@@ -96,29 +98,6 @@ document.querySelectorAll('[data-logout]').forEach((btn) => {
 // ordem (currentDerived é lido só no momento do clique, já populado).
 document.querySelector('[data-rail-home]')?.addEventListener('click', (e) => { e.preventDefault(); goHome() })
 document.querySelector('[data-rail-sessions]')?.addEventListener('click', (e) => { e.preventDefault(); goRecord('sessions') })
-// Href pra Biblioteca com o contexto completo da criança — usado pelo link
-// do rail e pelo atalho "Abrir biblioteca de atividades" do ⌘K (antes cada
-// um montava um subconjunto diferente de params; child_id sozinho já
-// quebrava "Personalizar para Mateus"/recomendações se faltasse).
-function buildLibraryHref(cycle) {
-  if (!hasActiveTutorCycle(cycle)) return null
-  const child = cycle.children ?? {}
-  const lp = child.learning_profiles ?? {}
-  const params = new URLSearchParams()
-  const childFirst = firstName(child.name)
-  if (childFirst) params.set('child', childFirst)
-  if (child.id) params.set('child_id', child.id)
-  if (cycle.id) params.set('cycle_id', cycle.id)
-  const age = ageFrom(child.birth_date)
-  if (age != null) params.set('age', String(age))
-  // Sinais pra "Recomendadas" da Biblioteca (regra explícita, sem IA) — dado
-  // que o painel já carregou, zero query extra em atividades.js.
-  const difficulties = toList(lp.math_difficulties).length ? toList(lp.math_difficulties) : toList(child.main_difficulties)
-  if (difficulties.length) params.set('focus', difficulties.join(','))
-  const formats = toList(lp.preferred_formats)
-  if (formats.length) params.set('pref', formats.join(','))
-  return 'atividades.html?' + params.toString()
-}
 
 document.querySelector('[data-rail-library]')?.addEventListener('click', (e) => {
   e.preventDefault()
@@ -138,9 +117,14 @@ document.querySelector('[data-rail-profile]')?.addEventListener('click', (e) => 
 // aqui; closeRailDrawer segue importada porque o Escape abaixo precisa dela.
 wireRailToggle()
 
-document.querySelector('[data-cmdk-trigger]')?.addEventListener('click', openCommandPalette)
-document.querySelector('[data-cmdk-backdrop]')?.addEventListener('click', closeCommandPalette)
-document.querySelector('[data-cmdk-input]')?.addEventListener('input', (e) => renderCommandResults(e.target.value))
+// getCycle/goRecord resolvem, pro command palette, o que hoje é lido direto
+// de currentDerived/RECORD_STATES/goRecord — nenhum dos três foi movido
+// nesta missão, então o módulo recebe só o que precisa.
+wireCommandPalette({
+  getCycle: () => (currentDerived && RECORD_STATES.includes(currentDerived.state) ? currentDerived.cycle : null),
+  goRecord,
+})
+
 document.addEventListener('keydown', (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openCommandPalette(); return }
   if (e.key === 'Escape') { closeSupportDrawer(); closeCommandPalette(); closeRailDrawer() }
@@ -165,56 +149,6 @@ function formatAttentionSpan(value, fallback) {
   return label ?? value
 }
 
-// Biblioteca local enxuta: a sugestão muda conforme o foco do ciclo em vez
-// de ser sempre a mesma atividade fixa. TODO(wiring:activities): trocar por
-// consulta à tabela activities quando ela existir.
-const ACTIVITY_LIBRARY = {
-  contagem: {
-    title: 'Blocos de contagem coloridos', skill: 'contagem até 10',
-    focus: 'contagem, adição simples e comparação de quantidades', time: '15-20 min',
-    materials: 'blocos, tampinhas ou objetos pequenos',
-    why: 'Combina com apoio visual e dura pouco — bom para sessões curtas.',
-    nextStep: 'Repetir contagem até 10 com apoio visual e comparar dois grupos pequenos.',
-  },
-  'adição simples': {
-    title: 'Soma com objetos concretos', skill: 'adição até 10',
-    focus: 'adição simples com apoio visual', time: '15-20 min',
-    materials: 'objetos pequenos ou desenhos',
-    why: 'Trabalha a adição de forma concreta antes do cálculo abstrato.',
-    nextStep: 'Avançar para somas com dois dígitos quando estiver confiante.',
-  },
-  'comparação de quantidades': {
-    title: 'Qual grupo tem mais?', skill: 'comparação de quantidades',
-    focus: 'comparar dois grupos de objetos', time: '10-15 min',
-    materials: 'objetos pequenos de duas cores',
-    why: 'Prepara o terreno para maior/menor antes da adição e subtração.',
-    nextStep: 'Introduzir os símbolos de maior e menor depois da comparação visual.',
-  },
-  'sequência numérica': {
-    title: 'Trilha numérica', skill: 'sequência de 1 a 10',
-    focus: 'ordem numérica e reconhecimento dos números', time: '15-20 min',
-    materials: 'cartões numerados ou trilha desenhada',
-    why: 'Reforça a ordem dos números com movimento, bom para manter o foco.',
-    nextStep: 'Aumentar a trilha até 20 quando a sequência até 10 estiver firme.',
-  },
-  subtração: {
-    title: 'Tirando da coleção', skill: 'subtração até 10',
-    focus: 'subtração simples com apoio concreto', time: '15-20 min',
-    materials: 'objetos pequenos para retirar do grupo',
-    why: 'Mostra a subtração como ação física antes do símbolo no papel.',
-    nextStep: 'Registrar a subtração por escrito quando a ação concreta estiver clara.',
-  },
-}
-const DEFAULT_ACTIVITY = ACTIVITY_LIBRARY.contagem
-
-function pickSuggestedActivity(difficulties) {
-  const list = toList(difficulties).map((d) => d.toLowerCase())
-  const match = Object.keys(ACTIVITY_LIBRARY).find((key) =>
-    list.some((d) => d.includes(key) || key.includes(d))
-  )
-  return match ? ACTIVITY_LIBRARY[match] : DEFAULT_ACTIVITY
-}
-
 // ── Identidade (uma vez por sessão) ──────────────────────────────────────────
 
 function fillIdentity() {
@@ -231,76 +165,6 @@ function fillIdentity() {
       setAvatarImage('[data-topbar-avatar]', url)
     })
   }
-}
-
-// ── Rail / breadcrumb ─────────────────────────────────────────────────────────
-
-function renderRail(hasRecord, childName, activeCycle = null) {
-  const group = document.querySelector('[data-rail-acomp-group]')
-  const slot = document.querySelector('[data-rail-child-slot]')
-  const resourcesGroup = document.querySelector('[data-rail-resources-group]')
-  const libraryLink = document.querySelector('[data-rail-library]')
-  const sessionsLink = document.querySelector('[data-rail-sessions]')
-  if (!slot) return
-
-  const libraryAvailable = hasActiveTutorCycle(activeCycle)
-  libraryLink.hidden = !libraryAvailable
-  resourcesGroup.hidden = !libraryAvailable && !hasRecord
-
-  // "Falar com equipe" é suporte global — fica sempre visível, com ou sem ciclo.
-  if (!hasRecord) {
-    group.hidden = true
-    slot.replaceChildren()
-    sessionsLink.hidden = true
-    return
-  }
-
-  group.hidden = false
-  sessionsLink.hidden = false
-
-  const link = el('a', 'rail-link')
-  link.href = '#'
-  link.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/></svg>`
-  link.append(document.createTextNode(childName))
-  link.addEventListener('click', (e) => { e.preventDefault(); goRecord() })
-  slot.replaceChildren(link)
-}
-
-function setActiveNav(view) {
-  const homeLink = document.querySelector('[data-rail-home]')
-  const childLink = document.querySelector('[data-rail-child-slot] .rail-link')
-  if (homeLink) homeLink.classList.toggle('active', view === 'home')
-  if (childLink) childLink.classList.toggle('active', view === 'record')
-}
-
-function renderCrumb(view, childName) {
-  const crumb = document.querySelector('[data-crumb]')
-  if (!crumb) return
-  crumb.replaceChildren()
-  if (view === 'record' && childName) {
-    crumb.append(document.createTextNode('Acompanhamento / '), el('b', null, childName))
-  } else if (view === 'profile') {
-    crumb.append(document.createTextNode('Meu perfil'))
-  } else {
-    crumb.append(document.createTextNode('Painel do tutor'))
-  }
-}
-
-// ── Troca de aba ──────────────────────────────────────────────────────────────
-
-function switchTab(id) {
-  document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t.dataset.tab === id))
-  document.querySelectorAll('[data-panel]').forEach((p) => { p.hidden = p.dataset.panel !== id })
-  if (id !== 'overview') return
-  requestAnimationFrame(() => {
-    document.querySelector('[data-panel="overview"]')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  })
-}
-
-function wireTabs() {
-  document.querySelectorAll('.tab').forEach((tab) => {
-    tab.addEventListener('click', () => switchTab(tab.dataset.tab))
-  })
 }
 
 // ── Estados sem record (sem criança vinculada ainda) ──────────────────────────
@@ -969,169 +833,6 @@ function buildPlanPanel(cycle, state) {
   return panel
 }
 
-// ── Central Cognita: drawer global de suporte ─────────────────────────────────
-// Suporte é utilitário global (qualquer tela pode abrir), não um recurso do
-// acompanhamento de uma criança — por isso vive num slide-over, não numa aba.
-
-function buildSupportDrawerContent(childName) {
-  const frag = document.createDocumentFragment()
-
-  if (childName) {
-    const ctx = el('div', 'support-context')
-    ctx.append(document.createTextNode('Sobre: '), el('b', null, childName))
-    frag.append(ctx)
-  }
-
-  // Contato honesto: sem o formulário que não persistia (o antigo "Enviar
-  // para equipe" só guardava local). Enquanto não existir fluxo de
-  // support_requests, o canal real é e-mail/WhatsApp da equipe Cognita.
-  frag.append(el('p', 'card-copy', 'Precisa de ajuda com o acompanhamento? Fale direto com a equipe Cognita. Tempo médio de resposta: até 48h.'))
-
-  const contactActions = el('div', 'rec-actions')
-  contactActions.style.cssText = 'gap:8px;flex-direction:column;align-items:stretch'
-  const mail = el('a', 'btn btn-accent btn-sm', 'Enviar e-mail')
-  mail.href = `mailto:cognitahub1@gmail.com?subject=${encodeURIComponent(childName ? `Ajuda no ciclo de ${childName}` : 'Ajuda no Cognita Hub')}`
-  const whats = el('a', 'btn btn-ghost btn-sm', 'Chamar no WhatsApp')
-  whats.href = 'https://wa.me/559182050907'
-  whats.target = '_blank'; whats.rel = 'noopener'
-  contactActions.append(mail, whats)
-  frag.append(contactActions)
-
-  return frag
-}
-
-function openSupportDrawer(childName) {
-  const body = document.querySelector('[data-support-body]')
-  const drawer = document.querySelector('[data-support-drawer]')
-  const backdrop = document.querySelector('[data-support-backdrop]')
-  if (!body || !drawer || !backdrop) return
-  body.replaceChildren(buildSupportDrawerContent(childName))
-  drawer.classList.add('open')
-  backdrop.classList.add('open')
-  drawer.setAttribute('aria-hidden', 'false')
-}
-
-function closeSupportDrawer() {
-  document.querySelector('[data-support-drawer]')?.classList.remove('open')
-  document.querySelector('[data-support-backdrop]')?.classList.remove('open')
-  document.querySelector('[data-support-drawer]')?.setAttribute('aria-hidden', 'true')
-}
-
-document.querySelector('[data-support-close]')?.addEventListener('click', closeSupportDrawer)
-document.querySelector('[data-support-backdrop]')?.addEventListener('click', closeSupportDrawer)
-
-// ── Busca / command palette (local, V1 só navega dentro da própria tela) ─────
-
-let recentSessionsCache = []
-
-const CMDK_ICONS = {
-  plus: `<svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>`,
-  user: `<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/></svg>`,
-  book: `<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
-  team: `<svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>`,
-  history: `<svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-7"/></svg>`,
-}
-
-function getCommandGroups() {
-  const hasRecord = currentDerived && RECORD_STATES.includes(currentDerived.state)
-  const cycle = hasRecord ? currentDerived.cycle : null
-  const libraryAvailable = hasActiveTutorCycle(cycle)
-  const childName = cycle ? firstName(cycle.children?.name) : null
-
-  const quick = []
-  if (hasRecord) {
-    quick.push({ label: 'Registrar sessão', icon: CMDK_ICONS.plus, action: () => goRecord('sessions') })
-    quick.push({ label: 'Ver perfil pedagógico', icon: CMDK_ICONS.user, action: () => { window.location.href = `perfil-crianca.html?id=${cycle.child_id ?? ''}` } })
-  }
-  if (libraryAvailable) {
-    quick.push({ label: 'Abrir biblioteca de atividades', icon: CMDK_ICONS.book, action: () => {
-      window.location.href = buildLibraryHref(cycle)
-    } })
-  }
-  quick.push({ label: 'Falar com a equipe', icon: CMDK_ICONS.team, action: () => openSupportDrawer(childName) })
-
-  const groups = [{ label: 'Ações rápidas', items: quick }]
-
-  if (hasRecord) {
-    groups.push({
-      label: 'Acompanhamentos',
-      items: [{ label: cycle.children?.name ?? 'Criança', icon: CMDK_ICONS.user, action: () => goRecord() }],
-    })
-
-    if (libraryAvailable) {
-      groups.push({
-        label: 'Atividades',
-        items: Object.values(ACTIVITY_LIBRARY).map((activity) => ({
-          label: activity.title,
-          icon: CMDK_ICONS.book,
-          action: () => { window.location.href = buildLibraryHref(cycle) },
-        })),
-      })
-    }
-
-    if (recentSessionsCache.length) {
-      groups.push({
-        label: 'Sessões recentes',
-        items: recentSessionsCache.slice(0, 4).map((r) => ({
-          label: `${r.activity_title ?? 'Sessão'} — ${formatLastSession(r.date)}`,
-          icon: CMDK_ICONS.history,
-          action: () => goRecord('sessions'),
-        })),
-      })
-    }
-  }
-
-  return groups
-}
-
-function renderCommandResults(query) {
-  const results = document.querySelector('[data-cmdk-results]')
-  if (!results) return
-  const q = query.trim().toLowerCase()
-
-  const groups = getCommandGroups()
-    .map((g) => ({ ...g, items: q ? g.items.filter((i) => i.label.toLowerCase().includes(q)) : g.items }))
-    .filter((g) => g.items.length)
-
-  if (!groups.length) {
-    results.replaceChildren(el('div', 'cmdk-empty', 'Nada encontrado por aqui.'))
-    return
-  }
-
-  const frag = document.createDocumentFragment()
-  groups.forEach((g) => {
-    frag.append(el('div', 'cmdk-group-label', g.label))
-    g.items.forEach((item) => {
-      const btn = el('button', 'cmdk-item')
-      btn.type = 'button'
-      btn.innerHTML = item.icon
-      btn.append(document.createTextNode(item.label))
-      btn.addEventListener('click', () => { closeCommandPalette(); item.action() })
-      frag.append(btn)
-    })
-  })
-  results.replaceChildren(frag)
-}
-
-function openCommandPalette() {
-  const panel = document.querySelector('[data-cmdk]')
-  const backdrop = document.querySelector('[data-cmdk-backdrop]')
-  const input = document.querySelector('[data-cmdk-input]')
-  if (!panel || !backdrop) return
-  panel.classList.add('open')
-  backdrop.classList.add('open')
-  if (input) {
-    input.value = ''
-    renderCommandResults('')
-    requestAnimationFrame(() => input.focus())
-  }
-}
-
-function closeCommandPalette() {
-  document.querySelector('[data-cmdk]')?.classList.remove('open')
-  document.querySelector('[data-cmdk-backdrop]')?.classList.remove('open')
-}
-
 // ── Record completo (estado com ciclo) ───────────────────────────────────────
 
 function renderRecordHeader(cycle, state) {
@@ -1201,7 +902,7 @@ function renderRecord(state, cycle, initialTab) {
   let sessionForm
   const refreshSessions = async () => {
     const rows = await sessionsPanel.loadTable()
-    recentSessionsCache = rows
+    setRecentSessions(rows)
     const badge = tabs.querySelector('[data-tab="sessions"] .badge')
     if (badge) badge.textContent = String(rows.length)
     resumoPanel.reload?.()
@@ -1339,7 +1040,7 @@ async function renderCurrentView() {
       openSupport: () => openSupportDrawer(firstName(homeChild.name)),
       libraryHref: buildLibraryHref(cycle),
       suggestedActivity: pickSuggestedActivity(difficulties).title,
-      onSessionsLoaded: (rows) => { recentSessionsCache = rows },
+      onSessionsLoaded: setRecentSessions,
     })
     stateBox.replaceChildren(frag)
   }
@@ -1368,7 +1069,7 @@ async function bootstrap() {
   if (!stateBox) return
 
   stateBox.replaceChildren(el('div', 'skel skel-rec'), el('div', 'skel skel-panel'))
-  renderRail(false, '', null)
+  renderRail(false, '', null, { openRecord: goRecord })
   renderCrumb('home', '')
 
   const { data: cycles, error } = await getTutorCycles(session.user.id)
@@ -1384,7 +1085,8 @@ async function bootstrap() {
   renderRail(
     hasRecord,
     hasRecord ? firstName(currentDerived.cycle.children?.name) : '',
-    currentDerived.state === 'cycle_active' ? currentDerived.cycle : null
+    currentDerived.state === 'cycle_active' ? currentDerived.cycle : null,
+    { openRecord: goRecord }
   )
   const _urlParams = new URLSearchParams(location.search)
   const _viewParam = _urlParams.get('view')

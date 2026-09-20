@@ -76,6 +76,9 @@ js/pages/
     ├── atividades.js
     ├── resumo.js
     ├── home.js
+    ├── support.js
+    ├── command-palette.js
+    ├── navigation.js
     └── shared.js
 
 `shared.js` deve continuar pequeno e conter apenas helpers realmente
@@ -220,27 +223,148 @@ Validação:
 - confirmado: `home.js` não importa nem referencia a command palette;
 - smoke test manual no navegador: **pendente**.
 
+### Suporte (drawer global)
+
+Movido para:
+
+`js/pages/tutor/support.js`
+
+Inclui:
+- `buildSupportDrawerContent` (privada, não exportada — só uso interno);
+- `openSupportDrawer`, `closeSupportDrawer`.
+
+Autocontido: não dependia de `session`, `currentDerived` nem de outro estado
+de `tutor.js` — só do DOM (`data-support-*`) e do `childName` recebido por
+parâmetro. Por isso não precisou de nenhum contrato novo, só virou import.
+Wiring dos botões fechar/backdrop preservada como efeito colateral do
+import (mesmo padrão de `wireRailToggle()`).
+
+Resultado:
+aprox. 50 linhas removidas de `tutor.js`.
+
+### Command palette
+
+Movido para:
+
+`js/pages/tutor/command-palette.js`
+
+Inclui:
+- `CMDK_ICONS`;
+- `getCommandGroups`, `renderCommandResults`;
+- `openCommandPalette`, `closeCommandPalette`.
+
+Dependências implícitas tornadas explícitas via `wireCommandPalette({
+getCycle, goRecord })`, chamado uma vez por `tutor.js` no bootstrap (onde
+antes estavam as 3 linhas de wiring `data-cmdk-*`):
+- `getCycle()` — substitui a leitura direta de
+  `currentDerived`/`RECORD_STATES` (nenhum dos dois foi movido, ficam pra
+  extração de navegação); `tutor.js` passa
+  `() => (currentDerived && RECORD_STATES.includes(currentDerived.state) ? currentDerived.cycle : null)`;
+- `goRecord` — passado por referência, a function declaration continua em
+  `tutor.js` (não fazia parte desta missão);
+- `recentSessionsCache` **virou estado próprio do módulo** (antes era `let`
+  solto em `tutor.js`, escrito pelo Início e por Sessões, lido só pelo
+  cmdk). `tutor.js` agora empurra atualizações via `setRecentSessions(rows)`
+  — os dois pontos de escrita (`refreshSessions` em `renderRecord` e
+  `onSessionsLoaded` no call site do Início) mudaram de
+  `recentSessionsCache = rows` para `setRecentSessions(rows)`.
+
+`ACTIVITY_LIBRARY`/`DEFAULT_ACTIVITY`/`pickSuggestedActivity` foram para
+`shared.js`, não para `command-palette.js` — o call site do Início em
+`tutor.js` (`renderCurrentView`) também usa `pickSuggestedActivity` pra
+montar `suggestedActivity`. `buildLibraryHref` foi junto pro mesmo lugar
+pelo mesmo motivo (rail, Início e cmdk usam os três).
+`openSupportDrawer` é importado direto de `tutor/support.js` — módulo-irmão,
+não interno de `tutor.js`.
+
+Resultado combinado (suporte + cmdk):
+aprox. 229 linhas removidas de `tutor.js` (1419 → 1190).
+
+Validação:
+- build passou;
+- dev transform passou (curl em `/js/pages/tutor.js`, `/js/pages/tutor/support.js`,
+  `/js/pages/tutor/command-palette.js` e `/js/pages/tutor/shared.js`, imports
+  resolvidos);
+- confirmado: nenhum import circular (`support.js`/`command-palette.js` não
+  importam `tutor.js`);
+- confirmado: `tutor.js` não contém mais `buildSupportDrawerContent`/
+  `openSupportDrawer`/`closeSupportDrawer`/`CMDK_ICONS`/`getCommandGroups`/
+  `renderCommandResults`/`openCommandPalette`/`closeCommandPalette`/
+  `ACTIVITY_LIBRARY`/`pickSuggestedActivity`/`recentSessionsCache`;
+- smoke test manual no navegador: **pendente**.
+
+### UI de navegação (rail/breadcrumb/tabs)
+
+Movido para:
+
+`js/pages/tutor/navigation.js`
+
+Inclui:
+- `renderRail`, `setActiveNav`, `renderCrumb`;
+- `switchTab`, `wireTabs`.
+
+`fillIdentity` foi avaliada e **não** foi movida: preenche `data-account-*`/
+`data-topbar-avatar` (identidade do tutor logado — nome/avatar/e-mail) a
+partir de `session` direto. É uma região de DOM diferente da de rail/tabs/
+crumb (que respondem "onde o usuário está"), não compartilha seletores nem
+gatilhos com elas, e forçá-la pra `navigation.js` exigiria ensinar o módulo
+sobre `session` só pra reduzir linhas de `tutor.js` — exatamente o que a
+missão pediu pra não fazer.
+
+Dependência implícita tornada explícita: `renderRail` chamava `goRecord()`
+direto no clique do link da criança. Virou callback:
+`renderRail(hasRecord, childName, activeCycle, { openRecord })`, com
+`tutor.js` passando `{ openRecord: goRecord }` nos dois call sites (o de
+`bootstrap()` antes do ciclo carregar, com `hasRecord=false`, e o de depois
+de `deriveTutorState`).
+
+`switchTab` continua exportado — outros módulos não o importam direto, mas
+`resumo.js` recebe `openPlan`/`openSessions` que fecham sobre `switchTab` do
+lado de `tutor.js`.
+
+Resultado:
+aprox. 69 linhas removidas de `tutor.js` (1190 → 1121).
+
+Validação:
+- build passou;
+- dev transform passou (curl em `/js/pages/tutor.js` e
+  `/js/pages/tutor/navigation.js`, imports resolvidos);
+- confirmado: nenhum import circular (`navigation.js` não importa `tutor.js`);
+- confirmado: `tutor.js` não contém mais `renderRail`/`setActiveNav`/
+  `renderCrumb`/`switchTab`/`wireTabs`;
+- confirmado: `fillIdentity` continua em `tutor.js`;
+- smoke test manual no navegador: **pendente**.
+
 ---
 
 ## Próximo alvo
 
-Suporte + command palette + navegação (`openSupportDrawer`,
-`buildSupportDrawerContent`, `getCommandGroups`/`renderCommandResults`/
-`openCommandPalette`/`closeCommandPalette`, `switchTab`/`wireTabs`,
-`ACTIVITY_LIBRARY`/`pickSuggestedActivity`, `recentSessionsCache`).
+Plano/Jornada/Pareamento (`buildPlanPanel` e vizinhos) — último bloco
+grande, guardado pra depois de propósito por ser a região de maior risco.
 
-Esta é a extração que finalmente decide o destino de `ACTIVITY_LIBRARY`/
-`pickSuggestedActivity` (hoje represado em `tutor.js` porque cmdk e Início
-os compartilhavam) e de `recentSessionsCache` (hoje escrito por Início e
-Sessões, lido pelo cmdk).
+O que ficou em `tutor.js` fora do Plano (`currentDerived`, `currentView`,
+`pendingTab`, `renderCurrentView`, `goHome`, `goRecord`, `goProfile`,
+`bootstrap`, `renderRecord`, a máquina de estados
+`deriveTutorState`/`RECORD_STATES`, e `fillIdentity`) não é mais um "ainda
+não fizemos" — a missão de navegação tratou isso como o orquestrador
+principal, que pertence a `tutor.js` por definição. Não tratar como próximo
+alvo automático; se um dia fizer sentido extrair, é decisão nova, não
+continuação desta lista.
 
-Ordem aproximada depois deste:
+`currentDerived` já é passado só por parâmetro/callback para todos os
+módulos extraídos até aqui (`resumo.js`, `atividades.js`, `home.js`, o
+`getCycle` do `command-palette.js`) — extrair o Plano não deve exigir
+revisitar nenhum deles.
 
-1. ~~Atividades~~ (concluído)
-2. ~~Resumo~~ (concluído)
-3. ~~Início (Home)~~ (concluído)
-4. suporte + command palette + navegação
-5. Plano/Jornada/Pareamento por último
+Ordem concluída até aqui:
+
+1. ~~Atividades~~
+2. ~~Resumo~~
+3. ~~Início (Home)~~
+4. ~~Suporte~~
+5. ~~Command palette~~
+6. ~~UI de navegação (rail/breadcrumb/tabs)~~
+7. Plano/Jornada/Pareamento (próximo, último bloco)
 
 `buildPlanPanel` é a região de maior risco e deve ficar para depois.
 

@@ -1,12 +1,15 @@
 // Helpers e constantes compartilhados entre os domínios extraídos de
 // js/pages/tutor.js (sessões em tutor/sessoes.js, perfil em tutor/perfil.js,
 // atividades em tutor/atividades.js, resumo em tutor/resumo.js, início em
-// tutor/home.js) e os painéis que continuam no próprio tutor.js (Plano,
-// command palette, rail). Nada aqui tem lógica exclusiva de um único
-// domínio — por isso fica num módulo-folha à parte, em vez de dentro de
-// qualquer um dos outros, o que evitaria import circular entre eles.
+// tutor/home.js, suporte em tutor/support.js, command palette em
+// tutor/command-palette.js) e os painéis que continuam no próprio tutor.js
+// (Plano, rail, máquina de estados/navegação). Nada aqui tem lógica
+// exclusiva de um único domínio — por isso fica num módulo-folha à parte,
+// em vez de dentro de qualquer um dos outros, o que evitaria import
+// circular entre eles.
 
-import { el } from '../../lib/ui.js'
+import { el, ageFrom } from '../../lib/ui.js'
+import { hasActiveTutorCycle } from '../../lib/library-access.mjs'
 
 export const gatoMatematicoSrc = '/assets/gatomatematico-sem-fundo.png'
 
@@ -89,8 +92,8 @@ export const MISSION_STATUS_LABEL = {
 // Normaliza valores que podem chegar como array real, JSON stringificado
 // ("[\"a\",\"b\"]") ou literal de array do Postgres ("{a,\"b c\"}") — o
 // schema real mistura os três conforme a coluna foi preenchida. Usado pelo
-// Resumo (contexto/chips) e por tutor.js (buildLibraryHref, atividade
-// sugerida do Início).
+// Resumo (contexto/chips), por buildLibraryHref (abaixo) e por tutor.js
+// (atividade sugerida do Início).
 export function toList(value) {
   if (value == null || value === '') return []
   if (Array.isArray(value)) return value.filter(Boolean)
@@ -113,6 +116,84 @@ export function toList(value) {
     } catch { /* não era JSON válido — trata como texto simples abaixo */ }
   }
   return [trimmed]
+}
+
+// Href pra Biblioteca com o contexto completo da criança — usado pelo link
+// do rail, pelo atalho "Abrir biblioteca de atividades" do ⌘K e pelo card
+// Atalhos do Início (antes cada consumidor montava um subconjunto diferente
+// de params; child_id sozinho já quebrava "Personalizar para
+// Mateus"/recomendações se faltasse). Retorna null quando o ciclo não tem
+// biblioteca disponível (hasActiveTutorCycle).
+export function buildLibraryHref(cycle) {
+  if (!hasActiveTutorCycle(cycle)) return null
+  const child = cycle.children ?? {}
+  const lp = child.learning_profiles ?? {}
+  const params = new URLSearchParams()
+  const childFirst = firstName(child.name)
+  if (childFirst) params.set('child', childFirst)
+  if (child.id) params.set('child_id', child.id)
+  if (cycle.id) params.set('cycle_id', cycle.id)
+  const age = ageFrom(child.birth_date)
+  if (age != null) params.set('age', String(age))
+  // Sinais pra "Recomendadas" da Biblioteca (regra explícita, sem IA) — dado
+  // que o painel já carregou, zero query extra em atividades.js.
+  const difficulties = toList(lp.math_difficulties).length ? toList(lp.math_difficulties) : toList(child.main_difficulties)
+  if (difficulties.length) params.set('focus', difficulties.join(','))
+  const formats = toList(lp.preferred_formats)
+  if (formats.length) params.set('pref', formats.join(','))
+  return 'atividades.html?' + params.toString()
+}
+
+// Biblioteca local enxuta de atividades sugeridas: a sugestão muda conforme
+// o foco do ciclo em vez de ser sempre a mesma atividade fixa. Usada pelo
+// card "Atividade sugerida" do Início e pelo grupo "Atividades" do ⌘K.
+// TODO(wiring:activities): trocar por consulta à tabela activities quando
+// ela existir.
+export const ACTIVITY_LIBRARY = {
+  contagem: {
+    title: 'Blocos de contagem coloridos', skill: 'contagem até 10',
+    focus: 'contagem, adição simples e comparação de quantidades', time: '15-20 min',
+    materials: 'blocos, tampinhas ou objetos pequenos',
+    why: 'Combina com apoio visual e dura pouco — bom para sessões curtas.',
+    nextStep: 'Repetir contagem até 10 com apoio visual e comparar dois grupos pequenos.',
+  },
+  'adição simples': {
+    title: 'Soma com objetos concretos', skill: 'adição até 10',
+    focus: 'adição simples com apoio visual', time: '15-20 min',
+    materials: 'objetos pequenos ou desenhos',
+    why: 'Trabalha a adição de forma concreta antes do cálculo abstrato.',
+    nextStep: 'Avançar para somas com dois dígitos quando estiver confiante.',
+  },
+  'comparação de quantidades': {
+    title: 'Qual grupo tem mais?', skill: 'comparação de quantidades',
+    focus: 'comparar dois grupos de objetos', time: '10-15 min',
+    materials: 'objetos pequenos de duas cores',
+    why: 'Prepara o terreno para maior/menor antes da adição e subtração.',
+    nextStep: 'Introduzir os símbolos de maior e menor depois da comparação visual.',
+  },
+  'sequência numérica': {
+    title: 'Trilha numérica', skill: 'sequência de 1 a 10',
+    focus: 'ordem numérica e reconhecimento dos números', time: '15-20 min',
+    materials: 'cartões numerados ou trilha desenhada',
+    why: 'Reforça a ordem dos números com movimento, bom para manter o foco.',
+    nextStep: 'Aumentar a trilha até 20 quando a sequência até 10 estiver firme.',
+  },
+  subtração: {
+    title: 'Tirando da coleção', skill: 'subtração até 10',
+    focus: 'subtração simples com apoio concreto', time: '15-20 min',
+    materials: 'objetos pequenos para retirar do grupo',
+    why: 'Mostra a subtração como ação física antes do símbolo no papel.',
+    nextStep: 'Registrar a subtração por escrito quando a ação concreta estiver clara.',
+  },
+}
+const DEFAULT_ACTIVITY = ACTIVITY_LIBRARY.contagem
+
+export function pickSuggestedActivity(difficulties) {
+  const list = toList(difficulties).map((d) => d.toLowerCase())
+  const match = Object.keys(ACTIVITY_LIBRARY).find((key) =>
+    list.some((d) => d.includes(key) || key.includes(d))
+  )
+  return match ? ACTIVITY_LIBRARY[match] : DEFAULT_ACTIVITY
 }
 
 // Aritmética de meses do ciclo ("Mês 3/6") — usada pelo card Acompanhamentos
