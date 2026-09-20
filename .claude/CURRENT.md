@@ -79,6 +79,8 @@ js/pages/
     ├── support.js
     ├── command-palette.js
     ├── navigation.js
+    ├── pareamento.js
+    ├── jornada.js
     └── shared.js
 
 `shared.js` deve continuar pequeno e conter apenas helpers realmente
@@ -335,28 +337,105 @@ Validação:
 - confirmado: `fillIdentity` continua em `tutor.js`;
 - smoke test manual no navegador: **pendente**.
 
+### Pareamento
+
+Movido para:
+
+`js/pages/tutor/pareamento.js`
+
+Inclui:
+- `renderDeviceCard` → renomeada `buildPairingCard(childId)` (mesmo padrão
+  `build*Card`/`build*Panel` dos outros módulos de `tutor/`; `childId`
+  explícito no lugar do `cycle.child_id` capturado por closure).
+
+Utilidade autocontida desde sempre — não precisou de contrato novo além de
+virar parâmetro explícito. Não conhece Jornada, módulos, missões nem
+`tutor.js`. Dependências próprias: `listPairedDevices`, `createPairingCode`
+(`data/pareamento.js`).
+
+Validada isoladamente antes da Etapa 2 (Jornada), conforme pedido.
+
+### Jornada
+
+Movido para:
+
+`js/pages/tutor/jornada.js`
+
+Inclui:
+- `MODULE_STATUS_LABEL` (local, não exportada — só uso interno, igual
+  estava);
+- `appendChildAppLink`;
+- `buildPlanPanel` e todas as funções internas exclusivas (`blockedNoteEl`,
+  `renderStepper`, `renderErrorLine`, `renderAssign`,
+  `renderRecommendedJourneyCard`, `renderCustomJourneyCard`, `renderTrail`,
+  `abrirReopenPanel` aninhada, `load`).
+
+Contrato externo **mantido tal como estava**, sem ajuste — este bloco nunca
+teve dependência implícita de `session`/`currentDerived`/navegação, só de
+`cycle`/`state` já recebidos por parâmetro:
+
+```js
+buildPlanPanel(cycle, state)
+// → <section data-panel="plan" hidden> com panel.loadStatus = load
+```
+
+`tutor.js` continua só:
+
+```js
+const planPanel = buildPlanPanel(cycle, state)
+...
+planPanel.loadStatus?.()
+```
+
+O card de pareamento agora vem de `buildPairingCard(cycle.child_id)`
+(import de `./pareamento.js`, módulo-irmão) no lugar do antigo
+`renderDeviceCard()` interno.
+
+`PLANOS_REGISTRO`/`pendingEtapaParams` (sistema paralelo e legado de
+"etapas" vindo de `trilha.html`) **não migraram** — nunca pertenceram a
+`buildPlanPanel`, são usados só em `renderRecord`, que fica em `tutor.js`.
+Confirmado na auditoria prévia a esta missão.
+
+Resultado combinado (Pareamento + Jornada):
+aprox. 554 linhas removidas de `tutor.js` (1121 → 567).
+
+Validação:
+- build passou (as duas etapas, cada uma isoladamente);
+- dev transform passou (curl em `/js/pages/tutor.js`,
+  `/js/pages/tutor/pareamento.js` e `/js/pages/tutor/jornada.js`, imports
+  resolvidos);
+- confirmado: nenhum import circular (`pareamento.js`/`jornada.js` não
+  importam `tutor.js`);
+- confirmado: `tutor.js` não contém mais `renderDeviceCard`/
+  `buildPlanPanel`/`appendChildAppLink`/`MODULE_STATUS_LABEL`;
+- smoke test manual no navegador: **pendente**.
+
 ---
 
 ## Próximo alvo
 
-Plano/Jornada/Pareamento (`buildPlanPanel` e vizinhos) — último bloco
-grande, guardado pra depois de propósito por ser a região de maior risco.
+Nenhum bloco grande de domínio resta represado — Plano/Jornada/Pareamento
+era o último. `tutor.js` está em 567 linhas: orquestrador
+(`bootstrap`/`renderCurrentView`/`goHome`/`goRecord`/`goProfile`/
+`renderRecord`/`renderRecordHeader`/`renderTabs`), máquina de estados
+(`deriveTutorState`/`RECORD_STATES`), estados sem record
+(`renderNoRecord` e variantes), `fillIdentity` e o wiring de topo (detecção
+de `?activity=`/`?preset=`/retorno do Modo Condução). Isso pertence ao
+orquestrador principal por definição (decisão já registrada na extração de
+navegação) — não é fila de próximas extrações.
 
-O que ficou em `tutor.js` fora do Plano (`currentDerived`, `currentView`,
-`pendingTab`, `renderCurrentView`, `goHome`, `goRecord`, `goProfile`,
-`bootstrap`, `renderRecord`, a máquina de estados
-`deriveTutorState`/`RECORD_STATES`, e `fillIdentity`) não é mais um "ainda
-não fizemos" — a missão de navegação tratou isso como o orquestrador
-principal, que pertence a `tutor.js` por definição. Não tratar como próximo
-alvo automático; se um dia fizer sentido extrair, é decisão nova, não
-continuação desta lista.
+Achado solto (não é desta fase, só registro): `formatList` e
+`formatAttentionSpan`/`ATTENTION_SPAN_LABEL` (linhas ~128-142 de
+`tutor.js`) estão definidos mas **não têm nenhum call site** — código morto
+pré-existente, não introduzido por nenhuma extração. Não removido porque
+não fazia parte de nenhuma missão até aqui; sinalizar se for pedida uma
+limpeza.
 
-`currentDerived` já é passado só por parâmetro/callback para todos os
-módulos extraídos até aqui (`resumo.js`, `atividades.js`, `home.js`, o
-`getCycle` do `command-palette.js`) — extrair o Plano não deve exigir
-revisitar nenhum deles.
+A próxima tarefa nesta área provavelmente é: **smoke test manual completo**
+no navegador (pendente desde a extração de Atividades) e/ou revisão de
+todo o diff acumulado antes de considerar a jardinagem estrutural encerrada.
 
-Ordem concluída até aqui:
+Ordem concluída:
 
 1. ~~Atividades~~
 2. ~~Resumo~~
@@ -364,9 +443,8 @@ Ordem concluída até aqui:
 4. ~~Suporte~~
 5. ~~Command palette~~
 6. ~~UI de navegação (rail/breadcrumb/tabs)~~
-7. Plano/Jornada/Pareamento (próximo, último bloco)
-
-`buildPlanPanel` é a região de maior risco e deve ficar para depois.
+7. ~~Pareamento~~
+8. ~~Jornada~~
 
 ---
 
