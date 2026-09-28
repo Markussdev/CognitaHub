@@ -6,6 +6,7 @@ const CAP1 = 'Assets - Cap 1/'
 const CAP1_OUT = 'apps/mobile/src/assets/cap1/'
 const SPACE_OUT = 'apps/mobile/src/assets/space/'
 const MASCOT_OUT = 'apps/mobile/src/assets/mascot/'
+const AVATARS_OUT = 'apps/mobile/src/assets/avatars/'
 
 const MANIFEST = [
   // ---- Cap 1: fundo único (decoração já vem só nas bordas, centro vazio) ----
@@ -50,6 +51,15 @@ const MANIFEST = [
   // ---- Já embutidos no app (hoje são os PNG originais de 1254px) ----
   { src: 'assets/logo-icon-transparent.png', out: 'apps/mobile/src/assets/logo-icon-transparent.webp', width: 160, quality: 85 },
   { src: 'assets/mascot-hero-wave.png', out: 'apps/mobile/src/assets/mascot-hero-wave.webp', width: 320 },
+
+  // ---- Avatares de "Meu perfil" — os 4 gatinhos-fantasia que a criança
+  // escolhe (chaves fixas no banco: astronauta/cientista/mago/pintor). Sem
+  // trim: são retratos quadrados com cenário até a borda, não sprites com
+  // fundo transparente. ----
+  { src: 'assets/cat-astronauta.png', out: AVATARS_OUT + 'astronauta.webp', width: 320 },
+  { src: 'assets/cat-cientista.png', out: AVATARS_OUT + 'cientista.webp', width: 320 },
+  { src: 'assets/cat-mago.png', out: AVATARS_OUT + 'mago.webp', width: 320 },
+  { src: 'assets/cat-pintor.png', out: AVATARS_OUT + 'pintor.webp', width: 320 },
 ]
 
 async function run() {

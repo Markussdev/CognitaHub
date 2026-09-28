@@ -1,252 +1,164 @@
-# Database do MVP
+# Banco de Dados — Cognita Hub
 
-Este documento descreve a base de dados final prevista para o MVP do Cognita Hub. A estrutura foi pensada para um backend futuro com Firestore, mas tambem serve como guia para os dados simulados usados nas telas estaticas.
+Última verificação no projeto Supabase de produção: 3 de setembro de 2026.
 
-## Colecoes principais
+O banco oficial do Cognita Hub é PostgreSQL por meio do Supabase. O schema em produção é atualmente a fonte de verdade.
 
-```text
-users
-children
-learningProfiles
-tutorApplications
-supportCycles
-matches
-sessions
-activities
-progressLogs
-reports
-adminNotes
-consents
-```
+> O repositório ainda não possui uma baseline nem uma sequência confiável de migrations. Portanto, neste momento, clonar o projeto não é suficiente para reconstruir o banco.
 
-## users/{userId}
+O schema `public` contém 26 tabelas, organizadas abaixo por domínio.
 
-```js
-{
-  name,
-  email,
-  role: "guardian" | "tutor" | "admin",
-  phone,
-  status: "active" | "pending" | "inactive",
-  createdAt
-}
-```
+## Identidade
 
-Guarda os dados basicos de acesso e identificacao dos usuarios do sistema.
+- `profiles`
+- `tutor_applications`
 
-## children/{childId}
+`auth.users` é gerenciado pelo Supabase. `profiles.id` corresponde ao identificador do usuário em `auth.users`.
 
-```js
-{
-  guardianId,
-  name,
-  age,
-  schoolYear,
-  hasFormalDiagnosis: true | false | "not_informed",
-  mainDifficulties,
-  learningPreferences,
-  interests,
-  sensoryNotes,
-  routineNotes,
-  status: "waiting" | "matched" | "active" | "completed",
-  createdAt
-}
-```
+Papéis disponíveis em `profiles.role`:
 
-Representa a crianca cadastrada pelo responsavel e sua situacao dentro do fluxo do hub.
+- `guardian`;
+- `tutor`;
+- `admin`;
+- `child_device`.
 
-## consents/{consentId}
+Estados disponíveis em `profiles.status`:
 
-```js
-{
-  guardianId,
-  childId,
-  dataUseAccepted,
-  contactAccepted,
-  imageUseAccepted,
-  termsVersion,
-  acceptedAt
-}
-```
+- `pending`;
+- `active`;
+- `inactive`.
 
-Registra o consentimento do responsavel para uso de dados, contato e imagem da crianca quando aplicavel.
+## Crianças e consentimentos
 
-## learningProfiles/{profileId}
+- `children`
+- `learning_profiles`
+- `consents`
+- `consent_acceptances`
 
-```js
-{
-  childId,
-  preferredFormats: ["visual", "concrete", "step_by_step"],
-  attentionSpan: "short" | "medium" | "unknown",
-  mathDifficulties: ["counting", "addition", "quantity_comparison"],
-  strengths,
-  motivators,
-  avoidances,
-  updatedAt
-}
-```
+## Acompanhamento
 
-Concentra o perfil pedagogico inicial usado para orientar tutor, atividades e acompanhamento.
+- `matches`
+- `support_cycles`
+- `sessions`
+- `reports`
+- `progress_logs`
+- `admin_notes`
 
-## tutorApplications/{applicationId}
+## Atividades
 
-```js
-{
-  tutorId,
-  formation,
-  linkedin,
-  experience,
-  weeklyAvailability,
-  status: "pending" | "approved" | "rejected",
-  reviewedBy,
-  reviewedAt
-}
-```
+- `activities`
+- `child_activities`
+- `atividade_execucao`
+- `skills`
 
-Guarda a candidatura do tutor voluntario e o status da validacao manual pela equipe.
+`activities` representa o catálogo; `child_activities` materializa uma atividade preparada para uma criança; `atividade_execucao` registra sua execução.
 
-## supportCycles/{cycleId}
+## Trilhas e jornadas
 
-```js
-{
-  childId,
-  tutorId,
-  startDate,
-  endDate,
-  currentMonth: 1,
-  status: "planned" | "active" | "completed" | "paused",
-  mainGoal,
-  currentPlan
-}
-```
+- `trail_templates`
+- `trail_modules`
+- `mission_templates`
+- `child_trails`
+- `child_trail_modules`
+- `child_trail_missions`
 
-Define o ciclo de acompanhamento educacional entre crianca e tutor.
+As três primeiras tabelas definem modelos. As tabelas iniciadas por `child_` representam a instância atribuída à criança e seu estado de avanço.
 
-## matches/{matchId}
+## Aplicação infantil
 
-```js
-{
-  childId,
-  tutorId,
-  reason,
-  compatibility: {
-    schedule: true,
-    mathFocus: true,
-    experience: true
-  },
-  status: "suggested" | "approved" | "rejected",
-  createdAt
-}
-```
+- `child_pairing_codes`
+- `paired_devices`
 
-Registra as conexoes sugeridas ou aprovadas entre criancas e tutores.
+Um dispositivo infantil possui um usuário em `auth.users` com `is_anonymous = true` e um perfil com `role = child_device` e `status = active`. Para acessar o contexto de uma criança, precisa existir um vínculo ativo em `paired_devices`.
 
-## sessions/{sessionId}
+## Documentos legais
 
-```js
-{
-  cycleId,
-  childId,
-  tutorId,
-  date,
-  durationMinutes,
-  topic,
-  activityUsed,
-  engagement: 1,
-  difficulty: 1,
-  result: "improved" | "stable" | "struggled",
-  notes,
-  nextStep,
-  createdAt
-}
-```
+- `legal_documents`
+- `legal_acceptances`
 
-Armazena os registros semanais do tutor durante o ciclo.
+## Funções importantes
 
-## activities/{activityId}
+### Identidade e autorização
 
-```js
-{
-  title,
-  ageRange,
-  mathSkill,
-  format: "visual" | "concrete" | "game" | "routine",
-  difficultyLevel: 1,
-  estimatedMinutes,
-  instructions,        // resumo curto (1 frase) para listagens
-  goal,                // objetivo em uma frase
-  setup,               // array: materiais + preparo do ambiente (2 itens)
-  steps,               // array: 3 a 5 passos curtos, voz ativa
-  ifHard,              // adaptacao para simplificar
-  ifEasy,              // adaptacao para avancar
-  successSignal,       // 1 sinal observavel de que funcionou
-  tags
-}
-```
+- `handle_new_user` — cria o perfil após a criação de um usuário;
+- `my_role`, `is_admin` e `current_user_is_admin` — consultam o contexto de autorização;
+- `is_guardian_of`, `is_tutor_of` e `is_paired_device_of` — verificam relações com uma criança;
+- `block_admin_signup` — impede a concessão pública do papel administrativo;
+- `can_guardian_read_tutor_avatar` e `can_read_trail_template` — verificações auxiliares de acesso.
 
-Cada activity e um ROTEIRO de conducao para tutor/responsavel, com estrutura
-fixa (objetivo, preparo, passos, adaptacoes, sinal observavel). A estrutura
-fixa e o recurso de previsibilidade da biblioteca — nao e atividade interativa
-nem area da crianca.
+### Pareamento
 
-## progressLogs/{logId}
+- `create_pairing_code`;
+- `claim_pairing_code`;
+- `revoke_paired_device`;
+- `unpair_current_device`;
+- `get_paired_child_context`;
+- `get_paired_child_context_v2`;
+- `cleanup_unclaimed_anonymous_users`.
 
-```js
-{
-  childId,
-  cycleId,
-  skill,
-  previousLevel,
-  currentLevel,
-  evidence,
-  source: "session" | "report" | "guardian_feedback",
-  createdAt
-}
-```
+O frontend infantil atual usa `get_paired_child_context_v2`. A versão sem sufixo permanece no banco por compatibilidade.
 
-Registra pequenas evidencias de progresso por habilidade.
+### Trilhas e jornadas
 
-## reports/{reportId}
+- `create_private_journey`;
+- `save_journey_draft`;
+- `save_journey_draft_v2`;
+- `publish_journey`;
+- `assign_child_trail`;
+- `release_child_module`;
+- `advance_child_trail_module`;
+- `advance_child_trail_on_execucao`;
+- `reopen_child_trail_mission`.
 
-```js
-{
-  cycleId,
-  childId,
-  tutorId,
-  month,
-  summary,
-  progress,
-  difficulties,
-  recommendations,
-  createdAt
-}
-```
+O construtor atual usa `save_journey_draft_v2`. Funções sem o sufixo podem representar contratos mantidos para compatibilidade e devem ser revisadas antes de remoção.
 
-Resume o acompanhamento mensal e ajuda a equipe a monitorar o ciclo.
+### Sessões e família
 
-## adminNotes/{noteId}
+- `create_session_with_execucoes`;
+- `get_family_sessions`;
+- `get_family_sessions_v2`;
+- `get_guardian_tutor_profiles`.
 
-```js
-{
-  relatedType: "child" | "tutor" | "cycle" | "match" | "report",
-  relatedId,
-  authorId,
-  note,
-  visibility: "internal",
-  createdAt
-}
-```
+O painel da família usa `get_family_sessions_v2`.
 
-Guarda anotacoes internas da equipe Cognita sobre analise, match, ciclo ou pendencias.
+### Personalização, validação e documentos
 
-## Fluxo representado pelos dados
+- `set_child_personalization`;
+- `validate_child_birth_date`;
+- `validate_tutor_birth_date`;
+- `can_insert_legal_acceptance`.
+
+## Storage
+
+O projeto possui dois buckets:
+
+- `profile-photos` — privado;
+- `email-assets` — público.
+
+## Segurança
+
+Todas as 26 tabelas do schema `public` estão com RLS habilitado. Isso não elimina a necessidade de revisar as políticas e as permissões das funções.
+
+Regras que devem continuar válidas:
+
+- nunca usar `raw_user_meta_data` diretamente para autorizar acesso;
+- nunca expor a chave `service_role` no frontend;
+- combinar o papel autenticado com relações de propriedade ou vínculo;
+- tratar funções `SECURITY DEFINER` como superfícies privilegiadas;
+- conceder `EXECUTE` somente aos papéis que realmente precisam da função.
+
+`handle_new_user()` é uma função interna acionada por trigger de `auth.users`. Na verificação mais recente, `PUBLIC`, `anon` e `authenticated` não possuíam permissão de execução direta.
+
+## Estado das migrations
+
+O histórico de migrations do projeto Supabase está vazio. Os antigos arquivos `.sql` em `docs/` eram scripts históricos executados manualmente e foram removidos porque não representavam o estado completo nem a ordem reproduzível do schema.
+
+A correção futura é criar uma baseline real e manter mudanças incrementais em:
 
 ```text
-Cadastro recebido
--> equipe analisa
--> tutor validado
--> match criado
--> ciclo iniciado
--> sessoes registradas
--> relatorio mensal gerado
+supabase/
+└── migrations/
+    └── ...
 ```
+
+Essa tarefa deve incluir geração da baseline, revisão de RLS e funções, validação em ambiente separado e documentação do fluxo de deploy.

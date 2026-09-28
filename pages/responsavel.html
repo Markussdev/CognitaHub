@@ -114,6 +114,36 @@
     .fam-fact dt { flex: 0 0 150px; font-size: .76rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); padding-top: 2px; }
     .fam-fact dd { flex: 1; font-size: .9rem; color: var(--ink); line-height: 1.5; }
 
+    /* ── Aplicativo da criança (personalização + aparelhos pareados) ── */
+    .fam-perso-row { display: flex; align-items: center; gap: 14px; margin-top: 10px; }
+    .fam-perso-avatar { width: 56px; height: 56px; object-fit: cover; border-radius: 50%; border: 2px solid var(--card); box-shadow: 0 4px 14px rgba(20,17,98,.18); flex-shrink: 0; }
+    .fam-perso-row strong { display: block; color: var(--brand-deep); font-size: 1.05rem; }
+    .fam-perso-row .meta { display: block; margin-top: 2px; color: var(--muted); font-size: .82rem; }
+    .fam-perso-note { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); color: var(--ink-soft); font-size: .8rem; line-height: 1.5; }
+
+    .fam-device-list { display: grid; gap: 0; margin-top: 6px; }
+    .fam-device { padding: 14px 0; border-top: 1px solid var(--line); }
+    .fam-device:first-child { border-top: none; }
+    .fam-device-info { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+    .fam-device-name { flex: 1 1 auto; min-width: 160px; color: var(--ink); font-size: .92rem; font-weight: 700; }
+    .fam-device-meta { flex-basis: 100%; margin-top: 2px; color: var(--muted); font-size: .78rem; }
+    .fam-device-info .btn-outline { flex-shrink: 0; }
+
+    .fam-device-confirm-title { color: var(--brand-deep); font-weight: 700; font-size: .92rem; }
+    .fam-device-confirm-body { margin-top: 4px; color: var(--ink-soft); font-size: .84rem; line-height: 1.5; }
+    .fam-device-confirm-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .fam-device-error { margin-top: 8px; color: var(--bad); font-size: .82rem; font-weight: 700; }
+
+    .btn-danger-outline { height: 36px; padding: 0 16px; border-radius: var(--r-sm); background: var(--bad-soft); color: var(--bad); border: 1px solid rgba(163,18,58,.25); font-family: var(--font); font-size: .84rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+    .btn-danger-outline:hover { background: var(--bad); color: #fff; border-color: transparent; }
+    .btn-outline:disabled, .btn-danger-outline:disabled { opacity: .55; cursor: default; pointer-events: none; }
+
+    .fam-device-connect { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .fam-device-connect-result { margin-top: 10px; padding: 12px 14px; border-radius: var(--r-sm); background: var(--brand-soft); }
+    .fam-device-connect-result p { font-size: .84rem; color: var(--ink-soft); line-height: 1.5; }
+    .fam-device-connect-label { font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-soft); }
+    .fam-device-connect-code { margin: 4px 0; font-family: var(--baloo); font-size: 1.4rem; font-weight: 800; letter-spacing: .08em; color: var(--brand); }
+
     /* ── Estados de cadastro (pré-ciclo) ── */
     .fam-status-steps { display: grid; gap: 0; margin-top: 8px; }
     .fam-status-step { display: flex; gap: 13px; padding: 13px 0; border-top: 1px solid var(--line); align-items: flex-start; }

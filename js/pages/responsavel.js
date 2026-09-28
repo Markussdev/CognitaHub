@@ -4,6 +4,7 @@ import { getAvatarUrl } from '../lib/avatar.js'
 import { wireRailToggle } from '../lib/rail.js'
 import { getGuardianChildren } from '../data/guardian.js'
 import { getLatestChildTrail, getChildTrailModules, getChildTrailMissions } from '../data/trilha-formal.js'
+import { listPairedDevices, revokePairedDevice, createPairingCode } from '../data/pareamento.js'
 import astronautaSrc from '../../assets/cat-astronauta.png'
 import cientistaSrc from '../../assets/cat-cientista.png'
 import magoSrc from '../../assets/cat-mago.png'
@@ -25,15 +26,44 @@ import { emblemaUrl } from '../lib/trilha-assets.js'
 // "Próxima atividade sugerida" (não existe curadoria/motor), tutor e sessões
 // de exemplo ("Marina Souza"/"Lucas") — agora é dado real ou vazio honesto.
 
-// ── Avatar Cognita da criança (SEM foto — decisão deliberada) ────────────────
-// A criança nunca usa foto própria no produto: mascote decorativo, escolhido
-// deterministicamente pelo id (estável entre visitas, sem coluna nova).
+// ── Avatar Cognita da criança ─────────────────────────────────────────────
+// A criança nunca usa foto própria no produto. Antes disso ser escolhido no
+// app (avatar_key), o mascote era só decorativo, deterministicamente
+// escolhido por hash do id (estável entre visitas, sem coluna nova) — esse
+// hash continua sendo o FALLBACK pra criança que nunca abriu "Meu perfil"
+// no aplicativo. Uma vez que ela escolhe um gato lá, childMascot() usa
+// exatamente esse (avatar_key), o mesmo que aparece no cabeçalho do app.
 const MASCOTES = [astronautaSrc, cientistaSrc, magoSrc, pintorSrc]
 function mascoteDe(childId) {
   const s = String(childId || '')
   let h = 0
   for (let i = 0; i < s.length; i += 1) h = (h * 31 + s.charCodeAt(i)) >>> 0
   return MASCOTES[h % MASCOTES.length]
+}
+
+const AVATAR_BY_KEY = {
+  astronauta: astronautaSrc,
+  cientista: cientistaSrc,
+  mago: magoSrc,
+  pintor: pintorSrc,
+}
+
+const AVATAR_LABEL = {
+  astronauta: 'Gato astronauta',
+  cientista: 'Gato cientista',
+  mago: 'Gato mago',
+  pintor: 'Gato pintor',
+}
+
+// Nome/gato que a CRIANÇA escolheu em "Meu perfil" no aplicativo — o painel
+// só espelha (visualização, não edição). Sem personalização ainda, cai no
+// comportamento de sempre: nome oficial + mascote por hash do id.
+function childDisplayName(child) {
+  return child?.preferred_name?.trim() || firstName(child?.name)
+}
+
+function childMascot(child) {
+  return AVATAR_BY_KEY[child?.avatar_key] || mascoteDe(child?.id)
 }
 
 // ── Estado carregado no boot ─────────────────────────────────────────────────
@@ -48,6 +78,8 @@ let D = {
   modules: [],       // child_trail_modules
   missions: [],      // missões do módulo atual
   status: 'waiting_review',
+  pairedDevices: [],
+  pairedDevicesStatus: 'loading', // loading | ready | error
 }
 
 let activeView = 'resumo'
@@ -165,7 +197,7 @@ const ATTENTION_LABEL = {
 
 function buildSupportBody() {
   const frag = document.createDocumentFragment()
-  const childFirst = firstName(D.child?.name)
+  const childFirst = childDisplayName(D.child)
   if (childFirst) {
     const ctx = el('div', 'support-context')
     ctx.append(document.createTextNode('Sobre: '), el('b', null, childFirst))
@@ -215,12 +247,12 @@ function viewHead(title, sub, { comChip = true } = {}) {
   if (comChip && D.child) {
     const chip = el('div', 'fam-child-chip')
     const img = document.createElement('img')
-    img.src = mascoteDe(D.child.id)
+    img.src = childMascot(D.child)
     img.alt = ''
     const chipTx = el('div', 'tx')
     chipTx.append(el('span', null, 'Acompanhando'))
     const idade = ageFrom(D.child.birth_date)
-    chipTx.append(el('strong', null, `${firstName(D.child.name)}${idade != null ? ` · ${idade} anos` : ''}`))
+    chipTx.append(el('strong', null, `${childDisplayName(D.child)}${idade != null ? ` · ${idade} anos` : ''}`))
     chip.append(img, chipTx)
     head.append(chip)
   }
@@ -336,7 +368,7 @@ function renderHero() {
   top.append(pill)
   hero.append(top)
 
-  const nome = firstName(D.child.name)
+  const nome = childDisplayName(D.child)
   const TITULO = {
     active: `O acompanhamento de ${nome} está em andamento.`,
     planned: `Tudo pronto — o ciclo de ${nome} vai começar.`,
@@ -363,7 +395,7 @@ function renderHero() {
 
 function renderJornadaMini() {
   const card = el('div', 'card card-pad fam-jornada-mini')
-  card.append(el('p', 'kicker', `Jornada de ${firstName(D.child.name)}`))
+  card.append(el('p', 'kicker', `Jornada de ${childDisplayName(D.child)}`))
 
   if (!D.trail) {
     card.append(el('p', 'sub', 'O tutor ainda está preparando a jornada — ela aparece aqui quando começar.'))
@@ -454,7 +486,7 @@ function renderResumoPre() {
 function viewResumo() {
   const page = el('div', 'fam-page')
   page.append(viewHead(`Olá, ${firstName(D.guardianName) || 'família'}.`,
-    D.child ? `Acompanhe aqui o caminho de ${firstName(D.child.name)} no Cognita.` : ''))
+    D.child ? `Acompanhe aqui o caminho de ${childDisplayName(D.child)} no Cognita.` : ''))
   page.append(D.cycle ? renderResumoAtivo() : renderResumoPre())
   return page
 }
@@ -475,7 +507,7 @@ const MISSION_FAM = {
 
 function viewJornada() {
   const page = el('div', 'fam-page')
-  const nome = firstName(D.child?.name)
+  const nome = childDisplayName(D.child)
   page.append(viewHead(`Jornada de ${nome}`,
     'Uma sequência de missões que o tutor preparou e acompanha de perto. A criança faz cada missão no aparelho pareado.'))
 
@@ -584,7 +616,7 @@ function renderSessaoCard(s) {
 
 function viewSessoes() {
   const page = el('div', 'fam-page')
-  const nome = firstName(D.child?.name)
+  const nome = childDisplayName(D.child)
   page.append(viewHead(`Sessões de ${nome}`,
     'A devolutiva de cada encontro, escrita pelo tutor para a família.'))
 
@@ -614,9 +646,189 @@ function factRow(label, value) {
   return row
 }
 
+// ── "Aplicativo da criança" — personalização (só leitura) + aparelhos ───────
+// A personalização (nome/gato) é decisão da criança, feita em "Meu perfil"
+// no app mobile — o painel aqui só ESPELHA, não edita. Aparelhos pareados já
+// tem RLS pronta (pd_guardian_select, fase-13) e RPC de revogação — nada
+// novo no banco pra essa etapa.
+
+function formatFullDate(value) {
+  if (!value) return null
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? null : new Intl.DateTimeFormat('pt-BR').format(date)
+}
+
+// Timestamptz (com hora), diferente de formatQuando (que é só data) — por
+// isso não reusa aquele helper: "Último acesso hoje às 19:20" precisa da
+// hora, e a comparação de dia usa o fuso local do navegador, não UTC forçado.
+function formatDeviceMoment(value) {
+  if (!value) return null
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+  const today = new Date()
+  const base = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  const diffDays = Math.round((base - target) / 86400000)
+  const time = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(date)
+  if (diffDays === 0) return `hoje às ${time}`
+  if (diffDays === 1) return `ontem às ${time}`
+  if (diffDays > 1 && diffDays <= 6) return `${new Intl.DateTimeFormat('pt-BR', { weekday: 'long' }).format(date)} às ${time}`
+  return `${new Intl.DateTimeFormat('pt-BR').format(date)} às ${time}`
+}
+
+function renderPersonalizacaoCard(child) {
+  const card = cardPad(el('p', 'kicker', 'Personalização no aplicativo'))
+  const row = el('div', 'fam-perso-row')
+  const img = document.createElement('img')
+  img.className = 'fam-perso-avatar'
+  img.src = childMascot(child)
+  img.alt = ''
+  const tx = el('div')
+  tx.append(el('strong', null, childDisplayName(child)))
+  tx.append(el('span', 'meta', child.avatar_key
+    ? (AVATAR_LABEL[child.avatar_key] ?? 'Gato do Cognita')
+    : 'Ainda não escolheu um gato'))
+  row.append(img, tx)
+  card.append(row)
+  card.append(el('p', 'fam-perso-note',
+    'A criança escolhe o nome e o gato dentro do aplicativo, em "Meu perfil". Aqui você só visualiza.'))
+  return card
+}
+
+// Uma linha = um aparelho. Estado próprio (não em D) porque é só interação
+// local do card — confirmar/revogar não deveria re-renderizar a view inteira.
+function renderDeviceRow(device, { onRevoked }) {
+  const row = el('div', 'fam-device')
+  let confirming = false
+  let busy = false
+  let errorText = null
+
+  function paint() {
+    row.replaceChildren()
+
+    if (confirming) {
+      const confirm = el('div', 'fam-device-confirm')
+      confirm.append(el('p', 'fam-device-confirm-title', 'Revogar acesso deste aparelho?'))
+      confirm.append(el('p', 'fam-device-confirm-body',
+        `O aplicativo deixará de mostrar a jornada de ${childDisplayName(D.child)}. Será necessário um novo código para conectar novamente.`))
+      if (errorText) confirm.append(el('p', 'fam-device-error', errorText))
+
+      const actions = el('div', 'fam-device-confirm-actions')
+      const cancelBtn = el('button', 'btn-outline', 'Cancelar')
+      cancelBtn.type = 'button'
+      cancelBtn.disabled = busy
+      cancelBtn.addEventListener('click', () => { confirming = false; errorText = null; paint() })
+
+      const yesBtn = el('button', 'btn-danger-outline', busy ? 'Revogando…' : 'Revogar')
+      yesBtn.type = 'button'
+      yesBtn.disabled = busy
+      yesBtn.addEventListener('click', async () => {
+        busy = true
+        errorText = null
+        paint()
+        const { error } = await revokePairedDevice(device.id)
+        if (error) {
+          busy = false
+          errorText = 'Não foi possível revogar. Tente de novo.'
+          paint()
+          return
+        }
+        onRevoked?.()
+      })
+
+      actions.append(cancelBtn, yesBtn)
+      confirm.append(actions)
+      row.append(confirm)
+      return
+    }
+
+    const info = el('div', 'fam-device-info')
+    info.append(el('p', 'fam-device-name', device.device_name || 'Dispositivo sem nome'))
+    const paired = formatFullDate(device.paired_at)
+    if (paired) info.append(el('p', 'fam-device-meta', `Conectado em ${paired}`))
+    const lastSeen = formatDeviceMoment(device.last_seen_at)
+    info.append(el('p', 'fam-device-meta', lastSeen ? `Último acesso ${lastSeen}` : 'Ainda não acessou'))
+
+    const revokeBtn = el('button', 'btn-outline', 'Revogar acesso')
+    revokeBtn.type = 'button'
+    revokeBtn.addEventListener('click', () => { confirming = true; paint() })
+
+    row.append(info, revokeBtn)
+  }
+
+  paint()
+  return row
+}
+
+function renderAparelhosCard() {
+  const card = cardPad(el('p', 'kicker', 'Aparelhos conectados'))
+  const list = el('div', 'fam-device-list')
+  card.append(list)
+
+  function renderList() {
+    list.replaceChildren()
+
+    if (D.pairedDevicesStatus === 'error') {
+      list.append(famEmpty('Não foi possível carregar os aparelhos.',
+        'Atualize a página em instantes. Se continuar, fale com a equipe pela Ajuda.'))
+      return
+    }
+
+    const ativos = (D.pairedDevices ?? []).filter((d) => !d.revoked_at)
+    if (!ativos.length) {
+      list.append(famEmpty('Nenhum aparelho conectado ainda.',
+        'Gere um código de pareamento e digite no aparelho da criança para conectar.'))
+      return
+    }
+
+    ativos.forEach((device) => {
+      list.append(renderDeviceRow(device, {
+        // "Recarrega só a lista": busca de novo e repinta apenas este bloco,
+        // não a view inteira (sem perder posição de rolagem/estado do resto).
+        onRevoked: async () => {
+          const { data, error } = await listPairedDevices(D.child.id)
+          D.pairedDevices = error ? D.pairedDevices : (data ?? [])
+          D.pairedDevicesStatus = error ? 'error' : 'ready'
+          renderList()
+        },
+      }))
+    })
+  }
+
+  renderList()
+
+  const connectWrap = el('div', 'fam-device-connect')
+  const connectBtn = el('button', 'btn-outline', 'Conectar novo aparelho')
+  connectBtn.type = 'button'
+  const connectResult = el('div', 'fam-device-connect-result')
+  connectResult.hidden = true
+
+  connectBtn.addEventListener('click', async () => {
+    connectBtn.disabled = true
+    connectResult.hidden = true
+    connectResult.replaceChildren()
+    const { data: codigo, error } = await createPairingCode(D.child.id)
+    connectBtn.disabled = false
+    connectResult.hidden = false
+    if (error) {
+      const err = el('p', null, 'Não foi possível gerar o código agora. Tente de novo.')
+      err.style.color = 'var(--bad)'
+      connectResult.append(err)
+      return
+    }
+    connectResult.append(el('p', 'fam-device-connect-label', 'Código de pareamento — válido por 10 minutos'))
+    connectResult.append(el('p', 'fam-device-connect-code', codigo))
+    connectResult.append(el('p', null, 'Digite este código na tela de pareamento do aparelho da criança.'))
+  })
+
+  connectWrap.append(connectBtn, connectResult)
+  card.append(connectWrap)
+  return card
+}
+
 function viewCrianca() {
   const page = el('div', 'fam-page')
-  const nome = firstName(D.child?.name)
+  const nome = childDisplayName(D.child)
   page.append(viewHead(`Sobre ${nome}`, 'O que o tutor e a equipe sabem para adaptar cada atividade.'))
 
   const stack = el('div', 'fam-stack')
@@ -627,7 +839,7 @@ function viewCrianca() {
   const idRow = el('div', 'fam-perfil-id')
   const img = document.createElement('img')
   img.className = 'mascote'
-  img.src = mascoteDe(child.id)
+  img.src = childMascot(child)
   img.alt = ''
   const idTx = el('div')
   idTx.append(el('h2', null, child.name))
@@ -636,6 +848,9 @@ function viewCrianca() {
   idRow.append(img, idTx)
   idCard.append(idRow)
   stack.append(idCard)
+
+  stack.append(renderPersonalizacaoCard(child))
+  stack.append(renderAparelhosCard())
 
   const focos = toList(lp.math_difficulties).length ? toList(lp.math_difficulties) : toList(child.main_difficulties)
   const aprendeCard = cardPad(el('p', 'kicker', `Como ${nome} aprende melhor`))
@@ -777,6 +992,13 @@ async function boot() {
       }
     }
   }
+
+  // Aparelhos pareados (mesma RLS de pd_guardian_select do banco, fase-13)
+  // — falha aqui também não derruba o painel: só o card de aparelhos mostra
+  // erro, o resto da tela continua normal.
+  const { data: devices, error: devicesError } = await listPairedDevices(child.id)
+  D.pairedDevices = devicesError ? [] : (devices ?? [])
+  D.pairedDevicesStatus = devicesError ? 'error' : 'ready'
 
   switchView('resumo')
 }

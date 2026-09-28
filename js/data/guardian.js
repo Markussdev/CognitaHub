@@ -4,6 +4,8 @@ import { getFamilySessions } from './sessions.js'
 const CHILDREN_SELECT = `
   id,
   name,
+  preferred_name,
+  avatar_key,
   birth_date,
   school_year,
   status,
