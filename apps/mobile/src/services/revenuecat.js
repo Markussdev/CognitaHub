@@ -3,6 +3,7 @@ import { Purchases, LOG_LEVEL } from '@revenuecat/purchases-capacitor'
 
 const API_KEY = import.meta.env.VITE_REVENUECAT_TEST_API_KEY
 const ENTITLEMENT_ID = import.meta.env.VITE_REVENUECAT_ENTITLEMENT_ID || 'school_access'
+const OFFERING_ID = import.meta.env.VITE_REVENUECAT_OFFERING_ID || 'cognita_school'
 
 let configured = false
 
@@ -29,7 +30,7 @@ export async function configureRevenueCat() {
 export async function getSchoolOffering() {
   await configureRevenueCat()
   const offerings = await Purchases.getOfferings()
-  return offerings.current
+  return offerings.all?.[OFFERING_ID] ?? offerings.current ?? null
 }
 
 export async function getSchoolAccess() {

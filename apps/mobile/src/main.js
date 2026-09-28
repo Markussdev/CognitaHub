@@ -17,7 +17,9 @@ const root = document.querySelector('#app')
 // (RevenueCat) isolada do Cognita infantil — importar app.js já importa
 // auth.js/supabase.js, então o import de app.js só acontece no ramo normal.
 // Não é o roteamento definitivo da entrada imediata (docs/MOBILE.md).
-const isSchoolEntry = new URLSearchParams(window.location.search).get('school') === '1'
+const isSchoolEntry =
+  import.meta.env.VITE_SHIPATON_SCHOOL_DEMO === '1' ||
+  new URLSearchParams(window.location.search).get('school') === '1'
 
 if (isSchoolEntry) {
   import('./screens/school-license.js').then(({ renderSchoolLicense }) => renderSchoolLicense(root))
