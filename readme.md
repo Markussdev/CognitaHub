@@ -1,249 +1,332 @@
 <p align="center">
-  <img src="./assets/logo-retangular-transparent.png" alt="Cognita Hub" width="100%" />
+  <img src="./assets/logo-retangular-transparent.png" alt="Cognita Hub" width="720" />
 </p>
 
 <h1 align="center">Cognita Hub</h1>
 
 <p align="center">
-  <strong>A matemática ao alcance de cada mente.</strong>
+  <strong>Mathematics within reach of every mind.</strong>
 </p>
 
 <p align="center">
-  Plataforma educacional inclusiva que conecta crianças com TEA, responsáveis e tutores voluntários
-  para apoiar o desenvolvimento de habilidades matemáticas.
+  A human-centered educational ecosystem that supports families, educators and mediators
+  in adapting mathematics learning experiences for children with autism.
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/status-em%20desenvolvimento-FFA800?style=for-the-badge" alt="Status: em desenvolvimento" />
-  <img src="https://img.shields.io/badge/foco-educacao%20inclusiva-141162?style=for-the-badge" alt="Foco: educação inclusiva" />
-  <img src="https://img.shields.io/badge/projeto-C--FORCE-540042?style=for-the-badge" alt="Projeto: C-FORCE" />
-</p>
-
-<p align="center">
-  <a href="#previa-do-projeto">Prévia</a> &bull;
-  <a href="#sobre-o-projeto">Sobre</a> &bull;
-  <a href="#problema">Problema</a> &bull;
-  <a href="#solucao">Solução</a> &bull;
-  <a href="#como-funciona">Como funciona</a> &bull;
-  <a href="#funcionalidades">Funcionalidades</a> &bull;
-  <a href="#tecnologias">Tecnologias</a> &bull;
-  <a href="#status-do-projeto">Status</a>
+  <img src="https://img.shields.io/badge/status-in%20development-FFA800?style=for-the-badge" alt="Status: in development" />
+  <img src="https://img.shields.io/badge/focus-inclusive%20education-141162?style=for-the-badge" alt="Focus: inclusive education" />
+  <img src="https://img.shields.io/badge/project-C--FORCE-540042?style=for-the-badge" alt="Project: C-FORCE" />
 </p>
 
 ---
 
-## Visão geral
+## What is Cognita Hub?
 
-<table>
-  <tr>
-    <td width="33%">
-      <h3>Para quem?</h3>
-      <p>Crianças com TEA entre 5 e 9 anos com dificuldades em Matemática.</p>
-    </td>
-    <td width="33%">
-      <h3>O que faz?</h3>
-      <p>Conecta responsáveis e tutores voluntários em ciclos de acompanhamento.</p>
-    </td>
-    <td width="33%">
-      <h3>Objetivo</h3>
-      <p>Tornar a aprendizagem matemática mais acessível, humana e adaptada.</p>
-    </td>
-  </tr>
-</table>
+Cognita Hub is a digital ecosystem designed to support the human mediation of
+mathematics learning for children with autism, initially focused on ages 5–9.
 
----
+The project is built around a simple principle:
 
-## Prévia do projeto
+> Technology should support the people who know the child — not pretend to replace them.
+
+Instead of automatically deciding how a child should learn, Cognita helps adults
+prepare experiences, adapt support, observe what happened and use that context
+to improve the next learning experience.
+
+## Why Cognita?
+
+Children on the autism spectrum do not form a homogeneous group.
+
+A visual stimulus, animation, instruction style or support strategy that helps
+one child may not help another. Because of that, Cognita avoids treating a
+diagnosis as an instruction manual.
+
+The platform does not use logic such as:
+
+```text
+Autism profile X → Activity Y
+```
+
+Learning is also not reduced to a score such as:
+
+```text
+8 correct answers out of 10 = 80% progress
+```
+
+Cognita is interested in the context around the answer:
+
+- What kind of support was needed?
+- How did the child participate?
+- What did the mediator observe?
+- What happened during that specific experience?
+- What could be tried next?
+
+## Learning experience
 
 <p align="center">
-  <img src="./assets/preview-home.png" alt="Prévia da página inicial do Cognita Hub" width="80%" />
+  <img src="./assets/screenshots/01-mobile-inicio.png" alt="Cognita child experience" width="360" />
+  &nbsp;&nbsp;
+  <img src="./assets/screenshots/02-jornada-crianca.png" alt="Cognita child journey" width="360" />
 </p>
 
 <p align="center">
-  <em>Interface inicial do Cognita Hub com foco em acolhimento, clareza visual e acessibilidade cognitiva.</em>
+  <sub>
+    The Android experience presents learning journeys as explorable worlds,
+    while keeping the interface simple and child-focused.
+  </sub>
 </p>
 
----
+The current Android prototype includes child-device pairing, learning journeys,
+interactive mathematics activities, profile personalization and configurable
+experience settings.
 
-## Sobre o projeto
+The activity layer is modular, allowing Cognita to evolve beyond a single
+interaction model while keeping the same learning journey structure.
 
-O **Cognita Hub** é uma proposta de plataforma educacional voltada à inclusão de crianças com **TEA - Transtorno do Espectro Autista** no processo de aprendizagem matemática.
+## The learning cycle
 
-A ideia nasce no contexto de **Inclusão e Direitos Humanos**, reconhecendo a neurodiversidade e defendendo que estudantes neurodivergentes tenham acesso a recursos, métodos e apoios educacionais adequados às suas necessidades.
+Cognita is organized around a continuous human-mediated cycle:
 
-Mais do que uma plataforma de estudos tradicional, o Cognita Hub busca criar uma ponte organizada entre quem precisa de apoio e quem pode oferecer acompanhamento educacional voluntário.
+<p align="center">
+  <strong>KNOW → ADAPT → MEDIATE → OBSERVE → LEARN ↺</strong>
+</p>
 
-## Problema
+**Know** — understand the child and the current context.
 
-A Matemática é uma habilidade essencial para o desenvolvimento educacional, social e cotidiano. Para muitas crianças com TEA, porém, o ensino tradicional pode trazer barreiras importantes.
+**Adapt** — choose or adjust a learning experience.
 
-Essas barreiras podem envolver conceitos abstratos, organização espacial e temporal, comunicação, interação social, rigidez na apresentação dos conteúdos, falta de recursos adaptados e práticas pedagógicas pouco inclusivas.
+**Mediate** — an adult supports the experience instead of leaving the software
+to make every pedagogical decision.
 
-<a id="solucao"></a>
+**Observe** — record what happened, including support and participation.
 
-## Solução
+**Learn** — use those observations to improve the next experience.
 
-O Cognita Hub propõe um site que conecta crianças com TEA a tutores voluntários com formação ou experiência em aprendizagem inclusiva.
+## The ecosystem
 
-Cada criança é cadastrada por uma pessoa responsável. A equipe Cognita analisa os perfis, valida tutores e organiza os matches para ciclos de acompanhamento de até **6 meses**, com encontros semanais e registro de progresso.
+| Child | Mediator | Family |
+| --- | --- | --- |
+| Interactive mathematics experiences and learning journeys. | Prepares experiences, follows sessions and records observations. | Receives guided feedback and follows the learning journey. |
 
-## Como funciona
+The three experiences share the same learning cycle, but they do not share the
+same interface or responsibilities.
 
-```mermaid
-flowchart TD
-    A[Responsável cadastra a criança] --> B[Equipe Cognita analisa o perfil]
-    B --> C[Tutor voluntário é validado]
-    C --> D[Match entre criança e tutor]
-    D --> E[Acompanhamento semanal por até 6 meses]
-    E --> F[Registro de progresso e atividades]
+## Cognita Escola
 
-    style A fill:#141162,color:#FFFFFC
-    style B fill:#540042,color:#FFFFFC
-    style C fill:#FFA800,color:#230220
-    style D fill:#141162,color:#FFFFFC
-    style E fill:#540042,color:#FFFFFC
-    style F fill:#FFA800,color:#230220
+Cognita's current monetization direction is institutional rather than
+child-facing.
+
+Instead of placing accessibility or learning support behind a family paywall,
+Cognita Escola explores recurring licensing for schools and educational
+institutions.
+
+An institution can adopt the ecosystem to support:
+
+- mediated mathematics experiences;
+- student learning journeys;
+- session and observation history;
+- family feedback;
+- educator workflows.
+
+### RevenueCat integration
+
+The Android prototype includes a working RevenueCat integration using the
+RevenueCat Test Store.
+
+<p align="center">
+  <img src="./assets/shipaton-26-wordmark.png" alt="Shipaton 2026" height="58" />
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="./assets/revenue.png" alt="RevenueCat" height="58" />
+</p>
+
+The purchase flow implemented for the Shipaton prototype is:
+
+```text
+Cognita Escola
+      ↓
+RevenueCat Offering
+      ↓
+Monthly Package
+      ↓
+Test Store Purchase
+      ↓
+CustomerInfo
+      ↓
+school_access entitlement
 ```
 
----
+### Purchase flow validation
 
-## Funcionalidades
+The RevenueCat integration was validated on a physical Android device using
+the RevenueCat Test Store.
 
-| Área | Funcionalidades planejadas |
-|---|---|
-| Site público | Apresentação do projeto, problema, solução e chamadas para responsáveis e tutores |
-| Responsável | Cadastro da criança, acompanhamento, atividades, informações do tutor e progresso |
-| Tutor voluntário | Perfil do tutor, disponibilidade semanal e registro de sessões |
-| Administração | Validação de tutores, organização dos matches e controle dos ciclos |
+The following scenarios were tested successfully:
 
-## Acessibilidade e experiência
+- valid purchase;
+- failed purchase;
+- cancelled purchase;
+- `school_access` entitlement activation after a successful transaction.
 
-O projeto considera princípios de acessibilidade cognitiva importantes para crianças com TEA:
+This validation was performed in RevenueCat's development Test Store
+environment and does not represent a production payment flow.
 
-| Diretriz | Aplicação |
-|---|---|
-| Previsibilidade | Navegação consistente e organização por rotina |
-| Clareza | Linguagem simples, botões grandes e ações diretas |
-| Conforto visual | Contraste adequado e redução de estímulos excessivos |
-| Acompanhamento | Registro de atividades, observações e progresso |
+Current Test Store configuration:
 
-## Tecnologias
-
-| Camada | Tecnologia |
-|---|---|
-| Estrutura | HTML5 |
-| Estilo | CSS3 |
-| Interação | JavaScript (ES Modules) |
-| Servidor de desenvolvimento | Vite |
-| Backend | Supabase (Auth + Postgres) |
-| Assets | Identidade visual própria e imagens do projeto |
-
-## Status do projeto
-
-| Etapa | Situação |
-|---|---|
-| Identidade visual | Concluída |
-| Página inicial | Em refinamento |
-| Autenticação (login por papel) | Em implementação |
-| Cadastro de tutor | Em implementação (grava no Supabase) |
-| Cadastro de responsável | Em implementação (grava no Supabase) |
-| Dashboard do responsável | Status real do cadastro (Supabase) |
-| Dashboard do tutor | Estado real (sem crianças até o pareamento) |
-| Painel administrativo | Triagem + pareamento funcionais (aprova, recusa e cria ciclo pelo site) |
-| Banco de dados | Em implementação (Supabase) |
-
-## Próximos passos
-
-* [x] Painel admin listando cadastros pendentes reais (triagem).
-* [x] Aprovação de criança e tutor pelo admin.
-* [x] Pareamento criança↔tutor e criação do ciclo de 6 meses pelo admin.
-* [ ] Registro de sessões do tutor no banco.
-* [ ] Painel do responsável lendo o andamento do ciclo (sessões/progresso).
-* [ ] Biblioteca de atividades vinda do Supabase.
-* [ ] Validar o projeto com professores, responsáveis e instituições.
-
-<details>
-  <summary><strong>Identidade visual</strong></summary>
-
-A identidade visual do Cognita Hub combina azul, roxo/vinho, amarelo e fundos claros para transmitir acolhimento, confiança e criatividade.
-
-| Cor | Hexadecimal | Uso |
-|---|---|---|
-| Azul principal | `#141162` | Base institucional e confiança |
-| Amarelo/dourado | `#FFA800` | Destaques e energia visual |
-| Roxo/vinho | `#540042` | Contraste e profundidade |
-| Escuro | `#230220` | Textos fortes e elementos de apoio |
-| Branco quente | `#FFFFFC` | Fundos e áreas de leitura |
-
-</details>
-
-<details>
-  <summary><strong>Estrutura do projeto</strong></summary>
-
-```txt
-cognita-hub/
-|-- assets/
-|   |-- background.png
-|   |-- logo-header.png
-|   |-- logo-icon-transparent.png
-|   |-- logo-retangular-transparent.png
-|   |-- logo.jpeg
-|   |-- mascot-hero-wave.png
-|   |-- pattern-math.png
-|   |-- preview-home.png
-|   `-- sticker.png
-|-- css/
-|   `-- styles.css
-|-- js/
-|   `-- app.js
-|-- pages/
-|   |-- admin.html
-|   |-- atividades.html
-|   |-- cadastro.html
-|   |-- cadastro-responsavel.html
-|   |-- cadastro-tutor.html
-|   |-- login.html
-|   |-- tutor.html
-|   `-- responsavel.html
-|-- index.html
-`-- readme.md
+```text
+Offering:    cognita_school
+Package:     $rc_monthly
+Product:     cognita_school_pilot_monthly
+Entitlement: school_access
 ```
 
-</details>
+The price displayed in the prototype is demonstrative and does not represent
+validated commercial pricing.
 
-## Como executar localmente
+## Product principles
 
-Clone o repositório e entre na pasta:
+Cognita is developed around a few non-negotiable principles:
 
-```bash
-git clone https://github.com/markussdev/CognitaHub.git
-cd CognitaHub
+- Person before diagnosis.
+- Human pedagogical decisions remain human.
+- Activities are proposals, not prescriptions.
+- Accessibility is individual and configurable.
+- Human observation is meaningful product data.
+- Learning cannot be reduced to correct answers alone.
+- Cognita does not diagnose children or replace educators and specialists.
+
+The complete product direction is documented in
+[`docs/PRODUCT.md`](./docs/PRODUCT.md).
+
+## Technology
+
+### Web
+
+- Vanilla JavaScript
+- CSS
+- Vite
+- Supabase
+
+### Mobile
+
+- Vanilla JavaScript
+- Vite
+- Capacitor 8
+- Android
+- Supabase
+- RevenueCat Purchases SDK
+
+### Backend
+
+- Supabase PostgreSQL
+- Authentication
+- Row Level Security
+- RPCs
+- Storage
+
+## Repository structure
+
+```text
+CognitaHub/
+├── apps/
+│   └── mobile/                # Android child experience (Capacitor)
+│       ├── android/
+│       └── src/
+│           ├── activities/
+│           ├── components/
+│           ├── screens/
+│           └── services/
+├── assets/                    # shared visual assets
+├── css/                       # web hub styles
+├── docs/                      # architecture, database, product and roadmap docs
+├── js/
+│   ├── components/
+│   ├── data/                  # Supabase boundary
+│   ├── lib/                   # auth, Supabase client, shared utilities
+│   └── pages/
+├── pages/                     # Vite HTML entry points
+├── public/
+└── package.json
 ```
 
-Crie um arquivo `.env` na raiz com as credenciais do Supabase:
+## Running locally
 
-```env
-VITE_SUPABASE_URL=https://SEU-PROJETO.supabase.co
-VITE_SUPABASE_ANON_KEY=SUA-CHAVE-PUBLICAVEL
-```
-
-Instale as dependências e suba o servidor de desenvolvimento:
+### Web
 
 ```bash
 npm install
 npm run dev
 ```
 
-O Vite abre o site em `http://localhost:5173`.
+### Android
 
-## Aviso importante
+```bash
+cd apps/mobile
+npm install
+```
 
-O Cognita Hub é uma proposta de apoio educacional. A plataforma não substitui acompanhamento clínico, psicológico, terapêutico, médico ou diagnóstico profissional.
+Create `apps/mobile/.env` from `apps/mobile/.env.example` with:
 
-O objetivo é oferecer uma ponte de apoio pedagógico para o desenvolvimento de habilidades matemáticas de crianças com TEA.
+```env
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
 
-## Equipe
+VITE_REVENUECAT_TEST_API_KEY=
+VITE_REVENUECAT_ENTITLEMENT_ID=school_access
+VITE_REVENUECAT_OFFERING_ID=cognita_school
+```
 
-Projeto desenvolvido pela equipe **C-FORCE** para o **Desafio Liga Jovem - 4ª edição**.
+Then:
 
-Belém/Pará - 2026
+```bash
+npm run build
+npx cap sync android
+```
+
+On Windows:
+
+```bash
+cd android
+.\gradlew.bat assembleDebug
+```
+
+The APK is generated at:
+
+```text
+apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+## Current status
+
+Cognita Hub is an evolving prototype.
+
+Already implemented:
+
+- web experiences for mediators and families;
+- child Android application;
+- device pairing;
+- learning journeys;
+- interactive activity engine;
+- configurable experience settings;
+- session records and family feedback;
+- RevenueCat Test Store integration;
+- institutional licensing prototype.
+
+Currently being improved:
+
+- immediate activity exploration without pairing;
+- broader activity formats;
+- multimodal learning experiences;
+- richer support and observation records.
+
+## Team
+
+Cognita Hub is developed by **C-FORCE**, a Brazilian student team combining
+software development, education research and continuous validation with
+educators and researchers.
+
+## License
+
+This project is distributed under the ISC License.
+
+See [`LICENSE`](./LICENSE).
