@@ -85,6 +85,12 @@ export function renderModules(root, { childName, childAvatar, modules, onOpenMod
 
       // Camada de cenário entre o terreno e o prédio (árvores, folhagem,
       // pegadas, páginas) — cada preset decide se usa, não é obrigatório.
+      // Só a página inicialmente visível carrega a imagem sem lazy — as
+      // outras cenas do carrossel ficam fora da tela e não precisam
+      // decodificar megabytes de PNG/WebP antes do primeiro paint.
+      const isStartPage = index === startIndex
+      const imgLoading = isStartPage ? '' : 'loading="lazy" decoding="async"'
+
       const sceneryHtml = (visual.scenery ?? [])
         .map(
           (item) => `
@@ -92,6 +98,7 @@ export function renderModules(root, { childName, childAvatar, modules, onOpenMod
               src="${item.src}"
               alt=""
               aria-hidden="true"
+              ${imgLoading}
               class="module-scene__scenery${item.className ? ` ${item.className}` : ''}"
               style="
                 --scenery-top:${item.top ?? 'auto'};
@@ -140,7 +147,7 @@ export function renderModules(root, { childName, childAvatar, modules, onOpenMod
 
           <div class="module-scene__content">
             <div class="module-scene__art">
-              <img class="module-scene__station" src="${visual.image}" alt="" aria-hidden="true" />
+              <img class="module-scene__station" src="${visual.image}" alt="" aria-hidden="true" ${imgLoading} />
               ${badge}
             </div>
 

@@ -202,11 +202,19 @@
 
 .module-scene--theme-cinema::before {
   left: 35%;
-  animation: cinema-searchlight-left 7s ease-in-out infinite;
 }
 
 .module-scene--theme-cinema::after {
   right: 35%;
+}
+
+/* Holofotes só giram na cena visível do carrossel — parados em página fora
+   de tela evitam animação (e repaint) contínua sem ganho perceptível. */
+.module-scene.is-active-page.module-scene--theme-cinema::before {
+  animation: cinema-searchlight-left 7s ease-in-out infinite;
+}
+
+.module-scene.is-active-page.module-scene--theme-cinema::after {
   animation: cinema-searchlight-right 7s ease-in-out infinite;
 }
 
@@ -491,7 +499,7 @@
   transform: translateX(-50%);
 }
 
-.module-scene__scenery--float {
+.module-scene.is-active-page .module-scene__scenery--float {
   animation: module-scenery-float 6s ease-in-out infinite;
 }
 

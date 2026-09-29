@@ -224,8 +224,10 @@ async function boot(root) {
       return
     }
 
-    const trail = await getChildTrail(context.child_trail_id)
-    const realModules = await getChildTrailModules(context.child_trail_id)
+    const [trail, realModules] = await Promise.all([
+      getChildTrail(context.child_trail_id),
+      getChildTrailModules(context.child_trail_id),
+    ])
     const modules = LANDMARK_SHOWCASE_ENABLED ? buildLandmarkShowcaseModules(realModules) : realModules
     const currentModule = modules.find((module) => module.status !== 'concluido') ?? modules.at(-1)
 

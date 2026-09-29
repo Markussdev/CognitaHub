@@ -16,7 +16,14 @@
     </style>
 
 
+    <!-- MainActivity nunca troca de tema após o launch (sem
+         installSplashScreen()/setTheme() em MainActivity.java), então este
+         tema fica ativo durante toda a vida do app, não só na splash — daí
+         a barra de status precisar de cor própria aqui, não em
+         AppTheme.NoActionBar (que não é referenciado em lugar nenhum). -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
+        <item name="android:statusBarColor">#141162</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>

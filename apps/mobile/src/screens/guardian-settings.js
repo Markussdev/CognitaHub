@@ -24,9 +24,9 @@ const CHEVRON_SVG = iconSvg(ChevronRight, { width: 19, height: 19, 'stroke-width
 // TODO: apontar pra URL real assim que a página existir no site — a Play
 // Store exige que a política de privacidade esteja acessível a partir do
 // app (o texto legal em si precisa ser escrito/aprovado, não é algo que dá
-// pra gerar aqui). Enquanto vazio, o item fica visível mas desabilitado
-// ("Configuração pendente") — de propósito, pra não esquecer de preencher
-// antes de submeter, em vez de sumir da tela e ser esquecido.
+// pra gerar aqui). Enquanto vazio, o item some do menu (ver privacySection
+// em renderMain) em vez de aparecer desabilitado com "Configuração
+// pendente" — não é algo pra mostrar a um avaliador externo.
 const PRIVACY_POLICY_URL = ''
 
 // "Para responsáveis" — só 3 ações (trocar criança, desconectar, ajuda).
@@ -136,7 +136,21 @@ export function renderGuardianSettings(
       }
     `
 
-    const privacyHint = PRIVACY_POLICY_URL ? 'Como tratamos os dados da família' : 'Configuração pendente'
+    // Sem URL ainda, o item nem aparece — melhor um menu mais curto do que
+    // um "Configuração pendente" visível pra fora da equipe (ex.: gravação
+    // de demo, avaliação externa).
+    const privacySection = PRIVACY_POLICY_URL
+      ? `
+          <button class="guardian-action" type="button" id="guardian-privacy">
+            <span class="guardian-action__icon" aria-hidden="true">${FILE_TEXT_SVG}</span>
+            <span class="guardian-action__copy">
+              <strong>Política de privacidade e termos</strong>
+              <span>Como tratamos os dados da família</span>
+            </span>
+            <span class="settings-menu-item__chevron" aria-hidden="true">${CHEVRON_SVG}</span>
+          </button>
+        `
+      : ''
 
     root.innerHTML = `
       <div class="screen screen--settings screen--guardian">
@@ -172,14 +186,7 @@ export function renderGuardianSettings(
             <span class="settings-menu-item__chevron" aria-hidden="true">${CHEVRON_SVG}</span>
           </button>
 
-          <button class="guardian-action${PRIVACY_POLICY_URL ? '' : ' is-disabled'}" type="button" id="guardian-privacy" ${PRIVACY_POLICY_URL ? '' : 'disabled'}>
-            <span class="guardian-action__icon" aria-hidden="true">${FILE_TEXT_SVG}</span>
-            <span class="guardian-action__copy">
-              <strong>Política de privacidade e termos</strong>
-              <span>${privacyHint}</span>
-            </span>
-            <span class="settings-menu-item__chevron" aria-hidden="true">${CHEVRON_SVG}</span>
-          </button>
+          ${privacySection}
 
           <div class="guardian-help">
             ${helpSection}

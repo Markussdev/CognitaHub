@@ -14,17 +14,17 @@
 // protagonista). O tamanho dele dentro da trilha (pequeno, coadjuvante)
 // ainda não foi redesenhado pra esse registro novo — ver journey.js.
 
-import abacoImg from '../assets/landmarks/abaco.png'
-import baseImg from '../assets/landmarks/base.png'
-import biblioImg from '../assets/landmarks/biblio.png'
-import cinemaImg from '../assets/landmarks/cinema.png'
-import dinossauroImg from '../assets/landmarks/dinossauro.png'
-import observationImg from '../assets/landmarks/observation.png'
-import parqueImg from '../assets/landmarks/parque.png'
-import libraryTreesBack from '../assets/landmarks/library-trees-back.png'
-import libraryPages from '../assets/landmarks/library-pages.png'
-import dinoFoliageBack from '../assets/landmarks/dino-foliage-back.png'
-import dinoFootprints from '../assets/landmarks/dino-footprints.png'
+import abacoImg from '../assets/landmarks/abaco.webp'
+import baseImg from '../assets/landmarks/base.webp'
+import biblioImg from '../assets/landmarks/biblio.webp'
+import cinemaImg from '../assets/landmarks/cinema.webp'
+import dinossauroImg from '../assets/landmarks/dinossauro.webp'
+import observationImg from '../assets/landmarks/observation.webp'
+import parqueImg from '../assets/landmarks/parque.webp'
+import libraryTreesBack from '../assets/landmarks/library-trees-back.webp'
+import libraryPages from '../assets/landmarks/library-pages.webp'
+import dinoFoliageBack from '../assets/landmarks/dino-foliage-back.webp'
+import dinoFootprints from '../assets/landmarks/dino-footprints.webp'
 
 export const LANDMARK_PRESETS = [
   {
