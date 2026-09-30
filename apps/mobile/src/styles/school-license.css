@@ -1,0 +1,141 @@
+/* Primeira tela da Cognita Escola (screens/school-license.js): hero navy com o
+   mascote e o card da licença. Mesmo gradiente do topo do workspace
+   (school.css) pra as duas telas parecerem o mesmo produto. Textos escalam
+   com --accessibility-text-scale (texto grande). */
+
+.school-entry {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.school-entry__hero {
+  position: relative;
+  padding: 34px 26px 78px;
+  overflow: hidden;
+  text-align: center;
+  color: var(--warm-white);
+  background:
+    radial-gradient(circle at 50% 16%, rgba(255, 168, 0, 0.22), transparent 38%),
+    linear-gradient(160deg, #141162 0%, #29207c 58%, #540042 135%);
+}
+
+.school-entry__mascot {
+  display: block;
+  width: 124px;
+  height: auto;
+  margin: 0 auto 12px;
+}
+
+.school-entry__eyebrow {
+  display: block;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: calc(12px * var(--accessibility-text-scale));
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.school-entry__hero h1 {
+  margin: 8px auto 0;
+  max-width: 20ch;
+  color: white;
+  font-size: calc(25px * var(--accessibility-text-scale));
+  line-height: 1.16;
+}
+
+.school-entry__hero p {
+  margin: 12px auto 0;
+  max-width: 30ch;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: calc(15px * var(--accessibility-text-scale));
+  line-height: 1.5;
+}
+
+.school-entry__roles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.school-entry__roles li {
+  padding: 7px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.12);
+  font-size: calc(13px * var(--accessibility-text-scale));
+  font-weight: 700;
+}
+
+/* ---- card da licença ---- */
+
+.school-entry__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: -46px 18px 28px;
+  padding: 26px 22px 22px;
+  border-radius: 28px;
+  background: var(--warm-white);
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+
+.school-entry__label {
+  color: #6d4aff;
+  font-size: calc(12px * var(--accessibility-text-scale));
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.school-entry__price {
+  margin-top: 8px;
+  color: var(--navy);
+  font-family: var(--display);
+  font-size: calc(34px * var(--accessibility-text-scale));
+  line-height: 1.1;
+}
+
+/* Carregando a oferta / sem oferta: texto discreto, não um preço gigante. */
+.school-entry__price.is-muted {
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: calc(15px * var(--accessibility-text-scale));
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.school-entry__pilot {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: calc(12px * var(--accessibility-text-scale));
+}
+
+.school-entry__card #school-status {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.school-entry__powered {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+  color: var(--muted);
+  font-size: calc(12px * var(--accessibility-text-scale));
+}
+
+.school-entry__powered img {
+  height: 14px;
+  width: auto;
+}

@@ -2,6 +2,8 @@ import '../styles/school.css'
 
 import tutorShot from '../assets/school/tutor-mobile.png'
 import familyShot from '../assets/school/family-mobile.png'
+import revenuecatLogo from '../assets/school/revenuecat.png'
+import childAvatar from '../assets/avatars/astronauta.webp'
 
 // Vitrine do que a licença institucional (Cognita Escola) habilita — não cria
 // criança, tutor, ciclo nem jornada. Os cards do mediador e da família abrem
@@ -54,7 +56,7 @@ export function renderSchoolWorkspace(root, { priceString = '', onBack, onOpenTu
 
         <section class="school-surface school-surface--child">
           <div class="school-child-visual">
-            <span class="school-child-visual__icon">🚀</span>
+            <img class="school-child-visual__avatar" src="${childAvatar}" alt="" />
             <div>
               <strong>Experiência da criança</strong>
               <span>Android · interativa · configurável</span>
@@ -107,9 +109,8 @@ export function renderSchoolWorkspace(root, { priceString = '', onBack, onOpenTu
         </section>
 
         <section class="school-revenue">
-          <div class="school-revenue__mark">RC</div>
+          <img class="school-revenue__logo" src="${revenuecatLogo}" alt="RevenueCat" />
           <div>
-            <span>RevenueCat</span>
             <strong>Acesso institucional</strong>
             <small>Entitlement: school_access · licença recorrente</small>
           </div>

@@ -159,7 +159,7 @@
 
 .school-surface__shot {
   width: 100%;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 16 / 10;
   object-fit: cover;
   object-position: top;
   background: var(--soft-blue);
@@ -211,14 +211,13 @@
   background: linear-gradient(135deg, #e9edff, #fff3d7);
 }
 
-.school-child-visual__icon {
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  border-radius: 15px;
+.school-child-visual__avatar {
+  width: 58px;
+  height: 58px;
+  flex: none;
+  border-radius: 18px;
+  object-fit: cover;
   background: white;
-  font-size: 25px;
 }
 
 .school-child-visual > div {
@@ -283,34 +282,24 @@
 
 .school-revenue {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: 20px;
   background: white;
 }
 
-.school-revenue__mark {
-  width: 46px;
-  height: 46px;
-  flex: none;
-  display: grid;
-  place-items: center;
-  border-radius: 14px;
-  background: #ff5a63;
-  color: white;
-  font-weight: 800;
+/* Wordmark real do RevenueCat (541×117) — largura automática pela altura. */
+.school-revenue__logo {
+  height: 22px;
+  width: auto;
 }
 
-.school-revenue > div:last-child {
+.school-revenue > div {
   display: flex;
   flex-direction: column;
-}
-
-.school-revenue span {
-  color: var(--muted);
-  font-size: 11px;
 }
 
 .school-revenue strong {

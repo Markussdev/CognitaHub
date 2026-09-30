@@ -1,26 +1,57 @@
+import '../styles/school-license.css'
+
+import mascotImg from '../assets/mascot-hero-wave.webp'
+import revenuecatLogo from '../assets/school/revenuecat.png'
 import { statusMessageHtml } from '../components/status-message.js'
 import { getSchoolOffering, getSchoolAccess, purchaseSchoolPackage } from '../services/revenuecat.js'
 import { resetSchoolDemo } from '../demo/school-demo-store.js'
 
-// Entrypoint temporário de Shipaton (main.js, ?school=1) — só prova o funil
-// SDK → Offering → Package → Test Store → CustomerInfo → entitlement. Não é
-// a entrada institucional definitiva; não cria criança, tutor, ciclo nem
-// jornada, e não toca no Supabase.
+// Primeira tela da Cognita Escola — entrypoint temporário de Shipaton
+// (main.js, ?school=1). Apresenta a licença institucional e prova o funil
+// SDK → Offering → Package → Test Store → CustomerInfo → entitlement. O preço
+// vem do RevenueCat (priceString), nunca é escrito aqui. Não é a entrada
+// institucional definitiva; não cria criança, tutor, ciclo nem jornada, e não
+// toca no Supabase.
 export async function renderSchoolLicense(root) {
   root.innerHTML = `
-    <div class="screen screen--pairing">
-      <h1 class="title">Cognita Escola</h1>
-      <p class="subtitle">Licencie o ecossistema Cognita para sua instituição.</p>
-      <p class="subtitle">Criança · Mediador · Família</p>
-      <p class="subtitle" id="school-price">Carregando oferta...</p>
-      <button class="btn-primary" id="school-activate-btn" type="button" disabled>Ativar licença</button>
-      <div id="school-status"></div>
+    <div class="school-entry">
+      <header class="school-entry__hero">
+        <img class="school-entry__mascot" src="${mascotImg}" alt="" />
+        <span class="school-entry__eyebrow">Cognita Escola</span>
+        <h1>Aprendizagem, mediação e acompanhamento em um só ecossistema.</h1>
+        <p>Uma licença institucional conecta mediador, criança e família.</p>
+        <ul class="school-entry__roles" aria-label="As três experiências">
+          <li>Mediador</li>
+          <li>Criança</li>
+          <li>Família</li>
+        </ul>
+      </header>
+
+      <main class="school-entry__card">
+        <span class="school-entry__label">Licença institucional</span>
+        <strong class="school-entry__price is-muted" id="school-price">Carregando oferta...</strong>
+        <small class="school-entry__pilot">Piloto demonstrativo</small>
+        <button class="btn-primary" id="school-activate-btn" type="button" disabled>Ativar licença</button>
+        <div id="school-status"></div>
+        <div class="school-entry__powered">
+          <span>Powered by</span>
+          <img src="${revenuecatLogo}" alt="RevenueCat" />
+        </div>
+      </main>
     </div>
   `
 
   const priceEl = root.querySelector('#school-price')
   const statusEl = root.querySelector('#school-status')
   const activateBtn = root.querySelector('#school-activate-btn')
+
+  // Preço grande só quando há preço de verdade; carregando/sem oferta ficam
+  // como texto discreto, e vazio some (sem deixar um buraco no card).
+  function setPrice(text, { muted = false } = {}) {
+    priceEl.textContent = text
+    priceEl.classList.toggle('is-muted', muted)
+    priceEl.hidden = !text
+  }
 
   let pkg = null
 
@@ -111,15 +142,16 @@ export async function renderSchoolLicense(root) {
     pkg = offering?.availablePackages?.[0] ?? null
 
     if (!pkg) {
-      priceEl.textContent = 'Nenhuma oferta configurada no RevenueCat.'
+      setPrice('Nenhuma oferta configurada no RevenueCat.', { muted: true })
     } else {
-      priceEl.textContent = pkg.product?.priceString ?? ''
+      const price = pkg.product?.priceString
+      setPrice(price ? `${price} / mês` : 'Oferta disponível', { muted: !price })
       activateBtn.disabled = false
       await reportIfAlreadyActive()
     }
   } catch (err) {
     console.error('Erro ao carregar oferta da Cognita Escola:', err)
-    priceEl.textContent = ''
+    setPrice('')
     statusEl.innerHTML = statusMessageHtml({
       type: 'error',
       text: 'Não foi possível carregar a oferta. Confira dispositivo, SDK e Test Store.',
