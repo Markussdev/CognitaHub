@@ -127,8 +127,12 @@ com organização do acompanhamento e distribuição de atividades. Preço, limi
 papéis institucionais e permissões ainda precisam ser definidos. Isso não
 autoriza cobrar famílias ou restringir apoios de acessibilidade.
 
-RevenueCat ainda não está integrado ao pacote mobile inspecionado. Uma futura
-compra deve se vincular ao responsável institucional; não ao identificador
+O pacote mobile já tem um protótipo de RevenueCat (Test Store), em
+`services/revenuecat.js` e `screens/school-license.js`, alcançado só pelo
+entrypoint temporário do Shipaton (`?school=1` ou `VITE_SHIPATON_SCHOOL_DEMO`)
+e fora do fluxo da criança. Oferta e preço são demonstrativos, sem validação
+com receita real. Uma compra real deve se vincular ao responsável
+institucional; não ao identificador
 anônimo do aparelho infantil. Direitos de acesso e vínculos são verificados
 no servidor. Separar compra de teste de receita real e conferir a documentação
 e as regras atuais do evento antes de afirmar elegibilidade.

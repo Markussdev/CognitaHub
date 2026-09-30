@@ -1,5 +1,6 @@
 import { statusMessageHtml } from '../components/status-message.js'
 import { getSchoolOffering, getSchoolAccess, purchaseSchoolPackage } from '../services/revenuecat.js'
+import { resetSchoolDemo } from '../demo/school-demo-store.js'
 
 // Entrypoint temporário de Shipaton (main.js, ?school=1) — só prova o funil
 // SDK → Offering → Package → Test Store → CustomerInfo → entitlement. Não é
@@ -40,22 +41,52 @@ export async function renderSchoolLicense(root) {
   // Import de school-workspace.js (e, dentro dele, de app.js só no clique de
   // "Abrir experiência da criança") continua fora do topo deste arquivo —
   // Cognita Escola fica isolado do Supabase até a pessoa pedir a experiência
-  // infantil (mesmo motivo do import condicional em main.js).
+  // infantil (mesmo motivo do import condicional em main.js). As demos do
+  // mediador, da criança e da família (demo/) não tocam no Supabase.
   async function openSchoolWorkspace() {
     const { renderSchoolWorkspace } = await import('./school-workspace.js')
 
+    async function openChildDemo() {
+      const { renderDemoChildExperience } = await import('../demo/demo-child.js')
+      renderDemoChildExperience(root, { onExit: openSchoolWorkspace })
+    }
+
     renderSchoolWorkspace(root, {
       priceString: pkg?.product?.priceString ?? '',
-      onBack: () => renderSchoolLicense(root),
+
+      // Sair da vitrine zera o estado compartilhado das demos.
+      onBack: () => {
+        resetSchoolDemo()
+        renderSchoolLicense(root)
+      },
+
+      onOpenTutor: async () => {
+        const { renderDemoTutorExperience } = await import('../demo/demo-tutor.js')
+
+        // O que o mediador libera só chega na criança da demo local; por isso
+        // "Ver experiência da criança" abre sempre o Mateus demo, com ou sem
+        // VITE_SHIPATON_CHILD_DEMO.
+        renderDemoTutorExperience(root, {
+          onExit: openSchoolWorkspace,
+          onOpenChild: openChildDemo,
+        })
+      },
+
+      // Card da criança: com VITE_SHIPATON_CHILD_DEMO=1 entra no Mateus demo;
+      // sem a flag, segue o fluxo real (pareamento + Supabase).
       onOpenChild: async () => {
         if (import.meta.env.VITE_SHIPATON_CHILD_DEMO === '1') {
-          const { renderDemoChildExperience } = await import('../demo/demo-child.js')
-          renderDemoChildExperience(root, { onExit: openSchoolWorkspace })
+          await openChildDemo()
           return
         }
 
         const { initApp } = await import('../app.js')
         await initApp(root)
+      },
+
+      onOpenFamily: async () => {
+        const { renderDemoFamilyExperience } = await import('../demo/demo-family.js')
+        renderDemoFamilyExperience(root, { onExit: openSchoolWorkspace })
       },
     })
   }

@@ -236,7 +236,8 @@
   font-size: 12px;
 }
 
-.school-child-cta {
+.school-child-cta,
+.school-surface__cta {
   width: calc(100% - 36px);
   min-height: 52px;
   margin: 0 18px 18px;

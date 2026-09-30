@@ -50,8 +50,11 @@ Não marcar nenhum desses itens como concluído apenas porque foi documentado.
 
 Monetização institucional e atividades com novos apoios são direções em
 discussão, não parte da entrada imediata. Ver a seção de próximos recortes em
-`docs/MOBILE.md`. Não inventar preço, plano comercial validado ou aprovação
-pedagógica, nem implementar RevenueCat por consequência desta tarefa.
+`docs/MOBILE.md`. Já existe um protótipo de RevenueCat (Test Store) em
+`services/revenuecat.js` e `screens/school-license.js`, alcançado só por
+`?school=1` ou `VITE_SHIPATON_SCHOOL_DEMO`. Não inventar preço, plano
+comercial validado ou aprovação pedagógica, nem ampliar esse protótipo por
+consequência desta tarefa.
 
 ## Como retomar
 

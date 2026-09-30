@@ -2,13 +2,22 @@
 // services/activities.js leem do Supabase (ver child_trails, child_trail_modules,
 // child_trail_missions) — assim renderModules/renderJourney/renderMission
 // (screens/) e mountActivity (activities/activity-runner.js) rodam sem saber
-// que a fonte não é o banco. Só existe pra demo-child.js; não é lido em
-// nenhum fluxo conectado.
+// que a fonte não é o banco. Só existe pra demo da Cognita Escola
+// (demo-child.js, demo-tutor.js, demo-family.js); não é lido em nenhum fluxo
+// conectado.
 
 export const DEMO_CHILD = {
   name: 'Mateus',
+  age: 7,
   avatarKey: 'astronauta',
 }
+
+// A missão "disponível" do módulo 1 é a que o mediador libera em
+// demo-tutor.js: molde, título e configuração dela vêm de school-demo-store.js
+// em vez do que está escrito abaixo (ver demo-child.js).
+export const DEMO_RELEASED_MODULE_ID = 'demo-module-1'
+export const DEMO_RELEASED_MISSION_ID = 'demo-mission-2'
+export const DEMO_RELEASED_ACTIVITY_ID = 'demo-activity-released'
 
 export const DEMO_TRAIL = {
   id: 'demo-trail',
@@ -59,7 +68,7 @@ export const DEMO_MISSIONS = {
       child_activities: [],
     },
     {
-      id: 'demo-mission-2',
+      id: DEMO_RELEASED_MISSION_ID,
       status: 'disponivel',
       mission_templates: {
         id: 'mt-2',
@@ -68,7 +77,7 @@ export const DEMO_MISSIONS = {
         molde: 'contar',
         emblema: null,
       },
-      child_activities: [{ id: 'demo-activity-counting' }],
+      child_activities: [{ id: DEMO_RELEASED_ACTIVITY_ID }],
     },
     {
       id: 'demo-mission-3',
@@ -85,30 +94,61 @@ export const DEMO_MISSIONS = {
   ],
 }
 
-export const DEMO_ACTIVITIES = {
-  'demo-activity-counting': {
-    id: 'demo-activity-counting',
-    child_id: 'demo-mateus',
-    molde: 'contar',
+// Título da missão liberada conforme o molde que o mediador escolheu.
+export const DEMO_MISSION_TITLE_BY_MOLDE = {
+  contar: 'Contar dinossauros',
+  identificar: 'Encontrar o número',
+}
+
+// Como a família lê o molde ("uma experiência de ...").
+export const DEMO_MOLDE_LABEL = {
+  contar: 'contagem',
+  identificar: 'identificação de números',
+}
+
+// Configuração inicial da atividade liberada — a que o mediador vê ao abrir
+// o preparo e a que a criança recebe se ninguém mexer em nada. Guarda os
+// parâmetros dos dois moldes pra trocar de molde não perder o valor do outro.
+export const DEMO_ACTIVITY_DEFAULTS = {
+  molde: 'contar',
+  quantidade: 4,
+  maiorNumero: 5,
+  rodadas: 3,
+}
+
+// Monta a atividade no formato que renderMission/mountActivity esperam
+// (mesmas chaves de child_activities no banco).
+export function buildDemoActivity({ molde, quantidade, maiorNumero, rodadas }, id) {
+  const base = { id, child_id: 'demo-mateus', molde }
+
+  if (molde === 'identificar') {
+    return {
+      ...base,
+      titulo: 'Encontre o número',
+      instrucao: 'Toque no número que aparecer certo pra você.',
+      config: { rodadas, maiorNumero },
+    }
+  }
+
+  return {
+    ...base,
     tema: 'dinossauros',
     titulo: 'Vamos contar?',
-    instrucao: 'Conte os dinossauros e escolha a quantidade correta.',
-    config: {
-      rodadas: 3,
-      quantidade: 4,
-    },
-  },
-  'demo-activity-identifying': {
-    id: 'demo-activity-identifying',
-    child_id: 'demo-mateus',
-    molde: 'identificar',
-    titulo: 'Encontre o número',
-    instrucao: 'Toque no número que aparecer certo pra você.',
-    config: {
-      rodadas: 3,
-      maiorNumero: 5,
-    },
-  },
+    instrucao: 'Toque em cada dinossauro para contar.',
+    config: { rodadas, quantidade },
+  }
+}
+
+// Atividades das missões que o mediador não mexe (hoje só a 3ª, identificar).
+export const DEMO_ACTIVITIES = {
+  'demo-activity-counting': buildDemoActivity(
+    { ...DEMO_ACTIVITY_DEFAULTS, molde: 'contar' },
+    'demo-activity-counting',
+  ),
+  'demo-activity-identifying': buildDemoActivity(
+    { ...DEMO_ACTIVITY_DEFAULTS, molde: 'identificar' },
+    'demo-activity-identifying',
+  ),
 }
 
 // demo-child.js usa isto pra liberar a próxima missão com uma atividade do
@@ -118,4 +158,21 @@ export const DEMO_ACTIVITIES = {
 export const DEMO_ACTIVITY_ID_BY_MOLDE = {
   contar: 'demo-activity-counting',
   identificar: 'demo-activity-identifying',
+}
+
+// Conteúdo fictício do painel da família (demo-family.js).
+export const DEMO_FAMILY = {
+  guardianName: 'Ana',
+  cycle: {
+    month: 3,
+    months: 6,
+    goal: 'Fortalecer contagem, comparação de quantidades e pequenas somas.',
+  },
+  feedback: {
+    text: 'Mateus reconheceu pequenos grupos com mais segurança e respondeu melhor quando a instrução veio em uma frase curta.',
+    author: 'Mariana Costa',
+    initials: 'MC',
+    when: 'há 2 dias',
+    nextStep: 'Retomar a contagem com menos elementos e manter o tema dos dinossauros.',
+  },
 }

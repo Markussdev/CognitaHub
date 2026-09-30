@@ -4,10 +4,12 @@ import tutorShot from '../assets/school/tutor-mobile.png'
 import familyShot from '../assets/school/family-mobile.png'
 
 // Vitrine do que a licença institucional (Cognita Escola) habilita — não cria
-// criança, tutor, ciclo nem jornada. "Abrir experiência da criança" é o único
-// ponto que sai desse demo isolado e entra no app real (ver onOpenChild em
-// school-license.js, que só importa app.js/Supabase nesse clique).
-export function renderSchoolWorkspace(root, { priceString = '', onBack, onOpenChild } = {}) {
+// criança, tutor, ciclo nem jornada. Os cards do mediador e da família abrem
+// demos locais (demo/), sem Supabase. "Abrir experiência da criança" é o único
+// ponto que pode sair desse demo isolado e entrar no app real (ver
+// onOpenChild em school-license.js, que só importa app.js/Supabase nesse
+// clique, e só sem VITE_SHIPATON_CHILD_DEMO).
+export function renderSchoolWorkspace(root, { priceString = '', onBack, onOpenTutor, onOpenChild, onOpenFamily } = {}) {
   root.innerHTML = `
     <div class="school-workspace">
       <header class="school-workspace__hero">
@@ -44,6 +46,10 @@ export function renderSchoolWorkspace(root, { priceString = '', onBack, onOpenCh
               <p>Organiza jornadas, prepara atividades, acompanha execuções e registra observações para orientar a próxima experiência.</p>
             </div>
           </div>
+          <button class="school-surface__cta" type="button" data-open-tutor>
+            Abrir experiência do mediador
+            <span aria-hidden="true">→</span>
+          </button>
         </section>
 
         <section class="school-surface school-surface--child">
@@ -78,6 +84,10 @@ export function renderSchoolWorkspace(root, { priceString = '', onBack, onOpenCh
               <p>Recebe devolutivas guiadas e acompanha a jornada sem acessar anotações internas do mediador.</p>
             </div>
           </div>
+          <button class="school-surface__cta" type="button" data-open-family>
+            Abrir experiência da família
+            <span aria-hidden="true">→</span>
+          </button>
         </section>
 
         <section class="school-flow">
@@ -111,5 +121,7 @@ export function renderSchoolWorkspace(root, { priceString = '', onBack, onOpenCh
   `
 
   root.querySelector('[data-school-back]')?.addEventListener('click', () => onBack?.())
+  root.querySelector('[data-open-tutor]')?.addEventListener('click', () => onOpenTutor?.())
   root.querySelector('[data-open-child]')?.addEventListener('click', () => onOpenChild?.())
+  root.querySelector('[data-open-family]')?.addEventListener('click', () => onOpenFamily?.())
 }
