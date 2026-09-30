@@ -116,7 +116,7 @@ export const LANDMARK_PRESETS = [
     },
     selection: {
       landmarkWidth: '300px',
-      landmarkY: '55dvh',
+      landmarkY: '58dvh',
       contactBottom: '16%',
       contactWidth: '50%',
       contactOpacity: '0.16',
@@ -202,7 +202,7 @@ export const LANDMARK_PRESETS = [
     },
     selection: {
       landmarkWidth: '292px',
-      landmarkY: '55dvh',
+      landmarkY: '58.2dvh',
       contactBottom: '15%',
       contactWidth: '48%',
       contactOpacity: '0.16',

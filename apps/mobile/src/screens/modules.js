@@ -85,12 +85,10 @@ export function renderModules(root, { childName, childAvatar, modules, onOpenMod
 
       // Camada de cenário entre o terreno e o prédio (árvores, folhagem,
       // pegadas, páginas) — cada preset decide se usa, não é obrigatório.
-      // Só a página inicialmente visível carrega a imagem sem lazy — as
-      // outras cenas do carrossel ficam fora da tela e não precisam
-      // decodificar megabytes de PNG/WebP antes do primeiro paint.
-      const isStartPage = index === startIndex
-      const imgLoading = isStartPage ? '' : 'loading="lazy" decoding="async"'
-
+      // Depois da conversão pra WebP os landmarks ficaram leves o bastante
+      // (~30-70KB) que lazy loading só atrasava o primeiro swipe sem
+      // ganho perceptível — decoding="async" sozinho já evita bloquear o
+      // paint principal.
       const sceneryHtml = (visual.scenery ?? [])
         .map(
           (item) => `
@@ -98,7 +96,7 @@ export function renderModules(root, { childName, childAvatar, modules, onOpenMod
               src="${item.src}"
               alt=""
               aria-hidden="true"
-              ${imgLoading}
+              decoding="async"
               class="module-scene__scenery${item.className ? ` ${item.className}` : ''}"
               style="
                 --scenery-top:${item.top ?? 'auto'};
@@ -147,7 +145,7 @@ export function renderModules(root, { childName, childAvatar, modules, onOpenMod
 
           <div class="module-scene__content">
             <div class="module-scene__art">
-              <img class="module-scene__station" src="${visual.image}" alt="" aria-hidden="true" ${imgLoading} />
+              <img class="module-scene__station" src="${visual.image}" alt="" aria-hidden="true" decoding="async" />
               ${badge}
             </div>
 

@@ -579,12 +579,12 @@
   pointer-events: none;
 }
 
-.module-scene.is-active-page .module-scene__ground {
-  animation: module-ground-enter 240ms ease-out both;
-}
-
+/* O swipe do carrossel já é a transição — animação extra ao virar
+   .is-active-page criava um "zoom" perceptível depois do gesto, como se a
+   troca de cena tivesse dois tempos em vez de um. */
+.module-scene.is-active-page .module-scene__ground,
 .module-scene.is-active-page .module-scene__station {
-  animation: module-landmark-enter 280ms 45ms ease-out both;
+  animation: none;
 }
 
 @keyframes module-ground-enter {
@@ -614,7 +614,7 @@
 .module-scene__copy {
   position: absolute;
   right: 18px;
-  bottom: calc(46px + env(safe-area-inset-bottom));
+  bottom: calc(84px + env(safe-area-inset-bottom));
   left: 18px;
   z-index: 4;
   min-height: auto;
@@ -807,9 +807,3 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .module-scene.is-active-page .module-scene__ground,
-  .module-scene.is-active-page .module-scene__station {
-    animation: none;
-  }
-}

@@ -54,6 +54,9 @@ img {
   flex-direction: column;
   padding-top: var(--safe-top);
   padding-bottom: var(--safe-bottom);
+
+  /* pinta a safe area (status bar) em vez de deixar aparecer o body */
+  background: var(--navy);
 }
 
 .screen {
