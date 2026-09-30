@@ -1,7 +1,7 @@
 import '../styles/school.css'
 
-import tutorShot from '../assets/school/tutor-criador.png'
-import familyShot from '../assets/school/familia-resumo.png'
+import tutorShot from '../assets/school/tutor-mobile.png'
+import familyShot from '../assets/school/family-mobile.png'
 
 // Vitrine do que a licença institucional (Cognita Escola) habilita — não cria
 // criança, tutor, ciclo nem jornada. "Abrir experiência da criança" é o único

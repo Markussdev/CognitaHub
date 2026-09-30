@@ -48,6 +48,12 @@ export async function renderSchoolLicense(root) {
       priceString: pkg?.product?.priceString ?? '',
       onBack: () => renderSchoolLicense(root),
       onOpenChild: async () => {
+        if (import.meta.env.VITE_SHIPATON_CHILD_DEMO === '1') {
+          const { renderDemoChildExperience } = await import('../demo/demo-child.js')
+          renderDemoChildExperience(root, { onExit: openSchoolWorkspace })
+          return
+        }
+
         const { initApp } = await import('../app.js')
         await initApp(root)
       },
