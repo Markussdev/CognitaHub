@@ -1,10 +1,10 @@
-// Dados fabricados no mesmo formato das linhas que services/trails.js e
-// services/activities.js leem do Supabase (ver child_trails, child_trail_modules,
-// child_trail_missions) — assim renderModules/renderJourney/renderMission
-// (screens/) e mountActivity (activities/activity-runner.js) rodam sem saber
-// que a fonte não é o banco. Só existe pra demo da Cognita Escola
-// (demo-child.js, demo-tutor.js, demo-family.js); não é lido em nenhum fluxo
-// conectado.
+// Dados fabricados da demo da Cognita Escola (demo-child.js, demo-tutor.js,
+// demo-family.js). O adaptador build-demo-journey.js os transforma no mesmo
+// formato das linhas que services/trails.js e services/activities.js leem do
+// Supabase (child_trails, child_trail_modules, child_trail_missions) — assim
+// renderModules/renderJourney/renderMission (screens/) e mountActivity
+// (activities/activity-runner.js) rodam sem saber que a fonte não é o banco.
+// Não é lido em nenhum fluxo conectado.
 
 export const DEMO_CHILD = {
   name: 'Mateus',
@@ -12,89 +12,70 @@ export const DEMO_CHILD = {
   avatarKey: 'astronauta',
 }
 
-// A missão "disponível" do módulo 1 é a que o mediador libera em
-// demo-tutor.js: molde, título e configuração dela vêm de school-demo-store.js
-// em vez do que está escrito abaixo (ver demo-child.js).
-export const DEMO_RELEASED_MODULE_ID = 'demo-module-1'
-export const DEMO_RELEASED_MISSION_ID = 'demo-mission-2'
-export const DEMO_RELEASED_ACTIVITY_ID = 'demo-activity-released'
+// A demo é uma vitrine, não um teste de estresse: o builder limita o tamanho.
+// Não é limite do produto real.
+export const DEMO_MAX_MODULES = 3
+export const DEMO_MAX_MISSIONS = 4
 
-export const DEMO_TRAIL = {
-  id: 'demo-trail',
-  status: 'ativa',
-  trail_templates: {
-    title: 'Descobrindo os números',
-    description: 'Experiência demonstrativa',
-  },
-}
+// Cenários (landmarks) que o mediador pode escolher por módulo — chaves de
+// config/module-visuals.js (trail_modules.visual_key).
+export const DEMO_SCENES = ['dinossauro', 'abaco', 'cinema']
 
-export const DEMO_MODULES = [
-  {
-    id: 'demo-module-1',
-    status: 'liberado',
-    trail_modules: {
-      id: 'demo-template-1',
-      position: 1,
+export const DEFAULT_JOURNEY_ID = 'default-journey'
+
+// A missão "Preparada agora" da jornada de exemplo: em vez de uma atividade
+// fixa, ela segue a atividade que o mediador prepara na aba Atividades — até
+// ser concluída. Depois disso, atividades novas vão pro acervo (não reabrem a
+// missão) e só chegam à criança dentro de uma jornada.
+export const DEMO_SLOT_MISSION_ID = 'default-m1-2'
+
+// Jornada de exemplo: ponto de partida pronto pra quem não quiser montar
+// nada. É permanente — atribuir outra jornada só troca a ativa; o progresso
+// de cada uma fica guardado. Só usa moldes que o app executa (contar e
+// identificar).
+export const DEFAULT_JOURNEY = {
+  id: DEFAULT_JOURNEY_ID,
+  origin: 'default',
+  status: 'published',
+  title: 'Descobrindo os números',
+  objective: 'Fortalecer reconhecimento e contagem.',
+  // Como a jornada de exemplo já estava em andamento quando o avaliador chegou.
+  initiallyCompleted: ['default-m1-1'],
+  modules: [
+    {
+      id: 'default-m1',
       title: 'Reconhecer',
-      objective: 'Reconhecer números e quantidades',
-      visual_key: 'dinossauro',
+      visualKey: 'dinossauro',
+      missions: [
+        {
+          id: 'default-m1-1',
+          title: 'Reconhecer números até 3',
+          config: { molde: 'identificar', maiorNumero: 3, rodadas: 3 },
+        },
+        { id: DEMO_SLOT_MISSION_ID, slot: true },
+        {
+          id: 'default-m1-3',
+          title: 'Reconhecer números até 5',
+          config: { molde: 'identificar', maiorNumero: 5, rodadas: 3 },
+        },
+      ],
     },
-  },
-  {
-    id: 'demo-module-2',
-    status: 'bloqueado',
-    trail_modules: {
-      id: 'demo-template-2',
-      position: 2,
+    {
+      id: 'default-m2',
       title: 'Contar',
-      objective: 'Contar pequenos grupos',
-      visual_key: 'abaco',
-    },
-  },
-]
-
-export const DEMO_MISSIONS = {
-  'demo-module-1': [
-    {
-      id: 'demo-mission-1',
-      status: 'concluida',
-      mission_templates: {
-        id: 'mt-1',
-        position: 1,
-        title: 'Reconhecer números até 3',
-        molde: 'identificar',
-        emblema: null,
-      },
-      child_activities: [],
-    },
-    {
-      id: DEMO_RELEASED_MISSION_ID,
-      status: 'disponivel',
-      mission_templates: {
-        id: 'mt-2',
-        position: 2,
-        title: 'Contar dinossauros',
-        molde: 'contar',
-        emblema: null,
-      },
-      child_activities: [{ id: DEMO_RELEASED_ACTIVITY_ID }],
-    },
-    {
-      id: 'demo-mission-3',
-      status: 'bloqueada',
-      mission_templates: {
-        id: 'mt-3',
-        position: 3,
-        title: 'Encontrar a quantidade',
-        molde: 'identificar',
-        emblema: null,
-      },
-      child_activities: [],
+      visualKey: 'abaco',
+      missions: [
+        {
+          id: 'default-m2-1',
+          title: 'Contagem de dinossauros',
+          config: { molde: 'contar', quantidade: 4, rodadas: 3 },
+        },
+      ],
     },
   ],
 }
 
-// Título da missão liberada conforme o molde que o mediador escolheu.
+// Título da missão "Preparada agora" conforme o molde que o mediador preparou.
 export const DEMO_MISSION_TITLE_BY_MOLDE = {
   contar: 'Contar dinossauros',
   identificar: 'Encontrar o número',
@@ -110,11 +91,16 @@ export function demoMoldeLabel(molde) {
   return DEMO_MOLDES.find((item) => item.key === molde)?.label ?? molde
 }
 
-// "Contagem visual · 4 itens · 3 rodadas" — a mesma linha no preparo, no
-// Resumo e na confirmação.
-export function describeDemoActivity({ molde, quantidade, maiorNumero, rodadas }) {
+// "4 itens · 3 rodadas" — o detalhe, sem repetir o nome da experiência.
+export function describeDemoDetail({ molde, quantidade, maiorNumero, rodadas }) {
   const detail = molde === 'identificar' ? `números até ${maiorNumero}` : `${quantidade} itens`
-  return `${demoMoldeLabel(molde)} · ${detail} · ${rodadas} ${rodadas === 1 ? 'rodada' : 'rodadas'}`
+  return `${detail} · ${rodadas} ${rodadas === 1 ? 'rodada' : 'rodadas'}`
+}
+
+// "Contagem visual · 4 itens · 3 rodadas" — a mesma linha no preparo, no
+// Resumo, no acervo e nas jornadas.
+export function describeDemoActivity(config) {
+  return `${demoMoldeLabel(config.molde)} · ${describeDemoDetail(config)}`
 }
 
 // "hoje às 14:03" (mesmo formato de formatExecucaoQuando em js/pages/tutor.js);
@@ -125,7 +111,7 @@ export function formatDemoQuando(timestamp) {
   return `hoje às ${hora}`
 }
 
-// Configuração inicial da atividade liberada — a que o mediador vê ao abrir
+// Configuração inicial da atividade preparada — a que o mediador vê ao abrir
 // o preparo e a que a criança recebe se ninguém mexer em nada. Guarda os
 // parâmetros dos dois moldes pra trocar de molde não perder o valor do outro.
 export const DEMO_ACTIVITY_DEFAULTS = {
@@ -134,6 +120,12 @@ export const DEMO_ACTIVITY_DEFAULTS = {
   maiorNumero: 5,
   rodadas: 3,
 }
+
+// Atividades que já vêm no acervo (além das que o mediador prepara).
+export const DEMO_LIBRARY_DEFAULTS = [
+  { id: 'default-contar', config: { molde: 'contar', quantidade: 4, rodadas: 3 } },
+  { id: 'default-identificar', config: { molde: 'identificar', maiorNumero: 5, rodadas: 3 } },
+]
 
 // Monta a atividade no formato que renderMission/mountActivity esperam
 // (mesmas chaves de child_activities no banco).
@@ -156,27 +148,6 @@ export function buildDemoActivity({ molde, quantidade, maiorNumero, rodadas }, i
     instrucao: 'Toque em cada dinossauro para contar.',
     config: { rodadas, quantidade },
   }
-}
-
-// Atividades das missões que o mediador não mexe (hoje só a 3ª, identificar).
-export const DEMO_ACTIVITIES = {
-  'demo-activity-counting': buildDemoActivity(
-    { ...DEMO_ACTIVITY_DEFAULTS, molde: 'contar' },
-    'demo-activity-counting',
-  ),
-  'demo-activity-identifying': buildDemoActivity(
-    { ...DEMO_ACTIVITY_DEFAULTS, molde: 'identificar' },
-    'demo-activity-identifying',
-  ),
-}
-
-// demo-child.js usa isto pra liberar a próxima missão com uma atividade do
-// molde certo (mission_templates.molde), em vez de reaproveitar o id da
-// atividade que acabou de rodar — sem isso, uma missão "identificar" abriria
-// o jogo de contar por engano.
-export const DEMO_ACTIVITY_ID_BY_MOLDE = {
-  contar: 'demo-activity-counting',
-  identificar: 'demo-activity-identifying',
 }
 
 // Conteúdo fictício do painel da família (demo-family.js).

@@ -5,11 +5,13 @@ import { getSchoolDemoState, hasPendingExecution } from './school-demo-store.js'
 import { DEMO_CHILD } from './school-demo-data.js'
 import { renderResumoTab } from './tutor/resumo.js'
 import { renderAtividadesTab } from './tutor/atividades.js'
+import { renderJornadaTab } from './tutor/jornada.js'
 import { renderSessoesTab } from './tutor/sessoes.js'
 
 const TABS = [
   { key: 'resumo', label: 'Resumo', render: renderResumoTab },
   { key: 'atividades', label: 'Atividades', render: renderAtividadesTab },
+  { key: 'jornada', label: 'Jornada', render: renderJornadaTab },
   { key: 'sessoes', label: 'Sessões', render: renderSessoesTab },
 ]
 
@@ -76,6 +78,11 @@ export function renderDemoTutorExperience(root, { onExit, onOpenChild, initialTa
         if (button.dataset.tab !== tab) goTab(button.dataset.tab)
       })
     })
+
+    // Com 4 abas em tela estreita a barra rola de lado — traz a aberta pra vista.
+    const tabsEl = root.querySelector('.demo-tabs')
+    const selected = tabsEl.querySelector('[aria-selected="true"]')
+    tabsEl.scrollLeft = Math.max(0, selected.offsetLeft - (tabsEl.clientWidth - selected.offsetWidth) / 2)
 
     const active = TABS.find((item) => item.key === tab)
     active.render(root.querySelector('#demo-tab-panel'), {

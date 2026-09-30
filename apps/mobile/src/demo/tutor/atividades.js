@@ -1,9 +1,22 @@
 import { mountActivity } from '../../activities/activity-runner.js'
 import { escapeHtml } from '../../utils/html.js'
-import { getSchoolDemoState, updateDemoActivity, isDemoActivityDone } from '../school-demo-store.js'
-import { DEMO_CHILD, DEMO_MOLDES, buildDemoActivity, describeDemoActivity } from '../school-demo-data.js'
+import { getDemoSlotState, getSchoolDemoState, updateDemoActivity } from '../school-demo-store.js'
+import {
+  DEFAULT_JOURNEY_ID,
+  DEMO_CHILD,
+  DEMO_MOLDES,
+  buildDemoActivity,
+  describeDemoActivity,
+} from '../school-demo-data.js'
 
 const STEPS = ['Experiência', 'Ajustar', 'Revisar']
+
+// O que acontece com a atividade preparada agora (ver getDemoSlotState).
+const SLOT_HINT = {
+  waiting: (nome) => `aguardando ${nome}`,
+  done: (nome) => `concluída por ${nome}`,
+  library: () => 'guardada no acervo (a missão "Preparada agora" já foi concluída)',
+}
 
 // Só controles que mudam de fato a atividade que a criança recebe — os limites
 // vêm de activities/counting.js (3 a 8 itens) e identifying.js (config.maiorNumero).
@@ -63,7 +76,7 @@ export function renderAtividadesTab(panel, { goTab, onOpenChild, scrollToTop }) 
         <h2>Qual experiência?</h2>
         <p class="demo-hint">
           Preparada agora: ${escapeHtml(describeDemoActivity(current))} —
-          ${isDemoActivityDone() ? `já concluída por ${escapeHtml(DEMO_CHILD.name)}` : `aguardando ${escapeHtml(DEMO_CHILD.name)}`}.
+          ${escapeHtml(SLOT_HINT[getDemoSlotState()](DEMO_CHILD.name))}.
         </p>
         <div class="demo-choices" role="group" aria-label="Experiência">
           ${DEMO_MOLDES.map(
@@ -140,19 +153,33 @@ export function renderAtividadesTab(panel, { goTab, onOpenChild, scrollToTop }) 
     `
   }
 
+  // Enquanto a missão "Preparada agora" espera a criança, liberar muda o que
+  // ela recebe; depois de concluída, a atividade só vai pro acervo e precisa
+  // entrar numa jornada.
   function releasedHtml() {
+    const nome = escapeHtml(DEMO_CHILD.name)
+    const reachesChild = getDemoSlotState() === 'waiting'
+    const exampleActive = getSchoolDemoState().activeJourneyId === DEFAULT_JOURNEY_ID
+
+    const message = reachesChild
+      ? `<p>A experiência de ${nome} foi atualizada.</p>${
+          exampleActive ? '' : '<p>Ela aparece quando a jornada de exemplo estiver ativa.</p>'
+        }`
+      : `<p>Ela foi para o seu acervo. A missão "Preparada agora" de ${nome} já foi concluída — use esta atividade numa jornada.</p>`
+
+    const primary =
+      reachesChild && exampleActive && onOpenChild
+        ? `<button class="demo-primary" type="button" data-open-child>Ver experiência da criança →</button>`
+        : `<button class="demo-primary" type="button" data-go-jornada>Ver jornadas</button>`
+
     return `
       <section class="demo-card demo-done" role="status">
         <span class="demo-done__check" aria-hidden="true">✓</span>
-        <h2>Atividade preparada</h2>
-        <p>A experiência de ${escapeHtml(DEMO_CHILD.name)} foi atualizada.</p>
+        <h2>${reachesChild ? 'Atividade preparada' : 'Atividade guardada'}</h2>
+        ${message}
         <p class="demo-summary">${escapeHtml(describeDemoActivity(draft))}</p>
         <div class="demo-actions">
-          ${
-            onOpenChild
-              ? `<button class="demo-primary" type="button" data-open-child>Ver experiência da criança →</button>`
-              : ''
-          }
+          ${primary}
           <button class="demo-secondary" type="button" data-go-resumo>Ver o Resumo</button>
         </div>
       </section>
@@ -166,6 +193,7 @@ export function renderAtividadesTab(panel, { goTab, onOpenChild, scrollToTop }) 
 
     panel.querySelector('[data-open-child]')?.addEventListener('click', () => onOpenChild?.())
     panel.querySelector('[data-go-resumo]')?.addEventListener('click', () => goTab('resumo'))
+    panel.querySelector('[data-go-jornada]')?.addEventListener('click', () => goTab('jornada'))
 
     panel.querySelector('[data-prev]')?.addEventListener('click', () => {
       step -= 1

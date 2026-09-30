@@ -2,15 +2,9 @@ import '../styles/school-demo.css'
 
 import { getChildAvatar } from '../config/child-avatars.js'
 import { escapeHtml } from '../utils/html.js'
-import { getSchoolDemoState, isDemoActivityDone } from './school-demo-store.js'
-import {
-  DEMO_CHILD,
-  DEMO_FAMILY,
-  DEMO_MODULES,
-  DEMO_MISSIONS,
-  DEMO_RELEASED_MODULE_ID,
-  formatDemoQuando,
-} from './school-demo-data.js'
+import { getSchoolDemoState } from './school-demo-store.js'
+import { getDemoJourneyView } from './build-demo-journey.js'
+import { DEMO_CHILD, DEMO_FAMILY, formatDemoQuando } from './school-demo-data.js'
 
 // Painel da família (demo da Cognita Escola). Conteúdo fictício; nada é
 // buscado no Supabase.
@@ -36,17 +30,27 @@ export function renderDemoFamilyExperience(root, { onExit } = {}) {
       }
     : DEMO_FAMILY.feedback
 
-  const module = DEMO_MODULES.find((item) => item.id === DEMO_RELEASED_MODULE_ID)
-  const missions = DEMO_MISSIONS[DEMO_RELEASED_MODULE_ID]
-  const completedMissions =
-    missions.filter((mission) => mission.status === 'concluida').length + (isDemoActivityDone() ? 1 : 0)
+  // A jornada é a que o mediador atribuiu a Mateus (a de exemplo ou uma que
+  // ele montou) — o mesmo estado que a criança está jogando. O progresso é
+  // fato operacional e aparece na hora; o título da jornada só o mediador e a
+  // família veem (a criança não).
+  const { summary, missions: missionsByModule } = getDemoJourneyView()
+  const missions = missionsByModule[summary.releasedModule.id]
+  const completedMissions = missions.filter((mission) => mission.status === 'concluida').length
 
   const journeyDots = missions
-    .map((_, index) => {
-      const state = index < completedMissions ? 'done' : index === completedMissions ? 'current' : 'todo'
+    .map((mission, index) => {
+      const state = mission.status === 'concluida' ? 'done' : mission.status === 'disponivel' ? 'current' : 'todo'
       return `<span class="demo-dots__dot demo-dots__dot--${state}" aria-hidden="true">${state === 'done' ? '✓' : index + 1}</span>`
     })
     .join('')
+
+  const moduleLabel = `Módulo ${summary.releasedModule.position} · ${summary.releasedModule.title}`
+  const journeyCaption = summary.finished
+    ? 'Jornada concluída'
+    : summary.releasedStatus === 'aguardando_revisao'
+      ? `${moduleLabel} — concluído; aguardando o mediador`
+      : `${moduleLabel} — em andamento`
 
   root.innerHTML = `
     <div class="demo-screen">
@@ -106,10 +110,11 @@ export function renderDemoFamilyExperience(root, { onExit } = {}) {
 
       <section class="demo-card">
         <span class="demo-label">Jornada de ${escapeHtml(DEMO_CHILD.name)}</span>
-        <div class="demo-dots" role="img" aria-label="${completedMissions} de ${missions.length} missões concluídas">
+        <strong class="demo-journey-title">${escapeHtml(summary.title)}</strong>
+        <div class="demo-dots" role="img" aria-label="${completedMissions} de ${missions.length} missões concluídas neste módulo">
           ${journeyDots}
         </div>
-        <p class="demo-hint">Módulo ${module.trail_modules.position} · ${escapeHtml(module.trail_modules.title)} — em andamento</p>
+        <p class="demo-hint">${escapeHtml(journeyCaption)}</p>
       </section>
 
       <p class="demo-note">Demonstração com dados fictícios.</p>
