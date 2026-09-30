@@ -1,5 +1,10 @@
+> **Shipaton 2026 — Next Gen submission**
+>
+> The Android submission is located in [`apps/mobile`](./apps/mobile).
+> This branch contains the complete Cognita Hub ecosystem used for the submission.
+
 <p align="center">
-  <img src="./assets/logo-retangular-transparent.png" alt="Cognita Hub" width="600" />
+  <img src="./public/assets/logo-retangular-transparent.png" alt="Cognita Hub" width="600" />
 </p>
 
 <h1 align="center">Cognita Hub</h1>
