@@ -1,0 +1,65 @@
+/* Painel do tutor — primitivos compartilhados entre as abas: botões, cards,
+   chips, pílulas de status, textos auxiliares e estado vazio.
+   Tokens, rail, topbar/busca, scrollbar interna e drawer genérico vêm de
+   ../tutor-shell.css (compartilhado com atividades.html) — aqui só o que é
+   específico do painel do tutor (pages/tutor.html).
+
+   ORDEM IMPORTA. Os arquivos de css/tutor/ são carregados na ordem em que
+   tutor.html os lista e mantêm a precedência de quando eram um <style> só:
+   base → shell → home → perfil → resumo → sessoes → atividades → forms →
+   estados → command-palette → responsive → jornada. */
+
+.btn { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 15px; border-radius: var(--r-sm); font-family: var(--font); font-size: .84rem; font-weight: 700; cursor: pointer; white-space: nowrap; text-decoration: none; border: none; }
+.btn svg { width: 15px; height: 15px; }
+.btn-accent { background: var(--accent); color: var(--ink); box-shadow: 0 1px 6px rgba(255,168,0,.3); }
+.btn-accent:hover:not(:disabled) { filter: brightness(.97); }
+.btn-accent:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+.btn-ghost { background: var(--card); color: var(--brand); border: 1px solid var(--line-2); }
+.btn-brand { background: var(--brand); color: #fff; box-shadow: 0 3px 12px rgba(20,17,98,.22); }
+.btn-brand:hover:not(:disabled) { filter: brightness(1.08); }
+.btn-ghost:hover:not(:disabled) { background: rgba(20,17,98,.04); }
+.btn-ghost:disabled { opacity: .45; cursor: not-allowed; }
+/* Destrutivo/atenção — ações que tiram algo de circulação (ex.: Arquivar),
+   não uma ação primária nem neutra. Ghost tingido de --bad, não sólido —
+   ainda é secundária na hierarquia visual da linha, só sinaliza cuidado. */
+.btn-bad { background: var(--bad-soft); color: var(--bad); border: 1px solid rgba(163,18,58,.22); }
+.btn-bad:hover:not(:disabled) { background: rgba(163,18,58,.14); }
+.btn-bad:disabled { opacity: .45; cursor: not-allowed; }
+.btn-sm { height: 32px; padding: 0 12px; font-size: .8rem; }
+
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); }
+.card--accent { border-left: 3px solid var(--brand); }
+.card--warm { background: linear-gradient(165deg, #fffefb, #fdf9f1); }
+.card--resource { background: var(--brand-soft); border-color: transparent; }
+.card--resource .sg-facts span { border-color: rgba(20,17,98,.16); background: rgba(255,255,255,.55); }
+.card-h { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--line); }
+.card-h h3 { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-soft); }
+.card-h-link { font-size: .78rem; font-weight: 700; text-decoration: none; color: var(--muted); }
+.card-h-link:hover { color: var(--brand); }
+.card-b { padding: var(--sp-2) var(--sp-4) var(--sp-4); }
+.stack { display: grid; gap: var(--sp-4); }
+
+.kv { display: grid; grid-template-columns: 150px 1fr; gap: 0; }
+.kv > dt { padding: 11px 0; font-size: .82rem; color: var(--muted); font-weight: 700; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
+.kv > dt:first-of-type, .kv > dt:first-of-type + dd { border-top: none; }
+.kv > dt svg { width: 14px; height: 14px; color: var(--muted); flex-shrink: 0; }
+.kv > dd { padding: 11px 0; font-size: .9rem; color: var(--ink); border-top: 1px solid var(--line); line-height: 1.45; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: var(--pill); background: rgba(20,17,98,.05); color: var(--brand); font-size: .76rem; font-weight: 700; }
+.chip--1 { background: rgba(30,27,122,.10); color: var(--brand); }
+.chip--2 { background: rgba(255,168,0,.18); color: #8a5a00; }
+.chip--3 { background: rgba(46,155,98,.14); color: var(--ok); }
+
+.pill { display: inline-flex; align-items: center; height: 21px; padding: 0 8px; border-radius: var(--pill); font-size: .7rem; font-weight: 700; }
+.pill-ok { background: var(--ok-soft); color: var(--ok); }
+.pill-mid { background: var(--warn-soft); color: var(--warn); }
+.pill-bad { background: var(--bad-soft); color: var(--bad); }
+
+.muted { color: var(--muted); }
+.card-copy { font-size: .87rem; color: var(--ink-soft); line-height: 1.5; }
+.mini { display: grid; gap: 6px; padding-left: 16px; font-size: .85rem; color: var(--ink-soft); line-height: 1.45; }
+
+.empty-state { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 28px 16px; }
+.empty-state img { width: 56px; height: 56px; object-fit: contain; filter: drop-shadow(0 6px 10px rgba(20,17,98,.18)); }
+.empty-state strong { font-size: .9rem; color: var(--ink); }
+.empty-state span { font-size: .82rem; color: var(--muted); max-width: 36ch; line-height: 1.5; }

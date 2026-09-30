@@ -1,6 +1,6 @@
 # Arquitetura — Cognita Hub
 
-Última revisão: 3 de setembro de 2026.
+Última revisão: 30 de setembro de 2026.
 
 ## Visão geral
 
@@ -46,24 +46,28 @@ Proteção complementar:
 
 ```text
 cognita-hub/
-├── apps/mobile/        # módulos da experiência infantil
-├── css/                # estilos do hub e das páginas
+├── apps/mobile/        # app Android (Capacitor): experiência infantil e demo Cognita for Schools — artefato submetido ao Shipaton
+├── css/                # estilos do hub web
+│   └── tutor/          # painel do tutor: um arquivo por área (a ordem dos <link> é a ordem da cascata)
 ├── js/
 │   ├── components/     # componentes compartilhados
 │   ├── data/           # consultas, comandos e RPCs do Supabase
 │   ├── lib/            # autenticação, cliente Supabase e utilitários
 │   └── pages/          # controladores das páginas
+│       └── tutor/      # painel do tutor: um módulo por comportamento (index.js compõe)
 ├── pages/              # entradas HTML do Vite
-├── public/             # assets servidos sem transformação
+├── public/             # assets do hub web, servidos em /assets/ sem transformação
 ├── docs/               # arquitetura, banco e roadmap
 ├── index.html          # página pública inicial
 └── vite.config.js      # entradas do build multipágina
 ```
 
+O hub web (`pages/`, `js/`, `css/`) e o app em `apps/mobile/` são pacotes independentes: o `npm run build` da raiz compila só o hub web.
+
 ### Responsabilidades das camadas
 
 - `pages/` define a estrutura de cada tela.
-- `js/pages/` coordena estado, eventos e renderização de cada tela.
+- `js/pages/` coordena estado, eventos e renderização de cada tela. O painel do tutor (`js/pages/tutor.js`) é só a entrada; a lógica está em `js/pages/tutor/`, com o estado compartilhado em `tutor/state.js`.
 - `js/components/` concentra componentes reutilizáveis do hub.
 - `js/data/` é a fronteira principal entre o hub e o Supabase.
 - `js/lib/` reúne infraestrutura compartilhada, incluindo autenticação.

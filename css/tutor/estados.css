@@ -1,0 +1,29 @@
+/* Painel do tutor — estados sem acompanhamento (js/pages/tutor/estados.js):
+   candidatura em análise, orientação pendente, disponível e erro. */
+
+/* Passos de status (onboarding/orientação pendente) */
+.steps { display: grid; gap: 8px; }
+.step { display: flex; gap: 11px; align-items: flex-start; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-sm); }
+.step.done { background: var(--ok-soft); border-color: transparent; }
+.step.now  { border-color: var(--brand); }
+.step-n { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: .76rem; font-weight: 700; flex-shrink: 0; border: 1.5px solid var(--line-2); color: var(--muted); }
+.step.done .step-n { background: var(--ok); border-color: var(--ok); color: #fff; }
+.step.now .step-n  { background: var(--brand); border-color: var(--brand); color: #fff; }
+.step b { font-size: .88rem; }
+.step p { font-size: .82rem; color: var(--ink-soft); margin-top: 2px; }
+
+.status-card { display: flex; gap: 16px; align-items: flex-start; padding: 24px; }
+.status-ico { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0; }
+.status-ico svg { width: 22px; height: 22px; }
+.status-ico.pending { background: var(--warn-soft); color: var(--warn); }
+.status-ico.ok { background: var(--ok-soft); color: var(--ok); }
+.status-ico.info { background: rgba(20,17,98,.07); color: var(--brand); }
+.status-kicker { font-size: var(--label-sm-size); font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: var(--label-sm-tracking); }
+.status-title { font-size: 1.25rem; font-weight: 700; color: var(--brand-deep); margin: 5px 0 9px; line-height: 1.15; }
+.status-card > div > p { font-size: .88rem; color: var(--ink-soft); line-height: 1.6; max-width: 56ch; }
+.lib-link { display: inline-block; margin-top: 12px; color: var(--brand); font-weight: 700; font-size: .88rem; text-decoration: none; }
+.lib-link:hover { text-decoration: underline; }
+
+.error-card { text-align: center; padding: 30px 20px; }
+.error-card strong { display: block; font-size: 1rem; color: var(--bad); margin-bottom: 6px; }
+.error-card p { font-size: .88rem; color: var(--ink-soft); margin-bottom: 16px; }

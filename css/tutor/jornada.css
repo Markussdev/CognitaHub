@@ -1,9 +1,28 @@
+/* Painel do tutor — aba Jornada (js/pages/tutor/jornada.js): resumo compacto do
+   plano e a trilha formal (módulos e missões, escopados em [data-panel="plan"]).
+   Último da lista: as regras de trilha sempre foram as últimas da cascata. */
+
+/* Plano — resumo compacto (o mapa grande vive em trilha.html/css/trilha.css) */
+.plan-progress-label { font-size: var(--label-sm-size); letter-spacing: var(--label-sm-tracking); text-transform: uppercase; font-weight: 700; color: var(--brand); }
+.plan-next { margin-top: 12px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--rail); }
+.plan-next-label { display: block; font-size: var(--label-sm-size); letter-spacing: var(--label-sm-tracking); text-transform: uppercase; font-weight: 700; color: var(--muted); }
+.plan-next b { display: block; margin-top: 2px; font-size: .92rem; color: var(--ink); }
+.plan-dots { display: flex; align-items: center; margin-top: 14px; }
+.plan-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; border: 2px solid var(--line-2); background: var(--card); }
+.plan-dot--concluida { background: var(--ok); border-color: var(--ok); }
+.plan-dot--current { width: 17px; height: 17px; background: var(--accent); border-color: var(--accent); }
+.plan-dot-line { flex: 1; height: 2px; background: var(--line-2); margin: 0 3px; }
+.plan-dot-line--done { background: var(--ok); opacity: .5; }
+.plan-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+
+/* ── Trilha formal (antes css/tutor-trilha.css) ── */
+
 /* ============================================================
    Trilha formal (aba Plano) — pages/tutor.html
    Escopado em [data-panel="plan"] de propósito: tutor.html não carrega
-   internal.css (tokens diferentes — --line/--r aqui, não --border/--r-*
-   de internal.css), e este painel não deve vazar estilo pro resto do
-   hub. Passagem funcional, não o mapa de módulo→missão de verdade —
+   perfil-crianca.css (tokens diferentes — --line/--r aqui, não
+   --border/--r-* de lá), e este painel não deve vazar estilo pro resto
+   do hub. Passagem funcional, não o mapa de módulo→missão de verdade —
    isso fica pra quando o dado real estiver provado ponta a ponta.
    ============================================================ */
 

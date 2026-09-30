@@ -14,7 +14,7 @@ const MOLDES = {
 }
 
 // Contrato a partir de uma child_activity real. buildContractFromParts é
-// compartilhado com a prévia ao vivo do form de composição (tutor.js) —
+// compartilhado com a prévia ao vivo do form de composição (tutor/atividade-wizard.js) —
 // as duas renderizações nascem exatamente da mesma lógica.
 function buildContractFromRow(row) {
   return {
@@ -446,7 +446,7 @@ const isPreview = params.get('preview') === '1'
 const isSandbox = params.get('sandbox') === '1'
 
 if (isPreview) {
-  // Embutido como <iframe> no form de composição do tutor (tutor.js) — a
+  // Embutido como <iframe> no form de composição do tutor (tutor/atividade-wizard.js) — a
   // MESMA casca, ao vivo, sem autenticação e sem gravar nada. O tutor vê
   // exatamente o que a criança veria enquanto ainda está compondo.
   const instance = new ModoCrianca(getStubActivityContract(), null, { previewMode: true })
@@ -484,7 +484,7 @@ if (isPreview) {
         console.warn('[modo-crianca] não achou a atividade', error)
       } else {
         // A lista "Atividades preparadas" já esconde "Fazer com a criança"
-        // pra missão de trilha que não está 'disponivel' (ver tutor.js), mas
+        // pra missão de trilha que não está 'disponivel' (ver tutor/atividades.js), mas
         // isso sozinho não impede acesso direto pela URL — confere de novo
         // aqui, última linha de defesa. Falha fechado: qualquer coisa que
         // não seja explicitamente 'disponivel' (bloqueada, concluída, ou o

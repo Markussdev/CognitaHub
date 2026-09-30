@@ -53,7 +53,7 @@ export async function listChildActivities(childId, { incluirArquivadas = false }
 }
 
 // Edição de uma atividade já preparada — reusa o mesmo form de composição
-// do tutor.js (troca só o botão de "Salvar atividade" pra "Salvar
+// do tutor (tutor/atividade-wizard.js — troca só o botão de "Salvar atividade" pra "Salvar
 // alterações" e chama isto em vez de createChildActivity). RLS (ca_tutor_update)
 // já cobre: exige is_tutor_of(child_id), sem precisar de policy nova.
 export async function updateChildActivity(id, { molde, tema, config, instrucao, titulo }) {

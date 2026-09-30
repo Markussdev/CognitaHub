@@ -34,8 +34,8 @@ Read the full diff. Every hunk must trace back to the request.
 Anything else — a renamed variable, a reformatted block, a tidied import, a
 "while I was in there" fix — comes out, or gets named explicitly with a reason.
 
-Look hardest at the affected orchestrator: `js/pages/tutor.js` for web,
-`apps/mobile/src/app.js` for mobile. Inspect back/resume and local/connected
+Look hardest at the affected orchestrator: `js/pages/tutor/index.js` and
+`tutor/navegacao.js` for web, `apps/mobile/src/app.js` for mobile. Inspect back/resume and local/connected
 completion if those contracts changed.
 
 ## 3. Nothing forbidden happened

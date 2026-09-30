@@ -1,0 +1,48 @@
+/* Painel do tutor — aba Resumo (js/pages/tutor/resumo.js): mesa de trabalho,
+   feed do que aconteceu e blocos de apoio. */
+
+/* Banner próxima ação */
+.nextbar { display: flex; align-items: center; gap: 14px; padding: 13px 16px; border: 1px solid var(--line); border-left: 3px solid var(--brand); border-radius: var(--r); background: linear-gradient(135deg, var(--card), var(--brand-soft) 220%); box-shadow: var(--shadow); }
+.nextbar.tone-warn { border-left-color: var(--warn); background: linear-gradient(135deg, var(--card), var(--warn-soft) 220%); }
+.nextbar.tone-ok { border-left-color: var(--ok); background: linear-gradient(135deg, var(--card), var(--ok-soft) 220%); }
+.nextbar .ico { width: 34px; height: 34px; border-radius: 9px; background: rgba(20,17,98,.07); color: var(--brand); display: grid; place-items: center; flex-shrink: 0; }
+.nextbar.tone-warn .ico { background: var(--warn-soft); color: var(--warn); }
+.nextbar.tone-ok .ico { background: var(--ok-soft); color: var(--ok); }
+.nextbar .ico svg { width: 17px; height: 17px; }
+.nextbar .tx { flex: 1; min-width: 0; }
+.nextbar .lb { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--warn); }
+.nextbar.tone-ok .lb { color: var(--ok); }
+.nextbar.tone-default .lb { color: var(--brand); }
+.nextbar .ti { font-size: .92rem; font-weight: 700; }
+.nextbar .ds { font-size: .8rem; color: var(--muted); }
+
+/* Atividade sugerida */
+.sg-title { font-size: .98rem; font-weight: 700; }
+.sg-why { font-size: .82rem; color: var(--ink-soft); margin-top: 4px; line-height: 1.45; }
+.sg-facts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.sg-facts span { font-size: .74rem; font-weight: 700; color: var(--muted); border: 1px solid var(--line-2); border-radius: var(--pill); padding: 2px 8px; }
+
+/* Feed de atividade */
+.feed { display: grid; }
+.feed-item { display: flex; gap: 11px; padding: 11px 0; border-top: 1px solid var(--line); }
+.feed-item:first-child { border-top: none; }
+.feed-ico { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; }
+.feed-ico svg { width: 14px; height: 14px; }
+.feed-ico.you { background: var(--ok-soft); color: var(--ok); }
+.feed-ico.team { background: rgba(20,17,98,.07); color: var(--brand); }
+.feed-tx { font-size: .85rem; line-height: 1.4; min-width: 0; }
+.feed-tx b { font-weight: 700; }
+.feed-tx .sub { color: var(--muted); display: block; }
+.feed-time { font-size: .74rem; color: var(--muted); margin-left: auto; white-space: nowrap; flex-shrink: 0; }
+
+/* Resumo — mesa de trabalho (docs/TELA-RESUMO-PAINEL-TUTOR.md) */
+.resumo { display: grid; gap: var(--sp-4); }
+.resumo-pulso { font-size: .82rem; color: var(--muted); font-feature-settings: "tnum"; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 0 2px; }
+.resumo-pulso .sep { opacity: .45; }
+.resumo-decisao .card-b { display: grid; gap: 10px; }
+.resumo-decisao .decisao-ti { font-size: 1rem; font-weight: 700; line-height: 1.45; }
+.resumo-decisao .decisao-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+.resumo-contexto { margin-bottom: 10px; }
+.resumo-link { font-size: .82rem; color: var(--brand); font-weight: 600; text-decoration: none; display: inline-block; }
+.resumo-link:hover { text-decoration: underline; }
+.resumo-meta { font-size: .82rem; color: var(--muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }

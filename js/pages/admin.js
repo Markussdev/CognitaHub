@@ -1,6 +1,6 @@
 import { requireRole, signOut } from '../lib/auth.js'
 import { wireRailToggle } from '../lib/rail.js'
-import logoIconSrc from '../../assets/logo-icon-transparent.png'
+import { logoIconSrc } from '../lib/asset-urls.js'
 import {
   getPendingTutors,
   getChildrenWaitingReview,

@@ -1,9 +1,9 @@
 /* ============================================================
    COGNITA — TOKENS (Fase 2.5)
    Variáveis de design compartilhadas por todas as páginas.
-   Carregado ANTES de styles.css e internal.css: em caso de
-   duplicata, o legado vence por ordem (mesmos valores hoje) —
-   a migração acontece componente a componente, sem big bang.
+   Carregado ANTES do CSS da página (hoje perfil-crianca.css): em
+   caso de duplicata, o da página vence por ordem (mesmos valores
+   hoje) — a migração acontece componente a componente, sem big bang.
    Direção: docs/PLANO-V1.md §6.
    ============================================================ */
 

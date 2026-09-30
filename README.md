@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  A human-centered educational ecosystem that supports families, educators and mediators
+  A human-centered educational ecosystem that supports families, educators and tutors
   in adapting mathematics learning experiences for children with autism.
 </p>
 
@@ -22,6 +22,19 @@
 <p align="center">
   <strong><em>Technology should support the people who know the child — not pretend to replace them.</em></strong>
 </p>
+
+## Repository at a glance
+
+| Path | What it is |
+| --- | --- |
+| [`apps/mobile/`](./apps/mobile) | **The Android app submitted to Shipaton 2026.** Capacitor + Vanilla JS, an independent package with its own `package.json`, build and Android project. It holds the child experience, device pairing, the RevenueCat institutional-licence flow and the **Cognita for Schools** demo (tutor, child and family surfaces on local data, no backend). |
+| [`pages/`](./pages) · [`js/`](./js) · [`css/`](./css) | **Web companion platform** — the original Cognita Hub web experience used by tutors and families: tutor panel, family panel, admin and the activity library. A Vite multi-page app on Supabase. **Not bundled into the APK.** |
+| [`docs/`](./docs) | Product direction ([`PRODUCT.md`](./docs/PRODUCT.md)), mobile architecture ([`MOBILE.md`](./docs/MOBILE.md)) and database reference. |
+
+Both sides belong to the same product and talk to the same Supabase backend in
+their connected flows, but they are built and run separately: `npm run build` at
+the repository root builds the **web platform only**; the Android app is built
+from `apps/mobile` (see [Running locally](#running-locally)).
 
 ## Learning experience
 
@@ -62,7 +75,7 @@ Cognita is interested in the context around the answer:
 
 - What kind of support was needed?
 - How did the child participate?
-- What did the mediator observe?
+- What did the tutor observe?
 - What happened during that specific experience?
 - What could be tried next?
 
@@ -78,18 +91,19 @@ Cognita is interested in the context around the answer:
 
 ## The ecosystem
 
-|  Child |  Mediator | Family |
+|  Child |  Tutor | Family |
 | --- | --- | --- |
 | Interactive learning journeys and activities. | Prepares, mediates and observes each session. | Follows progress through guided feedback. |
 
 The three experiences share the same learning cycle, but they do not share the
-same interface or responsibilities.
+same interface or responsibilities. The **Tutor** is the adult who conducts the
+experience — a tutor, teacher or other education professional.
 
-## Cognita Escola
+## Cognita for Schools
 
 Cognita's current monetization direction is institutional rather than
 child-facing. Instead of placing accessibility or learning support behind a
-family paywall, Cognita Escola explores recurring licensing for schools and
+family paywall, Cognita for Schools explores recurring licensing for schools and
 educational institutions — covering mediated mathematics experiences, student
 learning journeys, session and observation history, family feedback and
 educator workflows.
@@ -105,7 +119,7 @@ educator workflows.
 </p>
 
 <p align="center">
-  Cognita Escola → Offering → Monthly Package → Test Store → CustomerInfo → <code>school_access</code>
+  Cognita for Schools → Offering → Monthly Package → Test Store → CustomerInfo → <code>school_access</code>
 </p>
 
 > **Validated on a physical Android device:** valid purchase, failed purchase,
@@ -138,7 +152,7 @@ Cognita Hub is an evolving prototype.
 
 | Implemented | In progress |
 | --- | --- |
-| Web experiences for mediators and families | Immediate activity exploration without pairing |
+| Web experiences for tutors and families | Immediate activity exploration without pairing |
 | Child Android application | Broader activity formats |
 | Device pairing | Multimodal learning experiences |
 | Learning journeys | Richer support and observation records |
@@ -179,24 +193,25 @@ Cognita Hub is an evolving prototype.
 ```text
 CognitaHub/
 ├── apps/
-│   └── mobile/                # Android child experience (Capacitor)
+│   └── mobile/                # Android app submitted to Shipaton (Capacitor, Vanilla JS)
 │       ├── android/
 │       └── src/
-│           ├── activities/
+│           ├── activities/    # activity engine (contar, identificar)
 │           ├── components/
+│           ├── demo/          # Cognita for Schools demo: tutor, child and family surfaces
 │           ├── screens/
-│           └── services/
+│           └── services/      # Supabase and RevenueCat boundaries
 ├── assets/                    # shared visual assets
-├── css/                       # web hub styles
-├── docs/                      # architecture, database, product and roadmap docs
-├── js/
+├── css/                       # web companion styles
+├── docs/                      # product, mobile and database documentation
+├── js/                        # web companion
 │   ├── components/
 │   ├── data/                  # Supabase boundary
 │   ├── lib/                   # auth, Supabase client, shared utilities
-│   └── pages/
-├── pages/                     # Vite HTML entry points
-├── public/
-└── package.json
+│   └── pages/                 # page entry points; the tutor panel lives in pages/tutor/
+├── pages/                     # web companion: Vite HTML entry points
+├── public/                    # web companion static assets (served at /assets/...)
+└── package.json               # web companion build (the mobile app has its own)
 ```
 
 ## Running locally
@@ -225,6 +240,19 @@ VITE_REVENUECAT_TEST_API_KEY=
 VITE_REVENUECAT_ENTITLEMENT_ID=school_access
 VITE_REVENUECAT_OFFERING_ID=cognita_school
 ```
+
+To open the **Cognita for Schools** demo instead of the connected app, also set:
+
+```env
+VITE_SHIPATON_SCHOOL_DEMO=1   # launch on the licence screen (in a browser, ?school=1 does the same)
+VITE_SHIPATON_CHILD_DEMO=1    # the Child card opens the local demo child, not pairing + Supabase
+```
+
+The demo surfaces (tutor, child, family) run on fabricated local data and need
+no Supabase project. The licence step itself uses RevenueCat's Test Store, so
+it needs the `VITE_REVENUECAT_*` values above. Without
+`VITE_SHIPATON_CHILD_DEMO`, the Child card follows the real flow (pairing +
+Supabase).
 
 Then:
 

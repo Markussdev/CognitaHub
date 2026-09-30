@@ -108,9 +108,21 @@ than one screen. Verify current consumers before changing it.
 **Two CSS patterns coexist** — files under `css/` and inline `<style>`. Check
 which a page uses. Do not consolidate them as a side task.
 
-**`js/pages/tutor.js` is historically a high-coupling area.** Check its current
-structure; never refactor outside the requested scope. Propose extraction
-separately.
+**Mixing them breaks the cascade in production.** Vite injects the bundled
+`<link>` CSS at the end of `<head>`, *after* any inline `<style>`, so a page that
+has both gets the opposite cascade in `npm run build` than in `npm run dev`
+(the tutor panel was unusable on phones in the published build for this
+reason). `tutor.html` (`css/tutor/*.css`, link order = cascade order) and
+`perfil-crianca.html` (`css/perfil-crianca.css`) now use files only;
+`responsavel`, `atividades`, `admin`, `app-crianca`, `trilha` and
+`builder-jornada` still mix both. Compare dev and build before trusting a
+layout change on those pages.
+
+**The tutor panel was historically a high-coupling area.** `js/pages/tutor.js`
+is now a thin entry point; the logic lives in `js/pages/tutor/`, one module per
+behaviour, composed by `tutor/index.js` (shared state only in `tutor/state.js`).
+Put new behaviour in its own module, do not grow `index.js`, and never refactor
+outside the requested scope. Propose extraction separately.
 
 ## Authorization
 

@@ -9,7 +9,7 @@ import { hasDigitalPreset } from '../data/digital-presets.js'
 // Biblioteca = conteúdo-base e inspiração da Cognita. NÃO guarda o que o
 // tutor criou (isso é Atividades/child_activities) — oferece matéria-prima:
 // "No Modo Criança" personaliza pra virar uma child_activity real (ponte
-// ?preset=<slug> pro assistente de Atividades em tutor.js); "Com o tutor"
+// ?preset=<slug> pro assistente de Atividades em tutor/atividade-wizard.js); "Com o tutor"
 // conduz uma atividade guiada e devolve o observado pra Sessões.
 
 // ── Humaniza o catálogo — slug nunca aparece na UI ────────────────────────
@@ -693,7 +693,7 @@ function closeDrawer() {
 // ── Modo Condução — atividade "Com o tutor" ──────────────────────────────────
 // Prepare → Conduza (passo a passo + frases, Adapte embutido como atalho não
 // sequencial) → Finalize → "Registrar como foi" leva pra Sessões com o que
-// foi observado. Handoff por sessionStorage (js/pages/tutor.js lê e some).
+// foi observado. Handoff por sessionStorage (js/pages/tutor/handoffs.js lê e some).
 
 const CND_STAGES = ['preparar', 'conduzir', 'finalizar']
 const CND_LABELS = { preparar: 'Preparar', conduzir: 'Conduzir', finalizar: 'Finalizar' }

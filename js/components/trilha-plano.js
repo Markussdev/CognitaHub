@@ -9,7 +9,7 @@ import { emblemaUrl, espacoUrl } from '../lib/trilha-assets.js'
 // painel de detalhes — título/progresso/voltar são do shell da página que
 // usa isto, ver js/pages/trilha.js). Quem chama decide quando "Preparar
 // atividade" bloqueia (podePreparar) e o que fazer com a etapa escolhida
-// (onPrepararEtapa → prefillFromPlano/bridge de URL em tutor.js).
+// (onPrepararEtapa → prefillFromPlano/bridge de URL em tutor/navegacao.js + record.js).
 
 const CHECK_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`
 

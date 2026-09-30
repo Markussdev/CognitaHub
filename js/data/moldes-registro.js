@@ -1,5 +1,5 @@
 // Fonte única de verdade sobre o que cada molde é: usado pela autoria do
-// tutor (js/pages/tutor.js, monta o form de composição) E pela casca do
+// tutor (js/pages/tutor/atividade-wizard.js, monta o form de composição) E pela casca do
 // Modo Criança (js/pages/modo-crianca.js, monta acolhimento/feedback ao
 // carregar uma child_activity real). Adicionar um molde novo é adicionar
 // uma entrada aqui — nenhum dos dois consumidores precisa mudar.
@@ -75,7 +75,7 @@ export const MOLDES_REGISTRO = {
 // Monta o contrato completo (o formato que o Modo Criança renderiza) a partir
 // de molde+tema+config+instrucao — usado tanto pela leitura real de uma
 // child_activity (js/pages/modo-crianca.js) quanto pela prévia ao vivo do
-// form de composição (js/pages/tutor.js). Fala/feedback/resumo de encerramento
+// form de composição (js/pages/tutor/atividade-wizard.js). Fala/feedback/resumo de encerramento
 // nunca vêm do banco nem do form — são o padrão do molde, sempre.
 //
 // Sprint 2 (Missão curtinha): a saudação de acolhimento passou a ser genérica

@@ -1,7 +1,7 @@
 {
   "name": "cognita-hub",
   "version": "1.0.0",
-  "description": "<p align=\"center\">   <img src=\"./assets/logo-retangular-transparent.png\" alt=\"Cognita Hub\" width=\"100%\" /> </p>",
+  "description": "Cognita Hub — human-mediated early math support for children with autism. Web companion platform; the Android app lives in apps/mobile.",
   "main": "index.js",
   "directories": {
     "doc": "docs"
@@ -9,8 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "optimize-assets": "node scripts/optimize-assets.mjs"
+    "preview": "vite preview"
   },
   "repository": {
     "type": "git",

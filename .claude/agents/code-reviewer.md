@@ -17,7 +17,8 @@ that quietly touched more than it was asked to. Compare the diff against what
 was requested. Every hunk that does not trace back to the request is a finding,
 even if the code itself is an improvement.
 
-`js/pages/tutor.js` is historically a high-coupling web area. For mobile,
+The tutor panel (`js/pages/tutor/`, entry `tutor.js`, composed in
+`tutor/index.js`) is historically a high-coupling web area. For mobile,
 look hardest at `apps/mobile/src/app.js`: screen state, back navigation,
 foreground refresh and connected/local completion must stay coherent.
 

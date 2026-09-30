@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase.js'
 // auth.uid() simultaneamente.
 // Execuções do Modo Criança que ainda não viraram Registro de Sessão
 // (session_id nulo) — alimenta a lista "Usar esta execução" no Registrar
-// sessão do tutor (js/pages/tutor.js), pra não digitar de novo o Nível 1.
+// sessão do tutor (js/pages/tutor/sessao-wizard.js), pra não digitar de novo o Nível 1.
 // Embute child_activities (titulo, config) pelo FK child_activity_id — dá
 // pro item pendente mostrar título e rodadas sem duplicar essa informação
 // em atividade_execucao (que só guarda o snapshot de molde/tema/nível).

@@ -1,0 +1,36 @@
+/* Painel do tutor — tela Início (js/pages/tutor/home.js). */
+
+.home-head { padding: 22px 26px 0; display: flex; align-items: flex-start; gap: 18px; }
+.home-head .mascot { width: 68px; height: 68px; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 8px 14px rgba(20,17,98,.2)); }
+.home-head .kicker { font-size: var(--label-sm-size); font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: var(--label-sm-tracking); }
+.home-head h1 { margin-top: 6px; font-size: 1.5rem; font-weight: 700; color: var(--brand-deep); letter-spacing: -.01em; }
+.home-head p { margin-top: 6px; color: var(--ink-soft); font-size: .92rem; }
+
+.home-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.home-stat { padding: 16px 18px; }
+.home-stat .lbl { font-size: var(--label-sm-size); font-weight: 700; text-transform: uppercase; letter-spacing: var(--label-sm-tracking); color: var(--muted); }
+.home-stat .val { margin-top: 9px; font-size: .95rem; font-weight: 700; color: var(--ink); line-height: 1.35; }
+@media (max-width: 720px) { .home-stats { grid-template-columns: 1fr; } }
+
+.home-list { display: grid; gap: 10px; }
+.home-item {
+  display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: var(--r); background: var(--card);
+  cursor: pointer; text-align: left; width: 100%; font-family: var(--font);
+}
+.home-item:hover { border-color: var(--line-2); background: rgba(20,17,98,.025); }
+.home-item .av { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(150deg, #1a1670, #540042); color: #fff; display: grid; place-items: center; font-weight: 700; flex-shrink: 0; }
+.home-item .tx { flex: 1; min-width: 0; }
+.home-item .tx b { display: block; font-size: .94rem; color: var(--ink); }
+.home-item .tx span { font-size: .8rem; color: var(--muted); }
+.home-item svg { width: 16px; height: 16px; color: var(--muted); flex-shrink: 0; }
+
+.shortcut-list { display: grid; gap: 8px; }
+.shortcut-item {
+  display: flex; align-items: center; gap: 10px; padding: 11px 14px;
+  border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--card);
+  cursor: pointer; font-family: var(--font); font-size: .86rem; font-weight: 700;
+  color: var(--brand); text-decoration: none; width: 100%; text-align: left;
+}
+.shortcut-item:hover { background: rgba(20,17,98,.045); }
+.shortcut-item svg { width: 15px; height: 15px; flex-shrink: 0; color: var(--muted); }

@@ -5,11 +5,7 @@ import { wireRailToggle } from '../lib/rail.js'
 import { getGuardianChildren } from '../data/guardian.js'
 import { getLatestChildTrail, getChildTrailModules, getChildTrailMissions } from '../data/trilha-formal.js'
 import { listPairedDevices, revokePairedDevice, createPairingCode } from '../data/pareamento.js'
-import astronautaSrc from '../../assets/cat-astronauta.png'
-import cientistaSrc from '../../assets/cat-cientista.png'
-import magoSrc from '../../assets/cat-mago.png'
-import pintorSrc from '../../assets/cat-pintor.png'
-import mascoteSrc from '../../assets/gatomatematico-sem-fundo.png'
+import { astronautaSrc, cientistaSrc, magoSrc, pintorSrc, gatoMatematicoSrc as mascoteSrc } from '../lib/asset-urls.js'
 import { emblemaUrl } from '../lib/trilha-assets.js'
 
 // ── Painel da família — devolutiva, não operação ─────────────────────────────
