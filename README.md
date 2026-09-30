@@ -206,7 +206,7 @@ CognitaHub/
 │           ├── demo/          # Cognita for Schools demo: tutor, child and family surfaces
 │           ├── screens/
 │           └── services/      # Supabase and RevenueCat boundaries
-├── assets/                    # shared visual assets
+├── assets/                    # README and submission media
 ├── css/                       # web companion styles
 ├── docs/                      # product, mobile and database documentation
 ├── js/                        # web companion
