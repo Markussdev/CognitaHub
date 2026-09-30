@@ -9,7 +9,8 @@ export async function renderSchoolLicense(root) {
   root.innerHTML = `
     <div class="screen screen--pairing">
       <h1 class="title">Cognita Escola</h1>
-      <p class="subtitle">Licença institucional piloto</p>
+      <p class="subtitle">Licencie o ecossistema Cognita para sua instituição.</p>
+      <p class="subtitle">Criança · Mediador · Família</p>
       <p class="subtitle" id="school-price">Carregando oferta...</p>
       <button class="btn-primary" id="school-activate-btn" type="button" disabled>Ativar licença</button>
       <div id="school-status"></div>
@@ -22,10 +23,41 @@ export async function renderSchoolLicense(root) {
 
   let pkg = null
 
+  // Some o CTA de ativação assim que a licença já está ativa — sem isso,
+  // "Ativar licença" (ainda clicável) e "Explorar Cognita Escola" apareciam
+  // lado a lado, como se a compra ainda estivesse pendente.
+  function renderActiveState() {
+    activateBtn.hidden = true
+
+    statusEl.innerHTML = `
+      ${statusMessageHtml({ type: 'success', text: 'Licença ativa ✓' })}
+      <button class="btn-primary" id="school-enter-btn" type="button">Explorar Cognita Escola</button>
+    `
+
+    statusEl.querySelector('#school-enter-btn')?.addEventListener('click', openSchoolWorkspace)
+  }
+
+  // Import de school-workspace.js (e, dentro dele, de app.js só no clique de
+  // "Abrir experiência da criança") continua fora do topo deste arquivo —
+  // Cognita Escola fica isolado do Supabase até a pessoa pedir a experiência
+  // infantil (mesmo motivo do import condicional em main.js).
+  async function openSchoolWorkspace() {
+    const { renderSchoolWorkspace } = await import('./school-workspace.js')
+
+    renderSchoolWorkspace(root, {
+      priceString: pkg?.product?.priceString ?? '',
+      onBack: () => renderSchoolLicense(root),
+      onOpenChild: async () => {
+        const { initApp } = await import('../app.js')
+        await initApp(root)
+      },
+    })
+  }
+
   async function reportIfAlreadyActive() {
     try {
       if (await getSchoolAccess()) {
-        statusEl.innerHTML = statusMessageHtml({ type: 'success', text: 'Licença ativa ✓' })
+        renderActiveState()
       }
     } catch (err) {
       console.error('Erro ao verificar licença escolar:', err)
@@ -59,9 +91,14 @@ export async function renderSchoolLicense(root) {
     statusEl.innerHTML = ''
     try {
       const active = await purchaseSchoolPackage(pkg)
-      statusEl.innerHTML = active
-        ? statusMessageHtml({ type: 'success', text: 'Licença ativa ✓' })
-        : statusMessageHtml({ type: 'error', text: 'Compra concluída, mas a licença não apareceu ativa.' })
+      if (active) {
+        renderActiveState()
+      } else {
+        statusEl.innerHTML = statusMessageHtml({
+          type: 'error',
+          text: 'Compra concluída, mas a licença não apareceu ativa.',
+        })
+      }
     } catch (err) {
       statusEl.innerHTML = err?.userCancelled
         ? statusMessageHtml({ type: 'info', text: 'Compra cancelada.' })
