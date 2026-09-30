@@ -100,10 +100,29 @@ export const DEMO_MISSION_TITLE_BY_MOLDE = {
   identificar: 'Encontrar o número',
 }
 
-// Como a família lê o molde ("uma experiência de ...").
-export const DEMO_MOLDE_LABEL = {
-  contar: 'contagem',
-  identificar: 'identificação de números',
+// Experiências que o mediador pode preparar (nome e descrição do lado do adulto).
+export const DEMO_MOLDES = [
+  { key: 'contar', label: 'Contagem visual', hint: 'A criança toca em cada dinossauro para contar.' },
+  { key: 'identificar', label: 'Identificar números', hint: 'A criança toca no número que a atividade pedir.' },
+]
+
+export function demoMoldeLabel(molde) {
+  return DEMO_MOLDES.find((item) => item.key === molde)?.label ?? molde
+}
+
+// "Contagem visual · 4 itens · 3 rodadas" — a mesma linha no preparo, no
+// Resumo e na confirmação.
+export function describeDemoActivity({ molde, quantidade, maiorNumero, rodadas }) {
+  const detail = molde === 'identificar' ? `números até ${maiorNumero}` : `${quantidade} itens`
+  return `${demoMoldeLabel(molde)} · ${detail} · ${rodadas} ${rodadas === 1 ? 'rodada' : 'rodadas'}`
+}
+
+// "hoje às 14:03" (mesmo formato de formatExecucaoQuando em js/pages/tutor.js);
+// a demo nunca atravessa um dia.
+export function formatDemoQuando(timestamp) {
+  if (!timestamp) return 'há pouco'
+  const hora = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(new Date(timestamp))
+  return `hoje às ${hora}`
 }
 
 // Configuração inicial da atividade liberada — a que o mediador vê ao abrir

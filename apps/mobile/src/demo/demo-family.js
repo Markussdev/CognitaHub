@@ -2,40 +2,44 @@ import '../styles/school-demo.css'
 
 import { getChildAvatar } from '../config/child-avatars.js'
 import { escapeHtml } from '../utils/html.js'
-import { getSchoolDemoState } from './school-demo-store.js'
+import { getSchoolDemoState, isDemoActivityDone } from './school-demo-store.js'
 import {
   DEMO_CHILD,
   DEMO_FAMILY,
   DEMO_MODULES,
   DEMO_MISSIONS,
-  DEMO_MOLDE_LABEL,
   DEMO_RELEASED_MODULE_ID,
+  formatDemoQuando,
 } from './school-demo-data.js'
 
-// Painel da família (demo da Cognita Escola). Lê o mesmo store que o preparo
-// do mediador e a criança usam: se Mateus concluiu a atividade liberada, o
-// aviso aparece aqui. Conteúdo fictício; nada é buscado no Supabase.
+// Painel da família (demo da Cognita Escola). Conteúdo fictício; nada é
+// buscado no Supabase.
+//
+// Dois tipos de informação, de propósito:
+//  - o que é fato operacional (Mateus concluiu a atividade → a jornada
+//    avança) aparece assim que acontece;
+//  - a interpretação do que aconteceu só chega depois que o mediador
+//    registra a sessão: resumo (nível 2) e próximo passo. A nota interna do
+//    mediador (nível 3, session.notes) NUNCA é lida aqui.
 export function renderDemoFamilyExperience(root, { onExit } = {}) {
-  const { execution } = getSchoolDemoState()
+  const { session } = getSchoolDemoState()
   const avatar = getChildAvatar(DEMO_CHILD.avatarKey)
-  const { cycle, feedback } = DEMO_FAMILY
+  const { cycle } = DEMO_FAMILY
+
+  const feedback = session.exists
+    ? {
+        text: session.familySummary,
+        author: DEMO_FAMILY.feedback.author,
+        initials: DEMO_FAMILY.feedback.initials,
+        when: formatDemoQuando(session.createdAt),
+        nextStep: session.nextStep,
+      }
+    : DEMO_FAMILY.feedback
 
   const module = DEMO_MODULES.find((item) => item.id === DEMO_RELEASED_MODULE_ID)
   const missions = DEMO_MISSIONS[DEMO_RELEASED_MODULE_ID]
   const completedMissions =
-    missions.filter((mission) => mission.status === 'concluida').length + (execution.completed ? 1 : 0)
-
-  const banner = execution.completed
-    ? `
-      <section class="demo-banner" role="status">
-        <span class="demo-banner__check" aria-hidden="true">✓</span>
-        <div>
-          <strong>Nova atividade concluída</strong>
-          <p>${escapeHtml(DEMO_CHILD.name)} acabou de concluir uma experiência de ${escapeHtml(DEMO_MOLDE_LABEL[execution.molde] ?? 'matemática')}.</p>
-        </div>
-      </section>
-    `
-    : ''
+    missions.filter((mission) => mission.status === 'concluida').length + (isDemoActivityDone() ? 1 : 0)
 
   const journeyDots = missions
     .map((_, index) => {
@@ -63,8 +67,6 @@ export function renderDemoFamilyExperience(root, { onExit } = {}) {
         </div>
       </section>
 
-      ${banner}
-
       <section class="demo-card demo-cycle">
         <span class="demo-pill"><span aria-hidden="true">●</span> Ciclo ativo</span>
         <h2>O acompanhamento de ${escapeHtml(DEMO_CHILD.name)} está em andamento.</h2>
@@ -91,10 +93,15 @@ export function renderDemoFamilyExperience(root, { onExit } = {}) {
           <span class="demo-author__avatar" aria-hidden="true">${escapeHtml(feedback.initials)}</span>
           <span>${escapeHtml(feedback.author)} · ${escapeHtml(feedback.when)}</span>
         </div>
+        ${
+          feedback.nextStep
+            ? `
         <div class="demo-next">
           <span class="demo-label">O que vem agora</span>
           <p>${escapeHtml(feedback.nextStep)}</p>
-        </div>
+        </div>`
+            : ''
+        }
       </section>
 
       <section class="demo-card">

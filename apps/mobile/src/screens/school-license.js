@@ -46,9 +46,24 @@ export async function renderSchoolLicense(root) {
   async function openSchoolWorkspace() {
     const { renderSchoolWorkspace } = await import('./school-workspace.js')
 
-    async function openChildDemo() {
+    // A criança sempre volta pra quem a abriu (onExit): workspace ou mediador.
+    async function openChildDemo(onExit) {
       const { renderDemoChildExperience } = await import('../demo/demo-child.js')
-      renderDemoChildExperience(root, { onExit: openSchoolWorkspace })
+      renderDemoChildExperience(root, { onExit })
+    }
+
+    async function openTutorDemo(initialTab) {
+      const { renderDemoTutorExperience } = await import('../demo/demo-tutor.js')
+
+      // O que o mediador libera só chega na criança da demo local; por isso
+      // "Ver experiência da criança" abre sempre o Mateus demo, com ou sem
+      // VITE_SHIPATON_CHILD_DEMO — e ao sair ela volta pro Resumo do mediador,
+      // onde a execução aparece como "aguardando registro".
+      renderDemoTutorExperience(root, {
+        initialTab,
+        onExit: openSchoolWorkspace,
+        onOpenChild: () => openChildDemo(() => openTutorDemo('resumo')),
+      })
     }
 
     renderSchoolWorkspace(root, {
@@ -60,23 +75,13 @@ export async function renderSchoolLicense(root) {
         renderSchoolLicense(root)
       },
 
-      onOpenTutor: async () => {
-        const { renderDemoTutorExperience } = await import('../demo/demo-tutor.js')
-
-        // O que o mediador libera só chega na criança da demo local; por isso
-        // "Ver experiência da criança" abre sempre o Mateus demo, com ou sem
-        // VITE_SHIPATON_CHILD_DEMO.
-        renderDemoTutorExperience(root, {
-          onExit: openSchoolWorkspace,
-          onOpenChild: openChildDemo,
-        })
-      },
+      onOpenTutor: () => openTutorDemo('resumo'),
 
       // Card da criança: com VITE_SHIPATON_CHILD_DEMO=1 entra no Mateus demo;
       // sem a flag, segue o fluxo real (pareamento + Supabase).
       onOpenChild: async () => {
         if (import.meta.env.VITE_SHIPATON_CHILD_DEMO === '1') {
-          await openChildDemo()
+          await openChildDemo(openSchoolWorkspace)
           return
         }
 

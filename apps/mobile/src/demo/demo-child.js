@@ -5,7 +5,7 @@ import { renderMission } from '../screens/mission.js'
 import { getChildAvatar } from '../config/child-avatars.js'
 import { getLandmarkPreset } from '../config/module-visuals.js'
 
-import { getSchoolDemoState, markDemoActivityCompleted } from './school-demo-store.js'
+import { getSchoolDemoState, markDemoActivityCompleted, isDemoActivityDone } from './school-demo-store.js'
 
 import {
   DEMO_CHILD,
@@ -40,9 +40,10 @@ function completeCurrentMission(list) {
 
 // A missão disponível do módulo 1 é a atividade que o mediador liberou
 // (school-demo-store.js): mesmo molde, mesmo título. Se a criança já concluiu
-// essa atividade, entra com ela concluída e a seguinte liberada.
+// essa atividade (e o mediador não preparou outra depois), entra com ela
+// concluída e a seguinte liberada.
 function buildMissions() {
-  const { activity, execution } = getSchoolDemoState()
+  const { activity } = getSchoolDemoState()
   const missions = structuredClone(DEMO_MISSIONS)
   const list = missions[DEMO_RELEASED_MODULE_ID]
   const released = list.find((mission) => mission.id === DEMO_RELEASED_MISSION_ID)
@@ -50,7 +51,7 @@ function buildMissions() {
   released.mission_templates.molde = activity.molde
   released.mission_templates.title = DEMO_MISSION_TITLE_BY_MOLDE[activity.molde]
 
-  if (execution.completed) completeCurrentMission(list)
+  if (isDemoActivityDone()) completeCurrentMission(list)
 
   return missions
 }
