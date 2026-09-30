@@ -1,7 +1,9 @@
 import '../styles/school.css'
 
-import tutorShot from '../assets/school/tutor-mobile.png'
-import familyShot from '../assets/school/family-mobile.png'
+// Recortes reais das telas da demo (painel do mediador e da família), não
+// prints da tela inteira — mostram só a parte que conta a história.
+import tutorPreview from '../assets/school/mediador-preview.png'
+import familyPreview from '../assets/school/familia-preview.png'
 import revenuecatLogo from '../assets/school/revenuecat.png'
 import childAvatar from '../assets/avatars/astronauta.webp'
 
@@ -39,13 +41,15 @@ export function renderSchoolWorkspace(root, { priceString = '', onBack, onOpenTu
         </section>
 
         <section class="school-surface">
-          <img class="school-surface__shot" src="${tutorShot}" alt="Painel do mediador Cognita" />
+          <figure class="school-preview">
+            <img src="${tutorPreview}" alt="Painel do mediador: preparo de uma atividade em três passos — experiência, ajustes e revisão." />
+          </figure>
           <div class="school-surface__body">
             <span class="school-surface__number">01</span>
             <div>
               <span class="school-surface__role">Mediador</span>
               <h3>Prepara e acompanha</h3>
-              <p>Organiza jornadas, prepara atividades, acompanha execuções e registra observações para orientar a próxima experiência.</p>
+              <p>Organiza jornadas, prepara atividades e registra observações.</p>
             </div>
           </div>
           <button class="school-surface__cta" type="button" data-open-tutor>
@@ -77,13 +81,15 @@ export function renderSchoolWorkspace(root, { priceString = '', onBack, onOpenTu
         </section>
 
         <section class="school-surface">
-          <img class="school-surface__shot" src="${familyShot}" alt="Experiência da família Cognita" />
+          <figure class="school-preview">
+            <img src="${familyPreview}" alt="Painel da família: última devolutiva do tutor e o que vem agora." />
+          </figure>
           <div class="school-surface__body">
             <span class="school-surface__number">03</span>
             <div>
               <span class="school-surface__role">Família</span>
               <h3>Acompanha com contexto</h3>
-              <p>Recebe devolutivas guiadas e acompanha a jornada sem acessar anotações internas do mediador.</p>
+              <p>Recebe devolutivas guiadas e acompanha a jornada com clareza — sem ver as anotações internas do mediador.</p>
             </div>
           </div>
           <button class="school-surface__cta" type="button" data-open-family>

@@ -22,11 +22,25 @@
     linear-gradient(160deg, #141162 0%, #29207c 58%, #540042 135%);
 }
 
-.school-entry__mascot {
-  display: block;
-  width: 124px;
-  height: auto;
-  margin: 0 auto 12px;
+/* Só a carinha da marca (logo-icon) num círculo claro com glow roxo — mais
+   logo e menos personagem, pra tela institucional. */
+.school-entry__emblem {
+  width: 92px;
+  height: 92px;
+  margin: 0 auto 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--warm-white);
+  box-shadow:
+    0 0 0 10px rgba(109, 74, 255, 0.18),
+    0 0 46px rgba(109, 74, 255, 0.6);
+}
+
+.school-entry__emblem img {
+  width: 66px;
+  height: 66px;
+  object-fit: contain;
 }
 
 .school-entry__eyebrow {

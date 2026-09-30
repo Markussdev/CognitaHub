@@ -157,12 +157,26 @@
   box-shadow: 0 14px 34px rgba(35, 2, 32, 0.08);
 }
 
-.school-surface__shot {
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
-  object-position: top;
-  background: var(--soft-blue);
+/* Prévia real da tela (recorte da interface, não print inteiro): moldura
+   clara e a imagem como uma mini tela de celular, com sombra. */
+.school-preview {
+  margin: 0;
+  padding: 20px 18px;
+  display: flex;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(109, 74, 255, 0.1), transparent 62%),
+    var(--soft-blue);
+}
+
+.school-preview img {
+  display: block;
+  width: min(100%, 290px);
+  height: auto;
+  border-radius: 20px;
+  box-shadow:
+    0 12px 30px rgba(35, 2, 32, 0.16),
+    0 0 0 1px var(--line);
 }
 
 .school-surface__body {

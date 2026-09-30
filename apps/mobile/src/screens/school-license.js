@@ -1,6 +1,6 @@
 import '../styles/school-license.css'
 
-import mascotImg from '../assets/mascot-hero-wave.webp'
+import logoIcon from '../assets/logo-icon-transparent.webp'
 import revenuecatLogo from '../assets/school/revenuecat.png'
 import { statusMessageHtml } from '../components/status-message.js'
 import { getSchoolOffering, getSchoolAccess, purchaseSchoolPackage } from '../services/revenuecat.js'
@@ -16,7 +16,9 @@ export async function renderSchoolLicense(root) {
   root.innerHTML = `
     <div class="school-entry">
       <header class="school-entry__hero">
-        <img class="school-entry__mascot" src="${mascotImg}" alt="" />
+        <div class="school-entry__emblem">
+          <img src="${logoIcon}" alt="" />
+        </div>
         <span class="school-entry__eyebrow">Cognita Escola</span>
         <h1>Aprendizagem, mediação e acompanhamento em um só ecossistema.</h1>
         <p>Uma licença institucional conecta mediador, criança e família.</p>
