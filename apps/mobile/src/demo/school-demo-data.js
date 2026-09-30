@@ -103,7 +103,7 @@ export function describeDemoActivity(config) {
   return `${demoMoldeLabel(config.molde)} · ${describeDemoDetail(config)}`
 }
 
-// "hoje às 14:03" (mesmo formato de formatExecucaoQuando em js/pages/tutor.js);
+// "hoje às 14:03" (mesmo formato de formatExecucaoQuando em js/pages/tutor/helpers.js);
 // a demo nunca atravessa um dia.
 export function formatDemoQuando(timestamp) {
   if (!timestamp) return 'just now'

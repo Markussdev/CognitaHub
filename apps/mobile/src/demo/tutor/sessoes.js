@@ -2,7 +2,7 @@ import { escapeHtml } from '../../utils/html.js'
 import { getSchoolDemoState, hasPendingExecution, registerDemoSession } from '../school-demo-store.js'
 import { DEMO_CHILD, formatDemoQuando } from '../school-demo-data.js'
 
-// Perguntas e composição da devolutiva portadas de js/pages/tutor.js
+// Perguntas e composição da devolutiva portadas de js/pages/tutor/sessao-wizard.js
 // (PARTICIPACAO_OPTS … composeFamilySummary, "Registro de sessão"). Mesmas
 // opções e mesmas frases da web — a demo não inventa texto pedagógico. Se o
 // original mudar, isto precisa acompanhar (é uma cópia, não um import).

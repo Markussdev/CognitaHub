@@ -14,7 +14,7 @@ const SLOT_STATUS = {
 // estados que a demo alcança: 1. execução da criança sem sessão (prioridade
 // máxima: já fez algo que ainda não virou devolutiva), 2. módulo terminado
 // (quem decide o avanço é o mediador), 4. jornada concluída e 6. missão
-// disponível. O texto de cada estado vem de decisaoDe() em js/pages/tutor.js.
+// disponível. O texto de cada estado vem de decisaoDe() em js/pages/tutor/resumo.js.
 export function renderResumoTab(panel, { goTab, onOpenChild }) {
   const { activity, execution, session } = getSchoolDemoState()
   const { summary } = getDemoJourneyView()
