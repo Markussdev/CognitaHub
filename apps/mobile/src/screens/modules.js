@@ -14,10 +14,10 @@ import { getSettings } from '../services/settings.js'
 //   bloqueado            → locked    (adormecida, não morta — sem clique)
 
 const STATUS_TEXT = {
-  concluido: 'Concluído',
-  liberado: 'Toque para continuar',
-  aguardando_revisao: 'Esperando o tutor',
-  bloqueado: 'O tutor ainda não liberou',
+  concluido: 'Completed',
+  liberado: 'Tap to continue',
+  aguardando_revisao: 'Waiting for your tutor',
+  bloqueado: "Your tutor hasn't unlocked this yet",
 }
 
 const LOCK_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="9" rx="3" fill="currentColor"/><path d="M7 11V7a5 5 0 0 1 10 0v4" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>`
@@ -150,7 +150,7 @@ export function renderModules(root, { childName, childAvatar, modules, onOpenMod
             </div>
 
             <div class="module-scene__copy">
-              <span class="module-scene__eyebrow">Módulo ${index + 1} de ${modules.length}</span>
+              <span class="module-scene__eyebrow">Module ${index + 1} of ${modules.length}</span>
               <h2>${escapeHtml(moduleTitle)}</h2>
               <p>${STATUS_TEXT[module.status] ?? ''}</p>
             </div>
@@ -167,18 +167,18 @@ export function renderModules(root, { childName, childAvatar, modules, onOpenMod
       <header class="modules-header">
         <img src="${childAvatar}" alt="" />
         <div>
-          <h1>Jornada de ${escapeHtml(childName)}</h1>
-          <p>Escolha seu próximo módulo</p>
+          <h1>${escapeHtml(childName)}'s journey</h1>
+          <p>Choose your next module</p>
         </div>
-        <button class="modules-header__settings" type="button" aria-label="Abrir configurações">${SETTINGS_SVG}</button>
+        <button class="modules-header__settings" type="button" aria-label="Open settings">${SETTINGS_SVG}</button>
       </header>
 
       <main class="modules-scenes">
         ${scenesHtml}
       </main>
 
-      <button class="modules-arrow modules-arrow--prev" type="button" data-modules-arrow="prev" aria-label="Módulo anterior">‹</button>
-      <button class="modules-arrow modules-arrow--next" type="button" data-modules-arrow="next" aria-label="Próximo módulo">›</button>
+      <button class="modules-arrow modules-arrow--prev" type="button" data-modules-arrow="prev" aria-label="Previous module">‹</button>
+      <button class="modules-arrow modules-arrow--next" type="button" data-modules-arrow="next" aria-label="Next module">›</button>
       <div class="modules-dots" aria-hidden="true">${dotsHtml}</div>
     </div>
   `

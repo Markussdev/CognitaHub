@@ -1,9 +1,9 @@
 import { escapeHtml } from '../utils/html.js'
 
 const STATUS_LABELS = {
-  locked: 'bloqueada',
-  available: 'disponível agora',
-  completed: 'concluída',
+  locked: 'locked',
+  available: 'available now',
+  completed: 'completed',
 }
 
 const LOCK_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="9" rx="3" fill="currentColor"/><path d="M7 11V7a5 5 0 0 1 10 0v4" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>`

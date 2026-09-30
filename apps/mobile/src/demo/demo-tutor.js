@@ -9,10 +9,10 @@ import { renderJornadaTab } from './tutor/jornada.js'
 import { renderSessoesTab } from './tutor/sessoes.js'
 
 const TABS = [
-  { key: 'resumo', label: 'Resumo', render: renderResumoTab },
-  { key: 'atividades', label: 'Atividades', render: renderAtividadesTab },
-  { key: 'jornada', label: 'Jornada', render: renderJornadaTab },
-  { key: 'sessoes', label: 'Sessões', render: renderSessoesTab },
+  { key: 'resumo', label: 'Overview', render: renderResumoTab },
+  { key: 'atividades', label: 'Activities', render: renderAtividadesTab },
+  { key: 'jornada', label: 'Journey', render: renderJornadaTab },
+  { key: 'sessoes', label: 'Sessions', render: renderSessoesTab },
 ]
 
 // Painel do mediador (demo da Cognita Escola). Só a casca: cabeçalho, abas e
@@ -45,21 +45,21 @@ export function renderDemoTutorExperience(root, { onExit, onOpenChild, initialTa
     root.innerHTML = `
       <div class="demo-screen">
         <header class="demo-header">
-          <button class="demo-back" type="button" data-demo-back aria-label="Voltar ao Cognita Escola">
-            <span aria-hidden="true">‹</span> Cognita Escola
+          <button class="demo-back" type="button" data-demo-back aria-label="Back to Cognita for Schools">
+            <span aria-hidden="true">‹</span> Cognita for Schools
           </button>
-          <span class="demo-eyebrow">Mediador</span>
+          <span class="demo-eyebrow">Tutor</span>
           <h1>${escapeHtml(DEMO_CHILD.name)}</h1>
-          <p>${DEMO_CHILD.age} anos · ciclo ativo</p>
+          <p>${DEMO_CHILD.age} years old · Active cycle</p>
         </header>
 
-        <div class="demo-tabs" role="tablist" aria-label="Painel do mediador">
+        <div class="demo-tabs" role="tablist" aria-label="Tutor dashboard">
           ${TABS.map(
             (item) => `
               <button class="demo-tabs__tab" type="button" role="tab" id="demo-tab-${item.key}"
                 aria-selected="${item.key === tab}" aria-controls="demo-tab-panel" data-tab="${item.key}">
                 ${item.label}
-                ${item.key === 'sessoes' && pending ? `<span class="demo-tabs__badge" aria-label="${pending} aguardando registro">${pending}</span>` : ''}
+                ${item.key === 'sessoes' && pending ? `<span class="demo-tabs__badge" aria-label="${pending} awaiting review">${pending}</span>` : ''}
               </button>
             `,
           ).join('')}
@@ -67,7 +67,7 @@ export function renderDemoTutorExperience(root, { onExit, onOpenChild, initialTa
 
         <div class="demo-tab-panel" id="demo-tab-panel" role="tabpanel" aria-labelledby="demo-tab-${tab}"></div>
 
-        <p class="demo-note">Demonstração com dados fictícios.</p>
+        <p class="demo-note">Demo data only.</p>
       </div>
     `
 

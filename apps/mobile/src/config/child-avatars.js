@@ -7,10 +7,10 @@ import pintorImg from '../assets/avatars/pintor.webp'
 // banco — mudar uma dessas strings sem trocar lá quebra o save silenciosamente
 // (a RPC rejeita a chave, ver services/personalization.js).
 export const CHILD_AVATARS = [
-  { key: 'astronauta', label: 'Astronauta', image: astronautaImg },
-  { key: 'cientista', label: 'Cientista', image: cientistaImg },
-  { key: 'mago', label: 'Mago', image: magoImg },
-  { key: 'pintor', label: 'Pintor', image: pintorImg },
+  { key: 'astronauta', label: 'Astronaut', image: astronautaImg },
+  { key: 'cientista', label: 'Scientist', image: cientistaImg },
+  { key: 'mago', label: 'Wizard', image: magoImg },
+  { key: 'pintor', label: 'Artist', image: pintorImg },
 ]
 
 // Fallback pra criança que ainda não escolheu avatar (avatar_key null) —

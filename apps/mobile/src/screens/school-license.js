@@ -19,21 +19,21 @@ export async function renderSchoolLicense(root) {
         <div class="school-entry__emblem">
           <img src="${logoIcon}" alt="" />
         </div>
-        <span class="school-entry__eyebrow">Cognita Escola</span>
-        <h1>Aprendizagem, mediação e acompanhamento em um só ecossistema.</h1>
-        <p>Uma licença institucional conecta mediador, criança e família.</p>
-        <ul class="school-entry__roles" aria-label="As três experiências">
-          <li>Mediador</li>
-          <li>Criança</li>
-          <li>Família</li>
+        <span class="school-entry__eyebrow">Cognita for Schools</span>
+        <h1>Learning, guidance, and ongoing support in one connected ecosystem.</h1>
+        <p>One institutional license connects tutors, children, and families.</p>
+        <ul class="school-entry__roles" aria-label="The three experiences">
+          <li>Tutor</li>
+          <li>Child</li>
+          <li>Family</li>
         </ul>
       </header>
 
       <main class="school-entry__card">
-        <span class="school-entry__label">Licença institucional</span>
-        <strong class="school-entry__price is-muted" id="school-price">Carregando oferta...</strong>
-        <small class="school-entry__pilot">Piloto demonstrativo</small>
-        <button class="btn-primary" id="school-activate-btn" type="button" disabled>Ativar licença</button>
+        <span class="school-entry__label">Institutional license</span>
+        <strong class="school-entry__price is-muted" id="school-price">Loading offer...</strong>
+        <small class="school-entry__pilot">Demo pricing</small>
+        <button class="btn-primary" id="school-activate-btn" type="button" disabled>Activate license</button>
         <div id="school-status"></div>
         <div class="school-entry__powered">
           <span>Powered by</span>
@@ -64,8 +64,8 @@ export async function renderSchoolLicense(root) {
     activateBtn.hidden = true
 
     statusEl.innerHTML = `
-      ${statusMessageHtml({ type: 'success', text: 'Licença ativa ✓' })}
-      <button class="btn-primary" id="school-enter-btn" type="button">Explorar Cognita Escola</button>
+      ${statusMessageHtml({ type: 'success', text: 'License active ✓' })}
+      <button class="btn-primary" id="school-enter-btn" type="button">Explore Cognita for Schools</button>
     `
 
     statusEl.querySelector('#school-enter-btn')?.addEventListener('click', openSchoolWorkspace)
@@ -144,10 +144,10 @@ export async function renderSchoolLicense(root) {
     pkg = offering?.availablePackages?.[0] ?? null
 
     if (!pkg) {
-      setPrice('Nenhuma oferta configurada no RevenueCat.', { muted: true })
+      setPrice('No offer configured in RevenueCat.', { muted: true })
     } else {
       const price = pkg.product?.priceString
-      setPrice(price ? `${price} / mês` : 'Oferta disponível', { muted: !price })
+      setPrice(price ? `${price} / month` : 'Offer available', { muted: !price })
       activateBtn.disabled = false
       await reportIfAlreadyActive()
     }
@@ -156,14 +156,14 @@ export async function renderSchoolLicense(root) {
     setPrice('')
     statusEl.innerHTML = statusMessageHtml({
       type: 'error',
-      text: 'Não foi possível carregar a oferta. Confira dispositivo, SDK e Test Store.',
+      text: "Couldn't load the offer. Check the device, SDK, and Test Store.",
     })
   }
 
   activateBtn.addEventListener('click', async () => {
     if (!pkg) return
     activateBtn.disabled = true
-    activateBtn.textContent = 'Ativando...'
+    activateBtn.textContent = 'Activating...'
     statusEl.innerHTML = ''
     try {
       const active = await purchaseSchoolPackage(pkg)
@@ -172,17 +172,17 @@ export async function renderSchoolLicense(root) {
       } else {
         statusEl.innerHTML = statusMessageHtml({
           type: 'error',
-          text: 'Compra concluída, mas a licença não apareceu ativa.',
+          text: 'Purchase completed, but the license did not show as active.',
         })
       }
     } catch (err) {
       statusEl.innerHTML = err?.userCancelled
-        ? statusMessageHtml({ type: 'info', text: 'Compra cancelada.' })
-        : statusMessageHtml({ type: 'error', text: 'Falha na compra. Tente de novo.' })
+        ? statusMessageHtml({ type: 'info', text: 'Purchase cancelled.' })
+        : statusMessageHtml({ type: 'error', text: 'Purchase failed. Please try again.' })
       if (!err?.userCancelled) console.error('Erro ao comprar licença escolar:', err)
     } finally {
       activateBtn.disabled = false
-      activateBtn.textContent = 'Ativar licença'
+      activateBtn.textContent = 'Activate license'
     }
   })
 }

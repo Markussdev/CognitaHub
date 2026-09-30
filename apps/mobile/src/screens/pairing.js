@@ -10,11 +10,11 @@ const GROUP_LEN = 4
 // a criança conectada agora.
 export function renderPairing(root, { mode = 'initial', onSubmit, onCancel } = {}) {
   const isSwitch = mode === 'switch'
-  const title = isSwitch ? 'Trocar criança' : 'Digite seu código'
+  const title = isSwitch ? 'Switch child' : 'Enter your code'
   const subtitle = isSwitch
-    ? 'Digite o novo código enviado pelo responsável ou tutor.'
-    : 'Peça o código de 8 letras para o seu tutor ou responsável.'
-  const submitLabel = isSwitch ? 'Conectar' : 'Entrar'
+    ? 'Enter the new code sent by your parent/guardian or tutor.'
+    : 'Ask your tutor or parent/guardian for the 8-character code.'
+  const submitLabel = 'Connect'
 
   root.innerHTML = `
     <div class="screen screen--pairing">
@@ -24,17 +24,17 @@ export function renderPairing(root, { mode = 'initial', onSubmit, onCancel } = {
 
       <form class="code-form" id="pairing-form">
         <div class="code-groups">
-          <input class="code-input" id="code-a" inputmode="text" maxlength="${GROUP_LEN}" autocapitalize="characters" autocomplete="off" aria-label="Primeiros 4 caracteres do código" />
+          <input class="code-input" id="code-a" inputmode="text" maxlength="${GROUP_LEN}" autocapitalize="characters" autocomplete="off" aria-label="First 4 characters of the code" />
           <span class="code-dash" aria-hidden="true">-</span>
-          <input class="code-input" id="code-b" inputmode="text" maxlength="${GROUP_LEN}" autocapitalize="characters" autocomplete="off" aria-label="Últimos 4 caracteres do código" />
+          <input class="code-input" id="code-b" inputmode="text" maxlength="${GROUP_LEN}" autocapitalize="characters" autocomplete="off" aria-label="Last 4 characters of the code" />
         </div>
         <button class="btn-primary" id="pairing-submit" type="submit" disabled>${submitLabel}</button>
-        ${isSwitch ? `<button class="btn-text" id="pairing-cancel" type="button">Cancelar</button>` : ''}
+        ${isSwitch ? `<button class="btn-text" id="pairing-cancel" type="button">Cancel</button>` : ''}
       </form>
 
       <div id="pairing-status"></div>
 
-      ${isSwitch ? '' : `<p class="help-text">O código aparece na tela do tutor e vale por 10 minutos.</p>`}
+      ${isSwitch ? '' : `<p class="help-text">The code appears on your tutor's screen and expires after 10 minutes.</p>`}
     </div>
   `
 
@@ -71,7 +71,7 @@ export function renderPairing(root, { mode = 'initial', onSubmit, onCancel } = {
     const code = inputA.value + inputB.value
     statusEl.innerHTML = ''
     submitBtn.disabled = true
-    submitBtn.textContent = isSwitch ? 'Conectando...' : 'Entrando...'
+    submitBtn.textContent = 'Connecting...'
     try {
       await onSubmit?.(code)
     } finally {

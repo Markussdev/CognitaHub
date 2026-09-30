@@ -22,16 +22,16 @@ import {
 import { countCompleted, countMissions, isMissionDone } from '../journey-logic.js'
 
 const MODULE_STATUS_TEXT = {
-  concluido: 'Concluído',
-  liberado: 'Em andamento',
-  aguardando_revisao: 'Concluído — aguardando sua decisão',
-  bloqueado: 'Ainda não liberado',
+  concluido: 'Completed',
+  liberado: 'In progress',
+  aguardando_revisao: 'Completed — awaiting your decision',
+  bloqueado: 'Not yet unlocked',
 }
 const MODULE_STATUS_ICON = { concluido: '✓', liberado: '●', aguardando_revisao: '●', bloqueado: '○' }
 
 // A jornada inicial é um ponto de partida da biblioteca, não uma recomendação
 // do sistema (o PRODUCT.md deixa a decisão pedagógica com o mediador).
-const originLabel = (journey) => (journey.origin === 'default' ? 'Jornada inicial' : 'Criada por você')
+const originLabel = (journey) => (journey.origin === 'default' ? 'Starter journey' : 'Created by you')
 
 const sceneOf = (key) => LANDMARK_PRESETS.find((preset) => preset.key === key)
 
@@ -80,8 +80,8 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
   // ── visão geral ──────────────────────────────────────────────────────
   function progressLine(journey) {
     const progress = getJourneyProgress(journey.id)
-    if (!progress) return 'Ainda não iniciada'
-    return `${countCompleted(journey, progress)} de ${countMissions(journey)} missões concluídas`
+    if (!progress) return 'Not started yet'
+    return `${countCompleted(journey, progress)} of ${countMissions(journey)} missions completed`
   }
 
   // Só jornadas do mediador (rascunho ou publicada). A jornada inicial fica
@@ -89,18 +89,18 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
   function listItemHtml(journey) {
     const isDraft = journey.status === 'draft'
     const badge = isDraft
-      ? '<span class="demo-badge demo-badge--draft">Rascunho</span>'
-      : '<span class="demo-badge demo-badge--published">Publicada</span>'
+      ? '<span class="demo-badge demo-badge--draft">Draft</span>'
+      : '<span class="demo-badge demo-badge--published">Published</span>'
 
     const hint = isDraft
-      ? `${journey.modules.length} ${journey.modules.length === 1 ? 'módulo' : 'módulos'} · só você vê`
+      ? `${journey.modules.length} ${journey.modules.length === 1 ? 'module' : 'modules'} · only you can see this`
       : progressLine(journey)
 
     const actions = isDraft
-      ? `<button class="demo-secondary demo-secondary--small" type="button" data-edit="${journey.id}">Continuar editando</button>`
+      ? `<button class="demo-secondary demo-secondary--small" type="button" data-edit="${journey.id}">Keep editing</button>`
       : `
-        <button class="demo-secondary demo-secondary--small" type="button" data-view="${journey.id}">Ver</button>
-        <button class="demo-primary demo-primary--small" type="button" data-assign="${journey.id}">Atribuir para ${escapeHtml(nome)}</button>
+        <button class="demo-secondary demo-secondary--small" type="button" data-view="${journey.id}">View</button>
+        <button class="demo-primary demo-primary--small" type="button" data-assign="${journey.id}">Assign to ${escapeHtml(nome)}</button>
       `
 
     return `
@@ -124,29 +124,29 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
     // sua: "Suas jornadas" só com as que não são a ativa (e nada, se não houver).
     const othersCard = others.length
       ? `<section class="demo-card">
-           <span class="demo-label">Suas jornadas</span>
+           <span class="demo-label">Your journeys</span>
            ${others.map(listItemHtml).join('')}
          </section>`
       : customs.length
         ? ''
         : `<section class="demo-card">
-             <span class="demo-label">Outras jornadas</span>
-             <p class="demo-hint">Você ainda não criou nenhuma jornada.</p>
+             <span class="demo-label">Your journeys</span>
+             <p class="demo-hint">You haven't created a custom journey yet.</p>
            </section>`
 
     panel.innerHTML = `
       <section class="demo-card">
-        <span class="demo-label">Ativa</span>
+        <span class="demo-label">Active</span>
         <h2>${escapeHtml(active.title)}</h2>
-        <p class="demo-hint">${originLabel(active)} · ${view.summary.moduleCount} ${view.summary.moduleCount === 1 ? 'módulo' : 'módulos'} · ${escapeHtml(progressLine(active))}</p>
-        <ol class="demo-modlist" aria-label="Módulos da jornada ativa">
+        <p class="demo-hint">${originLabel(active)} · ${view.summary.moduleCount} ${view.summary.moduleCount === 1 ? 'module' : 'modules'} · ${escapeHtml(progressLine(active))}</p>
+        <ol class="demo-modlist" aria-label="Modules in the active journey">
           ${view.modules
             .map(
               (mod) => `
             <li class="demo-modlist__item demo-modlist__item--${mod.status}">
               <span class="demo-modlist__dot" aria-hidden="true">${MODULE_STATUS_ICON[mod.status]}</span>
               <span>
-                <strong>Módulo ${mod.trail_modules.position} · ${escapeHtml(mod.trail_modules.title)}</strong>
+                <strong>Module ${mod.trail_modules.position} · ${escapeHtml(mod.trail_modules.title)}</strong>
                 <small>${MODULE_STATUS_TEXT[mod.status]}</small>
               </span>
             </li>`,
@@ -155,18 +155,18 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
         </ol>
         ${
           awaiting
-            ? `<p class="demo-hint">Avançar para o próximo módulo é uma decisão sua.</p>
-               <div class="demo-actions"><button class="demo-primary" type="button" data-advance>Avançar para o módulo ${view.summary.releasedModule.position + 1} · ${escapeHtml(view.summary.nextModuleTitle)}</button></div>`
+            ? `<p class="demo-hint">Moving on to the next module is your call.</p>
+               <div class="demo-actions"><button class="demo-primary" type="button" data-advance>Advance to module ${view.summary.releasedModule.position + 1} · ${escapeHtml(view.summary.nextModuleTitle)}</button></div>`
             : ''
         }
         <div class="demo-actions">
-          <button class="demo-secondary" type="button" data-view="${active.id}">Ver jornada</button>
+          <button class="demo-secondary" type="button" data-view="${active.id}">View journey</button>
         </div>
       </section>
 
       ${othersCard}
 
-      <button class="demo-primary" type="button" data-new>+ Nova jornada</button>
+      <button class="demo-primary" type="button" data-new>+ New journey</button>
     `
 
     panel.querySelectorAll('[data-view]').forEach((button) => {
@@ -208,7 +208,7 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
         <span class="demo-mission__pos">${progress ? (done ? '✓' : index + 1) : index + 1}</span>
         <div class="demo-mission__body">
           <strong>${escapeHtml(title)}</strong>
-          <span>${isSlot ? 'Preparada agora · ' : ''}${escapeHtml(describeDemoDetail(config))}</span>
+          <span>${isSlot ? 'Prepared now · ' : ''}${escapeHtml(describeDemoDetail(config))}</span>
         </div>
       </div>
     `
@@ -220,7 +220,7 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
     const isActive = journey.id === getSchoolDemoState().activeJourneyId
 
     panel.innerHTML = `
-      <button class="demo-link" type="button" data-back>‹ Jornadas</button>
+      <button class="demo-link" type="button" data-back>‹ Journeys</button>
 
       ${
         notice
@@ -229,7 +229,7 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
       }
 
       <section class="demo-card">
-        <span class="demo-label">${isActive ? 'Ativa' : originLabel(journey)}</span>
+        <span class="demo-label">${isActive ? 'Active' : originLabel(journey)}</span>
         <h2>${escapeHtml(journey.title)}</h2>
         ${journey.objective ? `<p>${escapeHtml(journey.objective)}</p>` : ''}
         <p class="demo-hint">${originLabel(journey)} · ${escapeHtml(progressLine(journey))}</p>
@@ -239,7 +239,7 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
             (mod, index) => `
           <div class="demo-module">
             <div class="demo-module__head">
-              <span class="demo-label">Módulo ${index + 1}</span>
+              <span class="demo-label">Module ${index + 1}</span>
               <span class="demo-hint">${escapeHtml(sceneOf(mod.visualKey)?.label ?? '')}</span>
             </div>
             <strong class="demo-module__title">${escapeHtml(mod.title)}</strong>
@@ -248,11 +248,11 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
           )
           .join('')}
 
-        <p class="demo-hint">Jornada publicada é somente leitura — para mudar, crie outra.</p>
+        <p class="demo-hint">Published journeys are read-only. Create a new journey to make changes.</p>
         ${
           isActive
-            ? `<p class="demo-hint"><strong>Esta é a jornada ativa de ${escapeHtml(nome)}.</strong></p>`
-            : `<div class="demo-actions"><button class="demo-primary" type="button" data-assign="${journey.id}">Atribuir para ${escapeHtml(nome)}</button></div>`
+            ? `<p class="demo-hint"><strong>This is ${escapeHtml(nome)}'s active journey.</strong></p>`
+            : `<div class="demo-actions"><button class="demo-primary" type="button" data-assign="${journey.id}">Assign to ${escapeHtml(nome)}</button></div>`
         }
       </section>
     `
@@ -268,12 +268,12 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
     panel.innerHTML = `
       <section class="demo-card demo-done" role="status">
         <span class="demo-done__check" aria-hidden="true">✓</span>
-        <h2>Jornada atribuída</h2>
-        <p>"${escapeHtml(journey.title)}" é a jornada ativa de ${escapeHtml(nome)}.</p>
-        ${assignedHadProgress ? '<p>O progresso desta jornada foi mantido.</p>' : ''}
+        <h2>Journey assigned</h2>
+        <p>"${escapeHtml(journey.title)}" is now ${escapeHtml(nome)}'s active journey.</p>
+        ${assignedHadProgress ? '<p>Previous progress was preserved.</p>' : ''}
         <div class="demo-actions">
-          ${onOpenChild ? '<button class="demo-primary" type="button" data-open-child>Ver experiência da criança →</button>' : ''}
-          <button class="demo-secondary" type="button" data-back>Voltar às jornadas</button>
+          ${onOpenChild ? '<button class="demo-primary" type="button" data-open-child>Open child experience →</button>' : ''}
+          <button class="demo-secondary" type="button" data-back>Back to journeys</button>
         </div>
       </section>
     `
@@ -304,14 +304,14 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
 
   function pickerHtml(moduleIndex) {
     return `
-      <div class="demo-picker" role="group" aria-label="Atividades preparadas">
-        <p class="demo-hint">Escolha uma atividade preparada para virar missão:</p>
+      <div class="demo-picker" role="group" aria-label="Prepared activities">
+        <p class="demo-hint">Choose a prepared activity to turn into a mission:</p>
         ${getDemoActivityLibrary()
           .map(
             (item) => `
           <button class="demo-picker__item" type="button" data-pick="${item.id}" data-mod="${moduleIndex}">
-            <span><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.meta)}${item.source === 'prepared' ? ' · preparada por você' : ''}</small></span>
-            <span class="demo-picker__add">Adicionar</span>
+            <span><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.meta)}${item.source === 'prepared' ? ' · prepared by you' : ''}</small></span>
+            <span class="demo-picker__add">Add</span>
           </button>`,
           )
           .join('')}
@@ -325,23 +325,23 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
     return `
       <div class="demo-module">
         <div class="demo-module__head">
-          <span class="demo-label">Módulo ${index + 1}</span>
+          <span class="demo-label">Module ${index + 1}</span>
           <div class="demo-tools">
-            ${iconButton('↑', 'Subir módulo', `data-mod-move="${index}:-1"`)}
-            ${iconButton('↓', 'Descer módulo', `data-mod-move="${index}:1"`)}
-            ${iconButton('✕', 'Remover módulo', `data-mod-remove="${index}"`, 'demo-iconbtn--bad')}
+            ${iconButton('↑', 'Move module up', `data-mod-move="${index}:-1"`)}
+            ${iconButton('↓', 'Move module down', `data-mod-move="${index}:1"`)}
+            ${iconButton('✕', 'Remove module', `data-mod-remove="${index}"`, 'demo-iconbtn--bad')}
           </div>
         </div>
 
         <div class="demo-field">
-          <label class="demo-label" for="jr-mtitle-${index}">Título do módulo</label>
+          <label class="demo-label" for="jr-mtitle-${index}">Module title</label>
           <input class="demo-input" id="jr-mtitle-${index}" type="text" maxlength="60" data-mtitle="${index}"
-            placeholder="Ex.: Reconhecer" value="${escapeHtml(mod.title)}" />
+            placeholder="e.g. Recognize" value="${escapeHtml(mod.title)}" />
         </div>
 
         <div class="demo-field">
-          <span class="demo-label">Cenário</span>
-          <div class="demo-scenes" role="group" aria-label="Cenário do módulo ${index + 1}">
+          <span class="demo-label">Scene</span>
+          <div class="demo-scenes" role="group" aria-label="Scene for module ${index + 1}">
             ${DEMO_SCENES.map((key) => {
               const preset = sceneOf(key)
               return `
@@ -353,7 +353,7 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
           </div>
         </div>
 
-        <span class="demo-label">Missões</span>
+        <span class="demo-label">Missions</span>
         ${
           mod.missions.length
             ? mod.missions
@@ -367,18 +367,18 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
                   <span>${escapeHtml(describeDemoDetail(config))}</span>
                 </div>
                 <div class="demo-tools">
-                  ${iconButton('↑', 'Subir missão', `data-mis-move="${index}:${missionIndex}:-1"`)}
-                  ${iconButton('↓', 'Descer missão', `data-mis-move="${index}:${missionIndex}:1"`)}
-                  ${iconButton('✕', 'Remover missão', `data-mis-remove="${index}:${missionIndex}"`, 'demo-iconbtn--bad')}
+                  ${iconButton('↑', 'Move mission up', `data-mis-move="${index}:${missionIndex}:-1"`)}
+                  ${iconButton('↓', 'Move mission down', `data-mis-move="${index}:${missionIndex}:1"`)}
+                  ${iconButton('✕', 'Remove mission', `data-mis-remove="${index}:${missionIndex}"`, 'demo-iconbtn--bad')}
                 </div>
               </div>`
                 })
                 .join('')
-            : '<p class="demo-hint">Sem missões neste módulo ainda.</p>'
+            : '<p class="demo-hint">No missions in this module yet.</p>'
         }
 
-        <button class="demo-ghost" type="button" data-add-mission="${index}" ${missionsFull ? 'disabled' : ''}>+ Adicionar missão</button>
-        ${missionsFull ? `<p class="demo-hint">Demonstração: até ${DEMO_MAX_MISSIONS} missões por módulo.</p>` : ''}
+        <button class="demo-ghost" type="button" data-add-mission="${index}" ${missionsFull ? 'disabled' : ''}>+ Add mission</button>
+        ${missionsFull ? `<p class="demo-hint">Demo limit: up to ${DEMO_MAX_MISSIONS} missions per module.</p>` : ''}
         ${pickerFor === index ? pickerHtml(index) : ''}
       </div>
     `
@@ -388,43 +388,43 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
     const modulesFull = draft.modules.length >= DEMO_MAX_MODULES
 
     panel.innerHTML = `
-      <button class="demo-link" type="button" data-cancel>‹ Jornadas</button>
+      <button class="demo-link" type="button" data-cancel>‹ Journeys</button>
 
       <section class="demo-card">
-        <h2>${draft.id ? 'Editar jornada' : 'Nova jornada'}</h2>
-        <p class="demo-hint">Monte o percurso de ${escapeHtml(nome)} com as atividades que você já preparou.</p>
+        <h2>${draft.id ? 'Edit journey' : 'New journey'}</h2>
+        <p class="demo-hint">Build ${escapeHtml(nome)}'s learning path using activities you've already prepared.</p>
 
         <div class="demo-field">
-          <label class="demo-q" for="jr-title">Título</label>
-          <input class="demo-input" id="jr-title" type="text" maxlength="80" placeholder="Ex.: Revisão de números" value="${escapeHtml(draft.title)}" />
+          <label class="demo-q" for="jr-title">Title</label>
+          <input class="demo-input" id="jr-title" type="text" maxlength="80" placeholder="e.g. Number review" value="${escapeHtml(draft.title)}" />
         </div>
         <div class="demo-field">
-          <label class="demo-q" for="jr-objective">Objetivo (opcional)</label>
-          <textarea class="demo-textarea" id="jr-objective" rows="2" maxlength="200" placeholder="Ex.: reforço leve antes do próximo módulo">${escapeHtml(draft.objective)}</textarea>
+          <label class="demo-q" for="jr-objective">Objective (optional)</label>
+          <textarea class="demo-textarea" id="jr-objective" rows="2" maxlength="200" placeholder="e.g. reinforce counting before the next module">${escapeHtml(draft.objective)}</textarea>
         </div>
       </section>
 
       <section class="demo-card">
         <div class="demo-row demo-row--between">
-          <h2>Módulos</h2>
-          <button class="demo-ghost" type="button" data-add-module ${modulesFull ? 'disabled' : ''}>+ Módulo</button>
+          <h2>Modules</h2>
+          <button class="demo-ghost" type="button" data-add-module ${modulesFull ? 'disabled' : ''}>+ Module</button>
         </div>
         ${
           draft.modules.length
             ? ''
-            : '<p class="demo-hint">Nenhum módulo ainda. Adicione o primeiro módulo e depois as missões.</p>'
+            : '<p class="demo-hint">No modules yet. Add the first module, then its missions.</p>'
         }
         ${draft.modules.map(moduleHtml).join('')}
-        <p class="demo-hint">Demonstração: até ${DEMO_MAX_MODULES} módulos e ${DEMO_MAX_MISSIONS} missões por módulo.</p>
+        <p class="demo-hint">Demo limit: up to ${DEMO_MAX_MODULES} modules and ${DEMO_MAX_MISSIONS} missions per module.</p>
       </section>
 
       <div id="jr-msg" role="status"></div>
 
       <div class="demo-journey-actions">
-        <button class="demo-primary" type="button" data-publish>Publicar jornada</button>
-        <button class="demo-secondary" type="button" data-save-draft>Salvar como rascunho</button>
+        <button class="demo-primary" type="button" data-publish>Publish journey</button>
+        <button class="demo-secondary" type="button" data-save-draft>Save draft</button>
       </div>
-      <p class="demo-hint">Salvar guarda como rascunho (só você vê). Publicar congela a jornada para você atribuir a ${escapeHtml(nome)}.</p>
+      <p class="demo-hint">Saving keeps the journey private as a draft. Publishing locks it so it can be assigned to ${escapeHtml(nome)}.</p>
     `
 
     bindEditor()
@@ -438,12 +438,12 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
 
   // Mesmas regras (e mensagens) de buildPayload() em js/pages/builder-jornada.js.
   function validate() {
-    if (!draft.title.trim()) return 'Dê um título para a jornada.'
-    if (!draft.modules.length) return 'Adicione pelo menos 1 módulo.'
+    if (!draft.title.trim()) return 'Give the journey a title.'
+    if (!draft.modules.length) return 'Add at least 1 module.'
 
     for (const [index, mod] of draft.modules.entries()) {
-      if (!mod.title.trim()) return `O módulo ${index + 1} precisa de um título.`
-      if (!mod.missions.length) return `O módulo ${index + 1} precisa de pelo menos 1 missão.`
+      if (!mod.title.trim()) return `Module ${index + 1} needs a title.`
+      if (!mod.missions.length) return `Module ${index + 1} needs at least 1 mission.`
     }
 
     return null
@@ -547,10 +547,10 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
       if (error) return setMessage(error, 'err')
 
       const id = saveDemoJourneyDraft(cleanedDraft())
-      if (!id) return setMessage('Esta jornada já foi publicada.', 'err')
+      if (!id) return setMessage('This journey has already been published.', 'err')
 
       draft.id = id
-      setMessage('Rascunho salvo.', 'ok')
+      setMessage('Draft saved.', 'ok')
     })
 
     panel.querySelector('[data-publish]').addEventListener('click', () => {
@@ -558,10 +558,10 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
       if (error) return setMessage(error, 'err')
 
       const id = publishDemoJourney(cleanedDraft())
-      if (!id) return setMessage('Esta jornada já foi publicada.', 'err')
+      if (!id) return setMessage('This journey has already been published.', 'err')
 
       viewId = id
-      notice = { kind: 'ok', text: `Jornada publicada! Você já pode atribuí-la a ${nome}.` }
+      notice = { kind: 'ok', text: `Journey published! You can now assign it to ${nome}.` }
       go('view')
     })
   }

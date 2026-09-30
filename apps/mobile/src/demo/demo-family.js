@@ -45,53 +45,53 @@ export function renderDemoFamilyExperience(root, { onExit } = {}) {
     })
     .join('')
 
-  const moduleLabel = `Módulo ${summary.releasedModule.position} · ${summary.releasedModule.title}`
+  const moduleLabel = `Module ${summary.releasedModule.position} · ${summary.releasedModule.title}`
   const journeyCaption = summary.finished
-    ? 'Jornada concluída'
+    ? 'Journey complete'
     : summary.releasedStatus === 'aguardando_revisao'
-      ? `${moduleLabel} — concluído; aguardando o mediador`
-      : `${moduleLabel} — em andamento`
+      ? `${moduleLabel} — complete; awaiting the tutor`
+      : `${moduleLabel} — in progress`
 
   root.innerHTML = `
     <div class="demo-screen">
       <header class="demo-header">
-        <button class="demo-back" type="button" data-demo-back aria-label="Voltar ao Cognita Escola">
-          <span aria-hidden="true">‹</span> Cognita Escola
+        <button class="demo-back" type="button" data-demo-back aria-label="Back to Cognita for Schools">
+          <span aria-hidden="true">‹</span> Cognita for Schools
         </button>
-        <span class="demo-eyebrow">Painel da família</span>
-        <h1>Olá, ${escapeHtml(DEMO_FAMILY.guardianName)}.</h1>
-        <p>Acompanhe aqui o caminho de ${escapeHtml(DEMO_CHILD.name)} no Cognita.</p>
+        <span class="demo-eyebrow">Family dashboard</span>
+        <h1>Hi, ${escapeHtml(DEMO_FAMILY.guardianName)}.</h1>
+        <p>Follow ${escapeHtml(DEMO_CHILD.name)}'s learning journey in Cognita.</p>
       </header>
 
       <section class="demo-child-card">
         <img src="${avatar.image}" alt="" />
         <div>
-          <span class="demo-label">Acompanhando</span>
-          <strong>${escapeHtml(DEMO_CHILD.name)} · ${DEMO_CHILD.age} anos</strong>
+          <span class="demo-label">Following</span>
+          <strong>${escapeHtml(DEMO_CHILD.name)} · ${DEMO_CHILD.age} years old</strong>
         </div>
       </section>
 
       <section class="demo-card demo-cycle">
-        <span class="demo-pill"><span aria-hidden="true">●</span> Ciclo ativo</span>
-        <h2>O acompanhamento de ${escapeHtml(DEMO_CHILD.name)} está em andamento.</h2>
-        <p>Objetivo do ciclo: ${escapeHtml(cycle.goal)}</p>
+        <span class="demo-pill"><span aria-hidden="true">●</span> Active cycle</span>
+        <h2>${escapeHtml(DEMO_CHILD.name)}'s learning cycle is in progress.</h2>
+        <p>Cycle goal: ${escapeHtml(cycle.goal)}</p>
         <div class="demo-progress-row">
           <div
             class="demo-progress"
             role="progressbar"
-            aria-label="Mês ${cycle.month} de ${cycle.months}"
+            aria-label="Month ${cycle.month} of ${cycle.months}"
             aria-valuemin="1"
             aria-valuemax="${cycle.months}"
             aria-valuenow="${cycle.month}"
           >
             <span style="width:${Math.round((cycle.month / cycle.months) * 100)}%"></span>
           </div>
-          <strong>Mês ${cycle.month} de ${cycle.months}</strong>
+          <strong>Month ${cycle.month} of ${cycle.months}</strong>
         </div>
       </section>
 
       <section class="demo-card demo-feedback">
-        <span class="demo-label">Última devolutiva do tutor</span>
+        <span class="demo-label">Latest tutor feedback</span>
         <p class="demo-feedback__text">${escapeHtml(feedback.text)}</p>
         <div class="demo-author">
           <span class="demo-author__avatar" aria-hidden="true">${escapeHtml(feedback.initials)}</span>
@@ -101,7 +101,7 @@ export function renderDemoFamilyExperience(root, { onExit } = {}) {
           feedback.nextStep
             ? `
         <div class="demo-next">
-          <span class="demo-label">O que vem agora</span>
+          <span class="demo-label">Next step</span>
           <p>${escapeHtml(feedback.nextStep)}</p>
         </div>`
             : ''
@@ -109,15 +109,15 @@ export function renderDemoFamilyExperience(root, { onExit } = {}) {
       </section>
 
       <section class="demo-card">
-        <span class="demo-label">Jornada de ${escapeHtml(DEMO_CHILD.name)}</span>
+        <span class="demo-label">${escapeHtml(DEMO_CHILD.name)}'s journey</span>
         <strong class="demo-journey-title">${escapeHtml(summary.title)}</strong>
-        <div class="demo-dots" role="img" aria-label="${completedMissions} de ${missions.length} missões concluídas neste módulo">
+        <div class="demo-dots" role="img" aria-label="${completedMissions} of ${missions.length} missions completed in this module">
           ${journeyDots}
         </div>
         <p class="demo-hint">${escapeHtml(journeyCaption)}</p>
       </section>
 
-      <p class="demo-note">Demonstração com dados fictícios.</p>
+      <p class="demo-note">Demo data only.</p>
     </div>
   `
 

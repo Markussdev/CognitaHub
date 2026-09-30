@@ -29,7 +29,7 @@ import dinoFootprints from '../assets/landmarks/dino-footprints.webp'
 export const LANDMARK_PRESETS = [
   {
     key: 'base',
-    label: 'Base Espacial',
+    label: 'Space Base',
     image: baseImg,
     environment: {
       period: 'dawn', // madrugada azulada
@@ -63,7 +63,7 @@ export const LANDMARK_PRESETS = [
   },
   {
     key: 'abaco',
-    label: 'Escola do Ábaco',
+    label: 'Abacus School',
     image: abacoImg,
     environment: {
       period: 'morning', // manhã clara
@@ -94,7 +94,7 @@ export const LANDMARK_PRESETS = [
   },
   {
     key: 'observation',
-    label: 'Observatório',
+    label: 'Observatory',
     image: observationImg,
     environment: {
       period: 'night', // noite estrelada
@@ -125,7 +125,7 @@ export const LANDMARK_PRESETS = [
   },
   {
     key: 'biblio',
-    label: 'Biblioteca',
+    label: 'Library',
     image: biblioImg,
     environment: {
       period: 'afternoon', // fim de tarde calmo, sem disco solar — o
@@ -211,7 +211,7 @@ export const LANDMARK_PRESETS = [
   },
   {
     key: 'dinossauro',
-    label: 'Museu dos Dinossauros',
+    label: 'Dinosaur Museum',
     image: dinossauroImg,
     environment: {
       period: 'day', // dia, verde e quente
@@ -265,7 +265,7 @@ export const LANDMARK_PRESETS = [
   },
   {
     key: 'parque',
-    label: 'Parque de Diversões',
+    label: 'Amusement Park',
     image: parqueImg,
     environment: {
       period: 'sunset',

@@ -45,19 +45,19 @@ export function mountCounting(stageEl, { tema, config, onSuccess }) {
 
   const contador = document.createElement('p')
   contador.className = 'counting-counter'
-  contador.textContent = `0 de ${quantidade}`
+  contador.textContent = `0 of ${quantidade}`
 
   const grade = document.createElement('div')
   grade.className = 'counting-grid'
   grade.setAttribute('role', 'group')
-  grade.setAttribute('aria-label', 'Itens para contar')
+  grade.setAttribute('aria-label', 'Items to count')
 
   escolhidos.forEach((src) => {
     const item = document.createElement('button')
     item.type = 'button'
     item.className = 'counting-item'
     item.setAttribute('aria-pressed', 'false')
-    item.setAttribute('aria-label', 'Toque para contar')
+    item.setAttribute('aria-label', 'Tap to count')
 
     const img = document.createElement('img')
     img.src = src
@@ -77,7 +77,7 @@ export function mountCounting(stageEl, { tema, config, onSuccess }) {
       badge.setAttribute('aria-hidden', 'true')
       item.appendChild(badge)
 
-      contador.textContent = `${contados} de ${quantidade}`
+      contador.textContent = `${contados} of ${quantidade}`
 
       if (contados === quantidade) {
         concluido = true

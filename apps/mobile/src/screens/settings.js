@@ -40,24 +40,24 @@ const ITEMS = [
     key: 'profile',
     variant: 'profile',
     icon: CAT_SVG,
-    title: 'Meu perfil',
-    hint: 'Meu nome e meu gatinho',
+    title: 'My profile',
+    hint: 'My name and avatar',
     enabled: true,
   },
   {
     key: 'experience',
     variant: 'experience',
     icon: TEXT_SVG,
-    title: 'Minha experiência',
-    hint: 'Texto e movimento',
+    title: 'My experience',
+    hint: 'Text and motion',
     enabled: true,
   },
   {
     key: 'guardians',
     variant: 'guardians',
     icon: SHIELD_SVG,
-    title: 'Para responsáveis',
-    hint: 'Área protegida',
+    title: 'For parents & guardians',
+    hint: 'Protected area',
     enabled: true,
   },
 ]
@@ -66,7 +66,7 @@ export function renderSettings(root, { childName, childAvatar, onBack, onOpenPro
   const itemsHtml = ITEMS.map((item) => {
     const trailing = item.enabled
       ? `<span class="settings-menu-item__chevron" aria-hidden="true">›</span>`
-      : `<span class="settings-menu-item__badge">Em breve</span>`
+      : `<span class="settings-menu-item__badge">Coming soon</span>`
 
     return `
       <button
@@ -93,14 +93,14 @@ export function renderSettings(root, { childName, childAvatar, onBack, onOpenPro
     <div class="screen screen--settings screen--settings-home">
       <div class="settings-hero">
         <div class="settings-hero__top">
-          <button class="settings-hero__back" type="button" aria-label="Voltar">‹</button>
-          <h1 class="settings-hero__title">Configurações</h1>
+          <button class="settings-hero__back" type="button" aria-label="Back">‹</button>
+          <h1 class="settings-hero__title">Settings</h1>
         </div>
         <div class="settings-hero__identity">
           <img class="settings-hero__avatar" src="${childAvatar}" alt="" />
           <div class="settings-hero__copy">
-            <strong>Oi, ${escapeHtml(childName)}!</strong>
-            <span>Deixe tudo do seu jeito.</span>
+            <strong>Hi, ${escapeHtml(childName)}!</strong>
+            <span>Make it your own.</span>
           </div>
         </div>
       </div>

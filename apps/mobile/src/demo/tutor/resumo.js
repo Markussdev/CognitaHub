@@ -4,9 +4,9 @@ import { getDemoJourneyView } from '../build-demo-journey.js'
 import { DEMO_CHILD, describeDemoActivity, formatDemoQuando } from '../school-demo-data.js'
 
 const SLOT_STATUS = {
-  waiting: (nome) => `Aguardando ${nome}`,
-  done: (nome) => `Concluída por ${nome}`,
-  library: () => 'No acervo — use em uma jornada',
+  waiting: (nome) => `Waiting for ${nome}`,
+  done: (nome) => `Completed by ${nome}`,
+  library: () => 'In your library — use it in a journey',
 }
 
 // Aba Resumo do mediador (demo da Cognita Escola). Um estado dominante, no
@@ -29,52 +29,52 @@ export function renderResumoTab(panel, { goTab, onOpenChild }) {
 
     title =
       execution.total > 1
-        ? `${nome} concluiu ${execution.total} atividades que ainda não viraram registro — a mais recente foi "${execution.titulo}" ${quando}.`
-        : `${nome} completou "${execution.titulo}" ${quando} e a execução ainda não virou registro.`
-    description = 'Transforme o que a criança fez numa sessão para a família acompanhar.'
-    action = `<button class="demo-primary" type="button" data-review>Revisar o que ${escapeHtml(nome)} fez</button>`
+        ? `${nome} completed ${execution.total} activities that haven't been logged yet — the most recent was "${execution.titulo}" ${quando}.`
+        : `${nome} completed "${execution.titulo}" ${quando} and it hasn't been logged yet.`
+    description = 'Turn what the child did into a session for the family to follow.'
+    action = `<button class="demo-primary" type="button" data-review>Review what ${escapeHtml(nome)} did</button>`
   } else if (summary.releasedStatus === 'aguardando_revisao') {
-    title = `O módulo ${summary.releasedModule.position} terminou. Hora de decidir como ${nome} segue.`
-    description = 'Avançar para o próximo módulo é uma decisão sua.'
-    action = `<button class="demo-primary" type="button" data-advance>Avançar para o módulo ${summary.releasedModule.position + 1} · ${escapeHtml(summary.nextModuleTitle)}</button>`
+    title = `Module ${summary.releasedModule.position} is complete. Time to decide how ${nome} continues.`
+    description = 'Moving on to the next module is your call.'
+    action = `<button class="demo-primary" type="button" data-advance>Advance to module ${summary.releasedModule.position + 1} · ${escapeHtml(summary.nextModuleTitle)}</button>`
   } else if (summary.finished) {
-    title = `${nome} concluiu a jornada "${summary.title}". 🎉 O histórico está guardado.`
-    description = 'Escolha a próxima jornada quando fizer sentido — nada se perde.'
-    action = `<button class="demo-primary" type="button" data-journeys>Atribuir próxima jornada</button>`
+    title = `${nome} finished the journey "${summary.title}". 🎉 The history is saved.`
+    description = 'Choose the next journey when it makes sense — nothing is lost.'
+    action = `<button class="demo-primary" type="button" data-journeys>Assign next journey</button>`
   } else {
-    title = `Tudo preparado. ${nome} tem uma missão disponível no aparelho.`
-    description = 'Nada esperando decisão sua agora — é a vez da criança.'
+    title = `Everything is ready. ${nome} has a mission ready on the device.`
+    description = "Nothing needs your decision right now — it's the child's turn."
     action = onOpenChild
-      ? `<button class="demo-link" type="button" data-open-child>Abrir experiência da criança →</button>`
+      ? `<button class="demo-link" type="button" data-open-child>Open child experience →</button>`
       : ''
   }
 
   const moduleState = summary.finished
-    ? 'concluída'
+    ? 'complete'
     : summary.releasedStatus === 'aguardando_revisao'
-      ? 'concluído, aguardando sua decisão'
-      : 'em andamento'
+      ? 'complete, awaiting your decision'
+      : 'in progress'
 
   panel.innerHTML = `
     <section class="demo-card demo-decision">
-      <span class="demo-label">Próxima decisão</span>
+      <span class="demo-label">Next decision</span>
       <h2>${escapeHtml(title)}</h2>
       <p>${escapeHtml(description)}</p>
       ${action ? `<div class="demo-actions">${action}</div>` : ''}
     </section>
 
     <section class="demo-card">
-      <span class="demo-label">Situação</span>
+      <span class="demo-label">Status</span>
       <dl class="demo-facts">
         <div>
-          <dt>Jornada ativa</dt>
+          <dt>Active journey</dt>
           <dd>
             ${escapeHtml(summary.title)}
-            <span class="demo-hint">${summary.finished ? 'Jornada' : `Módulo ${summary.releasedModule.position} · ${escapeHtml(summary.releasedModule.title)}`} ${escapeHtml(moduleState)} · ${summary.completedCount} de ${summary.missionCount} missões</span>
+            <span class="demo-hint">${summary.finished ? 'Journey' : `Module ${summary.releasedModule.position} · ${escapeHtml(summary.releasedModule.title)}`} — ${escapeHtml(moduleState)} · ${summary.completedCount} of ${summary.missionCount} missions</span>
           </dd>
         </div>
         <div>
-          <dt>Preparada agora</dt>
+          <dt>Prepared activity</dt>
           <dd>
             ${escapeHtml(describeDemoActivity(activity))}
             <span class="demo-status">${escapeHtml(SLOT_STATUS[getDemoSlotState()](nome))}</span>
@@ -84,8 +84,8 @@ export function renderResumoTab(panel, { goTab, onOpenChild }) {
           session.exists
             ? `
         <div>
-          <dt>Última devolutiva</dt>
-          <dd>Enviada à família · ${escapeHtml(formatDemoQuando(session.createdAt))}</dd>
+          <dt>Latest feedback</dt>
+          <dd>Sent to the family · ${escapeHtml(formatDemoQuando(session.createdAt))}</dd>
         </div>`
             : ''
         }

@@ -36,12 +36,12 @@ export function mountIdentifying(stageEl, { config = {}, onSuccess }) {
 
   const instruction = document.createElement('p')
   instruction.className = 'identifying-instruction'
-  instruction.textContent = `Toque no número ${target}.`
+  instruction.textContent = `Tap number ${target}.`
 
   const grid = document.createElement('div')
   grid.className = 'identifying-grid'
   grid.setAttribute('role', 'group')
-  grid.setAttribute('aria-label', 'Opções de números')
+  grid.setAttribute('aria-label', 'Number options')
 
   options.forEach((number) => {
     const button = document.createElement('button')

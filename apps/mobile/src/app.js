@@ -40,7 +40,7 @@ const appState = {
 // appState.context.primeiro_nome/avatar_key direto, todas passam por aqui,
 // pra não espalhar a mesma cadeia de fallback em 4 lugares diferentes.
 function getChildDisplayName() {
-  return appState.context?.nome_exibicao ?? appState.context?.primeiro_nome ?? 'Explorador'
+  return appState.context?.nome_exibicao ?? appState.context?.primeiro_nome ?? 'Explorer'
 }
 
 // Só um rótulo pra reconhecer o aparelho na lista do responsável — nunca
@@ -191,7 +191,7 @@ function handleBackButton(root) {
   }
 
   if (appState.screen === 'modules') {
-    if (window.confirm('Quer sair do Cognita?')) {
+    if (window.confirm('Exit Cognita?')) {
       App.exitApp()
     }
     return
@@ -492,7 +492,7 @@ function showPairing(root, { mode = 'initial', onCancel } = {}) {
           hint: error?.hint,
           error,
         })
-        pairing.showStatus('error', 'Código inválido ou expirado. Peça um novo código ao seu tutor.')
+        pairing.showStatus('error', 'Invalid or expired code. Ask your tutor for a new one.')
       }
     },
   })
@@ -501,8 +501,8 @@ function showPairing(root, { mode = 'initial', onCancel } = {}) {
 function showAwaitingJourney(root) {
   root.innerHTML = `
     <div class="screen screen--pairing">
-      <h1 class="title">Oi, ${escapeHtml(getChildDisplayName())}!</h1>
-      ${statusMessageHtml({ type: 'info', text: 'Seu tutor ainda não montou sua jornada. Volte daqui a pouco.' })}
+      <h1 class="title">Hi, ${escapeHtml(getChildDisplayName())}!</h1>
+      ${statusMessageHtml({ type: 'info', text: "Your tutor hasn't built your journey yet. Check back soon." })}
     </div>
   `
 }
@@ -511,15 +511,15 @@ function showError(root, err) {
   console.error(err)
   const text =
     err?.message === 'MISSION_NOT_AVAILABLE'
-      ? 'Essa missão não está mais disponível. Volte ao mapa pra ver o que você já pode fazer.'
-      : 'Não foi possível conectar. Verifique a internet e tente de novo.'
+      ? 'That mission is no longer available. Go back to the map to see what you can do.'
+      : "Couldn't connect. Check your internet and try again."
 
   appState.screen = 'error'
 
   root.innerHTML = `
     <div class="screen screen--pairing">
       ${statusMessageHtml({ type: 'error', text })}
-      <button class="btn-primary" id="retry-btn" type="button">Tentar novamente</button>
+      <button class="btn-primary" id="retry-btn" type="button">Try again</button>
     </div>
   `
   root.querySelector('#retry-btn').addEventListener('click', () => {

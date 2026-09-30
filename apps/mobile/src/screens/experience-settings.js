@@ -13,8 +13,8 @@ import { getSettings, saveSettings } from '../services/settings.js'
 // Movimento reduzido e texto grande já aplicam de verdade em todo o app —
 // ver applySettings() em services/settings.js.
 const ROWS = [
-  { key: 'reducedMotion', label: 'Movimento reduzido', hint: 'Menos animação no mapa' },
-  { key: 'textSize', label: 'Texto grande', hint: 'Aumenta o texto da jornada', isTextSize: true },
+  { key: 'reducedMotion', label: 'Reduced motion', hint: 'Less animation on the map' },
+  { key: 'textSize', label: 'Large text', hint: 'Makes journey text bigger', isTextSize: true },
 ]
 
 export function renderExperienceSettings(root, { onBack }) {
@@ -45,8 +45,8 @@ export function renderExperienceSettings(root, { onBack }) {
   root.innerHTML = `
     <div class="screen screen--settings">
       <header class="settings-header">
-        <button class="settings-header__back" type="button" aria-label="Voltar">‹</button>
-        <h1 class="title">Minha experiência</h1>
+        <button class="settings-header__back" type="button" aria-label="Back">‹</button>
+        <h1 class="title">My experience</h1>
       </header>
 
       <div class="settings-list">

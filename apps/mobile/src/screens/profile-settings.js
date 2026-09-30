@@ -24,9 +24,9 @@ export function renderProfileSettings(root, { childId, currentName, currentAvata
       <div class="screen screen--settings screen--profile-saved">
         <div class="profile-saved">
           <img class="profile-saved__avatar" src="${avatar.image}" alt="" />
-          <h1 class="title">Perfil atualizado!</h1>
-          <p class="subtitle">Oi, ${escapeHtml(finalName)}!</p>
-          <button class="btn-primary" type="button" data-profile-continue>Continuar</button>
+          <h1 class="title">Profile updated!</h1>
+          <p class="subtitle">Hi, ${escapeHtml(finalName)}!</p>
+          <button class="btn-primary" type="button" data-profile-continue>Continue</button>
         </div>
       </div>
     `
@@ -56,35 +56,35 @@ export function renderProfileSettings(root, { childId, currentName, currentAvata
     ).join('')
 
     const errorHtml =
-      status === 'error' ? statusMessageHtml({ type: 'error', text: 'Não foi possível salvar. Tente novamente.' }) : ''
+      status === 'error' ? statusMessageHtml({ type: 'error', text: "Couldn't save. Please try again." }) : ''
 
     root.innerHTML = `
       <div class="screen screen--settings screen--profile">
         <header class="settings-header">
-          <button class="settings-header__back" type="button" aria-label="Voltar">‹</button>
-          <h1 class="title">Meu perfil</h1>
+          <button class="settings-header__back" type="button" aria-label="Back">‹</button>
+          <h1 class="title">My profile</h1>
         </header>
 
         <div class="profile-preview">
           <img class="profile-preview__avatar" src="${currentAvatar.image}" alt="" data-preview-avatar />
-          <p class="profile-preview__greeting" data-preview-greeting>Oi, ${escapeHtml(trimmed || '...')}!</p>
+          <p class="profile-preview__greeting" data-preview-greeting>Hi, ${escapeHtml(trimmed || '...')}!</p>
         </div>
 
         <label class="profile-field">
-          <span class="profile-field__label">Como você quer ser chamado?</span>
+          <span class="profile-field__label">What should we call you?</span>
           <input
             class="profile-field__input"
             type="text"
             maxlength="${MAX_NAME_LENGTH}"
             value="${escapeHtml(name)}"
-            placeholder="Seu nome"
+            placeholder="Your name"
             data-name-input
           />
-          <span class="profile-field__hint">Até ${MAX_NAME_LENGTH} caracteres</span>
+          <span class="profile-field__hint">Up to ${MAX_NAME_LENGTH} characters</span>
         </label>
 
         <div class="profile-avatars">
-          <span class="profile-field__label">Escolha o seu gato</span>
+          <span class="profile-field__label">Choose your avatar</span>
           <div class="profile-avatars__grid">
             ${avatarsHtml}
           </div>
@@ -93,7 +93,7 @@ export function renderProfileSettings(root, { childId, currentName, currentAvata
         ${errorHtml}
 
         <button class="btn-primary" type="button" data-save-btn ${saveDisabled ? 'disabled' : ''}>
-          ${status === 'saving' ? 'Salvando…' : 'Salvar meu perfil'}
+          ${status === 'saving' ? 'Saving…' : 'Save my profile'}
         </button>
       </div>
     `
@@ -110,7 +110,7 @@ export function renderProfileSettings(root, { childId, currentName, currentAvata
     input?.addEventListener('input', () => {
       name = input.value
       const t = name.trim()
-      preview.textContent = `Oi, ${t || '...'}!`
+      preview.textContent = `Hi, ${t || '...'}!`
       saveBtn.disabled = !isValidName(name) || status === 'saving'
     })
 

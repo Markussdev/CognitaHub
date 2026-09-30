@@ -16,7 +16,7 @@ export function renderLoading(root) {
           <span></span>
         </div>
 
-        <span class="sr-only">Carregando o Cognita Hub</span>
+        <span class="sr-only">Loading Cognita Hub</span>
       </div>
     </div>
   `

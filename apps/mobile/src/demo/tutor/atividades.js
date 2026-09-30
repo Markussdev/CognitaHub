@@ -9,13 +9,13 @@ import {
   describeDemoActivity,
 } from '../school-demo-data.js'
 
-const STEPS = ['Experiência', 'Ajustar', 'Revisar']
+const STEPS = ['Experience', 'Customize', 'Review']
 
 // O que acontece com a atividade preparada agora (ver getDemoSlotState).
 const SLOT_HINT = {
-  waiting: (nome) => `aguardando ${nome}`,
-  done: (nome) => `concluída por ${nome}`,
-  library: () => 'guardada no acervo (a missão "Preparada agora" já foi concluída)',
+  waiting: (nome) => `waiting for ${nome}`,
+  done: (nome) => `completed by ${nome}`,
+  library: () => 'saved to your library (the "Prepared now" mission was already completed)',
 }
 
 // Só controles que mudam de fato a atividade que a criança recebe — os limites
@@ -23,17 +23,17 @@ const SLOT_HINT = {
 const RANGES = {
   contar: {
     key: 'quantidade',
-    label: 'Quantos itens',
+    label: 'Number of items',
     min: 3,
     max: 8,
-    hint: 'Único tema disponível por enquanto: dinossauros.',
+    hint: 'Demo theme: Dinosaurs.',
   },
   identificar: {
     key: 'maiorNumero',
-    label: 'Maior número',
+    label: 'Highest number',
     min: 3,
     max: 9,
-    hint: 'Os números da atividade vão de 1 até esse valor.',
+    hint: 'The activity uses numbers from 1 up to this value.',
   },
 }
 
@@ -52,7 +52,7 @@ export function renderAtividadesTab(panel, { goTab, onOpenChild, scrollToTop }) 
 
   function stepsHtml() {
     return `
-      <ol class="demo-steps" aria-label="Etapas do preparo">
+      <ol class="demo-steps" aria-label="Preparation steps">
         ${STEPS.map((label, index) => {
           const number = index + 1
           const state = number < step ? 'done' : number === step ? 'current' : 'todo'
@@ -73,12 +73,12 @@ export function renderAtividadesTab(panel, { goTab, onOpenChild, scrollToTop }) 
 
     return `
       <section class="demo-card">
-        <h2>Qual experiência?</h2>
+        <h2>Which experience?</h2>
         <p class="demo-hint">
-          Preparada agora: ${escapeHtml(describeDemoActivity(current))} —
+          Prepared now: ${escapeHtml(describeDemoActivity(current))} —
           ${escapeHtml(SLOT_HINT[getDemoSlotState()](DEMO_CHILD.name))}.
         </p>
-        <div class="demo-choices" role="group" aria-label="Experiência">
+        <div class="demo-choices" role="group" aria-label="Experience">
           ${DEMO_MOLDES.map(
             (item) => `
               <button class="demo-choice" type="button" data-molde="${item.key}" aria-pressed="${draft.molde === item.key}">
@@ -89,7 +89,7 @@ export function renderAtividadesTab(panel, { goTab, onOpenChild, scrollToTop }) 
           ).join('')}
         </div>
         <div class="demo-actions">
-          <button class="demo-primary" type="button" data-next>Continuar</button>
+          <button class="demo-primary" type="button" data-next>Continue</button>
         </div>
       </section>
     `
@@ -100,7 +100,7 @@ export function renderAtividadesTab(panel, { goTab, onOpenChild, scrollToTop }) 
 
     return `
       <section class="demo-card">
-        <h2>Ajustar para ${escapeHtml(DEMO_CHILD.name)}</h2>
+        <h2>Customize for ${escapeHtml(DEMO_CHILD.name)}</h2>
 
         <div class="demo-field">
           <div class="demo-field__row">
@@ -112,7 +112,7 @@ export function renderAtividadesTab(panel, { goTab, onOpenChild, scrollToTop }) 
         </div>
 
         <div class="demo-field">
-          <span class="demo-label" id="demo-rounds-label">Rodadas</span>
+          <span class="demo-label" id="demo-rounds-label">Rounds</span>
           <div class="demo-seg" role="group" aria-labelledby="demo-rounds-label">
             ${ROUNDS.map(
               (rounds) => `
@@ -123,8 +123,8 @@ export function renderAtividadesTab(panel, { goTab, onOpenChild, scrollToTop }) 
         </div>
 
         <div class="demo-actions demo-actions--split">
-          <button class="demo-secondary" type="button" data-prev>Anterior</button>
-          <button class="demo-primary" type="button" data-next>Continuar</button>
+          <button class="demo-secondary" type="button" data-prev>Back</button>
+          <button class="demo-primary" type="button" data-next>Continue</button>
         </div>
       </section>
     `
@@ -135,19 +135,19 @@ export function renderAtividadesTab(panel, { goTab, onOpenChild, scrollToTop }) 
 
     return `
       <section class="demo-card">
-        <h2>Revisar</h2>
+        <h2>Review</h2>
         <p class="demo-summary">${escapeHtml(describeDemoActivity(draft))}</p>
 
         <div class="demo-preview">
-          <span class="demo-label">Prévia · o que a criança vê</span>
+          <span class="demo-label">Preview · what the child sees</span>
           <h3>${escapeHtml(activity.titulo)}</h3>
           <p>${escapeHtml(activity.instrucao)}</p>
           <div class="demo-preview__stage" id="demo-preview-stage" inert></div>
         </div>
 
         <div class="demo-actions demo-actions--split">
-          <button class="demo-secondary" type="button" data-prev>Anterior</button>
-          <button class="demo-primary" type="button" data-release>Liberar para ${escapeHtml(DEMO_CHILD.name)}</button>
+          <button class="demo-secondary" type="button" data-prev>Back</button>
+          <button class="demo-primary" type="button" data-release>Assign to ${escapeHtml(DEMO_CHILD.name)}</button>
         </div>
       </section>
     `
@@ -163,25 +163,25 @@ export function renderAtividadesTab(panel, { goTab, onOpenChild, scrollToTop }) 
     const reachesChild = getDemoSlotState() === 'waiting' && initialActive
 
     const message = reachesChild
-      ? `<p>A experiência de ${nome} foi atualizada.</p>`
+      ? `<p>${nome}'s experience has been updated.</p>`
       : getDemoSlotState() === 'library'
-        ? `<p>Ela foi para o seu acervo. A missão "Preparada agora" de ${nome} já foi concluída — use esta atividade numa jornada.</p>`
-        : '<p>Ela foi para o seu acervo — use esta atividade numa jornada.</p>'
+        ? `<p>Add this activity to a journey to assign it to ${nome}.</p>`
+        : `<p>Add this activity to a journey to assign it to ${nome}.</p>`
 
     const primary =
       reachesChild && onOpenChild
-        ? `<button class="demo-primary" type="button" data-open-child>Ver experiência da criança →</button>`
-        : `<button class="demo-primary" type="button" data-go-jornada>Ver jornadas</button>`
+        ? `<button class="demo-primary" type="button" data-open-child>Open child experience →</button>`
+        : `<button class="demo-primary" type="button" data-go-jornada>View journeys</button>`
 
     return `
       <section class="demo-card demo-done" role="status">
         <span class="demo-done__check" aria-hidden="true">✓</span>
-        <h2>${reachesChild ? 'Atividade preparada' : 'Atividade guardada'}</h2>
+        <h2>${reachesChild ? 'Activity assigned' : 'Saved to your activity library'}</h2>
         ${message}
         <p class="demo-summary">${escapeHtml(describeDemoActivity(draft))}</p>
         <div class="demo-actions">
           ${primary}
-          <button class="demo-secondary" type="button" data-go-resumo>Ver o Resumo</button>
+          <button class="demo-secondary" type="button" data-go-resumo>View Overview</button>
         </div>
       </section>
     `

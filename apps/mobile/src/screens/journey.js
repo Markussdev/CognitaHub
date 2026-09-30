@@ -58,7 +58,7 @@ function journeyHeaderHtml({ title, avatarSrc, missionTitle = null, progress = n
   const context = missionTitle
     ? `
       <p class="journey-header__context">
-        <strong>Agora</strong>
+        <strong>Now</strong>
         <span>${escapeHtml(missionTitle)}</span>
       </p>
     `
@@ -68,14 +68,14 @@ function journeyHeaderHtml({ title, avatarSrc, missionTitle = null, progress = n
   // a criança vê o quanto anda faltando sem precisar ler número nenhum.
   const progressBar = progress
     ? `
-      <div class="journey-header__progress" role="img" aria-label="Missão ${progress.current} de ${progress.total}">
+      <div class="journey-header__progress" role="img" aria-label="Mission ${progress.current} of ${progress.total}">
         <span style="width:${Math.round((progress.current / Math.max(progress.total, 1)) * 100)}%"></span>
       </div>
     `
     : ''
 
   const back = withBack
-    ? `<button class="journey-header__back" type="button" aria-label="Voltar aos módulos">‹</button>`
+    ? `<button class="journey-header__back" type="button" aria-label="Back to modules">‹</button>`
     : ''
 
   return `
@@ -95,26 +95,26 @@ export function renderJourney(
   root,
   { childName, childAvatar, trail, currentModule, missions, moduleVisual, onBack, onOpenMission, onRefresh },
 ) {
-  const fallbackTitle = `Jornada de ${childName}`
+  const fallbackTitle = `${childName}'s journey`
   const header = journeyHeaderHtml({ title: fallbackTitle, avatarSrc: childAvatar })
 
   if (trail?.status === 'concluida') {
-    renderMessage(root, header, 'Você concluiu sua jornada!')
+    renderMessage(root, header, 'You finished your journey!')
     return
   }
 
   if (trail?.status === 'pausada') {
-    renderMessage(root, header, 'Sua jornada está pausada.')
+    renderMessage(root, header, 'Your journey is paused.')
     return
   }
 
   if (!currentModule || currentModule.status === 'bloqueado') {
-    renderMessage(root, header, 'Seu tutor está preparando o próximo módulo.')
+    renderMessage(root, header, 'Your tutor is preparing the next module.')
     return
   }
 
   if (missions.length === 0) {
-    renderMessage(root, header, 'Nenhuma missão disponível no momento.')
+    renderMessage(root, header, 'No missions available right now.')
     return
   }
 
@@ -262,10 +262,10 @@ export function renderJourney(
         </div>
       </div>
 
-      <nav class="journey-scroll-controls" aria-label="Navegação pela trilha">
-        <button type="button" data-journey-scroll="up" aria-label="Subir na trilha">↑</button>
-        <button type="button" data-journey-scroll="current" aria-label="Voltar à missão atual">●</button>
-        <button type="button" data-journey-scroll="down" aria-label="Descer na trilha">↓</button>
+      <nav class="journey-scroll-controls" aria-label="Journey navigation">
+        <button type="button" data-journey-scroll="up" aria-label="Scroll up the path">↑</button>
+        <button type="button" data-journey-scroll="current" aria-label="Back to current mission">●</button>
+        <button type="button" data-journey-scroll="down" aria-label="Scroll down the path">↓</button>
       </nav>
     </div>
   `
@@ -317,9 +317,9 @@ function renderModuleComplete(root, header, { landmarkImg, mascotImg, onRefresh,
         <img class="journey-complete__landmark" src="${landmarkImg}" alt="" aria-hidden="true" />
         ${mascot}
       </div>
-      <h2 class="title">Módulo concluído!</h2>
-      ${statusMessageHtml({ type: 'info', text: 'Agora é hora de aguardar seu tutor.' })}
-      <button class="btn-primary" id="refresh-btn" type="button">Atualizar jornada</button>
+      <h2 class="title">Module complete!</h2>
+      ${statusMessageHtml({ type: 'info', text: "Now it's time to wait for your tutor." })}
+      <button class="btn-primary" id="refresh-btn" type="button">Refresh journey</button>
     </div>
   `
   root.querySelector('#refresh-btn')?.addEventListener('click', () => onRefresh?.())

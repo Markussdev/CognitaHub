@@ -37,37 +37,37 @@ export const DEFAULT_JOURNEY = {
   id: DEFAULT_JOURNEY_ID,
   origin: 'default',
   status: 'published',
-  title: 'Descobrindo os números',
-  objective: 'Fortalecer reconhecimento e contagem.',
+  title: 'Discovering Numbers',
+  objective: 'Strengthen number recognition and counting.',
   // Como a jornada inicial já estava em andamento quando o avaliador chegou.
   initiallyCompleted: ['default-m1-1'],
   modules: [
     {
       id: 'default-m1',
-      title: 'Reconhecer',
+      title: 'Recognize',
       visualKey: 'dinossauro',
       missions: [
         {
           id: 'default-m1-1',
-          title: 'Reconhecer números até 3',
+          title: 'Recognize numbers up to 3',
           config: { molde: 'identificar', maiorNumero: 3, rodadas: 3 },
         },
         { id: DEMO_SLOT_MISSION_ID, slot: true },
         {
           id: 'default-m1-3',
-          title: 'Reconhecer números até 5',
+          title: 'Recognize numbers up to 5',
           config: { molde: 'identificar', maiorNumero: 5, rodadas: 3 },
         },
       ],
     },
     {
       id: 'default-m2',
-      title: 'Contar',
+      title: 'Count',
       visualKey: 'abaco',
       missions: [
         {
           id: 'default-m2-1',
-          title: 'Contagem de dinossauros',
+          title: 'Counting dinosaurs',
           config: { molde: 'contar', quantidade: 4, rodadas: 3 },
         },
       ],
@@ -77,14 +77,14 @@ export const DEFAULT_JOURNEY = {
 
 // Título da missão "Preparada agora" conforme o molde que o mediador preparou.
 export const DEMO_MISSION_TITLE_BY_MOLDE = {
-  contar: 'Contar dinossauros',
-  identificar: 'Encontrar o número',
+  contar: 'Count the dinosaurs',
+  identificar: 'Find the number',
 }
 
 // Experiências que o mediador pode preparar (nome e descrição do lado do adulto).
 export const DEMO_MOLDES = [
-  { key: 'contar', label: 'Contagem visual', hint: 'A criança toca em cada dinossauro para contar.' },
-  { key: 'identificar', label: 'Identificar números', hint: 'A criança toca no número que a atividade pedir.' },
+  { key: 'contar', label: 'Visual counting', hint: 'The child taps each dinosaur to count.' },
+  { key: 'identificar', label: 'Identify numbers', hint: 'The child taps the number requested by the activity.' },
 ]
 
 export function demoMoldeLabel(molde) {
@@ -93,8 +93,8 @@ export function demoMoldeLabel(molde) {
 
 // "4 itens · 3 rodadas" — o detalhe, sem repetir o nome da experiência.
 export function describeDemoDetail({ molde, quantidade, maiorNumero, rodadas }) {
-  const detail = molde === 'identificar' ? `números até ${maiorNumero}` : `${quantidade} itens`
-  return `${detail} · ${rodadas} ${rodadas === 1 ? 'rodada' : 'rodadas'}`
+  const detail = molde === 'identificar' ? `numbers up to ${maiorNumero}` : `${quantidade} items`
+  return `${detail} · ${rodadas} ${rodadas === 1 ? 'round' : 'rounds'}`
 }
 
 // "Contagem visual · 4 itens · 3 rodadas" — a mesma linha no preparo, no
@@ -106,9 +106,9 @@ export function describeDemoActivity(config) {
 // "hoje às 14:03" (mesmo formato de formatExecucaoQuando em js/pages/tutor.js);
 // a demo nunca atravessa um dia.
 export function formatDemoQuando(timestamp) {
-  if (!timestamp) return 'há pouco'
-  const hora = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(new Date(timestamp))
-  return `hoje às ${hora}`
+  if (!timestamp) return 'just now'
+  const hora = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(new Date(timestamp))
+  return `today at ${hora}`
 }
 
 // Configuração inicial da atividade preparada — a que o mediador vê ao abrir
@@ -135,8 +135,8 @@ export function buildDemoActivity({ molde, quantidade, maiorNumero, rodadas }, i
   if (molde === 'identificar') {
     return {
       ...base,
-      titulo: 'Encontre o número',
-      instrucao: 'Toque no número que aparecer certo pra você.',
+      titulo: 'Find the number',
+      instrucao: "Tap the number you're asked to find.",
       config: { rodadas, maiorNumero },
     }
   }
@@ -144,8 +144,8 @@ export function buildDemoActivity({ molde, quantidade, maiorNumero, rodadas }, i
   return {
     ...base,
     tema: 'dinossauros',
-    titulo: 'Vamos contar?',
-    instrucao: 'Toque em cada dinossauro para contar.',
+    titulo: "Let's count!",
+    instrucao: 'Tap each dinosaur to count it.',
     config: { rodadas, quantidade },
   }
 }
@@ -156,13 +156,13 @@ export const DEMO_FAMILY = {
   cycle: {
     month: 3,
     months: 6,
-    goal: 'Fortalecer contagem, comparação de quantidades e pequenas somas.',
+    goal: 'Strengthen counting, quantity comparison, and simple addition.',
   },
   feedback: {
-    text: 'Mateus reconheceu pequenos grupos com mais segurança e respondeu melhor quando a instrução veio em uma frase curta.',
+    text: 'Mateus recognized small groups with more confidence and responded better when the instruction was given in a short sentence.',
     author: 'Mariana Costa',
     initials: 'MC',
-    when: 'há 2 dias',
-    nextStep: 'Retomar a contagem com menos elementos e manter o tema dos dinossauros.',
+    when: '2 days ago',
+    nextStep: 'Return to counting with fewer elements while keeping the dinosaur theme.',
   },
 }

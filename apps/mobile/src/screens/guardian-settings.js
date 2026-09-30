@@ -47,17 +47,17 @@ export function renderGuardianSettings(
     root.innerHTML = `
       <div class="screen screen--settings screen--guardian-gate">
         <header class="settings-header">
-          <button class="settings-header__back" type="button" aria-label="Voltar">‹</button>
-          <h1 class="title">Para responsáveis</h1>
+          <button class="settings-header__back" type="button" aria-label="Back">‹</button>
+          <h1 class="title">For parents &amp; guardians</h1>
         </header>
 
         <div class="guardian-gate">
-          <p class="guardian-gate__title">Área para adultos</p>
-          <p class="guardian-gate__hint">Segure o botão por 2 segundos para continuar.</p>
+          <p class="guardian-gate__title">Adults only</p>
+          <p class="guardian-gate__hint">Hold the button for 2 seconds to continue.</p>
 
           <button class="guardian-gate__btn" type="button" id="guardian-hold">
             <span class="guardian-gate__fill" aria-hidden="true"></span>
-            <span class="guardian-gate__label">Segure para entrar</span>
+            <span class="guardian-gate__label">Hold to enter</span>
           </button>
         </div>
       </div>
@@ -104,8 +104,8 @@ export function renderGuardianSettings(
       <button class="guardian-help__toggle" type="button" id="guardian-help-toggle" aria-expanded="${helpOpen}">
         <span class="guardian-action__icon" aria-hidden="true">${LIFE_BUOY_SVG}</span>
         <span class="guardian-action__copy">
-          <strong>Ajuda e contato</strong>
-          <span>Como o pareamento e os dados funcionam</span>
+          <strong>Help &amp; contact</strong>
+          <span>How pairing and data work</span>
         </span>
         <span class="guardian-help__chevron${helpOpen ? ' is-open' : ''}" aria-hidden="true">${CHEVRON_SVG}</span>
       </button>
@@ -114,21 +114,21 @@ export function renderGuardianSettings(
           ? `
         <div class="guardian-help__body">
           <p>
-            O código de pareamento conecta este aparelho a UMA criança por vez. Ele vale por
-            10 minutos e só pode ser usado uma vez.
+            The pairing code connects this device to ONE child at a time. It expires after
+            10 minutes and can only be used once.
           </p>
           <p>
-            Os dados da jornada (progresso, missões, execuções) ficam guardados na conta do
-            tutor/responsável que acompanha essa criança — este aparelho só exibe o que já
-            está liberado pra ela.
+            Journey data (progress, missions, completed activities) is stored in the account
+            of the tutor or parent/guardian who follows this child — this device only shows
+            what has already been unlocked for them.
           </p>
           <p>
-            Pra gerenciar todos os aparelhos pareados, adicionar outro tutor ou revisar dados
-            com mais detalhe, use o painel do responsável no site do Cognita.
+            To manage all paired devices, add another tutor, or review data in more detail,
+            use the guardian dashboard on the Cognita website.
           </p>
           <p>
-            Precisa falar com a equipe? Escreva pra
-            <a class="guardian-help__link" href="mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Ajuda no Cognita')}">${SUPPORT_EMAIL}</a>.
+            Need to reach the team? Email
+            <a class="guardian-help__link" href="mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Help with Cognita')}">${SUPPORT_EMAIL}</a>.
           </p>
         </div>
       `
@@ -144,8 +144,8 @@ export function renderGuardianSettings(
           <button class="guardian-action" type="button" id="guardian-privacy">
             <span class="guardian-action__icon" aria-hidden="true">${FILE_TEXT_SVG}</span>
             <span class="guardian-action__copy">
-              <strong>Política de privacidade e termos</strong>
-              <span>Como tratamos os dados da família</span>
+              <strong>Privacy policy &amp; terms</strong>
+              <span>How we handle family data</span>
             </span>
             <span class="settings-menu-item__chevron" aria-hidden="true">${CHEVRON_SVG}</span>
           </button>
@@ -155,12 +155,12 @@ export function renderGuardianSettings(
     root.innerHTML = `
       <div class="screen screen--settings screen--guardian">
         <header class="settings-header">
-          <button class="settings-header__back" type="button" aria-label="Voltar">‹</button>
-          <h1 class="title">Para responsáveis</h1>
+          <button class="settings-header__back" type="button" aria-label="Back">‹</button>
+          <h1 class="title">For parents &amp; guardians</h1>
         </header>
 
         <div class="guardian-connected">
-          <span class="guardian-connected__label">Este aparelho está conectado a</span>
+          <span class="guardian-connected__label">This device is connected to</span>
           <div class="guardian-connected__child">
             <img src="${childAvatar}" alt="" />
             <strong>${escapeHtml(childName)}</strong>
@@ -171,8 +171,8 @@ export function renderGuardianSettings(
           <button class="guardian-action" type="button" id="guardian-switch">
             <span class="guardian-action__icon" aria-hidden="true">${REFRESH_SVG}</span>
             <span class="guardian-action__copy">
-              <strong>Trocar criança</strong>
-              <span>Usar um novo código de pareamento</span>
+              <strong>Switch child</strong>
+              <span>Use a new pairing code</span>
             </span>
             <span class="settings-menu-item__chevron" aria-hidden="true">${CHEVRON_SVG}</span>
           </button>
@@ -180,8 +180,8 @@ export function renderGuardianSettings(
           <button class="guardian-action guardian-action--neutral" type="button" id="guardian-disconnect">
             <span class="guardian-action__icon" aria-hidden="true">${SMARTPHONE_SVG}</span>
             <span class="guardian-action__copy">
-              <strong>Desconectar este aparelho</strong>
-              <span>Remover o acesso deste dispositivo</span>
+              <strong>Disconnect this device</strong>
+              <span>Remove access from this device</span>
             </span>
             <span class="settings-menu-item__chevron" aria-hidden="true">${CHEVRON_SVG}</span>
           </button>
@@ -193,7 +193,7 @@ export function renderGuardianSettings(
           </div>
         </div>
 
-        <p class="settings-version">Versão ${escapeHtml(pkg.version)}</p>
+        <p class="settings-version">Version ${escapeHtml(pkg.version)}</p>
       </div>
     `
 
@@ -216,29 +216,28 @@ export function renderGuardianSettings(
     const disabled = disconnectStatus === 'disconnecting'
     const errorHtml =
       disconnectStatus === 'error'
-        ? statusMessageHtml({ type: 'error', text: 'Não foi possível desconectar. Tente novamente.' })
+        ? statusMessageHtml({ type: 'error', text: "Couldn't disconnect. Please try again." })
         : ''
 
     root.innerHTML = `
       <div class="screen screen--settings screen--guardian">
         <header class="settings-header">
-          <button class="settings-header__back" type="button" aria-label="Voltar">‹</button>
-          <h1 class="title">Para responsáveis</h1>
+          <button class="settings-header__back" type="button" aria-label="Back">‹</button>
+          <h1 class="title">For parents &amp; guardians</h1>
         </header>
 
         <div class="guardian-confirm">
-          <p class="guardian-confirm__title">Desconectar este aparelho?</p>
+          <p class="guardian-confirm__title">Disconnect this device?</p>
           <p class="guardian-confirm__body">
-            Você vai precisar de um novo código de pareamento pra conectar este aparelho de
-            novo.
+            You'll need a new pairing code to connect this device again.
           </p>
 
           ${errorHtml}
 
           <button class="btn-danger" type="button" id="guardian-confirm-yes" ${disabled ? 'disabled' : ''}>
-            ${disconnectStatus === 'disconnecting' ? 'Desconectando...' : 'Sim, desconectar'}
+            ${disconnectStatus === 'disconnecting' ? 'Disconnecting...' : 'Yes, disconnect'}
           </button>
-          <button class="btn-text" type="button" id="guardian-confirm-cancel" ${disabled ? 'disabled' : ''}>Cancelar</button>
+          <button class="btn-text" type="button" id="guardian-confirm-cancel" ${disabled ? 'disabled' : ''}>Cancel</button>
         </div>
       </div>
     `

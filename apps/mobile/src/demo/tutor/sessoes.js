@@ -7,34 +7,34 @@ import { DEMO_CHILD, formatDemoQuando } from '../school-demo-data.js'
 // opções e mesmas frases da web — a demo não inventa texto pedagógico. Se o
 // original mudar, isto precisa acompanhar (é uma cópia, não um import).
 const PARTICIPACAO_OPTS = [
-  { val: 'bem', label: 'Participou bem' },
-  { val: 'oscilou', label: 'Oscilou durante a atividade' },
-  { val: 'incentivo', label: 'Precisou de incentivo' },
-  { val: 'nao_quis', label: 'Não quis participar' },
+  { val: 'bem', label: 'Engaged well' },
+  { val: 'oscilou', label: 'Engagement varied' },
+  { val: 'incentivo', label: 'Needed encouragement' },
+  { val: 'nao_quis', label: 'Chose not to participate' },
 ]
 const APOIO_OPTS = [
-  { val: 'autonomia', label: 'Fez com autonomia' },
-  { val: 'pouco', label: 'Pouco apoio' },
-  { val: 'frequente', label: 'Apoio frequente' },
-  { val: 'nao_concluiu', label: 'Não foi possível concluir' },
+  { val: 'autonomia', label: 'Worked independently' },
+  { val: 'pouco', label: 'Light support' },
+  { val: 'frequente', label: 'Frequent support' },
+  { val: 'nao_concluiu', label: 'Could not be completed' },
 ]
 const RESULTADO_OPTS = [
-  { val: 'avancou', label: 'Avançou' },
-  { val: 'manteve', label: 'Manteve o que já sabia' },
-  { val: 'dificuldade', label: 'Teve dificuldade' },
-  { val: 'retomar', label: 'Ficou para retomar' },
+  { val: 'avancou', label: 'Made progress' },
+  { val: 'manteve', label: 'Held steady' },
+  { val: 'dificuldade', label: 'Found it difficult' },
+  { val: 'retomar', label: 'To revisit' },
 ]
 
 const QUESTIONS = [
-  { key: 'participacao', title: `Como ${DEMO_CHILD.name} participou?`, options: PARTICIPACAO_OPTS },
-  { key: 'apoio', title: 'Quanto apoio foi necessário?', options: APOIO_OPTS },
-  { key: 'resultado', title: 'Como a atividade terminou?', options: RESULTADO_OPTS },
+  { key: 'participacao', title: `How did ${DEMO_CHILD.name} engage?`, options: PARTICIPACAO_OPTS },
+  { key: 'apoio', title: 'How much support was needed?', options: APOIO_OPTS },
+  { key: 'resultado', title: 'How did the activity end?', options: RESULTADO_OPTS },
 ]
 
 // A demo guarda uma execução pendente só; com mais de uma, cai na frase
 // genérica que o original usa a partir de 3 atividades.
 function fraseAtividades(titulo, total) {
-  return total > 1 ? `das ${total} atividades de hoje` : `da atividade "${titulo}"`
+  return total > 1 ? `the ${total} activities from today` : `the activity "${titulo}"`
 }
 
 // Devolutiva determinística: 2-3 frases curtas montadas a partir das
@@ -42,24 +42,24 @@ function fraseAtividades(titulo, total) {
 // próprio. O mediador revisa e edita antes de compartilhar.
 function composeFamilySummary({ nome, atividadeFrase, participacao, apoio, resultado }) {
   const primeira = {
-    bem: `${nome} participou bem ${atividadeFrase}.`,
-    oscilou: `${nome} participou ${atividadeFrase}, alternando momentos de mais e menos envolvimento.`,
-    incentivo: `${nome} precisou de incentivo para participar ${atividadeFrase}.`,
-    nao_quis: `${nome} não quis participar ${atividadeFrase} desta vez — tudo bem, isso também faz parte do processo.`,
-  }[participacao] || `${nome} participou ${atividadeFrase}.`
+    bem: `${nome} engaged well in ${atividadeFrase}.`,
+    oscilou: `${nome} took part in ${atividadeFrase}, with moments of more and less engagement.`,
+    incentivo: `${nome} needed some encouragement to take part in ${atividadeFrase}.`,
+    nao_quis: `${nome} chose not to take part in ${atividadeFrase} this time — that's okay, it's part of the process.`,
+  }[participacao] || `${nome} took part in ${atividadeFrase}.`
 
   const segunda = participacao === 'nao_quis' ? '' : ({
-    autonomia: 'Fez as propostas com autonomia.',
-    pouco: 'Precisou de pouco apoio pelo caminho.',
-    frequente: 'Contou com apoio frequente do tutor.',
-    nao_concluiu: 'Não foi possível concluir a proposta desta vez.',
+    autonomia: 'Worked through the tasks independently.',
+    pouco: 'Needed only light support along the way.',
+    frequente: 'Relied on frequent support from the tutor.',
+    nao_concluiu: 'It was not possible to complete the task this time.',
   }[apoio] || '')
 
   const terceira = {
-    avancou: 'Avançou no que estava sendo trabalhado.',
-    manteve: 'Manteve o que já vinha construindo.',
-    dificuldade: 'Encontrou dificuldade em alguns pontos, que vamos retomar com calma.',
-    retomar: 'A atividade ficou para ser retomada no próximo encontro.',
+    avancou: 'Made progress on what was being worked on.',
+    manteve: 'Held on to what has been built so far.',
+    dificuldade: 'Found some parts difficult, which we will revisit calmly.',
+    retomar: 'The activity will be revisited at the next session.',
   }[resultado] || ''
 
   return [primeira, segunda, terceira].filter(Boolean).join(' ')
@@ -94,8 +94,8 @@ export function renderSessoesTab(panel, { goTab, scrollToTop, options = {} }) {
         <div class="demo-flash" role="status">
           <span class="demo-flash__check" aria-hidden="true">✓</span>
           <div>
-            <strong>Sessão registrada</strong>
-            <p>A família já recebeu a devolutiva.</p>
+            <strong>Session saved</strong>
+            <p>The reviewed feedback is now available to ${escapeHtml(nome)}'s family.</p>
           </div>
         </div>
       `
@@ -104,35 +104,35 @@ export function renderSessoesTab(panel, { goTab, scrollToTop, options = {} }) {
     const timeline = pending
       ? `
         <section class="demo-card">
-          <h2>${execution.total === 1 ? '1 atividade' : `${execution.total} atividades`} de ${escapeHtml(nome)} aguardando registro</h2>
-          <p>Transforme o que a criança fez numa devolutiva para a família.</p>
+          <h2>${escapeHtml(nome)} completed ${execution.total === 1 ? 'an activity' : `${execution.total} activities`}</h2>
+          <p>Turn what the child did into feedback for the family.</p>
           <ul class="demo-timeline">
             <li><span aria-hidden="true">✓</span> ${escapeHtml(execution.titulo)} · ${escapeHtml(formatDemoQuando(execution.completedAt))}</li>
           </ul>
           <div class="demo-actions">
-            <button class="demo-primary" type="button" data-register>Registrar sessão</button>
+            <button class="demo-primary" type="button" data-register>Review session</button>
           </div>
         </section>
       `
       : `
         <section class="demo-card">
-          <h2>Nenhuma atividade aguardando registro.</h2>
-          <p>Quando ${escapeHtml(nome)} concluir uma atividade, ela aparece aqui.</p>
+          <h2>No activities awaiting review.</h2>
+          <p>When ${escapeHtml(nome)} completes an activity, it will appear here.</p>
         </section>
       `
 
     const history = session.exists
       ? `
         <section class="demo-card">
-          <span class="demo-label">Última sessão registrada</span>
+          <span class="demo-label">Latest saved session</span>
           <article class="demo-session">
             <div class="demo-session__head">
               <strong>${escapeHtml(session.activityTitle)}</strong>
               <span>${escapeHtml(formatDemoQuando(session.createdAt))}</span>
             </div>
             <p>${escapeHtml(session.familySummary)}</p>
-            ${session.nextStep ? `<p><strong>Próximo passo:</strong> ${escapeHtml(session.nextStep)}</p>` : ''}
-            ${session.notes ? `<p class="demo-private"><span aria-hidden="true">🔒</span> Nota interna — só você vê: ${escapeHtml(session.notes)}</p>` : ''}
+            ${session.nextStep ? `<p><strong>Next step:</strong> ${escapeHtml(session.nextStep)}</p>` : ''}
+            ${session.notes ? `<p class="demo-private"><span aria-hidden="true">🔒</span> Internal note — only tutors can see this: ${escapeHtml(session.notes)}</p>` : ''}
           </article>
         </section>
       `
@@ -173,33 +173,33 @@ export function renderSessoesTab(panel, { goTab, scrollToTop, options = {} }) {
 
     panel.innerHTML = `
       <section class="demo-card">
-        <h2>Registrar sessão de ${escapeHtml(nome)}</h2>
+        <h2>Record session for ${escapeHtml(nome)}</h2>
 
         <div class="demo-fact">
           <span class="demo-fact__check" aria-hidden="true">✓</span>
           <div>
-            <strong>${escapeHtml(execution.titulo)}${execution.total > 1 ? ` e mais ${execution.total - 1}` : ''}</strong>
-            <span>Feita ${escapeHtml(formatDemoQuando(execution.completedAt))}</span>
+            <strong>${escapeHtml(execution.titulo)}${execution.total > 1 ? ` and ${execution.total - 1} more` : ''}</strong>
+            <span>Completed ${escapeHtml(formatDemoQuando(execution.completedAt))}</span>
           </div>
         </div>
 
         ${QUESTIONS.map(questionHtml).join('')}
 
         <div class="demo-field">
-          <label class="demo-q" for="demo-notes">Alguma observação importante? (opcional)</label>
-          <textarea class="demo-textarea" id="demo-notes" rows="3" placeholder="Dúvidas técnicas, pontos para revisar com a equipe…">${escapeHtml(s.observacao)}</textarea>
-          <p class="demo-lock"><span aria-hidden="true">🔒</span> Nota interna — a família nunca vê o que você escrever aqui.</p>
+          <label class="demo-q" for="demo-notes">Anything important to note? (optional)</label>
+          <textarea class="demo-textarea" id="demo-notes" rows="3" placeholder="Questions, points to review with the team…">${escapeHtml(s.observacao)}</textarea>
+          <p class="demo-lock"><span aria-hidden="true">🔒</span> Internal note — the family never sees what you write here.</p>
         </div>
 
         <details class="demo-details" ${s.proximoPasso ? 'open' : ''}>
-          <summary>Adicionar planejamento (opcional)</summary>
-          <textarea class="demo-textarea" id="demo-next" rows="3" placeholder="O que trabalhar na próxima sessão?">${escapeHtml(s.proximoPasso)}</textarea>
-          <p class="demo-hint">A família vê isso como "próximo passo".</p>
+          <summary>Add a plan (optional)</summary>
+          <textarea class="demo-textarea" id="demo-next" rows="3" placeholder="What should be worked on next session?">${escapeHtml(s.proximoPasso)}</textarea>
+          <p class="demo-hint">Families see this as the "next step".</p>
         </details>
 
         <div class="demo-actions demo-actions--split">
-          <button class="demo-secondary" type="button" data-cancel>Voltar</button>
-          <button class="demo-primary" type="button" data-continue ${canContinue() ? '' : 'disabled'}>Continuar</button>
+          <button class="demo-secondary" type="button" data-cancel>Back</button>
+          <button class="demo-primary" type="button" data-continue ${canContinue() ? '' : 'disabled'}>Review feedback</button>
         </div>
       </section>
     `
@@ -256,32 +256,32 @@ export function renderSessoesTab(panel, { goTab, scrollToTop, options = {} }) {
 
     panel.innerHTML = `
       <section class="demo-card">
-        <h2>Devolutiva para a família</h2>
-        <p class="demo-hint">Montamos este resumo a partir das suas respostas — revise e deixe com a sua voz.</p>
+        <h2>Feedback for the family</h2>
+        <p class="demo-hint">We drafted this summary from your answers — review it and make it your own.</p>
 
         <div class="demo-field">
-          <label class="demo-q" for="demo-family-text">O que a família vai receber</label>
+          <label class="demo-q" for="demo-family-text">What the family will receive</label>
           <textarea class="demo-textarea demo-textarea--tall" id="demo-family-text" maxlength="800">${escapeHtml(s.familyText)}</textarea>
-          <div class="demo-count" id="demo-count">${s.familyText.length} / 800 caracteres</div>
-          <button class="demo-ghost" type="button" data-regen>↻ Gerar sugestão novamente</button>
+          <div class="demo-count" id="demo-count">${s.familyText.length} / 800 characters</div>
+          <button class="demo-ghost" type="button" data-regen>↻ Regenerate suggestion</button>
         </div>
 
         <div class="demo-preview demo-preview--family">
-          <span class="demo-label">Como a família verá</span>
-          <strong>${escapeHtml(nome)}: resumo da sessão</strong>
+          <span class="demo-label">How the family will see it</span>
+          <strong>${escapeHtml(nome)}: session summary</strong>
           <p id="demo-family-preview">${escapeHtml(s.familyText)}</p>
-          ${next ? `<p>Próximo passo: ${escapeHtml(next)}</p>` : ''}
+          ${next ? `<p>Next step: ${escapeHtml(next)}</p>` : ''}
         </div>
 
         <label class="demo-check">
           <input type="checkbox" id="demo-reviewed" ${s.reviewed ? 'checked' : ''} />
-          <span>Revisei a mensagem que será compartilhada com a família.</span>
+          <span>I reviewed the message that will be shared with the family.</span>
         </label>
-        <p class="demo-hint">Use linguagem simples, respeitosa e baseada no que você observou.</p>
+        <p class="demo-hint">Use simple, respectful language based on what you observed.</p>
 
         <div class="demo-actions demo-actions--split">
-          <button class="demo-secondary" type="button" data-back>Voltar</button>
-          <button class="demo-primary" type="button" data-save>Salvar e compartilhar</button>
+          <button class="demo-secondary" type="button" data-back>Back</button>
+          <button class="demo-primary" type="button" data-save>Save session</button>
         </div>
       </section>
     `
@@ -297,7 +297,7 @@ export function renderSessoesTab(panel, { goTab, scrollToTop, options = {} }) {
     textarea.addEventListener('input', () => {
       s.familyText = textarea.value
       s.familyEdited = true
-      panel.querySelector('#demo-count').textContent = `${textarea.value.length} / 800 caracteres`
+      panel.querySelector('#demo-count').textContent = `${textarea.value.length} / 800 characters`
       panel.querySelector('#demo-family-preview').textContent = textarea.value.trim() || '…'
       updateSave()
     })

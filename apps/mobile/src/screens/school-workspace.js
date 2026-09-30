@@ -9,7 +9,7 @@ import childAvatar from '../assets/avatars/astronauta.webp'
 
 // Vitrine do que a licença institucional (Cognita Escola) habilita — não cria
 // criança, tutor, ciclo nem jornada. Os cards do mediador e da família abrem
-// demos locais (demo/), sem Supabase. "Abrir experiência da criança" é o único
+// demos locais (demo/), sem Supabase. "Open child experience" é o único
 // ponto que pode sair desse demo isolado e entrar no app real (ver
 // onOpenChild em school-license.js, que só importa app.js/Supabase nesse
 // clique, e só sem VITE_SHIPATON_CHILD_DEMO).
@@ -17,17 +17,17 @@ export function renderSchoolWorkspace(root, { priceString = '', onBack, onOpenTu
   root.innerHTML = `
     <div class="school-workspace">
       <header class="school-workspace__hero">
-        <button class="school-workspace__back" type="button" aria-label="Voltar" data-school-back>‹</button>
+        <button class="school-workspace__back" type="button" aria-label="Back" data-school-back>‹</button>
 
-        <span class="school-workspace__eyebrow">Cognita Escola</span>
-        <h1>Ecossistema habilitado</h1>
-        <p>Uma licença institucional conecta as experiências de mediação, aprendizagem e acompanhamento.</p>
+        <span class="school-workspace__eyebrow">Cognita for Schools</span>
+        <h1>Ecosystem enabled</h1>
+        <p>One institutional license connects guidance, learning, and ongoing support.</p>
 
         <div class="school-license-card">
           <div>
-            <span class="school-license-card__status">● Licença ativa</span>
-            <strong>Acesso institucional</strong>
-            <small>${priceString ? `${priceString} / mês · ` : ''}piloto demonstrativo</small>
+            <span class="school-license-card__status">● License active</span>
+            <strong>Institutional access</strong>
+            <small>${priceString ? `${priceString} / month · ` : ''}demo pricing</small>
           </div>
           <span class="school-license-card__check">✓</span>
         </div>
@@ -35,25 +35,25 @@ export function renderSchoolWorkspace(root, { priceString = '', onBack, onOpenTu
 
       <main class="school-workspace__content">
         <section class="school-intro">
-          <span class="school-section-label">O produto</span>
-          <h2>Uma licença. Três experiências conectadas.</h2>
-          <p>A instituição apoia o ciclo completo sem colocar recursos de acessibilidade atrás de uma assinatura familiar.</p>
+          <span class="school-section-label">The product</span>
+          <h2>One license. Three connected experiences.</h2>
+          <p>Institutions support the full learning cycle without putting accessibility features behind a family subscription.</p>
         </section>
 
         <section class="school-surface">
           <figure class="school-preview">
-            <img src="${tutorPreview}" alt="Painel do mediador: preparo de uma atividade em três passos — experiência, ajustes e revisão." />
+            <img src="${tutorPreview}" alt="Tutor dashboard: preparing an activity in three steps — experience, settings, and review." />
           </figure>
           <div class="school-surface__body">
             <span class="school-surface__number">01</span>
             <div>
-              <span class="school-surface__role">Mediador</span>
-              <h3>Prepara e acompanha</h3>
-              <p>Organiza jornadas, prepara atividades e registra observações.</p>
+              <span class="school-surface__role">Tutor</span>
+              <h3>Plan and guide</h3>
+              <p>Build journeys, prepare activities, and record observations.</p>
             </div>
           </div>
           <button class="school-surface__cta" type="button" data-open-tutor>
-            Abrir experiência do mediador
+            Open tutor experience
             <span aria-hidden="true">→</span>
           </button>
         </section>
@@ -62,67 +62,67 @@ export function renderSchoolWorkspace(root, { priceString = '', onBack, onOpenTu
           <div class="school-child-visual">
             <img class="school-child-visual__avatar" src="${childAvatar}" alt="" />
             <div>
-              <strong>Experiência da criança</strong>
-              <span>Android · interativa · configurável</span>
+              <strong>Child experience</strong>
+              <span>Android · interactive · configurable</span>
             </div>
           </div>
           <div class="school-surface__body">
             <span class="school-surface__number">02</span>
             <div>
-              <span class="school-surface__role">Criança</span>
-              <h3>Explora e aprende</h3>
-              <p>Realiza experiências matemáticas dentro de jornadas visuais com configurações individuais.</p>
+              <span class="school-surface__role">Child</span>
+              <h3>Explore and learn</h3>
+              <p>Completes math activities in visual journeys with individual settings.</p>
             </div>
           </div>
           <button class="school-child-cta" type="button" data-open-child>
-            Abrir experiência da criança
+            Open child experience
             <span aria-hidden="true">→</span>
           </button>
         </section>
 
         <section class="school-surface">
           <figure class="school-preview">
-            <img src="${familyPreview}" alt="Painel da família: última devolutiva do tutor e o que vem agora." />
+            <img src="${familyPreview}" alt="Family dashboard: the tutor's latest feedback and what comes next." />
           </figure>
           <div class="school-surface__body">
             <span class="school-surface__number">03</span>
             <div>
-              <span class="school-surface__role">Família</span>
-              <h3>Acompanha com contexto</h3>
-              <p>Recebe devolutivas guiadas e acompanha a jornada com clareza — sem ver as anotações internas do mediador.</p>
+              <span class="school-surface__role">Family</span>
+              <h3>Follow progress with context</h3>
+              <p>Receives guided feedback and follows the journey clearly — without seeing the tutor's internal notes.</p>
             </div>
           </div>
           <button class="school-surface__cta" type="button" data-open-family>
-            Abrir experiência da família
+            Open family experience
             <span aria-hidden="true">→</span>
           </button>
         </section>
 
         <section class="school-flow">
-          <span class="school-section-label">O ciclo</span>
-          <h2>O que acontece depois de uma atividade?</h2>
+          <span class="school-section-label">The cycle</span>
+          <h2>What happens after an activity?</h2>
           <div class="school-flow__steps">
-            <span>Preparar</span>
+            <span>Prepare</span>
             <b>→</b>
-            <span>Experiência</span>
+            <span>Experience</span>
             <b>→</b>
-            <span>Observar</span>
+            <span>Observe</span>
             <b>→</b>
-            <span>Devolver</span>
+            <span>Share feedback</span>
             <b>→</b>
-            <span>Adaptar</span>
+            <span>Adapt</span>
           </div>
         </section>
 
         <section class="school-revenue">
           <img class="school-revenue__logo" src="${revenuecatLogo}" alt="RevenueCat" />
           <div>
-            <strong>Acesso institucional</strong>
-            <small>Entitlement: school_access · licença recorrente</small>
+            <strong>Institutional access</strong>
+            <small>Entitlement: school_access · recurring license</small>
           </div>
         </section>
 
-        <p class="school-disclaimer">Preço piloto demonstrativo, sem validação comercial.</p>
+        <p class="school-disclaimer">Demo pricing, not commercially validated.</p>
       </main>
     </div>
   `

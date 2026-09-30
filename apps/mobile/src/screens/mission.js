@@ -12,10 +12,10 @@ function renderWelcome(root, activity, onExit, onComplete) {
   root.innerHTML = `
     <div class="screen screen--mission">
       ${mascotHtml({ size: 'sm' })}
-      <h1 class="title">${escapeHtml(activity.titulo || 'Vamos começar?')}</h1>
+      <h1 class="title">${escapeHtml(activity.titulo || 'Ready to start?')}</h1>
       ${activity.instrucao ? `<p class="subtitle">${escapeHtml(activity.instrucao)}</p>` : ''}
-      <button class="btn-primary" id="start-btn" type="button">Começar</button>
-      <button class="btn-text" id="exit-btn" type="button">Voltar ao mapa</button>
+      <button class="btn-primary" id="start-btn" type="button">Start</button>
+      <button class="btn-text" id="exit-btn" type="button">Back to map</button>
     </div>
   `
 
@@ -34,7 +34,7 @@ function runRounds(root, activity, onExit, onComplete, startedAt) {
   function playRound() {
     root.innerHTML = `
       <div class="screen screen--mission">
-        <p class="mission-round">Rodada ${round} de ${totalRounds}</p>
+        <p class="mission-round">Round ${round} of ${totalRounds}</p>
         <div class="mission-stage" id="mission-stage"></div>
       </div>
     `
@@ -66,8 +66,8 @@ function renderFeedback(root, { onContinue }) {
   root.innerHTML = `
     <div class="screen screen--mission">
       ${mascotHtml({ size: 'sm' })}
-      ${statusMessageHtml({ type: 'success', text: 'Mandou muito bem!' })}
-      <button class="btn-primary" id="continue-btn" type="button">Continuar</button>
+      ${statusMessageHtml({ type: 'success', text: 'Great job!' })}
+      <button class="btn-primary" id="continue-btn" type="button">Continue</button>
     </div>
   `
   root.querySelector('#continue-btn').addEventListener('click', onContinue)
@@ -77,9 +77,9 @@ function renderFinished(root, { onComplete, startedAt }) {
   root.innerHTML = `
     <div class="screen screen--mission">
       ${mascotHtml()}
-      <h1 class="title">Missão concluída por hoje!</h1>
+      <h1 class="title">Mission complete for today!</h1>
       <div id="finish-status"></div>
-      <button class="btn-primary" id="finish-btn" type="button">Voltar ao mapa</button>
+      <button class="btn-primary" id="finish-btn" type="button">Back to map</button>
     </div>
   `
 
@@ -89,7 +89,7 @@ function renderFinished(root, { onComplete, startedAt }) {
 
   btn.addEventListener('click', async () => {
     btn.disabled = true
-    btn.textContent = 'Salvando...'
+    btn.textContent = 'Saving...'
     statusEl.innerHTML = ''
 
     const durationSeconds = Math.max(1, Math.round((Date.now() - startedAt) / 1000))
@@ -100,7 +100,7 @@ function renderFinished(root, { onComplete, startedAt }) {
       console.error(err)
       statusEl.innerHTML = statusMessageHtml({
         type: 'error',
-        text: 'Não conseguimos salvar esta missão. Confira a internet e tente novamente.',
+        text: "We couldn't save this mission. Check your internet and try again.",
       })
       btn.disabled = false
       btn.textContent = originalLabel
@@ -111,8 +111,8 @@ function renderFinished(root, { onComplete, startedAt }) {
 function renderUnsupported(root, onExit) {
   root.innerHTML = `
     <div class="screen screen--mission">
-      ${statusMessageHtml({ type: 'info', text: 'Esta atividade ainda não está disponível neste aplicativo.' })}
-      <button class="btn-primary" id="back-btn" type="button">Voltar ao mapa</button>
+      ${statusMessageHtml({ type: 'info', text: 'This activity is not available in this app yet.' })}
+      <button class="btn-primary" id="back-btn" type="button">Back to map</button>
     </div>
   `
   root.querySelector('#back-btn').addEventListener('click', () => onExit?.())
