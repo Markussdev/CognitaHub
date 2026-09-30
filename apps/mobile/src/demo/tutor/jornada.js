@@ -29,7 +29,9 @@ const MODULE_STATUS_TEXT = {
 }
 const MODULE_STATUS_ICON = { concluido: '✓', liberado: '●', aguardando_revisao: '●', bloqueado: '○' }
 
-const originLabel = (journey) => (journey.origin === 'default' ? 'Jornada de exemplo' : 'Criada por você')
+// A jornada inicial é um ponto de partida da biblioteca, não uma recomendação
+// do sistema (o PRODUCT.md deixa a decisão pedagógica com o mediador).
+const originLabel = (journey) => (journey.origin === 'default' ? 'Jornada inicial' : 'Criada por você')
 
 const sceneOf = (key) => LANDMARK_PRESETS.find((preset) => preset.key === key)
 
@@ -82,17 +84,17 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
     return `${countCompleted(journey, progress)} de ${countMissions(journey)} missões concluídas`
   }
 
+  // Só jornadas do mediador (rascunho ou publicada). A jornada inicial fica
+  // guardada no store, mas não aparece aqui.
   function listItemHtml(journey) {
     const isDraft = journey.status === 'draft'
     const badge = isDraft
       ? '<span class="demo-badge demo-badge--draft">Rascunho</span>'
-      : journey.origin === 'default'
-        ? '<span class="demo-badge demo-badge--example">Exemplo</span>'
-        : '<span class="demo-badge demo-badge--published">Publicada</span>'
+      : '<span class="demo-badge demo-badge--published">Publicada</span>'
 
     const hint = isDraft
       ? `${journey.modules.length} ${journey.modules.length === 1 ? 'módulo' : 'módulos'} · só você vê`
-      : `${originLabel(journey)} · ${progressLine(journey)}`
+      : progressLine(journey)
 
     const actions = isDraft
       ? `<button class="demo-secondary demo-secondary--small" type="button" data-edit="${journey.id}">Continuar editando</button>`
@@ -114,8 +116,23 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
     const activeId = getSchoolDemoState().activeJourneyId
     const active = getDemoJourney(activeId)
     const view = getDemoJourneyView(activeId)
-    const others = getDemoJourneys().filter((journey) => journey.id !== activeId)
+    const customs = getDemoJourneys().filter((journey) => journey.origin !== 'default')
+    const others = customs.filter((journey) => journey.id !== activeId)
     const awaiting = view.summary.releasedStatus === 'aguardando_revisao'
+
+    // Primeira abertura: "Outras jornadas" vazia. Depois que o mediador cria a
+    // sua: "Suas jornadas" só com as que não são a ativa (e nada, se não houver).
+    const othersCard = others.length
+      ? `<section class="demo-card">
+           <span class="demo-label">Suas jornadas</span>
+           ${others.map(listItemHtml).join('')}
+         </section>`
+      : customs.length
+        ? ''
+        : `<section class="demo-card">
+             <span class="demo-label">Outras jornadas</span>
+             <p class="demo-hint">Você ainda não criou nenhuma jornada.</p>
+           </section>`
 
     panel.innerHTML = `
       <section class="demo-card">
@@ -147,14 +164,7 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
         </div>
       </section>
 
-      <section class="demo-card">
-        <span class="demo-label">Outras jornadas</span>
-        ${
-          others.length
-            ? others.map(listItemHtml).join('')
-            : `<p class="demo-hint">Você ainda não criou outra jornada para ${escapeHtml(nome)}. Comece por "Nova jornada".</p>`
-        }
-      </section>
+      ${othersCard}
 
       <button class="demo-primary" type="button" data-new>+ Nova jornada</button>
     `
@@ -323,8 +333,11 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
           </div>
         </div>
 
-        <input class="demo-input" type="text" maxlength="60" data-mtitle="${index}" aria-label="Título do módulo ${index + 1}"
-          placeholder="Título do módulo (ex.: Reconhecer)" value="${escapeHtml(mod.title)}" />
+        <div class="demo-field">
+          <label class="demo-label" for="jr-mtitle-${index}">Título do módulo</label>
+          <input class="demo-input" id="jr-mtitle-${index}" type="text" maxlength="60" data-mtitle="${index}"
+            placeholder="Ex.: Reconhecer" value="${escapeHtml(mod.title)}" />
+        </div>
 
         <div class="demo-field">
           <span class="demo-label">Cenário</span>
@@ -407,9 +420,9 @@ export function renderJornadaTab(panel, { goTab, onOpenChild, scrollToTop }) {
 
       <div id="jr-msg" role="status"></div>
 
-      <div class="demo-actions demo-actions--split">
-        <button class="demo-secondary" type="button" data-save-draft>Salvar rascunho</button>
+      <div class="demo-journey-actions">
         <button class="demo-primary" type="button" data-publish>Publicar jornada</button>
+        <button class="demo-secondary" type="button" data-save-draft>Salvar como rascunho</button>
       </div>
       <p class="demo-hint">Salvar guarda como rascunho (só você vê). Publicar congela a jornada para você atribuir a ${escapeHtml(nome)}.</p>
     `

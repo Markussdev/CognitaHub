@@ -153,22 +153,23 @@ export function renderAtividadesTab(panel, { goTab, onOpenChild, scrollToTop }) 
     `
   }
 
-  // Enquanto a missão "Preparada agora" espera a criança, liberar muda o que
-  // ela recebe; depois de concluída, a atividade só vai pro acervo e precisa
-  // entrar numa jornada.
+  // A missão "Preparada agora" vive na jornada inicial. Enquanto ela espera a
+  // criança e a jornada inicial é a ativa, liberar muda o que ela recebe;
+  // nos outros casos (missão já concluída, ou outra jornada ativa) a atividade
+  // só vai pro acervo e precisa entrar numa jornada.
   function releasedHtml() {
     const nome = escapeHtml(DEMO_CHILD.name)
-    const reachesChild = getDemoSlotState() === 'waiting'
-    const exampleActive = getSchoolDemoState().activeJourneyId === DEFAULT_JOURNEY_ID
+    const initialActive = getSchoolDemoState().activeJourneyId === DEFAULT_JOURNEY_ID
+    const reachesChild = getDemoSlotState() === 'waiting' && initialActive
 
     const message = reachesChild
-      ? `<p>A experiência de ${nome} foi atualizada.</p>${
-          exampleActive ? '' : '<p>Ela aparece quando a jornada de exemplo estiver ativa.</p>'
-        }`
-      : `<p>Ela foi para o seu acervo. A missão "Preparada agora" de ${nome} já foi concluída — use esta atividade numa jornada.</p>`
+      ? `<p>A experiência de ${nome} foi atualizada.</p>`
+      : getDemoSlotState() === 'library'
+        ? `<p>Ela foi para o seu acervo. A missão "Preparada agora" de ${nome} já foi concluída — use esta atividade numa jornada.</p>`
+        : '<p>Ela foi para o seu acervo — use esta atividade numa jornada.</p>'
 
     const primary =
-      reachesChild && exampleActive && onOpenChild
+      reachesChild && onOpenChild
         ? `<button class="demo-primary" type="button" data-open-child>Ver experiência da criança →</button>`
         : `<button class="demo-primary" type="button" data-go-jornada>Ver jornadas</button>`
 

@@ -23,13 +23,13 @@ export const DEMO_SCENES = ['dinossauro', 'abaco', 'cinema']
 
 export const DEFAULT_JOURNEY_ID = 'default-journey'
 
-// A missão "Preparada agora" da jornada de exemplo: em vez de uma atividade
+// A missão "Preparada agora" da jornada inicial: em vez de uma atividade
 // fixa, ela segue a atividade que o mediador prepara na aba Atividades — até
 // ser concluída. Depois disso, atividades novas vão pro acervo (não reabrem a
 // missão) e só chegam à criança dentro de uma jornada.
 export const DEMO_SLOT_MISSION_ID = 'default-m1-2'
 
-// Jornada de exemplo: ponto de partida pronto pra quem não quiser montar
+// Jornada inicial: ponto de partida pronto pra quem não quiser montar
 // nada. É permanente — atribuir outra jornada só troca a ativa; o progresso
 // de cada uma fica guardado. Só usa moldes que o app executa (contar e
 // identificar).
@@ -39,7 +39,7 @@ export const DEFAULT_JOURNEY = {
   status: 'published',
   title: 'Descobrindo os números',
   objective: 'Fortalecer reconhecimento e contagem.',
-  // Como a jornada de exemplo já estava em andamento quando o avaliador chegou.
+  // Como a jornada inicial já estava em andamento quando o avaliador chegou.
   initiallyCompleted: ['default-m1-1'],
   modules: [
     {

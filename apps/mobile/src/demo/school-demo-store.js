@@ -21,7 +21,7 @@ import { createInitialProgress, isMissionDone, moduleStatus } from './journey-lo
 //   execution = o que Mateus já fez e aguarda registro (uma pendência só —
 //               a demo não guarda histórico);
 //   session   = o que o mediador transformou em devolutiva pra família;
-//   journeys  = as jornadas do mediador: a de exemplo (permanente) + as que
+//   journeys  = as jornadas do mediador: a inicial (permanente) + as que
 //               ele monta (rascunho ou publicada);
 //   journeyProgress = o progresso de Mateus em CADA jornada. Atribuir outra
 //               jornada só troca a ativa; nada é apagado.

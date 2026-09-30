@@ -79,11 +79,6 @@ export function renderDemoTutorExperience(root, { onExit, onOpenChild, initialTa
       })
     })
 
-    // Com 4 abas em tela estreita a barra rola de lado — traz a aberta pra vista.
-    const tabsEl = root.querySelector('.demo-tabs')
-    const selected = tabsEl.querySelector('[aria-selected="true"]')
-    tabsEl.scrollLeft = Math.max(0, selected.offsetLeft - (tabsEl.clientWidth - selected.offsetWidth) / 2)
-
     const active = TABS.find((item) => item.key === tab)
     active.render(root.querySelector('#demo-tab-panel'), {
       goTab,

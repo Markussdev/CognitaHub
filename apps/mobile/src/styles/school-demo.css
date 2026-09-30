@@ -546,40 +546,46 @@
 
 /* ---- abas do mediador ---- */
 
+/* Controle segmentado no fluxo da página — sem sticky: dentro de um
+   container com overflow o sticky atravessava o conteúdo no WebView. */
 .demo-tabs {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  display: flex;
+  position: static;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 4px;
-  margin: 0 -18px;
-  padding: 8px 18px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  background: var(--paper);
-  border-bottom: 1px solid var(--line);
+  margin: 0;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--warm-white);
 }
 
-.demo-tabs::-webkit-scrollbar {
-  display: none;
+/* Em tela estreita ou com texto grande, 4 colunas cortariam "Atividades":
+   vira 2 × 2. */
+@media (max-width: 379px) {
+  .demo-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-/* Quatro abas: em tela estreita (ou texto grande) a barra rola de lado em
-   vez de espremer os rótulos. */
+html[data-text-size='grande'] .demo-tabs {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .demo-tabs__tab {
-  flex: 1 0 auto;
+  min-width: 0;
   min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 0 12px;
+  padding: 0 5px;
   border: 0;
   border-radius: 14px;
   background: transparent;
   color: var(--muted);
   font-family: var(--display);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -1072,14 +1078,16 @@
   border-color: var(--navy);
 }
 
+/* Módulo: bloco leve dentro do cartão do editor (não outro cartão). */
 .demo-module {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 14px;
-  border: 1px solid var(--line);
+  padding: 14px 12px;
+  border: 0;
   border-radius: 18px;
-  background: var(--paper);
+  background: #faf7f3;
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .demo-module__head {
@@ -1087,6 +1095,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+}
+
+.demo-module__head .demo-label {
+  white-space: nowrap;
 }
 
 .demo-module__title {
@@ -1122,26 +1134,30 @@
 }
 
 .demo-scene {
-  min-height: 84px;
+  min-width: 0;
+  min-height: 96px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 6px 4px;
+  padding: 8px 4px;
   border: 2px solid var(--line);
   border-radius: 14px;
   background: var(--warm-white);
   color: var(--ink);
-  font-size: 12px;
-  line-height: 1.2;
   text-align: center;
 }
 
 .demo-scene img {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
+}
+
+.demo-scene span {
+  font-size: 11px;
+  line-height: 1.15;
 }
 
 .demo-scene[aria-pressed='true'] {
@@ -1149,20 +1165,24 @@
   background: var(--soft-blue);
 }
 
+/* Missão em duas linhas: posição + texto em cima, controles embaixo — os
+   três botões não espremem o título. */
 .demo-mission {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 8px 10px;
+  align-items: start;
+  padding: 12px;
   border-radius: 14px;
   background: var(--warm-white);
   border: 1px solid var(--line);
 }
 
 .demo-mission__pos {
+  grid-column: 1;
+  grid-row: 1;
   width: 28px;
   height: 28px;
-  flex: none;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -1173,10 +1193,22 @@
 }
 
 .demo-mission__body {
-  flex: 1;
+  grid-column: 2;
+  grid-row: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
+}
+
+.demo-mission > .demo-tools {
+  grid-column: 2;
+  grid-row: 2;
+  justify-content: flex-end;
+}
+
+.demo-mission .demo-iconbtn {
+  width: 38px;
+  height: 38px;
 }
 
 .demo-mission__body strong {
@@ -1236,6 +1268,18 @@
 
 .demo-ghost:disabled {
   opacity: 0.4;
+}
+
+/* Publicar é a decisão: primeiro e na largura toda; rascunho logo abaixo. */
+.demo-journey-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.demo-journey-actions .demo-primary,
+.demo-journey-actions .demo-secondary {
+  width: 100%;
 }
 
 .demo-msg {

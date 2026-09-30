@@ -30,7 +30,7 @@ export function renderDemoFamilyExperience(root, { onExit } = {}) {
       }
     : DEMO_FAMILY.feedback
 
-  // A jornada é a que o mediador atribuiu a Mateus (a de exemplo ou uma que
+  // A jornada é a que o mediador atribuiu a Mateus (a inicial ou uma que
   // ele montou) — o mesmo estado que a criança está jogando. O progresso é
   // fato operacional e aparece na hora; o título da jornada só o mediador e a
   // família veem (a criança não).
