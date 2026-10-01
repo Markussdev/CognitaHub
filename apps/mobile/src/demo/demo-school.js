@@ -34,15 +34,12 @@ export function renderDemoSchoolOverview(root, { onExit, onOpenStudent } = {}) {
       </div>
 
       <section class="demo-card school-metrics" aria-label="School metrics">
-        <div class="school-metrics__head">
-          <span class="demo-label">${escapeHtml(school)}</span>
-          <span class="school-demo-chip">Demo</span>
-        </div>
+        <span class="demo-label">${escapeHtml(school)}</span>
         <dl class="school-metrics__grid">
           <div><dt>Students</dt><dd>${metrics.students}</dd></div>
           <div><dt>Tutors</dt><dd>${metrics.tutors}</dd></div>
           <div><dt>Active journeys</dt><dd>${metrics.activeJourneys}</dd></div>
-          <div><dt>Awaiting review</dt><dd>${metrics.awaitingReview}</dd></div>
+          <div><dt>Need review</dt><dd>${metrics.awaitingReview}</dd></div>
         </dl>
       </section>
 
@@ -56,8 +53,6 @@ export function renderDemoSchoolOverview(root, { onExit, onOpenStudent } = {}) {
         </ul>
         <p class="demo-hint">Only ${escapeHtml(interactiveName)} is interactive in this demo. The other students are fictional examples.</p>
       </section>
-
-      <p class="demo-note">Demonstration data</p>
     </div>
   `
 

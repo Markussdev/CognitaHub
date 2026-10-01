@@ -1,12 +1,3 @@
-/* Visão institucional da demo Cognita Escola — visão da escola
-   (demo/demo-school.js) e ecossistema do aluno (demo/demo-learner.js). Usa o
-   vocabulário .demo-* de school-demo.css (cabeçalho, cartão, barra, rodapé);
-   aqui só o que é próprio: aviso de demonstração, métricas, cartão de aluno e
-   status. Texto que não é botão escala com --accessibility-text-scale. Status
-   sempre com ícone + texto, nunca só cor. */
-
-/* ---- demonstração: precisa ficar claro que nada aqui é dado real ---- */
-
 .school-demo-banner {
   display: flex;
   flex-direction: column;
@@ -25,27 +16,7 @@
   font-size: calc(14px * var(--accessibility-text-scale));
 }
 
-.school-demo-chip {
-  padding: 3px 10px;
-  border: 1px solid rgba(255, 168, 0, 0.55);
-  border-radius: var(--r-pill);
-  background: var(--soft-gold);
-  color: var(--wine);
-  font-size: calc(11px * var(--accessibility-text-scale));
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 /* ---- métricas ---- */
-
-.school-metrics__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
 
 .school-metrics__grid {
   display: grid;

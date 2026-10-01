@@ -1,8 +1,3 @@
-/* Primeira tela da Cognita Escola (screens/school-license.js): hero navy com o
-   mascote e o card da licença. Mesmo gradiente do topo do workspace
-   (school.css) pra as duas telas parecerem o mesmo produto. Textos escalam
-   com --accessibility-text-scale (texto grande). */
-
 .school-entry {
   flex: 1;
   min-height: 0;
