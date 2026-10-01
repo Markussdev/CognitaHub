@@ -2,6 +2,9 @@
 >
 > The Android submission is located in [`apps/mobile`](./apps/mobile).
 > This branch contains the complete Cognita Hub ecosystem used for the submission.
+>
+> **Judges:** start at the [Judge quick start](#judge-quick-start) — install the
+> prebuilt APK, no environment setup needed.
 
 <p align="center">
   <img src="./public/assets/logo-retangular-transparent.png" alt="Cognita Hub" width="600" />
@@ -28,18 +31,141 @@
   <strong><em>Technology should support the people who know the child — not pretend to replace them.</em></strong>
 </p>
 
+## Judge quick start
+
+### Option 1 — Install the Android APK from GitHub Releases
+
+The fastest way to evaluate the Shipaton submission is to install the prebuilt
+Android APK available in the repository Releases:
+
+**Cognita Hub — Shipaton Demo**
+<https://github.com/Markussdev/CognitaHub/releases/tag/v0.1.0-shipaton>
+
+Open the release, download:
+
+```text
+app-debug.apk
+```
+
+and install it on an Android device.
+
+Because this APK is distributed directly through GitHub and not through Google
+Play, Android may display a warning about installing apps from an unknown
+source. Allow installation for the browser or file manager being used, then
+continue.
+
+**The APK contains the Android version used for the Shipaton demo and is the
+recommended way to reproduce the complete experience, including the native
+RevenueCat integration.**
+
+Recommended evaluation flow:
+
+1. Open **Cognita for Schools**
+2. Activate the institutional license
+3. Open **School overview**
+4. Select **Mateus**
+5. Explore the **Tutor**, **Child** and **Family** experiences
+6. Complete a child activity
+7. Return to the Tutor experience and review the pending session
+8. Register the session
+9. Open the Family experience to see the reviewed feedback
+
+The school, students and tutors shown in the institutional demo are fictional
+demonstration data. Mateus is the interactive learner profile used to
+demonstrate the connected learning cycle.
+
+### Option 2 — Build the submitted branch from source
+
+Requirements: Node.js 22+, and JDK 21 plus the Android SDK (Android Studio) for
+the APK build.
+
+Clone the repository and switch to the Shipaton submission branch:
+
+```bash
+git clone https://github.com/Markussdev/CognitaHub.git
+cd CognitaHub
+git checkout shipaton-2026
+cd apps/mobile
+npm ci
+```
+
+Copy `apps/mobile/.env.example` to `apps/mobile/.env` and configure:
+
+```env
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+
+VITE_REVENUECAT_TEST_API_KEY=<RevenueCat Test Store SDK key>
+VITE_REVENUECAT_ENTITLEMENT_ID=school_access
+VITE_REVENUECAT_OFFERING_ID=cognita_school
+
+VITE_SHIPATON_SCHOOL_DEMO=1
+VITE_SHIPATON_CHILD_DEMO=1
+```
+
+The Cognita for Schools demo surfaces — School overview, Tutor, Child and
+Family — use fabricated in-memory data and do not require Supabase. Without
+`VITE_SHIPATON_CHILD_DEMO`, the Child card follows the real flow (pairing +
+Supabase).
+
+The RevenueCat purchase flow requires:
+
+- a native Android build;
+- a valid RevenueCat Test Store SDK key.
+
+Build the app:
+
+```bash
+npm run build
+npx cap sync android
+cd android
+```
+
+On Windows:
+
+```bash
+.\gradlew.bat assembleDebug
+```
+
+On macOS/Linux:
+
+```bash
+./gradlew assembleDebug
+```
+
+The generated APK is located at:
+
+```text
+apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+### Browser preview
+
+The interface can also be previewed locally:
+
+```bash
+cd apps/mobile
+npm run dev
+```
+
+Then open <http://localhost:5173/?school=1>.
+
+The browser preview is intended for UI inspection only: it renders the
+Cognita for Schools licence screen. The RevenueCat purchase flow — and the demo
+surfaces behind it — run only in the native Android application.
+
 ## Repository at a glance
 
 | Path | What it is |
 | --- | --- |
-| [`apps/mobile/`](./apps/mobile) | **The Android app submitted to Shipaton 2026.** Capacitor + Vanilla JS, an independent package with its own `package.json`, build and Android project. It holds the child experience, device pairing, the RevenueCat institutional-licence flow and the **Cognita for Schools** demo (tutor, child and family surfaces on local data, no backend). |
+| [`apps/mobile/`](./apps/mobile) | **The Android app submitted to Shipaton 2026.** Capacitor + Vanilla JS, an independent package with its own `package.json`, build and Android project. It holds the child experience, device pairing, the RevenueCat institutional-licence flow and the **Cognita for Schools** demo (school overview, tutor, child and family surfaces on local data, no backend). |
 | [`pages/`](./pages) · [`js/`](./js) · [`css/`](./css) | **Web companion platform** — the original Cognita Hub web experience used by tutors and families: tutor panel, family panel, admin and the activity library. A Vite multi-page app on Supabase. **Not bundled into the APK.** |
-| [`docs/`](./docs) | Product direction ([`PRODUCT.md`](./docs/PRODUCT.md)), mobile architecture ([`MOBILE.md`](./docs/MOBILE.md)) and database reference. |
+| [`docs/`](./docs) | Product direction ([`PRODUCT.md`](./docs/PRODUCT.md)), system architecture ([`ARCHITECTURE.md`](./docs/ARCHITECTURE.md)), mobile state and plans ([`MOBILE.md`](./docs/MOBILE.md)), database reference ([`DATABASE.md`](./docs/DATABASE.md)) and roadmap ([`ROADMAP.md`](./docs/ROADMAP.md)). |
 
 Both sides belong to the same product and talk to the same Supabase backend in
 their connected flows, but they are built and run separately: `npm run build` at
 the repository root builds the **web platform only**; the Android app is built
-from `apps/mobile` (see [Running locally](#running-locally)).
+from `apps/mobile` (see [Judge quick start](#judge-quick-start)).
 
 ## Learning experience
 
@@ -203,12 +329,12 @@ CognitaHub/
 │       └── src/
 │           ├── activities/    # activity engine (contar, identificar)
 │           ├── components/
-│           ├── demo/          # Cognita for Schools demo: tutor, child and family surfaces
+│           ├── demo/          # Cognita for Schools demo: school overview, tutor, child and family surfaces
 │           ├── screens/
 │           └── services/      # Supabase and RevenueCat boundaries
 ├── assets/                    # README and submission media
 ├── css/                       # web companion styles
-├── docs/                      # product, mobile and database documentation
+├── docs/                      # product, architecture, mobile, database and roadmap documentation
 ├── js/                        # web companion
 │   ├── components/
 │   ├── data/                  # Supabase boundary
@@ -219,64 +345,15 @@ CognitaHub/
 └── package.json               # web companion build (the mobile app has its own)
 ```
 
-## Running locally
+## Running the web companion
 
-### Web
+The Android app is covered in the [Judge quick start](#judge-quick-start). The
+web companion is a separate package at the repository root and needs a Supabase
+project configured in a root `.env`:
 
 ```bash
 npm install
 npm run dev
-```
-
-### Android
-
-```bash
-cd apps/mobile
-npm install
-```
-
-Create `apps/mobile/.env` from `apps/mobile/.env.example` with:
-
-```env
-VITE_SUPABASE_URL=
-VITE_SUPABASE_ANON_KEY=
-
-VITE_REVENUECAT_TEST_API_KEY=
-VITE_REVENUECAT_ENTITLEMENT_ID=school_access
-VITE_REVENUECAT_OFFERING_ID=cognita_school
-```
-
-To open the **Cognita for Schools** demo instead of the connected app, also set:
-
-```env
-VITE_SHIPATON_SCHOOL_DEMO=1   # launch on the licence screen (in a browser, ?school=1 does the same)
-VITE_SHIPATON_CHILD_DEMO=1    # the Child card opens the local demo child, not pairing + Supabase
-```
-
-The demo surfaces (tutor, child, family) run on fabricated local data and need
-no Supabase project. The licence step itself uses RevenueCat's Test Store, so
-it needs the `VITE_REVENUECAT_*` values above. Without
-`VITE_SHIPATON_CHILD_DEMO`, the Child card follows the real flow (pairing +
-Supabase).
-
-Then:
-
-```bash
-npm run build
-npx cap sync android
-```
-
-On Windows:
-
-```bash
-cd android
-.\gradlew.bat assembleDebug
-```
-
-The APK is generated at:
-
-```text
-apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
 ## Team
