@@ -1,215 +1,218 @@
-# Cognita Hub — direção de produto
+# Cognita Hub — product direction
 
-Este documento registra o que já está **decidido** sobre a direção do produto.
+This document records what has already been **decided** about the product
+direction.
 
-Ele não é lugar de pensamento em aberto — isso vive no vault "Central".
-Ele não é lugar de decisão com contexto e alternativas — isso vive em
+It is not a place for open thinking — that lives in the "Central" vault.
+It is not a place for decisions with context and alternatives — those live in
 `docs/decisions/`.
 
-## Como ler este documento junto com o código
+## How to read this document alongside the code
 
-`docs/PRODUCT.md` é fonte da verdade sobre a **intenção** do produto.
-O código é fonte da verdade sobre o **comportamento implementado hoje**.
+`docs/PRODUCT.md` is the source of truth for the **intent** of the product.
+The code is the source of truth for the **behavior implemented today**.
 
-Quando os dois discordam, **reporte a divergência**. Não reescreva a
-implementação para bater com este documento, a não ser que essa reconciliação
-seja a tarefa aprovada.
+When the two disagree, **report the divergence**. Do not rewrite the
+implementation to match this document, unless that reconciliation is the
+approved task.
 
-Divergência é informação. Silenciar uma, escolhendo o lado mais conveniente,
-é o único erro grave aqui.
+A divergence is information. Silencing one by choosing the more convenient side
+is the only serious mistake here.
 
-Última revisão: 19 de setembro de 2026.
+Last revised: September 19, 2026. English translation: October 1, 2026 —
+wording only; no decision was changed.
 
 ---
 
-## O que o Cognita é
+## What Cognita is
 
-Uma infraestrutura digital de apoio à **mediação humana** na aprendizagem de
-matemática de crianças com TEA, inicialmente de 5 a 9 anos.
+A digital infrastructure that supports the **human mediation** of early math
+learning for children with ASD (autism spectrum disorder, *TEA* in Portuguese),
+initially ages 5 to 9.
 
-O Cognita ajuda adultos a conhecer a criança, escolher ou adaptar experiências,
-mediar, observar, registrar e usar esse histórico para melhorar a experiência
-seguinte.
+Cognita helps adults get to know the child, choose or adapt experiences,
+mediate, observe, record, and use that history to improve the next experience.
 
-O ciclo central:
+The core cycle:
 
 ```
-CONHECER → ADAPTAR → MEDIAR → OBSERVAR → APRENDER ↺
+KNOW → ADAPT → MEDIATE → OBSERVE → LEARN ↺
 ```
 
-A tecnologia organiza esse ciclo. Ela não conduz o processo pedagógico e não
-substitui quem conhece, acompanha ou ensina a criança.
+Technology organizes this cycle. It does not lead the pedagogical process and
+does not replace those who know, accompany or teach the child.
 
-### A pergunta central do produto
+### The central question of the product
 
-> Como criar uma plataforma que ajude adultos a adaptar o ensino de matemática
-> para cada criança, sem fingir que um software consegue substituir o olhar
-> pedagógico de quem conhece aquela criança?
-
----
-
-## Quem participa
-
-**Criança** — centro do processo. A experiência se adapta a ela, não o
-contrário. Ela pode usar recursos digitais diretamente, mas **a experiência
-infantil não é autoensinável**: a mediação humana continua presente.
-
-**Responsável** — tem o conhecimento cotidiano que nenhuma plataforma
-substitui. Contribui com contexto e observações.
-
-**Mediador** — conduz a experiência. Pode ser tutor, professor, responsável ou
-outro profissional da educação. A arquitetura **não deve assumir** que só um
-tutor voluntário generalista exerce mediação. O Cognita não presume que esse
-adulto seja especialista clínico.
-
-**Equipe Cognita (C-FORCE)** — mantém a plataforma e impede que decisão técnica
-seja tomada sem considerar implicação pedagógica.
-
-**Especialistas e instituições** — validam a proposta. Existem para evitar que o
-Cognita seja construído só a partir de suposições da própria equipe.
+> How do we create a platform that helps adults adapt math teaching to each
+> child, without pretending that software can replace the pedagogical eye of
+> those who know that child?
 
 ---
 
-## Princípios decididos
+## Who takes part
 
-**Pessoa antes do diagnóstico.** TEA, idade e nível de suporte dão contexto.
-Nunca determinam atividade, dificuldade, formato, acessibilidade, estratégia ou
-progressão. Nenhuma lógica do tipo `TEA nível 2 → atividade X`.
+**Child** — the center of the process. The experience adapts to the child, not
+the other way around. The child can use digital resources directly, but **the
+child experience is not self-teaching**: human mediation remains present.
 
-**A decisão pedagógica permanece humana.** O sistema não conhece a criança
-melhor que quem convive e trabalha com ela.
+**Guardian** (*responsável*) — has the everyday knowledge that no platform can
+replace. Contributes context and observations.
 
-**Atividade é proposta, não receita.** Ela carrega habilidade/objetivo,
-materiais, sugestão de condução, adaptações possíveis e o que observar — e o
-mediador adapta.
+**Mediator** — conducts the experience. May be a tutor, a teacher, a guardian
+or another education professional. The architecture **must not assume** that
+only a generalist volunteer tutor mediates. Cognita does not presume that this
+adult is a clinical specialist.
 
-**Template responde "como esta habilidade pode ser trabalhada?"** — nunca "como
-uma criança com perfil X deve aprender?".
+**Cognita team (C-FORCE)** — maintains the platform and prevents a technical
+decision from being made without considering its pedagogical implications.
 
-**Duas interfaces distintas.** Instrução para o adulto e instrução para a
-criança não se confundem.
-
-**Progresso não é acerto sobre total.** Acompanha-se habilidade + contexto +
-nível de apoio + observação + evolução no tempo. Evitar falsa precisão
-pedagógica.
-
-**Acessibilidade é configurável e individual.** Um recurso que ajuda uma criança
-pode atrapalhar outra. Mais recursos ≠ mais acessibilidade.
-
-**Feedback humano é dado estrutural**, não campo de comentário decorativo.
-
-**Registro de sessão em três níveis é requisito de segurança**: dado
-estruturado, devolutiva guiada para a família, e nota interna do tutor que a
-família nunca vê. Sem essa separação, nota crua do tutor chegaria à família.
-
-**Linguagem nunca generaliza.** Prefira "esta criança demonstrou responder
-melhor a X nesta experiência" a "crianças autistas aprendem melhor com X".
-Prefira "você pode experimentar…" a "esta criança deve…".
-
-**Identidade de marca ≠ personalização da experiência.** O maracajá representa o
-projeto, nunca características de crianças com TEA. Que ele sirva para uma
-criança específica é hipótese de design.
+**Specialists and institutions** — validate the proposal. They exist so that
+Cognita is not built only from the assumptions of its own team.
 
 ---
 
-## O que o Cognita NÃO é
+## Decided principles
 
-- não substitui escola, professor ou instituição de ensino;
-- não substitui profissionais especializados;
-- não realiza avaliação clínica nem emite diagnóstico;
-- não é autoridade pedagógica autônoma;
-- não trata crianças com TEA como grupo homogêneo;
-- não reduz aprendizagem a acertos;
-- não oferece solução universal de acessibilidade;
-- não transforma automaticamente observação humana em decisão pedagógica.
+**Person before diagnosis.** ASD, age and support level provide context. They
+never determine the activity, difficulty, format, accessibility, strategy or
+progression. No logic of the type `ASD level 2 → activity X`.
 
-Fora de escopo técnico: marketplace, ranking público, gamificação competitiva.
+**The pedagogical decision stays human.** The system does not know the child
+better than those who live and work with them.
 
----
+**An activity is a proposal, not a recipe.** It carries a skill/objective,
+materials, a suggested way to conduct it, possible adaptations and what to
+observe — and the mediator adapts it.
 
-## Premissas aposentadas
+**A template answers "how can this skill be worked on?"** — never "how should a
+child with profile X learn?".
 
-Estas moldaram código que ainda existe. **Código coerente com elas é legado, não
-intenção.** Não estenda e não reescreva por conta própria — sinalize.
+**Two distinct interfaces.** Instructions for the adult and instructions for
+the child are not the same thing.
 
-**"A biblioteca é o especialista embutido que sabe o que é seguro para cada
-criança."**
-Morreu porque aumentar a quantidade de templates não resolve personalização —
-continua sendo uma tentativa de antecipar todas as formas de uma criança
-aprender, e isso um software sozinho não faz. A biblioteca segue importante,
-com outro papel: ponto de partida para o mediador.
+**Progress is not correct answers over total.** Progress tracks skill + context
++ level of support + observation + evolution over time. Avoid false pedagogical
+precision.
 
-**Progresso como porcentagem de acerto.**
-Morreu porque `8/10` não diz se a criança fez sozinha, após demonstração, com
-apoio verbal, com objeto físico, ou só naquele contexto.
+**Accessibility is configurable and individual.** A feature that helps one
+child can hinder another. More features ≠ more accessibility.
 
-**Um "modo acessível" único.**
-Morreu porque narração, som, animação e densidade visual ajudam uma criança e
-atrapalham outra.
+**Human feedback is structural data**, not a decorative comment field.
 
-**A visão de fluxo autônomo** (`criança → atividade pronta → resposta →
-certo/errado → progresso → próxima`).
-Substituída pelo ciclo de mediação descrito no topo.
+**A three-level session record is a safety requirement**: structured data,
+guided feedback for the family, and an internal tutor note that the family never
+sees. Without this separation, the tutor's raw note would reach the family.
 
----
+**Language never generalizes.** Prefer "this child responded better to X in this
+experience" over "autistic children learn better with X". Prefer "you can try…"
+over "this child must…".
 
-## Perguntas em aberto — não viram código
-
-Estas ainda não têm resposta validada. Se uma tarefa depende de uma delas,
-**pare e identifique a decisão** em vez de escolher uma silenciosamente.
-
-- Qual é a melhor forma de representar uma habilidade? Quem pode marcar uma
-  habilidade como adquirida?
-- Como registrar nível de apoio sem criar falsa precisão? A escala hipotética
-  (não observado / com apoio / parcial / independente / em outro contexto)
-  ainda **não** foi validada por profissionais.
-- Como diferenciar observação de avaliação formal?
-- Quais campos do perfil realmente ajudam o mediador? Como representar
-  comunicação verbal e não verbal, leitura e compreensão, sem simplificar
-  demais?
-- Quanto feedback pedir sem tornar a sessão burocrática? O feedback do mediador
-  fica no histórico, gera sugestão, altera perfil, influencia recomendação, ou
-  exige revisão? **Automação é a opção de maior risco e não está decidida.**
-- Como configurar acessibilidade sem criar interface impossível de usar?
-- O Cognita deve ter editor de atividades? Atividades podem ser compartilhadas
-  entre educadores? Como fazer curadoria?
-- Como trabalhar regulação/autorregulação com responsabilidade?
-- Que informações cada papel pode visualizar? Quais dados **nunca** devem ser
-  usados para inferência automática?
-- **Como funciona o contato entre mediador e família?** A regra anterior era
-  "contato tutor–família é sempre mediado pela equipe". Ela vem da visão
-  pré-Ruaké e entrou em tensão com a definição atual de mediador — se o
-  responsável pode ser o mediador, a regra já não descreve o mesmo mundo.
-  Precisa de decisão explícita antes de voltar a valer como princípio.
+**Brand identity ≠ experience personalization.** The maracajá (margay wildcat)
+mascot represents the project, never characteristics of children with ASD.
+Whether it works for a specific child is a design hypothesis.
 
 ---
 
-## Regra de desenvolvimento
+## What Cognita is NOT
+
+- does not replace school, teachers or educational institutions;
+- does not replace specialized professionals;
+- does not perform clinical assessment or issue diagnoses;
+- is not an autonomous pedagogical authority;
+- does not treat children with ASD as a homogeneous group;
+- does not reduce learning to correct answers;
+- does not offer a universal accessibility solution;
+- does not automatically turn human observation into a pedagogical decision.
+
+Out of technical scope: marketplace, public ranking, competitive gamification.
+
+---
+
+## Retired premises
+
+These shaped code that still exists. **Code consistent with them is legacy, not
+intent.** Do not extend it and do not rewrite it on your own — flag it.
+
+**"The activity library is the embedded expert that knows what is safe for each
+child."**
+It died because growing the number of templates does not solve personalization —
+it is still an attempt to anticipate every way a child may learn, and software
+alone cannot do that. The library remains important, with a different role: a
+starting point for the mediator.
+
+**Progress as a percentage of correct answers.**
+It died because `8/10` does not say whether the child did it alone, after a
+demonstration, with verbal support, with a physical object, or only in that
+context.
+
+**A single "accessible mode".**
+It died because narration, sound, animation and visual density help one child
+and hinder another.
+
+**The autonomous-flow vision** (`child → ready-made activity → answer →
+right/wrong → progress → next`).
+Replaced by the mediation cycle described at the top.
+
+---
+
+## Open questions — they do not become code
+
+These do not yet have a validated answer. If a task depends on one of them,
+**stop and name the decision** instead of silently choosing.
+
+- What is the best way to represent a skill? Who may mark a skill as acquired?
+- How do we record the level of support without creating false precision? The
+  hypothetical scale (not observed / with support / partial / independent / in
+  another context) has **not** yet been validated by professionals.
+- How do we distinguish observation from formal assessment?
+- Which profile fields really help the mediator? How do we represent verbal and
+  non-verbal communication, reading and comprehension, without oversimplifying?
+- How much feedback should we ask for without making the session bureaucratic?
+  Does the mediator's feedback stay in the history, generate a suggestion,
+  change the profile, influence a recommendation, or require review?
+  **Automation is the highest-risk option and is not decided.**
+- How do we configure accessibility without creating an unusable interface?
+- Should Cognita have an activity editor? Can activities be shared among
+  educators? How do we curate them?
+- How do we work with regulation/self-regulation responsibly?
+- What information can each role see? Which data should **never** be used for
+  automatic inference?
+- **How does contact between the mediator and the family work?** The previous
+  rule was "tutor–family contact is always mediated by the team". It comes from
+  the pre-Ruaké vision and came into tension with the current definition of
+  mediator — if the guardian can be the mediator, the rule no longer describes
+  the same world. It needs an explicit decision before it applies again as a
+  principle.
+
+---
+
+## Development rule
 
 ```
-RELATO / EVIDÊNCIA → APRENDIZADO → HIPÓTESE → VALIDAÇÃO
-→ REQUISITO → DESIGN → IMPLEMENTAÇÃO
+REPORT / EVIDENCE → LEARNING → HYPOTHESIS → VALIDATION
+→ REQUIREMENT → DESIGN → IMPLEMENTATION
 ```
 
-Nada ouvido de pesquisador, professor, usuário ou referência vira código
-diretamente. **A capacidade técnica de implementar uma feature não é evidência
-de que ela deva existir.**
+Nothing heard from a researcher, teacher, user or reference becomes code
+directly. **The technical ability to implement a feature is not evidence that it
+should exist.**
 
-Referências em estudo (AFIRM, "Um olhar sobre mim", JClic, Numberblocks,
-geoplano, CrossMath) são referências. Não são requisitos nem checklist de
-implementação.
+References under study (AFIRM, "Um olhar sobre mim", JClic, Numberblocks,
+geoboard, CrossMath) are references. They are not requirements or an
+implementation checklist.
 
 ---
 
-## Como este documento muda
+## How this document changes
 
-Uma linha entra aqui quando a decisão está tomada. Enquanto está em discussão,
-vive no vault. Enquanto está em tensão com outra decisão, vive na seção de
-perguntas em aberto.
+A line enters here when the decision is made. While it is under discussion, it
+lives in the vault. While it is in tension with another decision, it lives in
+the open questions section.
 
-Uma decisão com contexto, alternativas consideradas e consequência ganha um
-arquivo em `docs/decisions/` — e aqui fica só a regra resultante.
+A decision with context, alternatives considered and consequences gets a file in
+`docs/decisions/` — and only the resulting rule stays here.
 
-Quando uma premissa é aposentada, ela **não é apagada**: vai para a seção de
-premissas aposentadas com o motivo. O motivo é o que impede alguém de
-reintroduzi-la seis meses depois.
+When a premise is retired, it **is not erased**: it goes to the retired premises
+section with the reason. The reason is what prevents someone from reintroducing
+it six months later.

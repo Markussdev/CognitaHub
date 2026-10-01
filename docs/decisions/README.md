@@ -1,87 +1,87 @@
-# Decisões
+# Decisions
 
-Uma decisão por arquivo. O registro existe para que ninguém — inclusive você
-daqui a seis meses, inclusive um agente lendo o código — precise redescobrir
-por que algo é do jeito que é.
+One decision per file. The record exists so that nobody — including you six
+months from now, including an agent reading the code — has to rediscover why
+something is the way it is.
 
-## Quando escrever uma
+## When to write one
 
-Escreva quando a decisão:
+Write one when the decision:
 
-- fecha uma alternativa que alguém razoavelmente escolheria;
-- será questionada no futuro ("por que não usaram X?");
-- aposenta uma premissa anterior;
-- custa caro para reverter.
+- closes an alternative that someone could reasonably choose;
+- will be questioned in the future ("why didn't they use X?");
+- retires an earlier premise;
+- is expensive to reverse.
 
-Não escreva para escolha óbvia, detalhe de implementação ou preferência de
-estilo.
+Do not write one for an obvious choice, an implementation detail or a style
+preference.
 
-Regra prática: se a resposta a "por que não do outro jeito?" for longa, vira
-arquivo.
+Rule of thumb: if the answer to "why not the other way?" is long, it becomes a
+file.
 
-## Nome do arquivo
+## File name
 
 ```
-NNNN-frase-curta-em-minusculas.md
+NNNN-short-phrase-in-lowercase.md
 ```
 
-Numeração sequencial, sem reuso. `0003-sem-webrtc-embutido.md`.
+Sequential numbering, never reused. `0003-no-embedded-webrtc.md`.
 
-## Formato
+## Format
 
 ```markdown
-# NNNN — Título
+# NNNN — Title
 
-**Data:** AAAA-MM-DD
-**Status:** aceita | substituída por NNNN | revertida
+**Date:** YYYY-MM-DD
+**Status:** accepted | superseded by NNNN | reverted
 
-## Contexto
-O que estava acontecendo. Que restrição existia. O que a gente sabia — e
-o que não sabia — naquele momento.
+## Context
+What was happening. What constraint existed. What we knew — and what we did not
+know — at that moment.
 
-## Alternativas consideradas
-Cada uma com o motivo real de não ter sido escolhida. Alternativa listada
-sem motivo não conta.
+## Alternatives considered
+Each one with the real reason it was not chosen. An alternative listed without a
+reason does not count.
 
-## Decisão
-O que foi decidido, em uma ou duas frases.
+## Decision
+What was decided, in one or two sentences.
 
-## Consequências
-O que isso torna mais fácil. O que torna mais difícil. O que passa a ser
-proibido. O que vai ter que ser revisitado, e sob qual condição.
+## Consequences
+What this makes easier. What it makes harder. What becomes forbidden. What will
+have to be revisited, and under which condition.
 ```
 
-## Regras
+## Rules
 
-**Arquivo aceito não se edita.** Se a decisão muda, escreve outra e marca a
-antiga como `substituída por NNNN`. Reescrever o passado apaga o motivo, que é
-a única coisa que importa aqui.
+**An accepted file is not edited.** If the decision changes, write another one and
+mark the old one `superseded by NNNN`. Rewriting the past erases the reason, which
+is the only thing that matters here.
 
-**Agente não altera decisão existente.** Pode propor uma nova; alterar as
-antigas é trabalho do Marcus.
+**An agent does not change an existing decision.** It may propose a new one;
+changing the old ones is Marcus's job.
 
-**A regra resultante vai para `docs/PRODUCT.md`.** Aqui fica o raciocínio; lá
-fica o que vale como regra. Sem duplicar — lá a regra, aqui o porquê.
+**The resulting rule goes to `docs/PRODUCT.md`.** The reasoning stays here; what
+counts as a rule lives there. No duplication — the rule there, the why here.
 
-## Primeiras a escrever
+## First ones to write
 
-Duas já existem como decisão tomada e ainda não registrada:
+Two already exist as a decision made but not yet recorded:
 
-- **por que a adaptação não é automatizada** — por que o Cognita não infere
-  experiência a partir de perfil, e o que isso fecha
-- **por que a biblioteca deixou de ser "o especialista embutido"** — a premissa
-  aposentada depois da Ruaké, e o que entrou no lugar
+- **why adaptation is not automated** — why Cognita does not infer an experience
+  from a profile, and what that closes
+- **why the library stopped being "the embedded expert"** — the premise retired
+  after Ruaké, and what took its place
 
-Uma terceira, mais antiga e igualmente fácil de questionar:
+A third, older and just as easy to question:
 
-- **por que não há videochamada embutida** — WebRTC foi rejeitado por risco de
-  escopo, segurança infantil e proteção de dados; o caminho é um campo de link
-  de sessão apontando para serviço externo
+- **why there is no embedded video call** — WebRTC was rejected because of scope
+  risk, child safety and data protection; the path is a session link field
+  pointing to an external service
 
-E uma quarta, que **ainda não é decisão** — está em aberto e precisa ser
-resolvida antes de virar ADR:
+And a fourth, which **is not yet a decision** — it is open and needs to be
+resolved before becoming an ADR:
 
-- **como funciona o contato entre mediador e família** — a regra antiga
-  ("contato tutor–família é sempre mediado pela equipe") entrou em tensão com
-  a definição pós-Ruaké de mediador, que inclui o próprio responsável. Está
-  listada em "Perguntas em aberto" no `docs/PRODUCT.md` até ser decidida.
+- **how contact between the mediator and the family works** — the old rule
+  ("tutor–family contact is always mediated by the team") came into tension with
+  the post-Ruaké definition of mediator, which includes the guardian. It is
+  listed under "Open questions" in `docs/PRODUCT.md` until it is decided.

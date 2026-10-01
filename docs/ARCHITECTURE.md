@@ -1,135 +1,215 @@
-# Arquitetura — Cognita Hub
+# Architecture — Cognita Hub
 
-Última revisão: 30 de setembro de 2026.
+Last revised: October 1, 2026.
 
-## Visão geral
+## Overview
 
-O Cognita Hub possui três partes principais:
+Cognita Hub has four main parts:
 
-1. Hub web para responsáveis, tutores e administração.
-2. Experiência infantil para realizar missões e acompanhar a jornada.
-3. Backend compartilhado no Supabase.
+1. A web hub for guardians, tutors and administration.
+2. The child experience, which exists in two places: the Android app
+   (`apps/mobile`) and a web child shell used by the hub for previews and tests.
+3. The Cognita for Schools demo, inside the Android app, running on fabricated
+   local data (no backend).
+4. A shared backend on Supabase.
 
 ```mermaid
 flowchart LR
-    WEB[Hub web] --> API[Supabase Data API e RPCs]
-    CHILD[Experiência infantil] --> API
+    WEB[Web hub] --> API[Supabase Data API and RPCs]
+    WEBCHILD[Web child shell] --> API
+    ANDROID[Android child app] --> API
+    ANDROID --> RC[RevenueCat Test Store - school licence prototype only]
+    SCHOOLS[Cognita for Schools demo - local data] -. inside .-> ANDROID
     API --> AUTH[Supabase Auth]
     API --> DB[(PostgreSQL + RLS)]
     WEB --> STORAGE[Supabase Storage]
 ```
 
-O frontend é uma aplicação multipágina. Cada arquivo HTML é uma entrada do Vite e carrega módulos JavaScript responsáveis pela interface e pelo acesso aos dados.
+The web frontend is a multi-page application. Each HTML file is a Vite entry that
+loads the JavaScript modules responsible for the interface and for data access.
+The Android app is a separate single-page package with no framework router.
 
 ## Stack
 
-Frontend:
+Frontend (web):
 
 - HTML5;
 - CSS3;
-- JavaScript com ES Modules;
+- JavaScript with ES Modules;
 - Vite.
+
+Android app (`apps/mobile`):
+
+- Vanilla JavaScript with ES Modules and Vite;
+- Capacitor 8 (Android);
+- the RevenueCat Purchases plugin (school licence prototype);
+- Lucide icons.
 
 Backend:
 
 - Supabase Auth;
 - PostgreSQL;
 - Row Level Security (RLS);
-- funções PostgreSQL expostas como RPC;
+- PostgreSQL functions exposed as RPC;
 - Supabase Storage.
 
-Proteção complementar:
+Complementary protection:
 
-- Cloudflare Turnstile para a criação de sessões anônimas no fluxo infantil.
+- Cloudflare Turnstile for creating anonymous sessions in the **web** child flow
+  (`js/pages/app-crianca.js`, `js/lib/turnstile.js`). The Android app has no
+  Turnstile code and signs in anonymously without a CAPTCHA token. If CAPTCHA
+  protection is enabled for anonymous sign-ins in the Supabase project, this must
+  be checked against the live configuration — it is not verified here.
 
-## Estrutura principal
+## Main structure
 
 ```text
 cognita-hub/
-├── apps/mobile/        # app Android (Capacitor): experiência infantil e demo Cognita for Schools — artefato submetido ao Shipaton
-├── css/                # estilos do hub web
-│   └── tutor/          # painel do tutor: um arquivo por área (a ordem dos <link> é a ordem da cascata)
+├── apps/mobile/        # Android app (Capacitor): child experience, device pairing, school licence prototype and the Cognita for Schools demo — the Shipaton artifact
+│   └── src/
+│       ├── activities/ # molds and dispatch by activity.molde (contar, identificar)
+│       ├── components/ # small UI pieces
+│       ├── config/     # local configuration (avatars, module visuals)
+│       ├── demo/       # Cognita for Schools demo on local data: school overview, student hub, tutor, child, family
+│       ├── screens/    # rendering and callbacks
+│       ├── services/   # the mobile boundary to Supabase (and RevenueCat)
+│       ├── styles/     # CSS imported by the modules
+│       └── utils/
+├── css/                # web hub styles
+│   └── tutor/          # tutor panel: one file per area (the <link> order is the cascade order)
 ├── js/
-│   ├── components/     # componentes compartilhados
-│   ├── data/           # consultas, comandos e RPCs do Supabase
-│   ├── lib/            # autenticação, cliente Supabase e utilitários
-│   └── pages/          # controladores das páginas
-│       └── tutor/      # painel do tutor: um módulo por comportamento (index.js compõe)
-├── pages/              # entradas HTML do Vite
-├── public/             # assets do hub web, servidos em /assets/ sem transformação
-├── docs/               # arquitetura, banco e roadmap
-├── index.html          # página pública inicial
-└── vite.config.js      # entradas do build multipágina
+│   ├── components/     # shared components
+│   ├── data/           # Supabase queries, commands and RPCs
+│   ├── lib/            # authentication, Supabase client and utilities
+│   └── pages/          # page controllers
+│       └── tutor/      # tutor panel: one module per behavior (index.js composes them)
+├── pages/              # Vite HTML entries (web hub)
+├── public/             # web hub assets, served at /assets/ without transformation
+├── assets/             # README and submission media
+├── docs/               # product, architecture, database, mobile and roadmap
+├── index.html          # public landing page
+└── vite.config.js      # entries of the multi-page web build
 ```
 
-O hub web (`pages/`, `js/`, `css/`) e o app em `apps/mobile/` são pacotes independentes: o `npm run build` da raiz compila só o hub web.
+The web hub (`pages/`, `js/`, `css/`) and the app in `apps/mobile/` are
+independent packages: the root `npm run build` compiles only the web hub, and a
+Vite build of either package does not validate an Android APK.
 
-### Responsabilidades das camadas
+### Responsibilities of the layers
 
-- `pages/` define a estrutura de cada tela.
-- `js/pages/` coordena estado, eventos e renderização de cada tela. O painel do tutor (`js/pages/tutor.js`) é só a entrada; a lógica está em `js/pages/tutor/`, com o estado compartilhado em `tutor/state.js`.
-- `js/components/` concentra componentes reutilizáveis do hub.
-- `js/data/` é a fronteira principal entre o hub e o Supabase.
-- `js/lib/` reúne infraestrutura compartilhada, incluindo autenticação.
-- `apps/mobile/src/` concentra serviços, telas, atividades e assets da experiência infantil modular.
+- `pages/` defines the structure of each web screen.
+- `js/pages/` coordinates state, events and rendering for each web screen. The
+  tutor panel (`js/pages/tutor.js`) is only the entry point; the logic lives in
+  `js/pages/tutor/`, with shared state in `tutor/state.js`.
+- `js/components/` holds the reusable components of the hub.
+- `js/data/` is the main boundary between the hub and Supabase.
+- `js/lib/` gathers shared infrastructure, including authentication.
+- `apps/mobile/src/app.js` orchestrates the connected child flow; there is no
+  router, and `screen`/`openModule` exist so that the Android back button knows
+  what to do.
+- `apps/mobile/src/screens/`, `activities/` and `services/` hold the child
+  screens, the molds and the mobile boundary to Supabase.
+- `apps/mobile/src/demo/` is local only: it never calls Supabase.
 
-## Identidades e papéis
+### Two child implementations
 
-| Papel | Responsabilidade | Autenticação |
+Child-facing code exists in two places, and **both are active**:
+
+- the Android app (`apps/mobile/src/`);
+- the web child shell (`js/pages/app-crianca.js` and `js/pages/modo-crianca.js`),
+  which the tutor panel opens for previews, tests and demo links.
+
+They share no code. The molds `contar` and `identificar` are implemented twice
+(`js/pages/moldes/` for the web, `apps/mobile/src/activities/` for Android), and
+the mobile app does not import `js/data/moldes-registro.js`. Do not assume the two
+are synchronized, and do not propagate a change from one to the other only for
+consistency. Consolidation is tracked in the [ROADMAP](./ROADMAP.md).
+
+`js/data/moldes-registro.js` is the single source of truth for what each mold is
+on the web side. It is consumed by the tutor activity wizard, the tutor activity
+and session screens, the journey builder, the plan component and the web child
+shell, so check its consumers before changing it.
+
+## Identities and roles
+
+| Role | Responsibility | Authentication |
 |---|---|---|
-| `guardian` | Responsável pela criança | E-mail e senha |
-| `tutor` | Tutor voluntário validado pela equipe | E-mail e senha |
-| `admin` | Equipe Cognita | E-mail e senha; papel atribuído de forma administrativa |
-| `child_device` | Identidade técnica de um dispositivo infantil | Usuário anônimo do Supabase |
+| `guardian` | Guardian of the child | Email and password |
+| `tutor` | Volunteer tutor validated by the team | Email and password |
+| `admin` | Cognita team | Email and password; role assigned administratively |
+| `child_device` | Technical identity of a child's device | Anonymous Supabase user |
 
-`auth.users` mantém a identidade de autenticação e `profiles` mantém o papel e o estado usados pela aplicação. Para usuários anônimos, o trigger de criação de perfil define `role = child_device` e `status = active`.
+`auth.users` holds the authentication identity and `profiles` holds the role and
+status used by the application. For anonymous users, the profile-creation trigger
+sets `role = child_device` and `status = active`.
 
-Um usuário anônimo do Supabase assume o papel PostgreSQL `authenticated`; por isso, a autorização infantil não pode depender apenas desse papel. Ela também verifica a identidade anônima, o perfil `child_device` e o vínculo ativo em `paired_devices`.
+An anonymous Supabase user takes the PostgreSQL role `authenticated`; therefore
+child authorization cannot depend on that role alone. It also checks the
+anonymous identity, the `child_device` profile and the active link in
+`paired_devices`.
 
-## Fluxo adulto
-
-```mermaid
-flowchart TD
-    A[Responsável cria a conta e cadastra a criança] --> B[Tutor envia seu cadastro]
-    B --> C[Admin analisa e aprova o tutor]
-    C --> D[Admin realiza o match]
-    D --> E[Ciclo de acompanhamento é criado]
-    E --> F[Tutor prepara trilha e registra sessões]
-    F --> G[Criança realiza atividades]
-    G --> H[Responsável acompanha a evolução]
-```
-
-Responsáveis e tutores entram com e-mail e senha. As páginas protegidas recuperam o perfil no banco, verificam papel e estado e redirecionam acessos incompatíveis.
-
-## Fluxo infantil
+## Adult flow
 
 ```mermaid
 flowchart TD
-    A[Aplicação infantil abre] --> B[Reutiliza ou cria usuário anônimo]
-    B --> C[Dispositivo recebe perfil child_device ativo]
-    C --> D[Código de pareamento é informado]
-    D --> E[RPC associa o dispositivo à criança]
-    E --> F[Contexto pareado é carregado]
-    F --> G[Criança acessa módulos e missões]
-    G --> H[Execuções e progresso são enviados ao backend]
+    A[Guardian creates the account and registers the child] --> B[Tutor submits an application]
+    B --> C[Admin reviews and approves the tutor]
+    C --> D[Admin performs the match]
+    D --> E[Support cycle is created]
+    E --> F[Tutor prepares the trail and records sessions]
+    F --> G[Child performs activities]
+    G --> H[Guardian follows the evolution]
 ```
 
-A sessão anônima é persistida no navegador para evitar a criação de um usuário novo a cada tentativa. O pareamento pode ser revogado pela família ou removido no próprio dispositivo sem apagar a criança.
+Guardians and tutors sign in with email and password. Protected pages fetch the
+profile from the database, check role and status, and redirect incompatible
+access.
 
-## Autorização
+## Child flow
 
-O frontend nunca é a fonte de autoridade para permissões. Ele melhora a navegação, mas as decisões de acesso pertencem ao banco e combinam:
+```mermaid
+flowchart TD
+    A[Child app opens] --> B[Reuses or creates an anonymous user]
+    B --> C[Device receives an active child_device profile]
+    C --> D[Pairing code is entered]
+    D --> E[RPC links the device to the child]
+    E --> F[Paired context is loaded]
+    F --> G[Child accesses modules and missions]
+    G --> H[Executions and progress are sent to the backend]
+```
 
-- `profiles.role` e `profiles.status`;
-- relações entre responsáveis, tutores, crianças e ciclos;
-- vínculo ativo em `paired_devices`;
-- políticas RLS;
-- funções PostgreSQL com validações próprias.
+The anonymous session is persisted on the device to avoid creating a new user on
+every attempt (the Android app uses the storage key
+`cognita-mobile-child-auth-v1`, separate from the web adult session). Pairing can
+be revoked by the family or removed on the device itself without deleting the
+child.
 
-Metadados editáveis pelo usuário não devem ser usados diretamente como fonte de autorização. O cadastro público só pode originar `guardian` ou `tutor`; `admin` não é concedido pelo frontend.
+The planned immediate entry (trying an activity without a session or pairing) is
+described in [MOBILE.md](./MOBILE.md); it is not implemented yet. Today the
+Android app signs in anonymously and queries the pairing as soon as it opens.
 
-## Banco e evolução do schema
+## Authorization
 
-O schema em produção é atualmente a fonte de verdade. Os antigos scripts executados manualmente foram removidos de `docs/` porque não formavam uma sequência reproduzível de migrations.
+The frontend is never the source of authority. It improves navigation, but access
+decisions belong to the database and combine:
 
-Enquanto não existir uma baseline versionada em `supabase/migrations/`, mudanças no banco devem ser conferidas diretamente no projeto Supabase e refletidas em [DATABASE.md](./DATABASE.md). A criação da baseline está registrada no [ROADMAP.md](./ROADMAP.md).
+- `profiles.role` and `profiles.status`;
+- relationships between guardians, tutors, children and cycles;
+- the active link in `paired_devices`;
+- RLS policies;
+- PostgreSQL functions with their own validations.
+
+User-editable metadata must not be used directly as a source of authorization.
+Public signup can only produce `guardian` or `tutor`; `admin` is not granted by
+the frontend.
+
+## Database and schema evolution
+
+The production schema is currently the source of truth. The old manually executed
+scripts were removed from `docs/` because they did not form a reproducible
+sequence of migrations.
+
+Until a versioned baseline exists in `supabase/migrations/`, database changes must
+be checked directly against the Supabase project and reflected in
+[DATABASE.md](./DATABASE.md). Creating the baseline is recorded in the
+[ROADMAP](./ROADMAP.md).

@@ -1,51 +1,75 @@
 # Roadmap — Cognita Hub
 
-Última revisão: 3 de setembro de 2026.
+Last revised: October 1, 2026.
 
-## Estado atual
+## Current state
 
-### Implementado
+### Implemented
 
-- autenticação de responsável e tutor;
-- confirmação de e-mail e controle de acesso por papel;
-- cadastro de crianças e perfil de aprendizagem;
-- candidatura e aprovação de tutores;
-- painel administrativo;
-- match entre tutor e criança;
-- ciclos de acompanhamento;
-- registro de sessões e execuções;
-- catálogo e preparação de atividades;
-- trilhas e jornadas personalizadas;
-- progresso por módulos e missões;
-- experiência infantil;
-- autenticação anônima infantil;
-- pareamento e revogação de dispositivos;
-- personalização de nome e avatar infantil;
-- documentos e aceites legais.
+- guardian and tutor authentication;
+- email confirmation and role-based access control;
+- child registration and learning profile;
+- tutor application and approval;
+- admin panel;
+- tutor–child matching;
+- support cycles;
+- session and execution records;
+- activity catalog and preparation;
+- personalized trails and journeys;
+- progress by modules and missions;
+- child experience (web shell and Android app);
+- anonymous child authentication;
+- device pairing and revocation;
+- child name and avatar personalization;
+- legal documents and acceptances;
+- configurable experience settings on Android (reduced motion, large text);
+- RevenueCat Test Store prototype for an institutional licence (Android only; demo
+  pricing, no real revenue);
+- Cognita for Schools demo on fabricated local data: school overview, tutor,
+  child and family surfaces (no backend).
 
-## Prioridades atuais
+### Planned, not implemented
 
-1. Estabilizar e consolidar o fluxo infantil.
-2. Melhorar a experiência visual e a clareza da jornada.
-3. Validar o uso real com crianças, responsáveis e tutores.
-4. Melhorar métricas e visualização de progresso.
-5. Reduzir dívida técnica antes de ampliar o escopo.
+- Immediate entry in the Android app — trying an activity without a session or
+  pairing (see [MOBILE.md](./MOBILE.md)).
 
-## Dívida técnica
+## Current priorities
 
-- criar uma baseline reproduzível em `supabase/migrations/`;
-- revisar e remover RPCs antigas quando não houver mais consumidores;
-- auditar políticas RLS e permissões `EXECUTE` de funções `SECURITY DEFINER`;
-- consolidar implementações paralelas da experiência infantil;
-- remover comentários e código legado remanescentes;
-- adicionar testes dos fluxos críticos de autenticação, pareamento e progresso;
-- manter README e os três documentos de referência sincronizados com o produto.
+1. Stabilize and consolidate the child flow.
+2. Improve the visual experience and the clarity of the journey.
+3. Validate real use with children, guardians and tutors.
+4. Improve metrics and progress visualization.
+5. Reduce technical debt before widening the scope.
 
-## Fora do escopo atual
+## Technical debt
 
-- diagnóstico clínico;
+- create a reproducible baseline in `supabase/migrations/`;
+- review and remove old RPCs when there are no consumers left;
+- audit RLS policies and `EXECUTE` permissions of `SECURITY DEFINER` functions;
+- consolidate the parallel implementations of the child experience (the web child
+  shell and the Android app both exist and are both active; the molds are
+  implemented twice);
+- remove remaining legacy comments and code (for example the temporary
+  `trail-preview` harness in the Android package);
+- add tests for the critical authentication, pairing and progress flows (neither
+  the root package nor `apps/mobile` defines a test script today);
+- keep the README and the reference documents in sync with the product;
+- Android app: the privacy policy URL is still empty
+  (`screens/guardian-settings.js`), and Google Play requires the policy to be
+  reachable from the app;
+- Android app: confirm whether Supabase Auth CAPTCHA protection applies to
+  anonymous sign-ins — the web child flow sends a Turnstile token, the Android app
+  does not;
+- the `docs/decisions/MOBILE.md` file is an outdated copy of an earlier
+  `docs/MOBILE.md` and does not follow the `NNNN-` decision format; decide whether
+  to remove it.
+
+## Out of the current scope
+
+- clinical diagnosis;
 - marketplace;
-- ranking público;
-- gamificação competitiva.
+- public ranking;
+- competitive gamification.
 
-Este arquivo registra apenas o estado e as prioridades atuais. O histórico de decisões permanece no Git.
+This file records only the current state and priorities. The history of decisions
+stays in Git.

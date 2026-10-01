@@ -1,41 +1,48 @@
-# Banco de Dados — Cognita Hub
+# Database — Cognita Hub
 
-Última verificação no projeto Supabase de produção: 3 de setembro de 2026.
+Last verification against the production Supabase project: September 3, 2026.
+The October 1, 2026 update translated this document and added the section on what
+the Android app uses (taken from the code); **the database itself was not
+re-checked**, so treat every figure below as a lead to verify.
 
-O banco oficial do Cognita Hub é PostgreSQL por meio do Supabase. O schema em produção é atualmente a fonte de verdade.
+Cognita Hub's official database is PostgreSQL through Supabase. The production
+schema is currently the source of truth.
 
-> O repositório ainda não possui uma baseline nem uma sequência confiável de migrations. Portanto, neste momento, clonar o projeto não é suficiente para reconstruir o banco.
+> The repository still has no baseline or reliable sequence of migrations.
+> Therefore, at this time, cloning the project is not enough to rebuild the
+> database.
 
-O schema `public` contém 26 tabelas, organizadas abaixo por domínio.
+The `public` schema contains 26 tables, organized below by domain.
 
-## Identidade
+## Identity
 
 - `profiles`
 - `tutor_applications`
 
-`auth.users` é gerenciado pelo Supabase. `profiles.id` corresponde ao identificador do usuário em `auth.users`.
+`auth.users` is managed by Supabase. `profiles.id` corresponds to the user
+identifier in `auth.users`.
 
-Papéis disponíveis em `profiles.role`:
+Roles available in `profiles.role`:
 
 - `guardian`;
 - `tutor`;
 - `admin`;
 - `child_device`.
 
-Estados disponíveis em `profiles.status`:
+States available in `profiles.status`:
 
 - `pending`;
 - `active`;
 - `inactive`.
 
-## Crianças e consentimentos
+## Children and consents
 
 - `children`
 - `learning_profiles`
 - `consents`
 - `consent_acceptances`
 
-## Acompanhamento
+## Follow-up
 
 - `matches`
 - `support_cycles`
@@ -44,16 +51,17 @@ Estados disponíveis em `profiles.status`:
 - `progress_logs`
 - `admin_notes`
 
-## Atividades
+## Activities
 
 - `activities`
 - `child_activities`
 - `atividade_execucao`
 - `skills`
 
-`activities` representa o catálogo; `child_activities` materializa uma atividade preparada para uma criança; `atividade_execucao` registra sua execução.
+`activities` is the catalog; `child_activities` materializes an activity prepared
+for a child; `atividade_execucao` records its execution.
 
-## Trilhas e jornadas
+## Trails and journeys
 
 - `trail_templates`
 - `trail_modules`
@@ -62,31 +70,37 @@ Estados disponíveis em `profiles.status`:
 - `child_trail_modules`
 - `child_trail_missions`
 
-As três primeiras tabelas definem modelos. As tabelas iniciadas por `child_` representam a instância atribuída à criança e seu estado de avanço.
+The first three tables define templates. The tables prefixed with `child_`
+represent the instance assigned to the child and its progress state.
 
-## Aplicação infantil
+## Child application
 
 - `child_pairing_codes`
 - `paired_devices`
 
-Um dispositivo infantil possui um usuário em `auth.users` com `is_anonymous = true` e um perfil com `role = child_device` e `status = active`. Para acessar o contexto de uma criança, precisa existir um vínculo ativo em `paired_devices`.
+A child device has a user in `auth.users` with `is_anonymous = true` and a profile
+with `role = child_device` and `status = active`. To access a child's context, an
+active link must exist in `paired_devices`.
 
-## Documentos legais
+## Legal documents
 
 - `legal_documents`
 - `legal_acceptances`
 
-## Funções importantes
+## Important functions
 
-### Identidade e autorização
+### Identity and authorization
 
-- `handle_new_user` — cria o perfil após a criação de um usuário;
-- `my_role`, `is_admin` e `current_user_is_admin` — consultam o contexto de autorização;
-- `is_guardian_of`, `is_tutor_of` e `is_paired_device_of` — verificam relações com uma criança;
-- `block_admin_signup` — impede a concessão pública do papel administrativo;
-- `can_guardian_read_tutor_avatar` e `can_read_trail_template` — verificações auxiliares de acesso.
+- `handle_new_user` — creates the profile after a user is created;
+- `my_role`, `is_admin` and `current_user_is_admin` — query the authorization
+  context;
+- `is_guardian_of`, `is_tutor_of` and `is_paired_device_of` — check
+  relationships with a child;
+- `block_admin_signup` — prevents the public granting of the admin role;
+- `can_guardian_read_tutor_avatar` and `can_read_trail_template` — auxiliary
+  access checks.
 
-### Pareamento
+### Pairing
 
 - `create_pairing_code`;
 - `claim_pairing_code`;
@@ -96,9 +110,10 @@ Um dispositivo infantil possui um usuário em `auth.users` com `is_anonymous = t
 - `get_paired_child_context_v2`;
 - `cleanup_unclaimed_anonymous_users`.
 
-O frontend infantil atual usa `get_paired_child_context_v2`. A versão sem sufixo permanece no banco por compatibilidade.
+The current child frontend uses `get_paired_child_context_v2`. The version without
+a suffix remains in the database for compatibility.
 
-### Trilhas e jornadas
+### Trails and journeys
 
 - `create_private_journey`;
 - `save_journey_draft`;
@@ -110,50 +125,97 @@ O frontend infantil atual usa `get_paired_child_context_v2`. A versão sem sufix
 - `advance_child_trail_on_execucao`;
 - `reopen_child_trail_mission`.
 
-O construtor atual usa `save_journey_draft_v2`. Funções sem o sufixo podem representar contratos mantidos para compatibilidade e devem ser revisadas antes de remoção.
+The current builder uses `save_journey_draft_v2`. Functions without the suffix may
+represent contracts kept for compatibility and must be reviewed before removal.
 
-### Sessões e família
+### Sessions and family
 
 - `create_session_with_execucoes`;
 - `get_family_sessions`;
 - `get_family_sessions_v2`;
 - `get_guardian_tutor_profiles`.
 
-O painel da família usa `get_family_sessions_v2`.
+The family panel uses `get_family_sessions_v2`.
 
-### Personalização, validação e documentos
+### Personalization, validation and documents
 
 - `set_child_personalization`;
 - `validate_child_birth_date`;
 - `validate_tutor_birth_date`;
 - `can_insert_legal_acceptance`.
 
+## Used by the Android app (read from the code, not from the live database)
+
+The Android app (`apps/mobile/src/services/`) is the only consumer listed here. It
+signs in anonymously and touches the following objects.
+
+RPCs:
+
+- `claim_pairing_code(p_code, p_device_name)` — links the device to a child;
+- `get_paired_child_context_v2()` — returns the paired context (zero rows for both
+  "never paired" and "revoked", so the app cannot tell them apart);
+- `unpair_current_device()` — revokes only the device's own active link;
+- `set_child_personalization(p_child_id, p_preferred_name, p_avatar_key)` — the
+  only way the app changes the child's name/avatar.
+
+Reads (`select`):
+
+- `child_trails` with `trail_templates (title, description)`;
+- `child_trail_modules` with `trail_modules (id, position, title, objective,
+  visual_key)`;
+- `child_trail_missions` with `mission_templates (id, position, title, molde,
+  emblema)` and `child_activities (id)`, filtered to `child_activities.status =
+  'ready'`;
+- `child_activities` (`id, child_id, molde, tema, config, instrucao, titulo,
+  child_trail_mission_id`) with the mission status.
+
+Writes:
+
+- `atividade_execucao` — **insert only** (`child_activity_id, child_id,
+  executed_by, molde, tema, nivel_final, precisou_mais_facil,
+  tempo_aproximado_segundos, como_encerrou`). The device has no permission to
+  read the row back, so the app does not use `.select()` after the insert.
+  `precisou_mais_facil` is currently always sent as `false` and `como_encerrou` as
+  `crianca_concluiu`.
+
+The avatar keys in `apps/mobile/src/config/child-avatars.js` (`astronauta`,
+`cientista`, `mago`, `pintor`) must match the check constraint on
+`children.avatar_key`; changing one side without the other breaks saving.
+
+The Cognita for Schools demo (`apps/mobile/src/demo/`) uses none of these: it runs
+on in-memory data and never calls Supabase.
+
 ## Storage
 
-O projeto possui dois buckets:
+The project has two buckets:
 
-- `profile-photos` — privado;
-- `email-assets` — público.
+- `profile-photos` — private;
+- `email-assets` — public.
 
-## Segurança
+## Security
 
-Todas as 26 tabelas do schema `public` estão com RLS habilitado. Isso não elimina a necessidade de revisar as políticas e as permissões das funções.
+All 26 tables in the `public` schema have RLS enabled. This does not remove the
+need to review the policies and the function permissions.
 
-Regras que devem continuar válidas:
+Rules that must remain valid:
 
-- nunca usar `raw_user_meta_data` diretamente para autorizar acesso;
-- nunca expor a chave `service_role` no frontend;
-- combinar o papel autenticado com relações de propriedade ou vínculo;
-- tratar funções `SECURITY DEFINER` como superfícies privilegiadas;
-- conceder `EXECUTE` somente aos papéis que realmente precisam da função.
+- never use `raw_user_meta_data` directly to authorize access;
+- never expose the `service_role` key in the frontend;
+- combine the authenticated role with ownership or link relationships;
+- treat `SECURITY DEFINER` functions as privileged surfaces;
+- grant `EXECUTE` only to the roles that really need the function.
 
-`handle_new_user()` é uma função interna acionada por trigger de `auth.users`. Na verificação mais recente, `PUBLIC`, `anon` e `authenticated` não possuíam permissão de execução direta.
+`handle_new_user()` is an internal function triggered from `auth.users`. In the
+most recent check, `PUBLIC`, `anon` and `authenticated` had no permission to
+execute it directly.
 
-## Estado das migrations
+## State of the migrations
 
-O histórico de migrations do projeto Supabase está vazio. Os antigos arquivos `.sql` em `docs/` eram scripts históricos executados manualmente e foram removidos porque não representavam o estado completo nem a ordem reproduzível do schema.
+The migration history of the Supabase project is empty. The old `.sql` files in
+`docs/` were historical scripts executed manually and were removed because they
+did not represent the full state or a reproducible order of the schema.
 
-A correção futura é criar uma baseline real e manter mudanças incrementais em:
+The future fix is to create a real baseline and keep incremental changes in:
 
 ```text
 supabase/
@@ -161,4 +223,5 @@ supabase/
     └── ...
 ```
 
-Essa tarefa deve incluir geração da baseline, revisão de RLS e funções, validação em ambiente separado e documentação do fluxo de deploy.
+That task must include generating the baseline, reviewing RLS and functions,
+validating in a separate environment, and documenting the deployment flow.
