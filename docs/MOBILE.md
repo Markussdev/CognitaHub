@@ -1,6 +1,6 @@
 # Cognita mobile — estado e entrada imediata
 
-Atualizado em 27/09/2026. Princípios pedagógicos: [PRODUCT.md](PRODUCT.md).
+Atualizado em 01/10/2026. Princípios pedagógicos: [PRODUCT.md](PRODUCT.md).
 
 ## 1. Estado observado, não promessa de funcionamento
 
@@ -136,6 +136,29 @@ institucional; não ao identificador
 anônimo do aparelho infantil. Direitos de acesso e vínculos são verificados
 no servidor. Separar compra de teste de receita real e conferir a documentação
 e as regras atuais do evento antes de afirmar elegibilidade.
+
+**Visão da escola (demonstração) — implementada, só local.** Depois da licença,
+o workspace oferece "School overview" (`src/demo/demo-school.js`,
+`demo-learner.js`, `school-roster.js`): uma escola fictícia ("Cognita
+Demonstration School", 24 alunos, 5 tutores) com amostra de 6 alunos, para
+mostrar a hierarquia escola → aluno → tutor/criança/família. Só o Mateus é um
+perfil real da demo: o cartão dele é derivado do `school-demo-store.js` ("N of M
+missions", "Up to date" / "Session to review"), então a escola concorda com o
+mediador, a criança e a família; os outros cinco são dados fixos em `DEMO_SCHOOL`
+(`school-demo-data.js`) e não abrem. Fora do escopo, de propósito: CRUD de
+aluno ou tutor, convite, turmas, login institucional, relatórios, tabela ou
+RLS. Nada é lido nem gravado no Supabase.
+
+Escolhas de linguagem a manter: estado apenas operacional ("há sessão a revisar
+ou não"); contagem de missões, nunca porcentagem; sem "on track" ou qualquer
+julgamento de ritmo; sem diagnóstico, nota, observação ou devolutiva na visão
+da escola; sem ranking. "Demonstration data" fica visível no topo e no rodapé.
+Isto é uma hipótese de apresentação, não um requisito validado: quem, dentro de
+uma instituição, pode ver o quê continua em aberto em [PRODUCT.md](PRODUCT.md).
+
+O botão voltar do Android na vitrine é tratado por `src/demo/school-back.js`
+(cada tela diz pra onde voltar; a licença confirma antes de sair). O fluxo
+conectado continua com o `app.js`; ao entrar nele a vitrine se desliga.
 
 ### Variação de experiências
 

@@ -6,14 +6,21 @@ import tutorPreview from '../assets/school/mediador-preview.png'
 import familyPreview from '../assets/school/familia-preview.png'
 import revenuecatLogo from '../assets/school/revenuecat.png'
 import childAvatar from '../assets/avatars/astronauta.webp'
+import { setSchoolBack } from '../demo/school-back.js'
 
 // Vitrine do que a licença institucional (Cognita Escola) habilita — não cria
 // criança, tutor, ciclo nem jornada. Os cards do mediador e da família abrem
 // demos locais (demo/), sem Supabase. "Open child experience" é o único
 // ponto que pode sair desse demo isolado e entrar no app real (ver
 // onOpenChild em school-license.js, que só importa app.js/Supabase nesse
-// clique, e só sem VITE_SHIPATON_CHILD_DEMO).
-export function renderSchoolWorkspace(root, { priceString = '', onBack, onOpenTutor, onOpenChild, onOpenFamily } = {}) {
+// clique, e só sem VITE_SHIPATON_CHILD_DEMO). "Open school dashboard" abre a
+// visão da escola (demo/demo-school.js), também local e fictícia.
+export function renderSchoolWorkspace(
+  root,
+  { priceString = '', onBack, onOpenSchool, onOpenTutor, onOpenChild, onOpenFamily } = {},
+) {
+  setSchoolBack(() => onBack?.())
+
   root.innerHTML = `
     <div class="school-workspace">
       <header class="school-workspace__hero">
@@ -34,6 +41,20 @@ export function renderSchoolWorkspace(root, { priceString = '', onBack, onOpenTu
       </header>
 
       <main class="school-workspace__content">
+        <section class="school-surface school-surface--overview">
+          <div class="school-surface__body">
+            <div>
+              <span class="school-surface__role">School</span>
+              <h3>School overview</h3>
+              <p>Students · tutors · active journeys, across a demonstration school.</p>
+            </div>
+          </div>
+          <button class="school-surface__cta" type="button" data-open-school>
+            Open school dashboard
+            <span aria-hidden="true">→</span>
+          </button>
+        </section>
+
         <section class="school-intro">
           <span class="school-section-label">The product</span>
           <h2>One license. Three connected experiences.</h2>
@@ -128,6 +149,7 @@ export function renderSchoolWorkspace(root, { priceString = '', onBack, onOpenTu
   `
 
   root.querySelector('[data-school-back]')?.addEventListener('click', () => onBack?.())
+  root.querySelector('[data-open-school]')?.addEventListener('click', () => onOpenSchool?.())
   root.querySelector('[data-open-tutor]')?.addEventListener('click', () => onOpenTutor?.())
   root.querySelector('[data-open-child]')?.addEventListener('click', () => onOpenChild?.())
   root.querySelector('[data-open-family]')?.addEventListener('click', () => onOpenFamily?.())

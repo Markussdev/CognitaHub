@@ -1,0 +1,271 @@
+/* Visão institucional da demo Cognita Escola — visão da escola
+   (demo/demo-school.js) e ecossistema do aluno (demo/demo-learner.js). Usa o
+   vocabulário .demo-* de school-demo.css (cabeçalho, cartão, barra, rodapé);
+   aqui só o que é próprio: aviso de demonstração, métricas, cartão de aluno e
+   status. Texto que não é botão escala com --accessibility-text-scale. Status
+   sempre com ícone + texto, nunca só cor. */
+
+/* ---- demonstração: precisa ficar claro que nada aqui é dado real ---- */
+
+.school-demo-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 168, 0, 0.55);
+  border-radius: 16px;
+  background: var(--soft-gold);
+  color: var(--ink);
+  font-size: calc(13px * var(--accessibility-text-scale));
+  line-height: 1.4;
+}
+
+.school-demo-banner strong {
+  color: var(--wine);
+  font-size: calc(14px * var(--accessibility-text-scale));
+}
+
+.school-demo-chip {
+  padding: 3px 10px;
+  border: 1px solid rgba(255, 168, 0, 0.55);
+  border-radius: var(--r-pill);
+  background: var(--soft-gold);
+  color: var(--wine);
+  font-size: calc(11px * var(--accessibility-text-scale));
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---- métricas ---- */
+
+.school-metrics__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.school-metrics__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.school-metrics__grid > div {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--soft-blue);
+}
+
+.school-metrics__grid dt {
+  color: var(--muted);
+  font-size: calc(12px * var(--accessibility-text-scale));
+  font-weight: 700;
+}
+
+.school-metrics__grid dd {
+  margin: 0;
+  color: var(--navy);
+  font-family: var(--display);
+  font-size: calc(30px * var(--accessibility-text-scale));
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+/* ---- lista de alunos ---- */
+
+.school-roster {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.school-roster__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.school-roster__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.school-student {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--warm-white);
+  box-shadow: 0 8px 22px rgba(35, 2, 32, 0.06);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+}
+
+.school-student--interactive {
+  border: 2px solid rgba(109, 74, 255, 0.4);
+}
+
+.school-student__avatar {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--soft-blue);
+  color: var(--navy);
+  font-family: var(--display);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.school-student__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.school-student__name {
+  color: var(--muted);
+  font-size: calc(14px * var(--accessibility-text-scale));
+}
+
+.school-student__name strong {
+  color: var(--navy);
+  font-family: var(--display);
+  font-size: calc(17px * var(--accessibility-text-scale));
+}
+
+.school-student__journey {
+  color: var(--navy);
+  font-size: calc(14px * var(--accessibility-text-scale));
+  font-weight: 700;
+}
+
+.school-student__meta {
+  color: var(--muted);
+  font-size: calc(13px * var(--accessibility-text-scale));
+}
+
+.school-student__progress {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 0;
+}
+
+.school-student__count {
+  flex: none;
+  color: var(--navy);
+  font-size: calc(12.5px * var(--accessibility-text-scale));
+  font-weight: 700;
+}
+
+.school-student__attention {
+  color: var(--ink);
+  font-size: calc(13px * var(--accessibility-text-scale));
+  line-height: 1.4;
+}
+
+.school-student__attention strong {
+  color: var(--wine);
+}
+
+.school-student__chevron {
+  align-self: center;
+  color: var(--navy);
+  font-size: 30px;
+  line-height: 1;
+}
+
+/* ---- status operacional (ícone + texto; a cor só reforça) ---- */
+
+.school-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  padding: 5px 11px;
+  border: 1px solid transparent;
+  border-radius: var(--r-pill);
+  font-size: calc(13px * var(--accessibility-text-scale));
+  font-weight: 700;
+}
+
+.school-status--review {
+  border-color: rgba(255, 168, 0, 0.6);
+  background: var(--soft-gold);
+  color: #7a4b00;
+}
+
+.school-status--ok {
+  border-color: rgba(47, 158, 90, 0.35);
+  background: #e6f6ec;
+  color: #1e6b3e;
+}
+
+/* ---- ecossistema do aluno ---- */
+
+.school-learner-status {
+  align-items: flex-start;
+}
+
+.school-ecosystem {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.school-ecosystem__button {
+  width: 100%;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  background: var(--warm-white);
+  color: var(--navy);
+  text-align: left;
+}
+
+.school-ecosystem__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.school-ecosystem__copy strong {
+  font-family: var(--display);
+  font-size: calc(17px * var(--accessibility-text-scale));
+}
+
+.school-ecosystem__copy span {
+  color: var(--muted);
+  font-size: calc(13px * var(--accessibility-text-scale));
+  line-height: 1.4;
+}

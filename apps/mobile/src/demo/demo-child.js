@@ -6,6 +6,7 @@ import { getChildAvatar } from '../config/child-avatars.js'
 import { getLandmarkPreset } from '../config/module-visuals.js'
 
 import { completeDemoMission } from './school-demo-store.js'
+import { setSchoolBack } from './school-back.js'
 import { getDemoJourneyView, getDemoMissionRun } from './build-demo-journey.js'
 import { DEMO_CHILD } from './school-demo-data.js'
 
@@ -23,6 +24,10 @@ export function renderDemoChildExperience(root, { onExit } = {}) {
   // Cada tela relê o estado: nada fica copiado aqui dentro.
   function showModules() {
     const { modules } = getDemoJourneyView()
+
+    // Voltar do Android, como no app.js: missão → jornada → módulos → quem
+    // abriu a criança.
+    setSchoolBack(() => onExit?.())
 
     renderModules(root, {
       childName: DEMO_CHILD.name,
@@ -50,6 +55,8 @@ export function renderDemoChildExperience(root, { onExit } = {}) {
     // carrossel os módulos aparecem concluídos e a engrenagem leva de volta.
     if (!module || view.trail.status === 'concluida') return showModules()
 
+    setSchoolBack(showModules)
+
     renderJourney(root, {
       childName: DEMO_CHILD.name,
       childAvatar: avatar.image,
@@ -75,6 +82,8 @@ export function renderDemoChildExperience(root, { onExit } = {}) {
   function showMission(moduleId, missionId) {
     const run = getDemoMissionRun(missionId)
     if (!run) return
+
+    setSchoolBack(() => showJourney(moduleId))
 
     renderMission(root, {
       activity: run.activity,

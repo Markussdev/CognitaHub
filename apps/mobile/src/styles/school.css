@@ -215,6 +215,11 @@
   padding-top: 18px;
 }
 
+/* Entrada da visão da escola: sem número à esquerda, o texto ocupa a largura. */
+.school-surface--overview .school-surface__body {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .school-child-visual {
   display: flex;
   align-items: center;

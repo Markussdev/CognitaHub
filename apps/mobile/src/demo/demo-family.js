@@ -3,6 +3,7 @@ import '../styles/school-demo.css'
 import { getChildAvatar } from '../config/child-avatars.js'
 import { escapeHtml } from '../utils/html.js'
 import { getSchoolDemoState } from './school-demo-store.js'
+import { setSchoolBack } from './school-back.js'
 import { getDemoJourneyView } from './build-demo-journey.js'
 import { DEMO_CHILD, DEMO_FAMILY, formatDemoQuando } from './school-demo-data.js'
 
@@ -16,6 +17,9 @@ import { DEMO_CHILD, DEMO_FAMILY, formatDemoQuando } from './school-demo-data.js
 //    registra a sessão: resumo (nível 2) e próximo passo. A nota interna do
 //    mediador (nível 3, session.notes) NUNCA é lida aqui.
 export function renderDemoFamilyExperience(root, { onExit } = {}) {
+  // Voltar do Android = a seta do cabeçalho.
+  setSchoolBack(() => onExit?.())
+
   const { session } = getSchoolDemoState()
   const avatar = getChildAvatar(DEMO_CHILD.avatarKey)
   const { cycle } = DEMO_FAMILY

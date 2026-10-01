@@ -2,6 +2,7 @@ import '../styles/school-demo.css'
 
 import { escapeHtml } from '../utils/html.js'
 import { getSchoolDemoState, hasPendingExecution } from './school-demo-store.js'
+import { setSchoolBack } from './school-back.js'
 import { DEMO_CHILD } from './school-demo-data.js'
 import { renderResumoTab } from './tutor/resumo.js'
 import { renderAtividadesTab } from './tutor/atividades.js'
@@ -23,6 +24,9 @@ const TABS = [
 export function renderDemoTutorExperience(root, { onExit, onOpenChild, initialTab = 'resumo' } = {}) {
   let tab = TABS.some((item) => item.key === initialTab) ? initialTab : 'resumo'
   let tabOptions = {}
+
+  // Voltar do Android = a seta do cabeçalho (sai do painel).
+  setSchoolBack(() => onExit?.())
 
   render()
 

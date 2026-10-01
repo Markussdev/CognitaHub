@@ -5,6 +5,7 @@ import revenuecatLogo from '../assets/school/revenuecat.png'
 import { statusMessageHtml } from '../components/status-message.js'
 import { getSchoolOffering, getSchoolAccess, purchaseSchoolPackage } from '../services/revenuecat.js'
 import { resetSchoolDemo } from '../demo/school-demo-store.js'
+import { confirmExitCognita, setSchoolBack } from '../demo/school-back.js'
 
 // Primeira tela da Cognita Escola — entrypoint temporário de Shipaton
 // (main.js, ?school=1). Apresenta a licença institucional e prova o funil
@@ -13,6 +14,10 @@ import { resetSchoolDemo } from '../demo/school-demo-store.js'
 // institucional definitiva; não cria criança, tutor, ciclo nem jornada, e não
 // toca no Supabase.
 export async function renderSchoolLicense(root) {
+  // Primeira tela da vitrine: voltar do Android confirma a saída em vez de
+  // fechar o app direto.
+  setSchoolBack(confirmExitCognita)
+
   root.innerHTML = `
     <div class="school-entry">
       <header class="school-entry__hero">
@@ -74,30 +79,59 @@ export async function renderSchoolLicense(root) {
   // Import de school-workspace.js (e, dentro dele, de app.js só no clique de
   // "Abrir experiência da criança") continua fora do topo deste arquivo —
   // Cognita Escola fica isolado do Supabase até a pessoa pedir a experiência
-  // infantil (mesmo motivo do import condicional em main.js). As demos do
-  // mediador, da criança e da família (demo/) não tocam no Supabase.
+  // infantil (mesmo motivo do import condicional em main.js). As demos da
+  // escola, do mediador, da criança e da família (demo/) não tocam no Supabase.
+  //
+  // Cada superfície recebe pra onde voltar (returnTo): quem entra pelo
+  // workspace volta ao workspace; quem entra pelo ecossistema de um aluno
+  // volta a ele. Sem isso, sair do mediador sempre cairia no workspace.
+  async function openChildDemo(returnTo) {
+    const { renderDemoChildExperience } = await import('../demo/demo-child.js')
+    renderDemoChildExperience(root, { onExit: returnTo })
+  }
+
+  async function openTutorDemo(initialTab, returnTo = openSchoolWorkspace) {
+    const { renderDemoTutorExperience } = await import('../demo/demo-tutor.js')
+
+    // O que o mediador libera só chega na criança da demo local; por isso
+    // "Ver experiência da criança" abre sempre o Mateus demo, com ou sem
+    // VITE_SHIPATON_CHILD_DEMO — e ao sair ela volta pro Resumo do mediador,
+    // onde a execução aparece como "aguardando registro".
+    renderDemoTutorExperience(root, {
+      initialTab,
+      onExit: returnTo,
+      onOpenChild: () => openChildDemo(() => openTutorDemo('resumo', returnTo)),
+    })
+  }
+
+  async function openFamilyDemo(returnTo) {
+    const { renderDemoFamilyExperience } = await import('../demo/demo-family.js')
+    renderDemoFamilyExperience(root, { onExit: returnTo })
+  }
+
+  // Ecossistema do Mateus, o único aluno da escola que abre de verdade. A
+  // criança aqui é sempre a da demo local (nunca o fluxo real), pelo mesmo
+  // motivo do mediador acima.
+  async function openLearner() {
+    const { renderDemoLearner } = await import('../demo/demo-learner.js')
+    renderDemoLearner(root, {
+      onExit: openSchoolOverview,
+      onOpenTutor: () => openTutorDemo('resumo', openLearner),
+      onOpenChild: () => openChildDemo(openLearner),
+      onOpenFamily: () => openFamilyDemo(openLearner),
+    })
+  }
+
+  async function openSchoolOverview() {
+    const { renderDemoSchoolOverview } = await import('../demo/demo-school.js')
+    renderDemoSchoolOverview(root, {
+      onExit: openSchoolWorkspace,
+      onOpenStudent: openLearner,
+    })
+  }
+
   async function openSchoolWorkspace() {
     const { renderSchoolWorkspace } = await import('./school-workspace.js')
-
-    // A criança sempre volta pra quem a abriu (onExit): workspace ou mediador.
-    async function openChildDemo(onExit) {
-      const { renderDemoChildExperience } = await import('../demo/demo-child.js')
-      renderDemoChildExperience(root, { onExit })
-    }
-
-    async function openTutorDemo(initialTab) {
-      const { renderDemoTutorExperience } = await import('../demo/demo-tutor.js')
-
-      // O que o mediador libera só chega na criança da demo local; por isso
-      // "Ver experiência da criança" abre sempre o Mateus demo, com ou sem
-      // VITE_SHIPATON_CHILD_DEMO — e ao sair ela volta pro Resumo do mediador,
-      // onde a execução aparece como "aguardando registro".
-      renderDemoTutorExperience(root, {
-        initialTab,
-        onExit: openSchoolWorkspace,
-        onOpenChild: () => openChildDemo(() => openTutorDemo('resumo')),
-      })
-    }
 
     renderSchoolWorkspace(root, {
       priceString: pkg?.product?.priceString ?? '',
@@ -107,6 +141,8 @@ export async function renderSchoolLicense(root) {
         resetSchoolDemo()
         renderSchoolLicense(root)
       },
+
+      onOpenSchool: openSchoolOverview,
 
       onOpenTutor: () => openTutorDemo('resumo'),
 
@@ -118,14 +154,14 @@ export async function renderSchoolLicense(root) {
           return
         }
 
+        // Fluxo conectado: o voltar do Android passa a ser do app.js, não
+        // mais da vitrine.
+        setSchoolBack(null)
         const { initApp } = await import('../app.js')
         await initApp(root)
       },
 
-      onOpenFamily: async () => {
-        const { renderDemoFamilyExperience } = await import('../demo/demo-family.js')
-        renderDemoFamilyExperience(root, { onExit: openSchoolWorkspace })
-      },
+      onOpenFamily: () => openFamilyDemo(openSchoolWorkspace),
     })
   }
 

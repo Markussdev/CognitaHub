@@ -166,3 +166,76 @@ export const DEMO_FAMILY = {
     nextStep: 'Return to counting with fewer elements while keeping the dinosaur theme.',
   },
 }
+
+// Escola fictícia da visão institucional (demo-school.js). Só o que uma escola
+// precisa ver pra operar: quem, qual jornada, qual tutor, quantas missões e se
+// há algo pra revisar. Nada de diagnóstico, nota, observação ou devolutiva —
+// isso é do mediador e da família. `students` é uma amostra: o total da escola
+// é metrics.students.
+//
+// Mateus é o único perfil real da demo, então o cartão dele NÃO mora aqui —
+// school-roster.js o monta do store. Os demais são dados fixos. Os números de
+// tutores e de "aguardando revisão" batem com os alunos listados; jornadas
+// ativas e total de alunos são da escola inteira.
+export const DEMO_SCHOOL = {
+  name: 'Cognita Demonstration School',
+  metrics: { students: 24, tutors: 5, activeJourneys: 7 },
+  students: [
+    { id: 'mateus' },
+    {
+      id: 'sofia',
+      name: 'Sofia',
+      age: 8,
+      journey: 'Building Quantities',
+      tutor: 'Lucas Almeida',
+      completed: 3,
+      total: 4,
+      awaitingReview: 0,
+      lastActivity: 'Identify numbers',
+    },
+    {
+      id: 'joao',
+      name: 'João',
+      age: 6,
+      journey: 'First Numbers',
+      tutor: DEMO_FAMILY.feedback.author,
+      completed: 1,
+      total: 4,
+      awaitingReview: 0,
+      lastActivity: 'Visual counting',
+    },
+    {
+      id: 'helena',
+      name: 'Helena',
+      age: 8,
+      journey: 'Counting Together',
+      tutor: 'Paulo Ribeiro',
+      completed: 2,
+      total: 5,
+      awaitingReview: 1,
+      lastActivity: 'Visual counting',
+    },
+    {
+      id: 'davi',
+      name: 'Davi',
+      age: 7,
+      journey: 'Discovering Numbers',
+      tutor: 'Camila Torres',
+      completed: 2,
+      total: 4,
+      awaitingReview: 2,
+      lastActivity: 'Identify numbers',
+    },
+    {
+      id: 'laura',
+      name: 'Laura',
+      age: 9,
+      journey: 'Building Quantities',
+      tutor: 'Renata Souza',
+      completed: 4,
+      total: 5,
+      awaitingReview: 0,
+      lastActivity: 'Visual counting',
+    },
+  ],
+}

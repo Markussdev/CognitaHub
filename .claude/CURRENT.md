@@ -1,6 +1,6 @@
 # Trabalho atual — preparação do mobile
 
-Atualizado em 27/09/2026.
+Atualizado em 27/09/2026; seção "Visão da escola" acrescentada em 01/10/2026.
 
 ## Escopo desta alteração
 
@@ -55,6 +55,47 @@ discussão, não parte da entrada imediata. Ver a seção de próximos recortes 
 `?school=1` ou `VITE_SHIPATON_SCHOOL_DEMO`. Não inventar preço, plano
 comercial validado ou aprovação pedagógica, nem ampliar esse protótipo por
 consequência desta tarefa.
+
+## Visão da escola na demo Cognita Escola — 01/10/2026
+
+Escopo: pluralizar a vitrine institucional (antes só havia o Mateus). Detalhes e
+limites em `docs/MOBILE.md` §6. Não faz parte da entrada imediata.
+
+Feito (branch `shipaton-2026`, árvore de trabalho sem commit):
+- `School overview` no workspace: métricas da escola demo, amostra de 6 de 24
+  alunos, "Demonstration data" visível; Mateus abre o ecossistema
+  (Tutor / Child / Family) e cada superfície volta a quem a abriu.
+- Cartão do Mateus derivado do store; abre "Up to date" e vira "Session to
+  review" ao concluir uma missão; volta ao normal quando o mediador registra a
+  sessão. Contagem de missões, sem porcentagem, sem "on track".
+- Botão voltar do Android na vitrine (`demo/school-back.js`).
+
+Verificado:
+- `npm --prefix apps/mobile run build`: passa, com as flags do `.env` local e com
+  `VITE_SHIPATON_SCHOOL_DEMO` / `VITE_SHIPATON_CHILD_DEMO` vazias. Só o segundo
+  prova o isolamento: com as flags ligadas o Vite elimina o ramo conectado e o
+  chunk do `app.js`/Supabase nem é gerado. Sem flags, esse chunk só é referenciado
+  por `import()` dinâmico (`main.js` e o clique em `school-license.js`).
+- Navegador (Chromium headless, 390×844, módulo do RevenueCat trocado por stub):
+  fluxo licença → workspace → visão → Mateus → Tutor/Child/Family e volta; a
+  criança concluiu uma missão de Contar e a escola refletiu a pendência; texto
+  grande sem rolagem horizontal; nenhuma requisição ao Supabase; sem erros de
+  console. O registro da sessão pelo mediador foi feito direto no store, não
+  pelo assistente da interface.
+
+Não verificado:
+- APK/dispositivo: o botão físico de voltar foi exercitado chamando
+  `handleSchoolBack()` no navegador; o listener nativo (`App.addListener`) não.
+  Confirmar no aparelho: voltar em cada tela da vitrine e a confirmação de sair
+  na licença.
+- RevenueCat real (Test Store) levando ao workspace; no navegador o módulo foi
+  substituído por stub.
+- O card "Child" do workspace sem `VITE_SHIPATON_CHILD_DEMO` (entra no fluxo
+  conectado e cria sessão anônima); evitado de propósito nos testes.
+- Teste de leitura da visão da escola com avaliadores.
+
+Pendente / decisão: voltar do Android estando na vitrine sai do workspace para a
+licença e zera o estado da demo (mesmo efeito da seta); não foi alterado.
 
 ## Como retomar
 
