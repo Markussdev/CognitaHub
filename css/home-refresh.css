@@ -4,34 +4,49 @@
    do <style> embutido do index.html: os seletores `.home …` vencem pela
    especificidade, sem forçar prioridade.
 
-   Ritmo da página (escuro = superfície .surface-night):
-     header + hero + faixa + "Como funciona"   escuro
-     Dois caminhos                             lavanda
-     Dentro do Cognita Hub                     escuro (ameixa)
-     Experiência                               creme rosado
-     Segurança                                 lavanda
-     FAQ                                       creme
-     CTA final + footer                        escuro
+   A página é UM ambiente contínuo: o <main> é o canvas (motor do
+   brand-surface aplicado uma vez: rosetas, brilhos e grão) e as seções são
+   transparentes sobre ele. Só o hero, o disco, a faixa e o footer têm
+   superfície própria. O tom sobe e desce em ondas amplas:
+     noite #270322 → ameixa #4B1744 (Como funciona) → noite (hub)
+       → ameixa (segurança e FAQ) → noite (CTA e footer)
+   Não há fundos, cantos, sombras ou margens negativas por seção: o que
+   separa as seções é espaçamento, título e componentes.
 
-   Índice: 0 tokens · 1 header · 2 hero · 3 disco · 4 faixa + Como funciona
-           5 Dois caminhos · 6 Hub · 7 Experiência · 8 Segurança · 9 FAQ
-           10 CTA final · 11 footer · 12 breakpoints · 13 movimento e contraste
+   Índice: 0 tokens · 1 header e botões · 2 canvas · 3 hero · 4 disco
+           5 faixa + Como funciona · 6 Dois caminhos · 7 Hub · 8 Experiência
+           9 Segurança · 10 FAQ · 11 CTA final · 12 footer · 13 breakpoints
+           14 movimento e contraste
    ============================================================ */
 
 /* ---------- 0. Tokens ---------- */
 .home {
-  --night-mid: #4B1744;          /* ameixa das superfícies escuras secundárias */
-  --lav: #EEE8F8;                /* lavanda clara */
-  --rose-soft: #F8E9EF;          /* creme rosado */
-  --cream: #FBF4EA;
-  --gold-on-dark: #ffbd49;       /* dourado legível sobre o roxo */
+  /* Paleta: noite = --night (brand-surface.css) */
+  --night-mid: #4B1744;          /* ameixa */
+  --violet: #62305A;
+  --orchid: #F0CDEA;             /* roxo claro: rótulos e filetes sobre card */
+  --gold-on-dark: #ffbd49;       /* dourado legível sobre o canvas */
+  --gold-on-card: #ffd27a;       /* dourado legível sobre os cards (mais claros) */
   --gold-focus: #ffcf63;
   --text-on-dark: #ead9e7;
   --text-on-dark-soft: #e5cddd;
-  --sheet: var(--r-xl);          /* raio dos cantos das superfícies escuras */
+  --text-on-card: #f4e8f1;
+  --text-muted-on-card: #e3cfe0; /* datas e estados inativos */
+
+  /* Cards: violeta, rosa-ameixa e orquídea, bem acima da luminosidade do canvas */
+  --card-warm:   linear-gradient(160deg, #7F446B, #653054);
+  --card-violet: linear-gradient(160deg, #794480, #5F3268);
+  --card-orchid: linear-gradient(160deg, #764782, #5E3566);
+  --card-rose:   linear-gradient(160deg, #85426B, #69304F);
+  --card-deep:   linear-gradient(150deg, #6A2A5E, var(--night-mid));
+  --card-line: rgba(255,255,255,.26);
+  --card-shadow: 0 20px 44px rgba(10,0,9,.45), inset 0 1px 0 rgba(255,255,255,.14);
+
+  /* Garante que nunca apareça o creme do body (overscroll) */
+  background: var(--night);
 }
 
-/* ---------- 1. Header integrado ao fundo escuro ---------- */
+/* ---------- 1. Header e botões ---------- */
 .home .hd {
   background: var(--night);
   border-bottom: 1px solid rgba(255,255,255,.12);
@@ -56,20 +71,33 @@
   background: rgba(255,255,255,.12);
 }
 
-.home .hd-cta .btn--outline {
-  color: #fff;
-  border-color: rgba(255,255,255,.45);
-}
-
-.home .hd-cta .btn--outline:hover {
-  border-color: #fff;
-  background: rgba(255,255,255,.12);
-}
-
 .home .hd-cta .btn--soft {
   color: var(--night);
   background: var(--accent);
   border-color: var(--accent);
+}
+
+/* Botão de contorno sobre o escuro: header, hero, CTA e "Sou tutor" */
+.home .hd-cta .btn--outline,
+.home .hero .btn--outline,
+.home .cta-content .btn--outline,
+.home .pane--tut .btn--outline {
+  color: #fff;
+  border-color: rgba(255,255,255,.5);
+  background: rgba(255,255,255,.06);
+}
+
+.home .hd-cta .btn--outline:hover,
+.home .hero .btn--outline:hover,
+.home .cta-content .btn--outline:hover,
+.home .pane--tut .btn--outline:hover {
+  border-color: #fff;
+  background: rgba(255,255,255,.14);
+}
+
+/* Sobre o card de tutores o contorno escurece no hover (clarear perderia contraste) */
+.home .pane--tut .btn--outline:hover {
+  background: rgba(39,3,34,.40);
 }
 
 /* Foco visível em toda superfície escura (o padrão é azul-marinho sobre creme) */
@@ -85,7 +113,41 @@
   box-shadow: none;
 }
 
-/* ---------- 2. Hero ---------- */
+/* Cabeçalhos de seção: todas as seções vivem sobre o canvas escuro */
+.home .sec-head .eyebrow {
+  color: var(--gold-on-dark);
+}
+
+.home .sec-head h2 {
+  color: #fff;
+}
+
+.home .sec-head p:not(.eyebrow) {
+  color: var(--text-on-dark);
+}
+
+/* ---------- 2. Canvas compartilhado ----------
+   O <main> carrega o motor do brand-surface uma única vez. Os brilhos frios
+   são ameixa (#4B1744) e gigantes: o tom sobe e desce em ondas amplas sobre a
+   base noite. Os dois âmbar ficam ancorados ao centro da página (50% ± 980px),
+   como no hero: a distância até a coluna de leitura é fixa e eles nunca passam
+   por baixo do texto; em telas estreitas saem do quadro. As rosetas formam um
+   padrão único, alinhado ao do hero (mesma origem). */
+.home .surface-night--canvas {
+  --night-glow-cool: 75, 23, 68;
+  --cool-a-pos: 30% 16%;    --cool-a-size: 1300px 1500px;
+  --cool-b-pos: 70% 71%;    --cool-b-size: 1300px 1500px;
+  --warm-a-pos: calc(50% - 980px) 28%;   --warm-a-size: 640px 760px;
+  --warm-b-pos: calc(50% + 980px) 64%;   --warm-b-size: 640px 760px;
+  --rosette-size: 400px;
+}
+
+/* O hero continua com o magenta da marca (ele herdaria o ameixa do canvas) */
+.home .hero {
+  --night-glow-cool: 98, 4, 78;
+}
+
+/* ---------- 3. Hero ---------- */
 .home .hero.surface-night--hero {
   /* Âmbar da esquerda ancorado ao centro da página (wrap de 1160px), não à
      viewport: a distância até a coluna de texto fica fixa e o brilho nunca
@@ -127,18 +189,7 @@
   border-top-color: rgba(255,255,255,.18);
 }
 
-.home .hero .btn--outline {
-  color: #fff;
-  border-color: rgba(255,255,255,.5);
-  background: rgba(255,255,255,.06);
-}
-
-.home .hero .btn--outline:hover {
-  border-color: #fff;
-  background: rgba(255,255,255,.14);
-}
-
-/* ---------- 3. Disco do mascote ----------
+/* ---------- 4. Disco do mascote ----------
    O interior roxo vive no próprio .disc (variante --disc do brand-surface),
    não no .brand-reveal: o reveal é temporário e some após a animação. */
 .home .disc {
@@ -204,43 +255,50 @@
   opacity: .9;
 }
 
-/* Cards flutuantes: continuam claros; só borda e sombra mudam para o escuro.
-   Hover, foco e .is-active seguem as regras originais (maior especificidade). */
+/* Cards flutuantes: violeta, com borda clara para se destacar do disco e do
+   hero. O ativo clareia e ganha o anel dourado (mesmos gatilhos das regras
+   originais, com um nível a mais de especificidade). */
 .home .flow-card__inner {
-  border-color: rgba(255,255,255,.5);
-  box-shadow: 0 20px 44px rgba(10,0,9,.5), 0 3px 10px rgba(10,0,9,.3);
+  background: var(--card-violet);
+  border-color: var(--card-line);
+  box-shadow: 0 20px 44px rgba(10,0,9,.55), 0 3px 10px rgba(10,0,9,.35), inset 0 1px 0 rgba(255,255,255,.14);
 }
 
-/* ---------- 4. Faixa + "Como funciona" ----------
-   A faixa (.strip) é o primeiro bloco da seção, que usa o mesmo motor de
-   brand-surface.css (rosetas, brilhos, grão) sobre um ameixa mais claro que o
-   do hero. As superfícies escuras (--flow, --plum, --cta) compartilham o
-   z-index: as seções claras vizinhas entram por baixo dos cantos arredondados. */
-.home .surface-night--flow,
-.home .surface-night--plum {
-  background-color: var(--night-mid);
-  z-index: 1;
+.home .flow-card__inner strong {
+  color: #fff;
 }
 
-.home .surface-night--flow {
-  /* Âmbar só nas bordas e perto do rodapé da seção, longe de qualquer texto;
-     o magenta dá profundidade ao ameixa. */
-  --warm-a-pos: -12% 94%;  --warm-a-size: 340px 280px;
-  --warm-b-pos: 112% 56%;  --warm-b-size: 340px 300px;
-  --cool-a-pos: 86% 12%;   --cool-a-size: 560px 380px;
-  --cool-b-pos: 14% 100%;  --cool-b-size: 560px 340px;
-  --rosette-size: 400px;
+.home .flow-card__inner span {
+  color: var(--text-on-card);
+}
 
+.home .flow-card.is-active .flow-card__inner,
+.home .stage[data-can-move="true"] .flow-card:hover .flow-card__inner,
+.home .stage[data-can-move="true"] .flow-card:focus-visible .flow-card__inner,
+.home .stage[data-can-move="true"] .flow-card.is-active .flow-card__inner {
+  background: linear-gradient(160deg, #8E5090, #6E3F78);
+  border-color: rgba(255,189,73,.75);
+  box-shadow:
+    0 24px 54px rgba(10,0,9,.55),
+    0 0 0 3px rgba(255,168,0,.22),
+    0 0 42px rgba(255,168,0,.20),
+    inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+/* ---------- 5. Faixa + "Como funciona" ----------
+   A faixa (.strip) é o primeiro bloco da seção. A seção não tem fundo: o
+   canvas continua por baixo. A costura abaixo é a única superfície própria e
+   existe porque o hero tem fundo opaco. */
+.home .sec--warm {
   display: flow-root;   /* o margin negativo da faixa não colapsa com o topo */
   padding-top: 0;       /* a faixa abre a seção; o respiro vem do margin dela */
-  border-radius: 0 0 var(--sheet) var(--sheet);
-  box-shadow: 0 28px 60px -26px rgba(39,3,34,.4);
+  z-index: 1;           /* a costura precisa ficar acima do hero */
+  isolation: isolate;
 }
 
-/* Costura com o hero e descida do roxo profundo (--night, #270322) ao ameixa:
-   começa 80px acima da seção (dissolve o rodapé do hero no tom base) e some
-   em 440px, o que também deixa as rosetas surgirem aos poucos. */
-.home .surface-night--flow::before {
+/* Costura com o hero: começa 80px acima da seção (dissolve o rodapé do hero no
+   roxo profundo --night, #270322) e some em 440px, deixando o canvas aparecer. */
+.home .sec--warm::before {
   content: "";
   position: absolute;
   top: -80px;
@@ -265,75 +323,75 @@
   margin-bottom: 92px;
 }
 
-.home .surface-night--flow .strip {
+.home .sec--warm .strip {
   background: rgba(255,255,255,.07);
   border-color: rgba(255,255,255,.16);
   box-shadow: 0 20px 50px rgba(10,0,9,.38), inset 0 1px 0 rgba(255,255,255,.10);
 }
 
-.home .surface-night--flow .stat + .stat::before {
+.home .sec--warm .stat + .stat::before {
   background: rgba(255,255,255,.16);
 }
 
-.home .surface-night--flow .stat b {
+.home .sec--warm .stat b {
   color: #fff;
 }
 
-.home .surface-night--flow .stat span {
+.home .sec--warm .stat span {
   color: var(--text-on-dark-soft);
 }
 
-/* Títulos e parágrafos claros sobre o ameixa (Como funciona e Hub) */
-.home :is(.surface-night--flow, .surface-night--plum) .sec-head .eyebrow {
-  color: var(--gold-on-dark);
+/* Cards: violeta, rosa-ameixa e orquídea */
+.home .sec--warm .step {
+  border-color: var(--card-line);
+  box-shadow: var(--card-shadow);
 }
 
-.home :is(.surface-night--flow, .surface-night--plum) .sec-head h2 {
+.home .sec--warm .step--cadastro { background: var(--card-warm); }
+.home .sec--warm .step--match    { background: var(--card-violet); }
+.home .sec--warm .step--ciclo    { background: var(--card-orchid); }
+
+.home .sec--warm .step h3 {
   color: #fff;
 }
 
-.home :is(.surface-night--flow, .surface-night--plum) .sec-head p:not(.eyebrow) {
-  color: var(--text-on-dark);
+.home .sec--warm .step p {
+  color: var(--text-on-card);
 }
 
-/* Cards claros: creme, lavanda e rosa suave, com borda e sombra para fundo escuro */
-.home .surface-night--flow .step {
-  border-color: rgba(255,255,255,.55);
-  box-shadow: 0 22px 48px rgba(10,0,9,.42), 0 2px 6px rgba(10,0,9,.25);
+.home .sec--warm .step-tag {
+  color: var(--gold-on-card);
 }
 
-.home .surface-night--flow .step--ciclo {
-  background: #FBEFF4;
+.home .sec--warm .step-n {
+  color: #fff;
+  opacity: .16;
 }
 
-.home .surface-night--flow .steps::before {
+.home .sec--warm .step-ic {
+  background: rgba(39,3,34,.38);
+  color: var(--orchid);
+}
+
+.home .sec--warm .step--cadastro .step-ic {
+  background: rgba(39,3,34,.38);
+  color: var(--gold-on-card);
+}
+
+.home .sec--warm .steps::before {
   background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.30), rgba(255,255,255,.06));
 }
 
-.home .surface-night--flow .mascot-note {
+.home .sec--warm .mascot-note {
   color: var(--text-on-dark);
 }
 
-.home .surface-night--flow .mascot-note .pip {
+.home .sec--warm .mascot-note .pip {
+  background: var(--night);
   border-color: rgba(255,255,255,.22);
 }
 
-/* ---------- 5. Dois caminhos (lavanda pelo meio das folhas escuras) ---------- */
-.home .sec--paths {
-  background:
-    radial-gradient(50% 60% at 88% 0%, rgba(255,168,0,.10), transparent 70%),
-    var(--lav);
-  margin-block: calc(-1 * var(--sheet));
-  padding-block: calc(92px + var(--sheet));
-}
-
-.home .sec--paths .sec-head .eyebrow,
-.home .sec--exp .sec-head .eyebrow,
-.home .sec--trust .sec-head .eyebrow,
-.home .sec--faq .sec-head .eyebrow {
-  color: var(--brand-deep);
-}
-
+/* ---------- 6. Dois caminhos ---------- */
 .home .sec--paths .duo {
   gap: 26px;
   margin-top: 48px;
@@ -351,6 +409,22 @@
   margin-top: auto;
 }
 
+.home .pane h3 {
+  color: #fff;
+}
+
+.home .pane p:not(.tag) {
+  color: var(--text-on-card);
+}
+
+.home .pane .bubble {
+  color: #fbf1f8;
+}
+
+.home .pane .bubble small {
+  color: var(--text-muted-on-card);
+}
+
 .home .pane .tag::before {
   content: "";
   display: inline-block;
@@ -362,69 +436,38 @@
   vertical-align: 1px;
 }
 
-/* Famílias: identidade quente, creme e dourado */
+/* Famílias: identidade quente, rosa-ameixa e dourado */
 .home .pane--fam {
-  background: linear-gradient(160deg, #FFF9EE 0%, #FFEFD6 100%);
-  border-color: rgba(255,168,0,.38);
-  box-shadow: 0 24px 54px rgba(140,80,0,.14), inset 0 1px 0 rgba(255,255,255,.8);
+  background: var(--card-warm);
+  border-color: rgba(255,168,0,.55);
+  box-shadow: var(--card-shadow);
 }
 
 .home .pane--fam .tag {
-  color: #8A4B00;
+  color: var(--gold-on-card);
 }
 
-/* Tutores: identidade fria, lavanda e roxo institucional */
+/* Tutores: identidade fria, orquídea e violeta */
 .home .pane--tut {
-  background: linear-gradient(160deg, #F7F3FF 0%, #E7DFF7 100%);
-  border-color: rgba(84,0,66,.22);
-  box-shadow: 0 24px 54px rgba(75,23,68,.18), inset 0 1px 0 rgba(255,255,255,.8);
+  background: var(--card-orchid);
+  border-color: rgba(240,205,234,.45);
+  box-shadow: var(--card-shadow);
 }
 
 .home .pane--tut::before {
-  background: rgba(84,0,66,.14);
+  background: rgba(240,205,234,.14);
 }
 
 .home .pane--tut .tag {
-  color: var(--brand-deep);
+  color: var(--orchid);
 }
 
 .home .pane--tut .bubble {
-  border-left-color: rgba(84,0,66,.5);
+  border-left-color: rgba(240,205,234,.7);
 }
 
-/* Os dois CTAs com o mesmo peso: dourado para famílias, roxo para tutores */
-.home .pane--tut .btn--outline {
-  color: #fff;
-  background: var(--brand-deep);
-  border-color: var(--brand-deep);
-}
-
-.home .pane--tut .btn--outline:hover {
-  background: var(--night-mid);
-  border-color: var(--night-mid);
-  transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(84,0,66,.28);
-}
-
-.home .pane--tut .btn--outline:active {
-  transform: translateY(1px);
-  box-shadow: none;
-}
-
-/* ---------- 6. Dentro do Cognita Hub (ameixa, a seção de destaque) ---------- */
-.home .surface-night--plum {
-  --warm-a-pos: 108% 4%;   --warm-a-size: 320px 260px;
-  --warm-b-pos: -10% 96%;  --warm-b-size: 340px 280px;
-  --cool-a-pos: 8% 8%;     --cool-a-size: 560px 380px;
-  --cool-b-pos: 92% 100%;  --cool-b-size: 560px 340px;
-  --rosette-size: 400px;
-
-  border-radius: var(--sheet);
-  box-shadow: 0 28px 60px -26px rgba(39,3,34,.45);
-}
-
-/* Abas: legíveis sobre o escuro; a aba ativa vira uma peça clara, que se liga
-   ao painel claro ao lado */
+/* ---------- 7. Dentro do Cognita Hub ---------- */
+/* Abas: legíveis sobre o canvas; a ativa vira uma peça violeta com filete dourado */
 .home .sec--hub .hub-tab {
   color: var(--text-on-dark-soft);
 }
@@ -435,59 +478,55 @@
 }
 
 .home .sec--hub .hub-tab:not([aria-selected="true"]) .hub-tab-num {
-  color: #cdb3ca;
+  color: var(--text-on-dark);
 }
 
 .home .sec--hub .hub-tab:focus-visible {
   outline-color: var(--gold-focus);
+  box-shadow: none;
 }
 
 .home .sec--hub .hub-tab[aria-selected="true"] {
-  background: #FFF8EF;
-  border-color: rgba(255,255,255,.7);
-  color: var(--brand);
-  box-shadow: 0 16px 34px rgba(10,0,9,.40);
+  background: var(--card-violet);
+  border-color: rgba(255,189,73,.6);
+  color: #fff;
+  box-shadow: 0 16px 34px rgba(10,0,9,.45), inset 0 1px 0 rgba(255,255,255,.14);
 }
 
-/* Anel de foco azul-marinho: o fundo da aba ativa é claro */
-.home .sec--hub .hub-tab[aria-selected="true"]:focus-visible {
-  outline-color: var(--brand);
+.home .sec--hub .hub-tab[aria-selected="true"] .hub-tab-num,
+.home .sec--hub .hub-tab-chevron {
+  color: var(--gold-on-card);
 }
 
-/* Painéis claros e opacos: os fundos translúcidos originais ficariam
-   acinzentados sobre o ameixa. Cores = as mesmas, já compostas sobre o creme. */
-.home .sec--hub .hub-panel:not(.hub-panel--deep) {
-  color: var(--ink);
-  border-color: rgba(255,255,255,.45);
-  box-shadow: 0 28px 60px rgba(10,0,9,.45);
+/* Painéis: tons de rosa-ameixa, violeta e orquídea, bem acima do canvas */
+.home .sec--hub .hub-panel {
+  color: #fff;
+  border-color: var(--card-line);
+  box-shadow: 0 28px 60px rgba(10,0,9,.5), inset 0 1px 0 rgba(255,255,255,.14);
 }
 
-.home .sec--hub .hub-panel--warm     { background: var(--warm-soft); }
-.home .sec--hub .hub-panel--indigo   { background: #EFE8FB; }
-.home .sec--hub .hub-panel--lavender { background: #E5EAF7; }
-.home .sec--hub .hub-panel--rose     { background: #FEE4EF; }
+.home .sec--hub .hub-panel--warm     { --hub-glow: rgba(var(--night-glow-warm), .20); background: var(--card-warm); }
+.home .sec--hub .hub-panel--indigo   { --hub-glow: rgba(255,255,255,.10); background: var(--card-violet); }
+.home .sec--hub .hub-panel--lavender { --hub-glow: rgba(255,255,255,.10); background: var(--card-orchid); }
+.home .sec--hub .hub-panel--rose     { --hub-glow: rgba(255,255,255,.10); background: var(--card-rose); }
 
-/* O painel de segurança é a exceção escura: mais fundo que a seção, com filete dourado */
+/* O painel de segurança é o mais fundo, com filete dourado */
 .home .sec--hub .hub-panel--deep {
-  background: var(--night);
-  border-color: rgba(255,168,0,.38);
-  box-shadow: 0 28px 60px rgba(10,0,9,.45);
+  --hub-glow: rgba(var(--night-glow-warm), .12);
+  background: var(--card-deep);
+  border-color: rgba(255,168,0,.55);
 }
 
-.home .sec--hub .hub-panel--deep .hub-panel-eyebrow {
-  color: var(--gold-on-dark);
+.home .sec--hub .hub-panel-eyebrow {
+  color: var(--gold-on-card);
 }
 
-/* O painel é focável (tabindex=0): anel dourado fora da borda, visível sobre o ameixa */
-.home .sec--hub .hub-panel:focus-visible {
-  outline: 2px solid var(--gold-focus);
-  outline-offset: 3px;
+.home .sec--hub .hub-panel-body h3 {
+  color: #fff;
 }
 
-/* Textos de apoio das prévias: as cores translúcidas originais ficavam abaixo de 3:1 */
-.home .hp-session-date,
-.home .hp-tl-step--pending {
-  color: #6f5f70;
+.home .sec--hub .hub-panel-body > p {
+  color: var(--text-on-card);
 }
 
 /* Destaque dourado pontual */
@@ -501,104 +540,186 @@
   vertical-align: middle;
 }
 
-/* ---------- 7. Experiência (creme rosado) ---------- */
-.home .sec--exp {
-  background: linear-gradient(180deg, var(--rose-soft) 0%, var(--rose-soft) 70%, var(--lav) 100%);
-  margin-top: calc(-1 * var(--sheet));
-  padding-top: calc(92px + var(--sheet));
+/* O painel é focável (tabindex=0): anel dourado fora da borda */
+.home .sec--hub .hub-panel:focus-visible {
+  outline: 2px solid var(--gold-focus);
+  outline-offset: 3px;
 }
 
-.home .sec--exp::before {
-  background: radial-gradient(circle, rgba(255,168,0,.14), transparent 62%);
+/* Prévias: o cartão interno é mais escuro que o painel (efeito de recuo);
+   rótulos, linhas e estados trocam as cores claras originais */
+.home .sec--hub .hp-card {
+  background: rgba(39,3,34,.42);
+  border-color: rgba(255,255,255,.16);
 }
 
-.home .sec--exp::after {
-  background: radial-gradient(circle, rgba(75,23,68,.08), transparent 62%);
+.home .sec--hub .hp-avatar {
+  background: rgba(255,168,0,.24);
+  color: var(--gold-on-card);
+}
+
+.home .sec--hub .hp-child-name,
+.home .sec--hub .hp-session-title,
+.home .sec--hub .hp-summary-row strong {
+  color: #fff;
+}
+
+.home .sec--hub .hp-child-sub,
+.home .sec--hub .hp-session-text,
+.home .sec--hub .hp-summary-row span {
+  color: var(--text-on-card);
+}
+
+.home .sec--hub .hp-session-date {
+  color: var(--text-muted-on-card);
+}
+
+.home .sec--hub .hp-tag {
+  background: rgba(255,255,255,.12);
+  border-color: rgba(255,255,255,.26);
+  color: var(--text-on-card);
+}
+
+.home .sec--hub .hp-summary-row + .hp-summary-row {
+  border-top-color: rgba(255,255,255,.14);
+}
+
+/* Linha do tempo: concluído em verde claro (estado), ativo em dourado, pendente apagado */
+.home .sec--hub .hp-tl-step--done {
+  color: var(--text-on-card);
+}
+
+.home .sec--hub .hp-tl-step--active {
+  background: rgba(255,189,73,.16);
+  border-color: rgba(255,189,73,.5);
+  color: #fff;
+}
+
+.home .sec--hub .hp-tl-step--pending {
+  color: var(--text-muted-on-card);
+}
+
+.home .sec--hub .hp-tl-step--done .hp-tl-dot    { background: rgba(79,208,155,.20); }
+.home .sec--hub .hp-tl-step--active .hp-tl-dot  { background: rgba(255,189,73,.24); }
+.home .sec--hub .hp-tl-step--pending .hp-tl-dot { background: rgba(255,255,255,.12); }
+
+.home .sec--hub .hp-tl-step--done .hp-tl-dot polyline { stroke: #7fe2b4; }
+.home .sec--hub .hp-tl-step--active .hp-tl-dot circle { fill: var(--gold-on-card); }
+.home .sec--hub .hp-tl-step--pending .hp-tl-dot circle { fill: rgba(255,255,255,.45); }
+
+.home .sec--hub .hp-badge--ok {
+  background: rgba(79,208,155,.20);
+  color: #9af0c8;
+}
+
+.home .sec--hub .hp-dot-status {
+  background: #4fd09b;
+}
+
+/* ---------- 8. Experiência ---------- */
+/* Os blobs decorativos legados (cortados pelo overflow da seção) saem: a luz
+   vem do canvas */
+.home .sec--exp,
+.home .sec--faq {
+  overflow: visible;
+}
+
+.home .sec--exp::before,
+.home .sec--exp::after,
+.home .sec--faq::before,
+.home .sec--faq::after {
+  display: none;
 }
 
 .home .exp-card {
-  border-color: rgba(84,0,66,.12);
-  box-shadow: 0 18px 40px rgba(75,23,68,.10);
+  border-color: var(--card-line);
+  box-shadow: var(--card-shadow);
 }
 
-.home .exp-card--fam { background: #FFF8EE; }
-.home .exp-card--tut { --exp-color: var(--brand-deep); background: #F6F1FD; }
-.home .exp-card--cri { background: #FBF0F6; }
+.home .exp-card--fam { background: var(--card-warm); }
+.home .exp-card--tut { --exp-color: var(--orchid); background: var(--card-orchid); }
+.home .exp-card--cri { --exp-color: #E8B4E2; background: var(--card-violet); }
 
 .home .exp-card-tag {
-  color: var(--brand-deep);
+  color: var(--text-on-card);
 }
 
-/* ---------- 8. Segurança (lavanda) ---------- */
-.home .sec--trust {
-  background: linear-gradient(180deg, var(--lav) 0%, var(--lav) 76%, var(--cream) 100%);
+.home .exp-card-quote {
+  color: #fff;
 }
 
+.home .exp-card-label {
+  color: var(--text-on-card);
+  border-top-color: rgba(255,255,255,.18);
+}
+
+/* ---------- 9. Segurança ---------- */
 .home .sec--trust .trust-item {
-  background: #FAF7FF;
-  border-color: rgba(84,0,66,.12);
-  box-shadow: 0 16px 36px rgba(75,23,68,.09);
+  background: var(--card-violet);
+  border-color: var(--card-line);
+  box-shadow: var(--card-shadow);
 }
 
 .home .sec--trust .trust-ic {
-  background: rgba(255,168,0,.18);
-  color: #7a4600;
+  background: rgba(255,168,0,.24);
+  color: var(--gold-on-card);
 }
 
-/* ---------- 9. FAQ (creme) ---------- */
-.home .sec--faq {
-  background: var(--cream);
-  margin-bottom: calc(-1 * var(--sheet));
-  padding-bottom: calc(92px + var(--sheet));
+.home .sec--trust .trust-item strong {
+  color: #fff;
 }
 
-.home .sec--faq::before {
-  background: radial-gradient(circle, rgba(255,168,0,.14), transparent 62%);
+.home .sec--trust .trust-item p {
+  color: var(--text-on-card);
 }
 
-.home .sec--faq::after {
-  background: radial-gradient(circle, rgba(75,23,68,.07), transparent 64%);
-}
-
+/* ---------- 10. FAQ ---------- */
 .home .faq-item {
-  background: #FFFCF8;
-  border-color: rgba(84,0,66,.14);
+  background: #6E3A72;
+  border-color: var(--card-line);
+  box-shadow: 0 10px 24px rgba(10,0,9,.25), inset 0 1px 0 rgba(255,255,255,.10);
 }
 
 .home .faq-item.is-open {
-  background: linear-gradient(90deg, rgba(255,168,0,.14), #FFFCF8 24%);
-  border-color: rgba(255,168,0,.5);
-  box-shadow: 0 16px 34px rgba(75,23,68,.09);
+  background: linear-gradient(90deg, rgba(255,168,0,.14), rgba(255,168,0,0) 32%), #7A4580;
+  border-color: rgba(255,168,0,.6);
+  box-shadow: 0 16px 34px rgba(10,0,9,.35), inset 0 1px 0 rgba(255,255,255,.14);
+}
+
+.home .faq-btn,
+.home .faq-item.is-open .faq-btn {
+  color: #fff;
 }
 
 .home .faq-btn:hover {
-  background: rgba(84,0,66,.04);
+  background: rgba(255,255,255,.07);
 }
 
 .home .faq-btn:active {
-  background: rgba(84,0,66,.09);
+  background: rgba(255,255,255,.13);
+}
+
+.home .faq-btn:focus-visible {
+  outline-color: var(--gold-focus);
+  box-shadow: none;
 }
 
 .home .faq-icon {
-  color: var(--brand-deep);
+  color: var(--gold-on-card);
 }
 
-/* ---------- 10. CTA final ---------- */
-.home .surface-night--cta {
-  /* O brilho âmbar sobe por trás do mascote, longe do título e dos botões */
-  --warm-a-pos: 50% 104%;  --warm-a-size: 620px 340px;
-  --warm-b-pos: 112% 8%;   --warm-b-size: 360px 300px;
-  --cool-a-pos: 14% 22%;   --cool-a-size: 600px 420px;
-  --cool-b-pos: 88% 60%;   --cool-b-size: 560px 380px;
-  --rosette-size: 400px;
-
-  z-index: 1;
-  border-radius: var(--sheet) var(--sheet) 0 0;
+.home .faq-answer-inner p {
+  color: var(--text-on-card);
 }
 
-/* O brilho âmbar legado foi substituído pelos brilhos do brand-surface */
+/* ---------- 11. CTA final ---------- */
+/* O brilho âmbar legado (no topo) vira uma luz local atrás do mascote, que se
+   dissolve antes de tocar as bordas da seção */
 .home .sec--cta-final::before {
-  display: none;
+  inset: auto 0 0 0;
+  height: 75%;
+  background: radial-gradient(ellipse 70% 62% at 50% 100%,
+    rgba(var(--night-glow-warm), .42) 0%, rgba(var(--night-glow-warm), .12) 46%, transparent 74%);
 }
 
 .home .cta-content .eyebrow {
@@ -611,17 +732,6 @@
 
 .home .cta-content p:not(.eyebrow) {
   color: var(--text-on-dark);
-}
-
-.home .cta-content .btn--outline {
-  color: #fff;
-  border-color: rgba(255,255,255,.5);
-  background: rgba(255,255,255,.06);
-}
-
-.home .cta-content .btn--outline:hover {
-  border-color: #fff;
-  background: rgba(255,255,255,.14);
 }
 
 /* Cena: os elementos eram navy sobre claro */
@@ -665,7 +775,8 @@
   background: #fff;
 }
 
-/* O chão da cena é a cor do footer: a página termina numa só superfície */
+/* O chão da cena é a cor do footer (e do canvas nesse ponto): a página termina
+   numa só superfície */
 .home .cta-wave path {
   fill: var(--night);
 }
@@ -674,7 +785,7 @@
   filter: drop-shadow(0 -10px 22px rgba(255,168,0,.22));
 }
 
-/* ---------- 11. Footer ---------- */
+/* ---------- 12. Footer ---------- */
 .home .ft-wrap {
   background: var(--night);
 }
@@ -707,11 +818,62 @@
   opacity: .9;
 }
 
-/* ---------- 12. Breakpoints ---------- */
+/* ---------- 13. Breakpoints ---------- */
+
+/* Desktop: experiência, segurança e FAQ ganham largura e escala; eram colunas
+   estreitas (cards de ~357px, FAQ de 900px) no meio de uma tela larga. */
+@media (min-width: 881px) {
+  .home :is(.sec--exp, .sec--trust, .sec--faq) {
+    padding-block: 76px;
+  }
+
+  .home :is(.sec--exp, .sec--trust, .sec--faq) .wrap {
+    max-width: 1260px;
+  }
+
+  .home :is(.sec--exp, .sec--trust, .sec--faq) .sec-head {
+    max-width: 76ch;
+  }
+
+  .home .exp-card {
+    padding: 36px 32px 34px;
+  }
+
+  .home .exp-card-quote {
+    font-size: 1.16rem;
+  }
+
+  .home .sec--trust .trust-item {
+    padding: 34px 30px 36px;
+  }
+
+  .home .sec--trust .trust-item strong {
+    font-size: 1.2rem;
+  }
+
+  .home .sec--trust .trust-item p {
+    font-size: 1rem;
+  }
+
+  .home .sec--faq .faq-list {
+    max-width: 1020px;
+  }
+
+  .home .faq-btn {
+    min-height: 64px;
+    padding: 20px 28px;
+    font-size: 1.1rem;
+  }
+
+  .home .faq-answer-inner p {
+    padding: 0 28px 24px;
+    max-width: 74ch;
+    font-size: 1.04rem;
+  }
+}
 
 /* Coluna única (≤880px): o texto do hero ocupa a largura toda, então o âmbar
-   desce para a faixa do disco, onde não há texto. O index.html também reduz o
-   padding das seções aqui; os respiros acompanham. */
+   desce para a faixa do disco, onde não há texto. */
 @media (max-width: 880px) {
   .home .hero.surface-night--hero {
     --warm-a-pos: -14% 80%;
@@ -723,31 +885,30 @@
     margin-bottom: 64px;
   }
 
-  .home .sec--paths {
-    padding-block: calc(64px + var(--sheet));
-  }
-
-  .home .sec--exp {
-    padding-top: calc(64px + var(--sheet));
-  }
-
-  .home .sec--faq {
-    padding-bottom: calc(64px + var(--sheet));
-  }
-
   .home .sec--paths .pane {
     padding: 32px 26px;
   }
 
-  /* As abas viram uma faixa rolável: pílulas escuras, a ativa continua clara */
+  /* Com o conteúdo na largura toda, os brilhos de ameixa continuam (são amplos),
+     mas o âmbar do canvas sai para a borda */
+  .home .surface-night--canvas {
+    --cool-a-size: 1000px 1300px;
+    --cool-b-size: 1000px 1300px;
+    --warm-a-pos: -26% 28%;
+    --warm-a-size: 420px 520px;
+    --warm-b-pos: 126% 64%;
+    --warm-b-size: 420px 520px;
+  }
+
+  /* As abas viram uma faixa rolável: pílulas escuras, a ativa continua violeta */
   .home .sec--hub .hub-tab {
-    background: rgba(255,255,255,.08);
-    border-color: rgba(255,255,255,.2);
+    background: rgba(255,255,255,.10);
+    border-color: rgba(255,255,255,.24);
   }
 
   .home .sec--hub .hub-tab[aria-selected="true"] {
-    background: #FFF8EF;
-    border-color: rgba(255,255,255,.7);
+    background: var(--card-violet);
+    border-color: rgba(255,189,73,.6);
     box-shadow: 0 6px 14px rgba(10,0,9,.35);
   }
 
@@ -758,39 +919,23 @@
 }
 
 @media (max-width: 600px) {
-  .home {
-    --sheet: 24px;
-  }
-
   .home .hero.surface-night--hero {
     --warm-a-size: 320px 400px;
     --warm-b-size: 280px 360px;
     --rosette-size: 320px;
   }
 
-  .home :is(.surface-night--flow, .surface-night--plum) {
-    --warm-a-size: 240px 220px;
-    --warm-b-size: 240px 240px;
-    --cool-a-size: 380px 300px;
-    --cool-b-size: 380px 280px;
+  /* O padrão de rosetas segue o do hero (mesma escala e origem) */
+  .home .surface-night--canvas {
     --rosette-size: 320px;
-  }
-
-  /* Com o texto na largura toda, o âmbar do canto superior direito alcançaria o título */
-  .home .surface-night--plum {
-    --warm-a-pos: 124% 2%;
-  }
-
-  .home .surface-night--cta {
-    --warm-a-size: 420px 260px;
-    --warm-b-size: 240px 240px;
-    --cool-a-size: 380px 300px;
-    --cool-b-size: 380px 280px;
-    --rosette-size: 320px;
+    --cool-a-size: 900px 1100px;
+    --cool-b-size: 900px 1100px;
+    --warm-a-pos: -60% 28%;
+    --warm-b-pos: 160% 64%;
   }
 }
 
-/* ---------- 13. Movimento e contraste ---------- */
+/* ---------- 14. Movimento e contraste ---------- */
 @media (prefers-reduced-motion: reduce) {
   .home .disc,
   .home .btn {
@@ -798,30 +943,30 @@
   }
 }
 
-/* Alto contraste: brand-surface.css já reduz as superfícies escuras à cor
-   sólida; aqui o vidro, as cores translúcidas e os filetes finos ganham
-   bordas firmes. */
+/* Alto contraste: brand-surface.css já reduz as superfícies (inclusive o
+   canvas) à cor sólida; aqui os cards ganham bordas firmes. */
 @media (prefers-contrast: more) {
-  .home .surface-night--flow .strip {
+  .home .sec--warm .strip {
     background: rgba(255,255,255,.14);
     border-color: rgba(255,255,255,.75);
   }
 
-  .home .surface-night--flow .step,
+  .home .sec--warm .step,
+  .home .pane,
+  .home .exp-card,
+  .home .sec--trust .trust-item,
+  .home .faq-item,
+  .home .faq-item.is-open,
   .home .flow-card__inner,
   .home .sec--hub .hub-panel:not(.hub-panel--deep) {
     border-color: #fff;
   }
 
-  .home .disc {
-    border-color: var(--accent);
+  .home .sec--hub .hp-card {
+    border-color: rgba(255,255,255,.6);
   }
 
-  .home .pane,
-  .home .exp-card,
-  .home .sec--trust .trust-item,
-  .home .faq-item,
-  .home .faq-item.is-open {
-    border-color: var(--night);
+  .home .disc {
+    border-color: var(--accent);
   }
 }
