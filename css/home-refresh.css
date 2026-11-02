@@ -6,14 +6,14 @@
 
    A página é UM ambiente contínuo: o <main> é o canvas (motor do
    brand-surface aplicado uma vez: rosetas, brilhos e grão) e as seções são
-   transparentes sobre ele. Só o hero, o disco, a faixa e o footer têm
-   superfície própria. O tom sobe e desce em ondas amplas:
+   transparentes sobre ele. Só o hero, a faixa e o footer têm superfície
+   própria. O tom sobe e desce em ondas amplas:
      noite #270322 → ameixa #4B1744 (Como funciona) → noite (hub)
        → ameixa (segurança e FAQ) → noite (CTA e footer)
    Não há fundos, cantos, sombras ou margens negativas por seção: o que
    separa as seções é espaçamento, título e componentes.
 
-   Índice: 0 tokens · 1 header e botões · 2 canvas · 3 hero · 4 disco
+   Índice: 0 tokens · 1 header e botões · 2 canvas · 3 hero · 4 rio-trilha do hero
            5 faixa + Como funciona · 6 Dois caminhos · 7 Hub · 8 Experiência
            9 Segurança · 10 FAQ · 11 CTA final · 12 footer · 13 breakpoints
            14 movimento e contraste
@@ -47,18 +47,31 @@
 }
 
 /* ---------- 1. Header e botões ---------- */
+/* O header flutua sobre o hero, que sobe até o topo da página: sem faixa nem
+   filete, a navegação fica integrada ao fundo. O hero reserva a altura do
+   header no padding-top (82px no desktop; 116px quando a navegação some e os
+   botões descem para uma segunda linha, ≤880px). */
 .home .hd {
-  background: var(--night);
-  border-bottom: 1px solid rgba(255,255,255,.12);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: transparent;
+  backdrop-filter: none;
+  border-bottom: 0;
 }
 
-.home .brand-copy strong,
+/* Logo horizontal (720x233, aparada em scripts/brand/aparar-marcas.cjs): laranja
+   sobre o noite. A altura fixa dá ~155px de largura e preserva a proporção; a
+   largura vem dos atributos width/height do <img>, então não há salto de layout. */
+.home .brand-logo {
+  display: block;
+  height: 50px;
+  width: auto;
+}
+
 .home .nav a {
   color: #fff;
-}
-
-.home .brand-copy small {
-  color: var(--text-on-dark-soft);
 }
 
 .home .nav {
@@ -163,6 +176,7 @@
   --cool-b-size: 60% 65%;
 
   --rosette-size: 400px;
+  padding-top: 152px;   /* 82px do header + 70px de respiro */
   padding-bottom: 105px;
 }
 
@@ -171,8 +185,23 @@
   display: none;
 }
 
+/* Título editorial: o texto é mais longo que o anterior, então a escala é
+   menor. overflow-wrap evita cortar "possibilidades." em telas de 320px (o
+   hero tem overflow hidden). */
 .home .hero h1 {
   color: #fff;
+  font-size: clamp(2.4rem, 4.4vw + .4rem, 3.9rem);
+  line-height: 1.06;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+.home .hero-accent {
+  color: var(--gold-on-dark);
+}
+
+.home .hero .lead {
+  max-width: 46ch;
 }
 
 .home .hero .eyebrow,
@@ -189,100 +218,23 @@
   border-top-color: rgba(255,255,255,.18);
 }
 
-/* ---------- 4. Disco do mascote ----------
-   O interior roxo vive no próprio .disc (variante --disc do brand-surface),
-   não no .brand-reveal: o reveal é temporário e some após a animação. */
-.home .disc {
-  border: 1px solid rgba(255,168,0,.5);
-  box-shadow:
-    0 0 0 1px rgba(255,168,0,.10),
-    0 0 70px rgba(255,168,0,.12),
-    0 0 130px rgba(98,4,78,.55),
-    0 34px 70px rgba(10,0,9,.55),
-    inset 0 1px 0 rgba(255,214,128,.28),
-    inset 0 -40px 70px rgba(10,0,9,.38);
+/* ---------- 4. Rio-trilha do hero ----------
+   Ilustração estática: um SVG inline no index.html (gerado por
+   scripts/brand/gerar-rio-trilha.cjs) com o mascote ao lado de um caminho em
+   curvas, como um rio, e os três marcos da trilha da criança. Sem moldura,
+   texto, halo nem animação: o desenho se dissolve no fundo do hero (o rio
+   nasce e some em degradê) e o espaço vazio faz parte da composição. Todas as
+   cores e medidas vivem no próprio SVG, que escala inteiro com a largura. */
+.home .hero-trail {
+  width: 100%;
+  max-width: 560px;
+  margin-left: auto;
 }
 
-.home .stage--active .disc {
-  border-color: rgba(255,189,73,.85);
-  box-shadow:
-    0 0 0 1px rgba(255,168,0,.22),
-    0 0 0 8px rgba(255,168,0,.06),
-    0 0 84px rgba(255,168,0,.20),
-    0 0 130px rgba(98,4,78,.55),
-    0 34px 70px rgba(10,0,9,.55),
-    inset 0 1px 0 rgba(255,214,128,.40),
-    inset 0 -40px 70px rgba(10,0,9,.38);
-}
-
-/* Halo violeta atrás do mascote (era um brilho branco, que lavaria o roxo) */
-.home .disc::before {
-  background: radial-gradient(circle at 50% 44%,
-    rgba(176,88,206,.42) 0%, rgba(120,40,140,.22) 34%, transparent 62%);
-}
-
-/* O anel interno legado somava uma borda ao grão do brand-surface */
-.home .disc::after {
-  border: 0;
-}
-
-.home .brand-mascot {
-  filter: drop-shadow(0 0 20px rgba(255,168,0,.30)) drop-shadow(0 16px 22px rgba(10,0,9,.50));
-}
-
-/* Reveal da logo: um véu âmbar leve sobre o roxo do disco, não mais um disco
-   azul opaco. A logo antiga (clara) já funciona sobre o escuro. */
-.home .brand-reveal {
-  background: radial-gradient(circle at 50% 50%,
-    rgba(255,168,0,.20) 0%, rgba(255,168,0,.07) 38%, transparent 66%);
-}
-
-.home .brand-reveal img {
-  filter: drop-shadow(0 0 24px rgba(255,168,0,.35));
-}
-
-.home .brand-lockup,
-.home .disc-message {
-  color: #fff;
-}
-
-.home .brand-lockup strong {
-  color: #fff;
-}
-
-.home .brand-lockup span {
-  color: var(--text-on-dark-soft);
-  opacity: .9;
-}
-
-/* Cards flutuantes: violeta, com borda clara para se destacar do disco e do
-   hero. O ativo clareia e ganha o anel dourado (mesmos gatilhos das regras
-   originais, com um nível a mais de especificidade). */
-.home .flow-card__inner {
-  background: var(--card-violet);
-  border-color: var(--card-line);
-  box-shadow: 0 20px 44px rgba(10,0,9,.55), 0 3px 10px rgba(10,0,9,.35), inset 0 1px 0 rgba(255,255,255,.14);
-}
-
-.home .flow-card__inner strong {
-  color: #fff;
-}
-
-.home .flow-card__inner span {
-  color: var(--text-on-card);
-}
-
-.home .flow-card.is-active .flow-card__inner,
-.home .stage[data-can-move="true"] .flow-card:hover .flow-card__inner,
-.home .stage[data-can-move="true"] .flow-card:focus-visible .flow-card__inner,
-.home .stage[data-can-move="true"] .flow-card.is-active .flow-card__inner {
-  background: linear-gradient(160deg, #8E5090, #6E3F78);
-  border-color: rgba(255,189,73,.75);
-  box-shadow:
-    0 24px 54px rgba(10,0,9,.55),
-    0 0 0 3px rgba(255,168,0,.22),
-    0 0 42px rgba(255,168,0,.20),
-    inset 0 1px 0 rgba(255,255,255,.18);
+.home .hero-trail svg {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 /* ---------- 5. Faixa + "Como funciona" ----------
@@ -781,8 +733,17 @@
   fill: var(--night);
 }
 
+/* O SVG é preserveAspectRatio="none" sem altura: a altura seguia a largura
+   (largura/12) e a onda subia por cima do mascote em telas largas. Altura fixa
+   desacopla os dois; o mascote fica explicitamente à frente. */
 .home .cta-wave {
+  height: 110px;
+  z-index: 0;
   filter: drop-shadow(0 -10px 22px rgba(255,168,0,.22));
+}
+
+.home .cta-character {
+  z-index: 2;
 }
 
 /* ---------- 12. Footer ---------- */
@@ -823,6 +784,12 @@
 /* Desktop: experiência, segurança e FAQ ganham largura e escala; eram colunas
    estreitas (cards de ~357px, FAQ de 900px) no meio de uma tela larga. */
 @media (min-width: 881px) {
+  /* A coluna da ilustração fica maior, para o desenho respirar; o título ainda
+     cabe ("ao alcance de" mede ~7 em de 62px, em 3 linhas) */
+  .home .hero .grid {
+    grid-template-columns: .9fr 1.1fr;
+  }
+
   .home :is(.sec--exp, .sec--trust, .sec--faq) {
     padding-block: 76px;
   }
@@ -873,11 +840,12 @@
 }
 
 /* Coluna única (≤880px): o texto do hero ocupa a largura toda, então o âmbar
-   desce para a faixa do disco, onde não há texto. */
+   desce para a faixa da cena, onde não há texto. */
 @media (max-width: 880px) {
   .home .hero.surface-night--hero {
     --warm-a-pos: -14% 80%;
     --warm-a-size: 440px 460px;
+    padding-top: 160px;   /* 116px do header de duas linhas + 44px de respiro */
     padding-bottom: 84px;
   }
 
@@ -912,6 +880,23 @@
     box-shadow: 0 6px 14px rgba(10,0,9,.35);
   }
 
+  .home .cta-wave {
+    height: 90px;
+  }
+
+  /* Coluna única: a ilustração desce para depois dos CTAs e da faixa de fatos,
+     centralizada */
+  .home .hero-trail {
+    max-width: 400px;
+    margin-inline: auto;
+  }
+
+  /* A logo segue a primeira linha do header (a navegação some e os botões
+     descem para a linha de baixo) */
+  .home .brand-logo {
+    height: 40px;
+  }
+
   /* Logo e redes ocupam a primeira linha inteira; as colunas vêm abaixo */
   .home .ft .top > div:first-child {
     grid-column: 1 / -1;
@@ -933,11 +918,24 @@
     --warm-a-pos: -60% 28%;
     --warm-b-pos: 160% 64%;
   }
+
+  .home .hero h1 {
+    font-size: clamp(2rem, 9vw, 2.45rem);
+  }
+
+  /* Versão simplificada: só o rio, os marcos e o mascote (some a decoração
+     espacial) */
+  .home .hero-trail {
+    max-width: 340px;
+  }
+
+  .home .hero-trail .rt-deco {
+    display: none;
+  }
 }
 
 /* ---------- 14. Movimento e contraste ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .home .disc,
   .home .btn {
     transition: none;
   }
@@ -957,16 +955,11 @@
   .home .sec--trust .trust-item,
   .home .faq-item,
   .home .faq-item.is-open,
-  .home .flow-card__inner,
   .home .sec--hub .hub-panel:not(.hub-panel--deep) {
     border-color: #fff;
   }
 
   .home .sec--hub .hp-card {
     border-color: rgba(255,255,255,.6);
-  }
-
-  .home .disc {
-    border-color: var(--accent);
   }
 }
