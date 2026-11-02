@@ -1,0 +1,827 @@
+/* ============================================================
+   COGNITA HUB — HOME REFRESH (Noite Maracajá)
+   Aplica a superfície de brand-surface.css à homepage. Carregado depois
+   do <style> embutido do index.html: os seletores `.home …` vencem pela
+   especificidade, sem forçar prioridade.
+
+   Ritmo da página (escuro = superfície .surface-night):
+     header + hero + faixa + "Como funciona"   escuro
+     Dois caminhos                             lavanda
+     Dentro do Cognita Hub                     escuro (ameixa)
+     Experiência                               creme rosado
+     Segurança                                 lavanda
+     FAQ                                       creme
+     CTA final + footer                        escuro
+
+   Índice: 0 tokens · 1 header · 2 hero · 3 disco · 4 faixa + Como funciona
+           5 Dois caminhos · 6 Hub · 7 Experiência · 8 Segurança · 9 FAQ
+           10 CTA final · 11 footer · 12 breakpoints · 13 movimento e contraste
+   ============================================================ */
+
+/* ---------- 0. Tokens ---------- */
+.home {
+  --night-mid: #4B1744;          /* ameixa das superfícies escuras secundárias */
+  --lav: #EEE8F8;                /* lavanda clara */
+  --rose-soft: #F8E9EF;          /* creme rosado */
+  --cream: #FBF4EA;
+  --gold-on-dark: #ffbd49;       /* dourado legível sobre o roxo */
+  --gold-focus: #ffcf63;
+  --text-on-dark: #ead9e7;
+  --text-on-dark-soft: #e5cddd;
+  --sheet: var(--r-xl);          /* raio dos cantos das superfícies escuras */
+}
+
+/* ---------- 1. Header integrado ao fundo escuro ---------- */
+.home .hd {
+  background: var(--night);
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+
+.home .brand-copy strong,
+.home .nav a {
+  color: #fff;
+}
+
+.home .brand-copy small {
+  color: var(--text-on-dark-soft);
+}
+
+.home .nav {
+  background: rgba(255,255,255,.07);
+  border-color: rgba(255,255,255,.12);
+}
+
+.home .nav a:hover {
+  color: #fff;
+  background: rgba(255,255,255,.12);
+}
+
+.home .hd-cta .btn--outline {
+  color: #fff;
+  border-color: rgba(255,255,255,.45);
+}
+
+.home .hd-cta .btn--outline:hover {
+  border-color: #fff;
+  background: rgba(255,255,255,.12);
+}
+
+.home .hd-cta .btn--soft {
+  color: var(--night);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Foco visível em toda superfície escura (o padrão é azul-marinho sobre creme) */
+.home .hd a:focus-visible,
+.home .surface-night a:focus-visible {
+  outline-color: var(--gold-focus);
+  box-shadow: 0 0 0 2px var(--night);
+}
+
+/* Pressionado: os botões do index.html só tinham hover */
+.home .btn:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+/* ---------- 2. Hero ---------- */
+.home .hero.surface-night--hero {
+  /* Âmbar da esquerda ancorado ao centro da página (wrap de 1160px), não à
+     viewport: a distância até a coluna de texto fica fixa e o brilho nunca
+     passa por baixo do texto. Em telas estreitas ele sai do quadro. */
+  --warm-a-pos: calc(50% - 840px) 26%;
+  --warm-a-size: 560px 600px;
+  --warm-b-pos: 108% 90%;
+  --warm-b-size: 460px 500px;
+
+  --cool-a-pos: 38% -15%;
+  --cool-a-size: 70% 70%;
+  --cool-b-pos: 65% 115%;
+  --cool-b-size: 60% 65%;
+
+  --rosette-size: 400px;
+  padding-bottom: 105px;
+}
+
+/* Os blobs antigos somariam aos brilhos novos */
+.home .hero .blob {
+  display: none;
+}
+
+.home .hero h1 {
+  color: #fff;
+}
+
+.home .hero .eyebrow,
+.home .hero .tert {
+  color: var(--gold-on-dark);
+}
+
+.home .hero .lead,
+.home .hero .facts span {
+  color: var(--text-on-dark);
+}
+
+.home .hero .facts {
+  border-top-color: rgba(255,255,255,.18);
+}
+
+.home .hero .btn--outline {
+  color: #fff;
+  border-color: rgba(255,255,255,.5);
+  background: rgba(255,255,255,.06);
+}
+
+.home .hero .btn--outline:hover {
+  border-color: #fff;
+  background: rgba(255,255,255,.14);
+}
+
+/* ---------- 3. Disco do mascote ----------
+   O interior roxo vive no próprio .disc (variante --disc do brand-surface),
+   não no .brand-reveal: o reveal é temporário e some após a animação. */
+.home .disc {
+  border: 1px solid rgba(255,168,0,.5);
+  box-shadow:
+    0 0 0 1px rgba(255,168,0,.10),
+    0 0 70px rgba(255,168,0,.12),
+    0 0 130px rgba(98,4,78,.55),
+    0 34px 70px rgba(10,0,9,.55),
+    inset 0 1px 0 rgba(255,214,128,.28),
+    inset 0 -40px 70px rgba(10,0,9,.38);
+}
+
+.home .stage--active .disc {
+  border-color: rgba(255,189,73,.85);
+  box-shadow:
+    0 0 0 1px rgba(255,168,0,.22),
+    0 0 0 8px rgba(255,168,0,.06),
+    0 0 84px rgba(255,168,0,.20),
+    0 0 130px rgba(98,4,78,.55),
+    0 34px 70px rgba(10,0,9,.55),
+    inset 0 1px 0 rgba(255,214,128,.40),
+    inset 0 -40px 70px rgba(10,0,9,.38);
+}
+
+/* Halo violeta atrás do mascote (era um brilho branco, que lavaria o roxo) */
+.home .disc::before {
+  background: radial-gradient(circle at 50% 44%,
+    rgba(176,88,206,.42) 0%, rgba(120,40,140,.22) 34%, transparent 62%);
+}
+
+/* O anel interno legado somava uma borda ao grão do brand-surface */
+.home .disc::after {
+  border: 0;
+}
+
+.home .brand-mascot {
+  filter: drop-shadow(0 0 20px rgba(255,168,0,.30)) drop-shadow(0 16px 22px rgba(10,0,9,.50));
+}
+
+/* Reveal da logo: um véu âmbar leve sobre o roxo do disco, não mais um disco
+   azul opaco. A logo antiga (clara) já funciona sobre o escuro. */
+.home .brand-reveal {
+  background: radial-gradient(circle at 50% 50%,
+    rgba(255,168,0,.20) 0%, rgba(255,168,0,.07) 38%, transparent 66%);
+}
+
+.home .brand-reveal img {
+  filter: drop-shadow(0 0 24px rgba(255,168,0,.35));
+}
+
+.home .brand-lockup,
+.home .disc-message {
+  color: #fff;
+}
+
+.home .brand-lockup strong {
+  color: #fff;
+}
+
+.home .brand-lockup span {
+  color: var(--text-on-dark-soft);
+  opacity: .9;
+}
+
+/* Cards flutuantes: continuam claros; só borda e sombra mudam para o escuro.
+   Hover, foco e .is-active seguem as regras originais (maior especificidade). */
+.home .flow-card__inner {
+  border-color: rgba(255,255,255,.5);
+  box-shadow: 0 20px 44px rgba(10,0,9,.5), 0 3px 10px rgba(10,0,9,.3);
+}
+
+/* ---------- 4. Faixa + "Como funciona" ----------
+   A faixa (.strip) é o primeiro bloco da seção, que usa o mesmo motor de
+   brand-surface.css (rosetas, brilhos, grão) sobre um ameixa mais claro que o
+   do hero. As superfícies escuras (--flow, --plum, --cta) compartilham o
+   z-index: as seções claras vizinhas entram por baixo dos cantos arredondados. */
+.home .surface-night--flow,
+.home .surface-night--plum {
+  background-color: var(--night-mid);
+  z-index: 1;
+}
+
+.home .surface-night--flow {
+  /* Âmbar só nas bordas e perto do rodapé da seção, longe de qualquer texto;
+     o magenta dá profundidade ao ameixa. */
+  --warm-a-pos: -12% 94%;  --warm-a-size: 340px 280px;
+  --warm-b-pos: 112% 56%;  --warm-b-size: 340px 300px;
+  --cool-a-pos: 86% 12%;   --cool-a-size: 560px 380px;
+  --cool-b-pos: 14% 100%;  --cool-b-size: 560px 340px;
+  --rosette-size: 400px;
+
+  display: flow-root;   /* o margin negativo da faixa não colapsa com o topo */
+  padding-top: 0;       /* a faixa abre a seção; o respiro vem do margin dela */
+  border-radius: 0 0 var(--sheet) var(--sheet);
+  box-shadow: 0 28px 60px -26px rgba(39,3,34,.4);
+}
+
+/* Costura com o hero e descida do roxo profundo (--night, #270322) ao ameixa:
+   começa 80px acima da seção (dissolve o rodapé do hero no tom base) e some
+   em 440px, o que também deixa as rosetas surgirem aos poucos. */
+.home .surface-night--flow::before {
+  content: "";
+  position: absolute;
+  top: -80px;
+  left: 0;
+  right: 0;
+  height: 520px;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(180deg,
+    rgba(39,3,34,0)   0,
+    rgba(39,3,34,1)   80px,
+    rgba(39,3,34,.62) 200px,
+    rgba(39,3,34,.22) 340px,
+    rgba(39,3,34,0)   520px);
+}
+
+/* Faixa: vidro escuro sobre a costura, em vez de uma placa branca */
+.home .strip-wrap {
+  position: relative;
+  z-index: 2;
+  margin-top: -42px;
+  margin-bottom: 92px;
+}
+
+.home .surface-night--flow .strip {
+  background: rgba(255,255,255,.07);
+  border-color: rgba(255,255,255,.16);
+  box-shadow: 0 20px 50px rgba(10,0,9,.38), inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+.home .surface-night--flow .stat + .stat::before {
+  background: rgba(255,255,255,.16);
+}
+
+.home .surface-night--flow .stat b {
+  color: #fff;
+}
+
+.home .surface-night--flow .stat span {
+  color: var(--text-on-dark-soft);
+}
+
+/* Títulos e parágrafos claros sobre o ameixa (Como funciona e Hub) */
+.home :is(.surface-night--flow, .surface-night--plum) .sec-head .eyebrow {
+  color: var(--gold-on-dark);
+}
+
+.home :is(.surface-night--flow, .surface-night--plum) .sec-head h2 {
+  color: #fff;
+}
+
+.home :is(.surface-night--flow, .surface-night--plum) .sec-head p:not(.eyebrow) {
+  color: var(--text-on-dark);
+}
+
+/* Cards claros: creme, lavanda e rosa suave, com borda e sombra para fundo escuro */
+.home .surface-night--flow .step {
+  border-color: rgba(255,255,255,.55);
+  box-shadow: 0 22px 48px rgba(10,0,9,.42), 0 2px 6px rgba(10,0,9,.25);
+}
+
+.home .surface-night--flow .step--ciclo {
+  background: #FBEFF4;
+}
+
+.home .surface-night--flow .steps::before {
+  background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.30), rgba(255,255,255,.06));
+}
+
+.home .surface-night--flow .mascot-note {
+  color: var(--text-on-dark);
+}
+
+.home .surface-night--flow .mascot-note .pip {
+  border-color: rgba(255,255,255,.22);
+}
+
+/* ---------- 5. Dois caminhos (lavanda pelo meio das folhas escuras) ---------- */
+.home .sec--paths {
+  background:
+    radial-gradient(50% 60% at 88% 0%, rgba(255,168,0,.10), transparent 70%),
+    var(--lav);
+  margin-block: calc(-1 * var(--sheet));
+  padding-block: calc(92px + var(--sheet));
+}
+
+.home .sec--paths .sec-head .eyebrow,
+.home .sec--exp .sec-head .eyebrow,
+.home .sec--trust .sec-head .eyebrow,
+.home .sec--faq .sec-head .eyebrow {
+  color: var(--brand-deep);
+}
+
+.home .sec--paths .duo {
+  gap: 26px;
+  margin-top: 48px;
+}
+
+.home .sec--paths .pane {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 40px;
+}
+
+/* Os dois botões alinhados no rodapé, mesmo com textos de alturas diferentes */
+.home .sec--paths .pane .btn {
+  margin-top: auto;
+}
+
+.home .pane .tag::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  vertical-align: 1px;
+}
+
+/* Famílias: identidade quente, creme e dourado */
+.home .pane--fam {
+  background: linear-gradient(160deg, #FFF9EE 0%, #FFEFD6 100%);
+  border-color: rgba(255,168,0,.38);
+  box-shadow: 0 24px 54px rgba(140,80,0,.14), inset 0 1px 0 rgba(255,255,255,.8);
+}
+
+.home .pane--fam .tag {
+  color: #8A4B00;
+}
+
+/* Tutores: identidade fria, lavanda e roxo institucional */
+.home .pane--tut {
+  background: linear-gradient(160deg, #F7F3FF 0%, #E7DFF7 100%);
+  border-color: rgba(84,0,66,.22);
+  box-shadow: 0 24px 54px rgba(75,23,68,.18), inset 0 1px 0 rgba(255,255,255,.8);
+}
+
+.home .pane--tut::before {
+  background: rgba(84,0,66,.14);
+}
+
+.home .pane--tut .tag {
+  color: var(--brand-deep);
+}
+
+.home .pane--tut .bubble {
+  border-left-color: rgba(84,0,66,.5);
+}
+
+/* Os dois CTAs com o mesmo peso: dourado para famílias, roxo para tutores */
+.home .pane--tut .btn--outline {
+  color: #fff;
+  background: var(--brand-deep);
+  border-color: var(--brand-deep);
+}
+
+.home .pane--tut .btn--outline:hover {
+  background: var(--night-mid);
+  border-color: var(--night-mid);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(84,0,66,.28);
+}
+
+.home .pane--tut .btn--outline:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+/* ---------- 6. Dentro do Cognita Hub (ameixa, a seção de destaque) ---------- */
+.home .surface-night--plum {
+  --warm-a-pos: 108% 4%;   --warm-a-size: 320px 260px;
+  --warm-b-pos: -10% 96%;  --warm-b-size: 340px 280px;
+  --cool-a-pos: 8% 8%;     --cool-a-size: 560px 380px;
+  --cool-b-pos: 92% 100%;  --cool-b-size: 560px 340px;
+  --rosette-size: 400px;
+
+  border-radius: var(--sheet);
+  box-shadow: 0 28px 60px -26px rgba(39,3,34,.45);
+}
+
+/* Abas: legíveis sobre o escuro; a aba ativa vira uma peça clara, que se liga
+   ao painel claro ao lado */
+.home .sec--hub .hub-tab {
+  color: var(--text-on-dark-soft);
+}
+
+.home .sec--hub .hub-tab:hover {
+  background: rgba(255,255,255,.08);
+  color: #fff;
+}
+
+.home .sec--hub .hub-tab:not([aria-selected="true"]) .hub-tab-num {
+  color: #cdb3ca;
+}
+
+.home .sec--hub .hub-tab:focus-visible {
+  outline-color: var(--gold-focus);
+}
+
+.home .sec--hub .hub-tab[aria-selected="true"] {
+  background: #FFF8EF;
+  border-color: rgba(255,255,255,.7);
+  color: var(--brand);
+  box-shadow: 0 16px 34px rgba(10,0,9,.40);
+}
+
+/* Anel de foco azul-marinho: o fundo da aba ativa é claro */
+.home .sec--hub .hub-tab[aria-selected="true"]:focus-visible {
+  outline-color: var(--brand);
+}
+
+/* Painéis claros e opacos: os fundos translúcidos originais ficariam
+   acinzentados sobre o ameixa. Cores = as mesmas, já compostas sobre o creme. */
+.home .sec--hub .hub-panel:not(.hub-panel--deep) {
+  color: var(--ink);
+  border-color: rgba(255,255,255,.45);
+  box-shadow: 0 28px 60px rgba(10,0,9,.45);
+}
+
+.home .sec--hub .hub-panel--warm     { background: var(--warm-soft); }
+.home .sec--hub .hub-panel--indigo   { background: #EFE8FB; }
+.home .sec--hub .hub-panel--lavender { background: #E5EAF7; }
+.home .sec--hub .hub-panel--rose     { background: #FEE4EF; }
+
+/* O painel de segurança é a exceção escura: mais fundo que a seção, com filete dourado */
+.home .sec--hub .hub-panel--deep {
+  background: var(--night);
+  border-color: rgba(255,168,0,.38);
+  box-shadow: 0 28px 60px rgba(10,0,9,.45);
+}
+
+.home .sec--hub .hub-panel--deep .hub-panel-eyebrow {
+  color: var(--gold-on-dark);
+}
+
+/* O painel é focável (tabindex=0): anel dourado fora da borda, visível sobre o ameixa */
+.home .sec--hub .hub-panel:focus-visible {
+  outline: 2px solid var(--gold-focus);
+  outline-offset: 3px;
+}
+
+/* Textos de apoio das prévias: as cores translúcidas originais ficavam abaixo de 3:1 */
+.home .hp-session-date,
+.home .hp-tl-step--pending {
+  color: #6f5f70;
+}
+
+/* Destaque dourado pontual */
+.home .sec--hub .hub-panel-eyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  height: 2px;
+  margin-right: 8px;
+  background: var(--accent);
+  vertical-align: middle;
+}
+
+/* ---------- 7. Experiência (creme rosado) ---------- */
+.home .sec--exp {
+  background: linear-gradient(180deg, var(--rose-soft) 0%, var(--rose-soft) 70%, var(--lav) 100%);
+  margin-top: calc(-1 * var(--sheet));
+  padding-top: calc(92px + var(--sheet));
+}
+
+.home .sec--exp::before {
+  background: radial-gradient(circle, rgba(255,168,0,.14), transparent 62%);
+}
+
+.home .sec--exp::after {
+  background: radial-gradient(circle, rgba(75,23,68,.08), transparent 62%);
+}
+
+.home .exp-card {
+  border-color: rgba(84,0,66,.12);
+  box-shadow: 0 18px 40px rgba(75,23,68,.10);
+}
+
+.home .exp-card--fam { background: #FFF8EE; }
+.home .exp-card--tut { --exp-color: var(--brand-deep); background: #F6F1FD; }
+.home .exp-card--cri { background: #FBF0F6; }
+
+.home .exp-card-tag {
+  color: var(--brand-deep);
+}
+
+/* ---------- 8. Segurança (lavanda) ---------- */
+.home .sec--trust {
+  background: linear-gradient(180deg, var(--lav) 0%, var(--lav) 76%, var(--cream) 100%);
+}
+
+.home .sec--trust .trust-item {
+  background: #FAF7FF;
+  border-color: rgba(84,0,66,.12);
+  box-shadow: 0 16px 36px rgba(75,23,68,.09);
+}
+
+.home .sec--trust .trust-ic {
+  background: rgba(255,168,0,.18);
+  color: #7a4600;
+}
+
+/* ---------- 9. FAQ (creme) ---------- */
+.home .sec--faq {
+  background: var(--cream);
+  margin-bottom: calc(-1 * var(--sheet));
+  padding-bottom: calc(92px + var(--sheet));
+}
+
+.home .sec--faq::before {
+  background: radial-gradient(circle, rgba(255,168,0,.14), transparent 62%);
+}
+
+.home .sec--faq::after {
+  background: radial-gradient(circle, rgba(75,23,68,.07), transparent 64%);
+}
+
+.home .faq-item {
+  background: #FFFCF8;
+  border-color: rgba(84,0,66,.14);
+}
+
+.home .faq-item.is-open {
+  background: linear-gradient(90deg, rgba(255,168,0,.14), #FFFCF8 24%);
+  border-color: rgba(255,168,0,.5);
+  box-shadow: 0 16px 34px rgba(75,23,68,.09);
+}
+
+.home .faq-btn:hover {
+  background: rgba(84,0,66,.04);
+}
+
+.home .faq-btn:active {
+  background: rgba(84,0,66,.09);
+}
+
+.home .faq-icon {
+  color: var(--brand-deep);
+}
+
+/* ---------- 10. CTA final ---------- */
+.home .surface-night--cta {
+  /* O brilho âmbar sobe por trás do mascote, longe do título e dos botões */
+  --warm-a-pos: 50% 104%;  --warm-a-size: 620px 340px;
+  --warm-b-pos: 112% 8%;   --warm-b-size: 360px 300px;
+  --cool-a-pos: 14% 22%;   --cool-a-size: 600px 420px;
+  --cool-b-pos: 88% 60%;   --cool-b-size: 560px 380px;
+  --rosette-size: 400px;
+
+  z-index: 1;
+  border-radius: var(--sheet) var(--sheet) 0 0;
+}
+
+/* O brilho âmbar legado foi substituído pelos brilhos do brand-surface */
+.home .sec--cta-final::before {
+  display: none;
+}
+
+.home .cta-content .eyebrow {
+  color: var(--gold-on-dark);
+}
+
+.home .cta-content h2 {
+  color: #fff;
+}
+
+.home .cta-content p:not(.eyebrow) {
+  color: var(--text-on-dark);
+}
+
+.home .cta-content .btn--outline {
+  color: #fff;
+  border-color: rgba(255,255,255,.5);
+  background: rgba(255,255,255,.06);
+}
+
+.home .cta-content .btn--outline:hover {
+  border-color: #fff;
+  background: rgba(255,255,255,.14);
+}
+
+/* Cena: os elementos eram navy sobre claro */
+.home .cta-character::before {
+  background: radial-gradient(circle, rgba(255,168,0,.34) 0%, rgba(176,88,206,.20) 45%, transparent 68%);
+}
+
+.home .cta-mascot {
+  filter: drop-shadow(0 18px 28px rgba(10,0,9,.50));
+}
+
+.home .cta-el--cube {
+  filter: drop-shadow(0 8px 14px rgba(10,0,9,.45)) drop-shadow(0 0 18px rgba(255,168,0,.18));
+}
+
+.home .cta-el--heart {
+  filter: drop-shadow(0 6px 12px rgba(10,0,9,.40)) drop-shadow(0 0 16px rgba(255,168,0,.30));
+}
+
+.home .cta-el--pill {
+  background: rgba(255,189,73,.14);
+  border-color: rgba(255,189,73,.40);
+  color: var(--gold-on-dark);
+}
+
+.home .cta-el--check circle {
+  fill: rgba(255,189,73,.14);
+  stroke: rgba(255,189,73,.45);
+}
+
+.home .cta-el--check polyline {
+  stroke: var(--gold-on-dark);
+}
+
+.home .cta-el--s2 path {
+  fill: #fff;
+}
+
+.home .cta-el--d1,
+.home .cta-el--d3 {
+  background: #fff;
+}
+
+/* O chão da cena é a cor do footer: a página termina numa só superfície */
+.home .cta-wave path {
+  fill: var(--night);
+}
+
+.home .cta-wave {
+  filter: drop-shadow(0 -10px 22px rgba(255,168,0,.22));
+}
+
+/* ---------- 11. Footer ---------- */
+.home .ft-wrap {
+  background: var(--night);
+}
+
+.home .ft {
+  background-color: var(--night-mid);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.08),
+    inset 0 1px 0 rgba(255,168,0,.26),
+    0 28px 70px rgba(0,0,0,.4);
+}
+
+.home .ft-logo {
+  width: min(210px, 100%);
+}
+
+/* Assinatura institucional: o emblema da C-FORCE ao lado do nome, discreto */
+.home .ft .cforce {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.home .ft .cforce::before {
+  content: "";
+  flex-shrink: 0;
+  width: 30px;
+  height: 41px;
+  background: url("/assets/brand/cforce-emblema-trim.png") center / contain no-repeat;
+  opacity: .9;
+}
+
+/* ---------- 12. Breakpoints ---------- */
+
+/* Coluna única (≤880px): o texto do hero ocupa a largura toda, então o âmbar
+   desce para a faixa do disco, onde não há texto. O index.html também reduz o
+   padding das seções aqui; os respiros acompanham. */
+@media (max-width: 880px) {
+  .home .hero.surface-night--hero {
+    --warm-a-pos: -14% 80%;
+    --warm-a-size: 440px 460px;
+    padding-bottom: 84px;
+  }
+
+  .home .strip-wrap {
+    margin-bottom: 64px;
+  }
+
+  .home .sec--paths {
+    padding-block: calc(64px + var(--sheet));
+  }
+
+  .home .sec--exp {
+    padding-top: calc(64px + var(--sheet));
+  }
+
+  .home .sec--faq {
+    padding-bottom: calc(64px + var(--sheet));
+  }
+
+  .home .sec--paths .pane {
+    padding: 32px 26px;
+  }
+
+  /* As abas viram uma faixa rolável: pílulas escuras, a ativa continua clara */
+  .home .sec--hub .hub-tab {
+    background: rgba(255,255,255,.08);
+    border-color: rgba(255,255,255,.2);
+  }
+
+  .home .sec--hub .hub-tab[aria-selected="true"] {
+    background: #FFF8EF;
+    border-color: rgba(255,255,255,.7);
+    box-shadow: 0 6px 14px rgba(10,0,9,.35);
+  }
+
+  /* Logo e redes ocupam a primeira linha inteira; as colunas vêm abaixo */
+  .home .ft .top > div:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 600px) {
+  .home {
+    --sheet: 24px;
+  }
+
+  .home .hero.surface-night--hero {
+    --warm-a-size: 320px 400px;
+    --warm-b-size: 280px 360px;
+    --rosette-size: 320px;
+  }
+
+  .home :is(.surface-night--flow, .surface-night--plum) {
+    --warm-a-size: 240px 220px;
+    --warm-b-size: 240px 240px;
+    --cool-a-size: 380px 300px;
+    --cool-b-size: 380px 280px;
+    --rosette-size: 320px;
+  }
+
+  /* Com o texto na largura toda, o âmbar do canto superior direito alcançaria o título */
+  .home .surface-night--plum {
+    --warm-a-pos: 124% 2%;
+  }
+
+  .home .surface-night--cta {
+    --warm-a-size: 420px 260px;
+    --warm-b-size: 240px 240px;
+    --cool-a-size: 380px 300px;
+    --cool-b-size: 380px 280px;
+    --rosette-size: 320px;
+  }
+}
+
+/* ---------- 13. Movimento e contraste ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .home .disc,
+  .home .btn {
+    transition: none;
+  }
+}
+
+/* Alto contraste: brand-surface.css já reduz as superfícies escuras à cor
+   sólida; aqui o vidro, as cores translúcidas e os filetes finos ganham
+   bordas firmes. */
+@media (prefers-contrast: more) {
+  .home .surface-night--flow .strip {
+    background: rgba(255,255,255,.14);
+    border-color: rgba(255,255,255,.75);
+  }
+
+  .home .surface-night--flow .step,
+  .home .flow-card__inner,
+  .home .sec--hub .hub-panel:not(.hub-panel--deep) {
+    border-color: #fff;
+  }
+
+  .home .disc {
+    border-color: var(--accent);
+  }
+
+  .home .pane,
+  .home .exp-card,
+  .home .sec--trust .trust-item,
+  .home .faq-item,
+  .home .faq-item.is-open {
+    border-color: var(--night);
+  }
+}

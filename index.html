@@ -587,7 +587,6 @@
   .sec.sec--cta-final{
     padding-bottom:0;
     overflow:hidden;
-    background:transparent;
   }
   .sec--cta-final::before{
     content:"";
@@ -1071,8 +1070,10 @@
   }
 </style>
 
+<link rel="stylesheet" href="/css/brand-surface.css">
+<link rel="stylesheet" href="/css/home-refresh.css">
 </head>
-<body>
+<body class="home">
 <header class="hd">
   <div class="wrap row">
     <a class="brand" href="#" aria-label="Cognita Hub">
@@ -1085,7 +1086,7 @@
 </header>
 
 <main>
-  <section class="hero">
+  <section class="hero surface-night surface-night--hero">
     <div class="blob b1"></div><div class="blob b2"></div>
     <div class="wrap grid">
       <div>
@@ -1101,7 +1102,7 @@
       </div>
 
       <div class="stage" id="stage" aria-label="Prévia visual do Cognita Hub">
-        <div class="disc">
+        <div class="disc surface-night surface-night--disc">
           <div class="arc"></div>
           <img class="brand-mascot" src="/assets/logo-icon-transparent.png" alt="Mascote do Cognita Hub" />
           <div class="brand-reveal" aria-hidden="true">
@@ -1131,14 +1132,14 @@
     </div>
   </section>
 
-  <div class="wrap"><div class="strip">
-    <div class="stat"><b>6 meses</b><span>de acompanhamento</span></div>
-    <div class="stat"><b>1 : 1</b><span>criança e tutor</span></div>
-    <div class="stat"><b>Gratuito</b><span>tutores voluntários</span></div>
-    <div class="stat"><b>Humano</b><span>match feito por gente</span></div>
-  </div></div>
+  <section class="sec sec--warm surface-night surface-night--flow">
+    <div class="wrap strip-wrap"><div class="strip">
+      <div class="stat"><b>6 meses</b><span>de acompanhamento</span></div>
+      <div class="stat"><b>1 : 1</b><span>criança e tutor</span></div>
+      <div class="stat"><b>Gratuito</b><span>tutores voluntários</span></div>
+      <div class="stat"><b>Humano</b><span>match feito por gente</span></div>
+    </div></div>
 
-  <section class="sec sec--warm">
     <div class="wrap">
       <div class="sec-head">
         <p class="eyebrow">Como funciona</p>
@@ -1200,7 +1201,7 @@
     </div>
   </section>
 
-  <section class="sec" id="caminhos">
+  <section class="sec sec--paths" id="caminhos">
     <div class="wrap">
       <div class="sec-head"><p class="eyebrow">Dois caminhos</p><h2>Entre pela porta que é sua.</h2></div>
       <div class="duo">
@@ -1222,7 +1223,7 @@
     </div>
   </section>
 
-  <section class="sec sec--hub" id="hub">
+  <section class="sec sec--hub surface-night surface-night--plum" id="hub">
     <div class="wrap">
       <div class="sec-head">
         <p class="eyebrow">Dentro do Cognita Hub</p>
@@ -1452,7 +1453,7 @@
     </div>
   </section>
 
-  <section class="sec" id="seguranca">
+  <section class="sec sec--trust" id="seguranca">
     <div class="wrap">
       <div class="sec-head">
         <p class="eyebrow">Segurança e cuidado</p>
@@ -1602,7 +1603,7 @@
     </div>
   </section>
 
-  <section class="sec sec--cta-final" id="comecar">
+  <section class="sec sec--cta-final surface-night surface-night--cta" id="comecar">
 
     <div class="wrap cta-content">
       <p class="eyebrow">Começar com cuidado</p>
@@ -1656,10 +1657,10 @@
 </main>
 
 <div class="ft-wrap">
-  <footer class="ft">
+  <footer class="ft surface-night surface-night--wide">
     <div class="top">
       <div>
-        <a class="ft-logo" href="#" aria-label="Cognita Hub"><img src="/assets/logo-retangular-transparent.png" alt="" /></a>
+        <a class="ft-logo" href="#" aria-label="Cognita Hub"><img src="/assets/brand/cognita-logo-horizontal-trim.png" alt="" width="720" height="233" loading="lazy" /></a>
         <p class="social-label">Acompanhe nossas redes sociais</p>
         <div class="social">
           <a href="https://www.instagram.com/cognita.hub/" aria-label="Instagram"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
@@ -1681,14 +1682,7 @@
     var stage = document.getElementById('stage');
     if (!stage) return;
 
-    var FORCE_MOTION_FOR_DEV = true;
-    var reduceMotion =
-      !FORCE_MOTION_FOR_DEV &&
-      matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (FORCE_MOTION_FOR_DEV) {
-      stage.classList.add('force-motion');
-    }
+    var reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     var cards = [].slice.call(stage.querySelectorAll('.flow-card'));
     var message = stage.querySelector('[data-stage-message]');

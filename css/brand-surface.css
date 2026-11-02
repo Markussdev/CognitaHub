@@ -1,0 +1,97 @@
+/* ============================================================
+   COGNITA — SUPERFÍCIE "NOITE MARACAJÁ"
+   Fundo da identidade (plum + brilhos âmbar/magenta + rosetas)
+   recriado em CSS. Uma classe, posições ajustáveis por variável.
+
+   Uso:  <footer class="ft surface-night"> … </footer>
+   Regra: só em superfícies delimitadas (disco do hero, footer,
+   painel de login). Nunca atrás de texto em seção clara.
+   ============================================================ */
+
+:root {
+  --night: #270322;            /* base — mesma família do --ink */
+  --night-glow-warm: 255, 160, 10;  /* âmbar dos brilhos (RGB) */
+  --night-glow-cool: 98, 4, 78;     /* magenta dos brilhos (RGB) */
+}
+
+.surface-night {
+  /* Posição e tamanho de cada brilho — sobrescreva por superfície */
+  --warm-a-pos: -10% 24%;  --warm-a-size: 250px 250px;
+  --warm-b-pos: 110% 82%;  --warm-b-size: 240px 240px;
+  --cool-a-pos: 32% -8%;   --cool-a-size: 340px 250px;
+  --cool-b-pos: 64% 106%;  --cool-b-size: 340px 250px;
+  --rosette-size: 380px;
+
+  isolation: isolate;
+  color: #fff;
+  background-color: var(--night);
+  background-image:
+    /* 1. rosetas (por cima de tudo, bem sutis) */
+    url("/assets/brand/rosetas-maracaja.svg"),
+    /* 2. brilhos âmbar */
+    radial-gradient(var(--warm-a-size) at var(--warm-a-pos),
+      rgba(var(--night-glow-warm), .85) 0%,
+      rgba(var(--night-glow-warm), .50) 28%,
+      rgba(var(--night-glow-warm), .14) 55%,
+      rgba(var(--night-glow-warm), 0) 76%),
+    radial-gradient(var(--warm-b-size) at var(--warm-b-pos),
+      rgba(var(--night-glow-warm), .80) 0%,
+      rgba(var(--night-glow-warm), .46) 28%,
+      rgba(var(--night-glow-warm), .12) 55%,
+      rgba(var(--night-glow-warm), 0) 76%),
+    /* 3. brilhos magenta (dão profundidade ao plum) */
+    radial-gradient(var(--cool-a-size) at var(--cool-a-pos),
+      rgba(var(--night-glow-cool), 1) 0%,
+      rgba(var(--night-glow-cool), .55) 38%,
+      rgba(var(--night-glow-cool), 0) 70%),
+    radial-gradient(var(--cool-b-size) at var(--cool-b-pos),
+      rgba(var(--night-glow-cool), .95) 0%,
+      rgba(var(--night-glow-cool), .50) 38%,
+      rgba(var(--night-glow-cool), 0) 70%);
+  background-size: var(--rosette-size) var(--rosette-size), auto, auto, auto, auto;
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+}
+
+/* Precisa ser posicionado por causa do ::after. :where() tem
+   especificidade zero: se o elemento já é absolute (o disco), vale o dele. */
+:where(.surface-night) { position: relative; }
+
+/* Grão leve: evita "degraus" (banding) nos gradientes escuros */
+.surface-night::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: .5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .18 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- Variações por superfície ---------- */
+
+/* Disco do hero: brilhos menores e mais perto, cabe no círculo */
+.surface-night--disc {
+  --warm-a-pos: -4% 30%;   --warm-a-size: 46% 46%;
+  --warm-b-pos: 104% 78%;  --warm-b-size: 44% 44%;
+  --cool-a-pos: 40% -10%;  --cool-a-size: 70% 70%;
+  --cool-b-pos: 60% 110%;  --cool-b-size: 70% 70%;
+  --rosette-size: 280px;
+}
+
+/* Footer largo: brilhos escondidos nos cantos, área de texto calma.
+   Texto branco sobre o âmbar cai para ~3:1 — o brilho nunca fica
+   embaixo de link ou parágrafo. */
+.surface-night--wide {
+  --warm-a-pos: -3% -18%;  --warm-a-size: 220px 220px;
+  --warm-b-pos: 103% 118%; --warm-b-size: 300px 300px;
+  --cool-a-pos: 34% -40%;  --cool-a-size: 520px 260px;
+  --cool-b-pos: 70% 140%;  --cool-b-size: 520px 260px;
+}
+
+/* Alto contraste pedido pelo sistema: só a cor sólida */
+@media (prefers-contrast: more) {
+  .surface-night { background-image: none; }
+  .surface-night::after { display: none; }
+}
