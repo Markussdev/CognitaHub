@@ -73,7 +73,7 @@ cognita-hub/
 
 `pages/mundo-senai.html` é uma página pública e independente: a apresentação do projeto no Mundo SENAI 2026 (5 e 6 de novembro), feita para ser conduzida por 4 integrantes em cerca de 2 minutos. Ela não faz parte do fluxo do hub: tem CSS próprio (`css/mundo-senai.css`) e JavaScript próprio (`js/pages/mundo-senai.js`), não importa o cliente do Supabase, não faz requisições e não lê nem grava dados.
 
-Ao carregar, a página já mostra o slide 1: não há tela introdutória, modo de tela cheia nem alternância de modos. São 4 slides embutidos na própria página, trocados por setas (anterior/próximo), pelos indicadores e pelas setas ← → do teclado; nada avança por tempo.
+A página é uma página comum do Cognita Hub, no fluxo normal do documento: header institucional (`.hd`), a apresentação e o footer institucional (`.ft`), os mesmos da homepage. Como os estilos deles na homepage são escopados em `.home` (e parte vive no `<style>` do `index.html`), `css/mundo-senai.css` reproduz o visual sob `.mundo`, com o fundo do footer vindo de `css/brand-surface.css`. Ao carregar, a página já mostra o slide 1: não há tela introdutória, modo de tela cheia nem alternância de modos. São 4 slides embutidos na própria página, trocados por setas (anterior/próximo), pelos indicadores e pelas setas ← → do teclado; nada avança por tempo.
 
 1. **Origem:** "A matemática ao alcance de cada mente", com a arte oficial do Desafio Liga Jovem (`public/assets/mundo-senai/desafio.png`, usada sem alteração).
 2. **A plataforma:** painel do tutor (representação visual em lavanda e ameixa, não o painel real) e tela da criança. A única interação é "Liberar missão".

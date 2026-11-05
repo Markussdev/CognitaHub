@@ -66,9 +66,6 @@ function iniciar() {
       void slide.offsetWidth // reinicia a animação de entrada
       slide.classList.add('is-entrando')
     }
-    const area = show.querySelector('.show__slides')
-    if (area) area.scrollTop = 0
-
     const titulo = slide.querySelector('h2')
     anunciar(`Slide ${alvo + 1} de ${slides.length}: ${titulo ? titulo.textContent.trim() : ''}`)
   }

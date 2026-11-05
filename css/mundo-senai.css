@@ -1,8 +1,10 @@
 /* ============================================================
    COGNITA HUB — MUNDO SENAI 2026
    Apresentação de 4 slides embutida na página (pages/mundo-senai.html), feita
-   para o Mundo SENAI 2026 (5 e 6 de novembro). Página independente: não
-   depende de styles.css nem do CSS da homepage e não faz requisição alguma.
+   para o Mundo SENAI 2026 (5 e 6 de novembro), entre o header e o footer
+   institucionais. Página independente: não depende de styles.css nem de
+   home-refresh.css (o visual do header e do footer da homepage é reproduzido
+   aqui, sob .mundo) e não faz requisição alguma.
 
    Identidade Noite Maracajá: roxo profundo, ameixa, dourado. Cada "mundo" tem
    uma cor, usada nos diagramas:
@@ -16,7 +18,7 @@
    Os slides escondidos têm display:none, então as animações recomeçam sozinhas
    toda vez que o slide volta a aparecer.
 
-   Índice: 0 base e fundo · 1 cabeçalho · 2 palco e navegação · 3 slide 1
+   Índice: 0 base e fundo · 1 header e footer institucionais · 2 palco e navegação · 3 slide 1
            4 slide 2 · 5 diagrama (slides 3 e 4) · 6 slide 3 · 7 slide 4
            8 breakpoints · 9 movimento e contraste
    ============================================================ */
@@ -41,22 +43,34 @@
   --fonte: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
   --display: "Baloo 2", var(--fonte);
 
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  height: 100vh;
-  height: 100dvh;
+  /* Altura do header institucional (116px quando o menu some e os botões descem, ≤880px).
+     A apresentação ocupa a primeira tela abaixo dele; o footer vem depois, na rolagem. */
+  --hd-h: 82px;
+
+  /* A página segue o fluxo normal do documento: header, apresentação e footer, um abaixo do outro */
   margin: 0;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow-x: hidden;
   isolation: isolate;
   background-color: var(--night);
-  background-image:
-    radial-gradient(1200px 900px at 22% -8%, rgba(75, 23, 68, .95) 0%, rgba(75, 23, 68, .5) 40%, rgba(75, 23, 68, 0) 72%),
-    radial-gradient(1100px 900px at 86% 108%, rgba(75, 23, 68, .85) 0%, rgba(75, 23, 68, .45) 40%, rgba(75, 23, 68, 0) 72%);
   color: var(--texto);
   font-family: var(--fonte);
   font-size: 17px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Fundo da página: dois brilhos ameixa e as rosetas, em camadas fixas atrás do conteúdo. O
+   footer tem fundo próprio (noite chapada, como na homepage) e cobre as camadas ao chegar. */
+.mundo::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1200px 900px at 22% -8%, rgba(75, 23, 68, .95) 0%, rgba(75, 23, 68, .5) 40%, rgba(75, 23, 68, 0) 72%),
+    radial-gradient(1100px 900px at 86% 108%, rgba(75, 23, 68, .85) 0%, rgba(75, 23, 68, .45) 40%, rgba(75, 23, 68, 0) 72%);
 }
 
 /* Rosetas da marca: uma camada só, em ladrilho grande e bem fraco, esmaecida no
@@ -126,48 +140,297 @@
 .cor-rede  { --cor: var(--rede);  --cor-rgb: var(--rede-rgb); }
 .cor-nuvem { --cor: var(--nuvem); --cor-rgb: var(--nuvem-rgb); }
 
-/* ---------- 1. Cabeçalho ---------- */
-.mh {
+/* ---------- 1. Header e footer institucionais ----------
+   O mesmo header (.hd) e footer (.ft) da homepage. Lá os estilos estão no <style> do
+   index.html e em css/home-refresh.css, escopados em .home; aqui o mesmo visual vive sob
+   .mundo (a homepage não foi tocada). Valores copiados dos originais. */
+.mundo a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.mundo .wrap {
+  max-width: 1160px;
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+
+/* Header: transparente sobre o fundo noite, sem faixa nem filete (na home ele flutua sobre
+   o hero; aqui fica no fluxo, acima da apresentação) */
+.mundo .hd {
+  position: relative;
+  z-index: 30;
+  line-height: 1.6;
+}
+
+.mundo .hd .row {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px clamp(18px, 3vw, 40px) 6px;
+  gap: 28px;
+  height: var(--hd-h);
 }
 
-.mh__logo {
+.mundo .brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.mundo .brand-logo {
+  display: block;
+  height: 50px;
   width: auto;
-  height: 32px;
 }
 
-.mh__x {
-  color: var(--texto-suave);
-  opacity: .7;
+.mundo .nav {
+  display: flex;
+  gap: 4px;
+  margin-inline: auto;
+  padding: 6px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .07);
 }
 
-.mh__evento {
-  color: var(--ouro);
-  font-size: .82rem;
+.mundo .nav a {
+  padding: 8px 13px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 15px;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.mundo .nav a:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, .12);
+}
+
+/* Ponto dourado do evento no menu; some onde o menu ficaria apertado (como na home) */
+.mundo .nav .nav-evento {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mundo .nav .nav-evento::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ouro);
+}
+
+.mundo .hd-cta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.mundo .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 22px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  font-family: var(--fonte);
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: .14em;
-  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
 }
 
-/* ---------- 2. Palco e navegação ---------- */
+.mundo .btn--sm {
+  min-height: 42px;
+  padding: 0 16px;
+  font-size: 15px;
+}
+
+.mundo .hd-cta .btn--outline {
+  border-color: rgba(255, 255, 255, .5);
+  background: rgba(255, 255, 255, .06);
+  color: #fff;
+}
+
+.mundo .hd-cta .btn--outline:hover {
+  border-color: #fff;
+  background: rgba(255, 255, 255, .14);
+}
+
+.mundo .hd-cta .btn--soft {
+  border-color: var(--ouro-forte);
+  background: var(--ouro-forte);
+  color: var(--night);
+}
+
+.mundo .hd-cta .btn--soft:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(255, 168, 0, .26);
+}
+
+.mundo .hd-cta .btn:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.mundo .hd a:focus-visible,
+.mundo .ft a:focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--night);
+  border-radius: 6px;
+}
+
+/* Footer: o fundo (rosetas, brilhos e grão) vem de brand-surface.css pelas classes
+   surface-night surface-night--wide, como na homepage; aqui só o acabamento. */
+.mundo .ft-wrap {
+  padding: 58px 24px 36px;
+  /* noite chapada como na homepage; o degradê do topo só evita um corte seco com o fundo da apresentação */
+  background: linear-gradient(180deg, rgba(39, 3, 34, 0) 0, var(--night) 120px);
+  line-height: 1.6;
+}
+
+.mundo .ft {
+  max-width: 1160px;
+  margin-inline: auto;
+  padding: 56px clamp(32px, 5vw, 64px) 36px;
+  border-radius: 36px;
+  background-color: var(--night-mid);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, .08),
+    inset 0 1px 0 rgba(255, 168, 0, .26),
+    0 28px 70px rgba(0, 0, 0, .4);
+  color: #fff;
+}
+
+.mundo .ft-logo {
+  display: block;
+  width: min(210px, 100%);
+  margin-bottom: 4px;
+}
+
+.mundo .ft-logo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.mundo .ft .top {
+  display: grid;
+  grid-template-columns: minmax(210px, 260px) repeat(4, max-content);
+  justify-content: space-between;
+  align-items: start;
+  gap: 34px clamp(32px, 4vw, 58px);
+}
+
+.mundo .ft .top > div:first-child {
+  max-width: 260px;
+}
+
+.mundo .ft .social-label {
+  margin: 22px 0 12px;
+  color: rgba(255, 255, 255, .7);
+  font-size: .9rem;
+}
+
+.mundo .ft .social {
+  display: flex;
+  gap: 10px;
+}
+
+.mundo .ft .social a {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(255, 255, 255, .22);
+  border-radius: 11px;
+  color: #fff;
+}
+
+.mundo .ft .social a:hover {
+  background: rgba(255, 255, 255, .1);
+}
+
+.mundo .ft h4 {
+  margin-bottom: 14px;
+  color: #fff;
+  font-size: .95rem;
+  letter-spacing: .01em;
+}
+
+.mundo .ft li {
+  margin-bottom: 11px;
+}
+
+.mundo .ft li a {
+  color: rgba(255, 255, 255, .78);
+  font-size: .95rem;
+}
+
+.mundo .ft li a:hover {
+  color: #fff;
+}
+
+.mundo .ft .rule {
+  height: 1px;
+  margin: 46px 0 22px;
+  background: rgba(255, 255, 255, .16);
+}
+
+.mundo .ft .bot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Assinatura institucional: o emblema da C-FORCE ao lado do nome, discreto */
+.mundo .ft .cforce {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  color: #fff;
+  font-family: var(--display);
+  font-size: 2rem;
+  letter-spacing: .01em;
+}
+
+.mundo .ft .cforce::before {
+  content: "";
+  flex-shrink: 0;
+  width: 30px;
+  height: 41px;
+  background: url("/assets/brand/cforce-emblema-trim.png") center / contain no-repeat;
+  opacity: .9;
+}
+
+.mundo .ft .made {
+  color: rgba(255, 255, 255, .7);
+  font-size: .9rem;
+}
+
+/* ---------- 2. Palco e navegação ----------
+   A apresentação ocupa, no mínimo, a tela abaixo do header; se o conteúdo for maior (celular),
+   a página cresce e rola normalmente. */
 .show {
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
-  min-height: 0;
+  min-height: calc(100vh - var(--hd-h));
+  min-height: calc(100dvh - var(--hd-h));
 }
 
 .show__slides {
   display: flex;
-  min-height: 0;
   padding: 0 clamp(18px, 4vw, 56px);
-  overflow-x: hidden;
-  overflow-y: auto;
 }
 
-/* margin:auto centraliza na vertical e, se faltar altura, deixa rolar sem cortar o topo */
+/* margin:auto centraliza a apresentação na vertical dentro do palco */
 .slide {
   display: flex;
   flex-direction: column;
@@ -861,12 +1124,82 @@
 
 /* ---------- 8. Breakpoints ---------- */
 
-/* Telas baixas (notebook 1366x768, projetor 1280x720 ou 1024x768): compacta para caber sem rolar */
-@media (max-height: 820px) and (min-width: 861px) {
-  .mh {
-    padding-top: 10px;
+/* Header e footer institucionais: os mesmos pontos de quebra da homepage */
+@media (max-width: 1060px) {
+  .mundo .nav .nav-evento {
+    display: none;
+  }
+}
+
+/* Única diferença em relação à homepage: entre 881 e 999px as 5 colunas do footer não cabem e, lá, a
+   última coluna vaza para fora do cartão (e abaixo de ~940px a página ganha rolagem horizontal). Aqui as
+   colunas podem encolher. De 1000px para cima o grid é exatamente o da homepage. */
+@media (max-width: 999px) {
+  .mundo .ft .top {
+    grid-template-columns: minmax(210px, 260px) repeat(4, minmax(0, max-content));
+  }
+}
+
+@media (max-width: 880px) {
+  .mundo {
+    --hd-h: 116px;
   }
 
+  .mundo .nav {
+    display: none;
+  }
+
+  .mundo .hd .row {
+    height: auto;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-block: 12px;
+  }
+
+  .mundo .hd-cta {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .mundo .btn--sm {
+    min-height: 40px;
+    padding: 0 14px;
+    font-size: 14px;
+  }
+
+  .mundo .brand-logo {
+    height: 40px;
+  }
+
+  .mundo .ft-wrap {
+    padding: 48px 16px 24px;
+  }
+
+  .mundo .ft {
+    padding: 44px 24px 30px;
+    border-radius: 26px;
+  }
+
+  .mundo .ft .top {
+    grid-template-columns: 1fr 1fr;
+    justify-content: initial;
+  }
+
+  .mundo .ft .top > div:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 520px) {
+  .mundo .wrap {
+    padding-inline: 20px;
+  }
+}
+
+/* Telas baixas (notebook 1366x768, projetor 1280x720 ou 1024x768): compacta os slides */
+@media (max-height: 820px) and (min-width: 861px) {
   .slide {
     gap: clamp(20px, 4.4vh, 34px);
   }
@@ -988,10 +1321,6 @@
 }
 
 @media (max-width: 760px) {
-  .mh__logo {
-    height: 28px;
-  }
-
   .nav-seta {
     width: 48px;
     height: 48px;
