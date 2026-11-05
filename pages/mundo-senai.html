@@ -4,709 +4,219 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mundo SENAI 2026 | Cognita Hub</title>
-  <meta name="description" content="O que acontece por trás de um clique? No Mundo SENAI 2026, o Cognita Hub mostra a programação, as redes de computadores e a nuvem que apoiam a aprendizagem matemática de crianças com TEA." />
+  <meta name="description" content="Apresentação do Cognita Hub no Mundo SENAI 2026: desenvolvimento web, redes de computadores e computação em nuvem a serviço da aprendizagem matemática de crianças com TEA." />
   <meta name="theme-color" content="#270322" />
   <link rel="icon" type="image/png" href="/assets/logo-icon-transparent.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Baloo+2:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../css/brand-surface.css" />
   <link rel="stylesheet" href="../css/mundo-senai.css" />
 </head>
-<body class="mundo" data-modo="pagina">
+<body class="mundo">
 
   <!-- Ícones: traço único, herdam a cor de quem usa (<svg class="ico"><use href="#i-..."/></svg>) -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
     <defs>
-      <symbol id="i-usuario" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5.2 19.5c.9-3.7 3.6-5.6 6.8-5.6s5.9 1.9 6.8 5.6"/></symbol>
       <symbol id="i-janela" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="3"/><path d="M3 9.2h18"/><path d="M6.6 6.9h.01M9.2 6.9h.01"/><path d="M8 13l-1.8 1.7L8 16.4M13.6 16.4l1.8-1.7L13.6 13"/></symbol>
+      <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M3.5 9.2a12 12 0 0 1 17 0"/><path d="M6.4 12.3a8 8 0 0 1 11.2 0"/><path d="M9.3 15.4a4 4 0 0 1 5.4 0"/><path d="M12 18.6h.01"/></symbol>
       <symbol id="i-roteador" viewBox="0 0 24 24"><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 17h.01M11 17h.01"/><path d="M12 14v-3"/><path d="M8.6 9.2a4.8 4.8 0 0 1 6.8 0"/><path d="M6 6.6a8.4 8.4 0 0 1 12 0"/></symbol>
       <symbol id="i-globo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.6 2.4 3.9 5.4 3.9 9s-1.3 6.6-3.9 9c-2.6-2.4-3.9-5.4-3.9-9S9.4 5.4 12 3z"/></symbol>
       <symbol id="i-nuvem" viewBox="0 0 24 24"><path d="M7.2 18.2a4.4 4.4 0 0 1-.5-8.76A5.6 5.6 0 0 1 17.4 8.9a4.7 4.7 0 0 1-.6 9.3H7.2z"/></symbol>
-      <symbol id="i-banco" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7.5" ry="3"/><path d="M4.5 6v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6"/><path d="M4.5 12v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/></symbol>
       <symbol id="i-codigo" viewBox="0 0 24 24"><path d="M8.5 7.5L4 12l4.5 4.5M15.5 7.5L20 12l-4.5 4.5M13.4 5.5l-2.8 13"/></symbol>
-      <symbol id="i-tutor" viewBox="0 0 24 24"><path d="M2.5 9.5L12 5l9.5 4.5L12 14 2.5 9.5z"/><path d="M6.5 11.6v4c0 1.3 2.5 2.6 5.5 2.6s5.5-1.3 5.5-2.6v-4"/><path d="M21.5 9.5v5"/></symbol>
-      <symbol id="i-coracao" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.2C19.5 15.4 12 20 12 20z"/></symbol>
-      <symbol id="i-estrela" viewBox="0 0 24 24"><path d="M12 3.6l2.5 5.2 5.7.8-4.1 4 1 5.7L12 16.6 6.9 19.3l1-5.7-4.1-4 5.7-.8L12 3.6z"/></symbol>
-      <symbol id="i-seta" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
-      <symbol id="i-instagram" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.4 6.6h.01"/></symbol>
-      <symbol id="i-youtube" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9l5 3-5 3z"/></symbol>
-      <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></symbol>
-      <symbol id="i-reiniciar" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4.5v4.6h4.6"/></symbol>
-      <symbol id="i-sair" viewBox="0 0 24 24"><path d="M9 4.5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h3"/><path d="M15 8l4 4-4 4M19 12H9"/></symbol>
-      <symbol id="i-tela" viewBox="0 0 24 24"><path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15"/></symbol>
-      <symbol id="i-cadeado" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="9.5" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></symbol>
-      <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.6l4.4 4.4L19 7.4"/></symbol>
       <symbol id="i-chave" viewBox="0 0 24 24"><circle cx="8" cy="15" r="3.5"/><path d="M10.5 12.5L19 4M16 7l2.5 2.5"/></symbol>
       <symbol id="i-escudo" viewBox="0 0 24 24"><path d="M12 3.5l7 2.8v5.4c0 4.4-3 7.7-7 9-4-1.3-7-4.6-7-9V6.3l7-2.8z"/><path d="M9 12l2.2 2.2L15.4 10"/></symbol>
-      <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M3.5 9.2a12 12 0 0 1 17 0"/><path d="M6.4 12.3a8 8 0 0 1 11.2 0"/><path d="M9.3 15.4a4 4 0 0 1 5.4 0"/><path d="M12 18.6h.01"/></symbol>
+      <symbol id="i-banco" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7.5" ry="3"/><path d="M4.5 6v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6"/><path d="M4.5 12v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/></symbol>
+      <symbol id="i-cadeado" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="9.5" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.6l4.4 4.4L19 7.4"/></symbol>
+      <symbol id="i-seta" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
     </defs>
   </svg>
 
-  <a class="m-pular" href="#conteudo">Ir para o conteúdo</a>
-
-  <header class="mh" data-cabecalho>
-    <div class="m-wrap mh__linha">
-      <a class="mh__marca" href="../index.html" aria-label="Cognita Hub, página inicial">
-        <img class="mh__logo" src="/assets/brand/cognita-logo-horizontal-trim.png" width="720" height="233" alt="" />
-      </a>
-      <nav class="mh__nav" aria-label="Seções da página">
-        <a href="#conexao">O caminho</a>
-        <a href="#mundos">Três mundos</a>
-        <a href="#ccna">CCNA</a>
-        <a href="#proposito">Propósito</a>
-      </nav>
-      <a class="m-btn m-btn--ouro m-btn--p" href="../index.html"><span class="so-largo">Conhecer o Cognita</span><span class="so-estreito">O projeto</span></a>
-    </div>
+  <header class="mh">
+    <img class="mh__logo" src="/assets/brand/cognita-logo-horizontal-trim.png" width="720" height="233" alt="Cognita Hub" />
+    <span class="mh__x" aria-hidden="true">×</span>
+    <span class="mh__evento">Mundo SENAI 2026</span>
   </header>
 
-  <!-- Dois modos na mesma página:
-       body[data-modo="pagina"]       modo Explorar: esta página longa (<main>), o conteúdo complementar.
-       body[data-modo="apresentacao"] modo Apresentação: o palco div.ap (no fim do <body>) em tela cheia,
-                                      4 cenas, uma por integrante. O JS troca o atributo; sem JS só o Explorar existe.
-       Entrada direta no palco: ?apresentacao=1 (e &cena=1..4).
+  <h1 class="so-leitor">Cognita Hub no Mundo SENAI 2026</h1>
 
-       Marcações antigas, hoje sem nenhum consumidor em CSS/JS (ficam como âncoras, não são usadas):
-       [data-secao]  uma por seção.
-       [data-slot]   encaixes da fase 2 que NÃO foram implementados e não fazem parte desta entrega:
-                     simulador-requisicoes, camadas-tcpip, inspetor-http, demo-supabase.
-                     A apresentação NÃO usa o Supabase: tudo no palco é simulação local com dados fictícios. -->
-  <main id="conteudo" class="surface-night m-canvas">
+  <main class="show" aria-roledescription="carrossel" aria-label="Apresentação do Cognita Hub" data-show data-missao="bloqueada">
+    <div class="show__slides">
 
-    <!-- ============ 1. Hero ============ -->
-    <section class="m-hero surface-night" data-secao="topo" aria-labelledby="titulo-hero">
-      <div class="m-wrap m-hero__grade">
-        <div class="m-hero__texto">
-          <p class="m-hero__selo"><span>Cognita Hub</span><i aria-hidden="true">×</i><span>Mundo SENAI 2026</span></p>
-          <h1 id="titulo-hero">O que acontece por trás de um <span class="acento">clique</span>?</h1>
-          <p class="m-hero__tema">A tecnologia que conecta o aprendizado.</p>
-          <p class="m-hero__lead">O Cognita Hub é uma aplicação real. Programação, redes de computadores e computação em nuvem trabalham juntas para apoiar a aprendizagem matemática de crianças com TEA, sempre mediada por pessoas.</p>
-          <div class="m-hero__acoes">
-            <button type="button" class="m-btn m-btn--ouro" data-acao="iniciar"><svg class="ico" aria-hidden="true"><use href="#i-play"/></svg> Iniciar apresentação</button>
-            <a class="m-btn m-btn--vidro" href="#conexao">Explorar a tecnologia <svg class="ico" aria-hidden="true"><use href="#i-seta"/></svg></a>
+      <!-- ===== Slide 1 · Origem ===== -->
+      <section class="slide" data-slide="1" role="group" aria-roledescription="slide" aria-labelledby="t1">
+        <div class="origem">
+          <div class="origem__texto">
+            <h2 id="t1">A matemática ao alcance de <span class="acento">cada mente</span>.</h2>
+            <p class="lead">O Cognita Hub apoia crianças com TEA, de 5 a 9 anos, na aprendizagem matemática, conectando famílias e tutores voluntários.</p>
+            <p class="origem__fato">
+              <img src="/assets/brand/cforce-emblema-trim.png" width="211" height="288" alt="" />
+              <span>Desenvolvido pela <b>C-FORCE</b>, em Belém (PA), para o <b>Desafio Liga Jovem</b>.</span>
+            </p>
+            <p class="origem__mediacao"><b>Mediação humana.</b> A tecnologia organiza o ciclo; quem ensina e acompanha continua sendo gente.</p>
           </div>
-          <ul class="m-hero__fatos">
-            <li>5 e 6 de novembro</li>
-            <li>Desenvolvimento web</li>
-            <li>Redes</li>
-            <li>Nuvem</li>
-          </ul>
+          <figure class="origem__foto">
+            <img src="/assets/mundo-senai/desafio.png" width="1774" height="887" alt="Arte oficial do Desafio Liga Jovem, com o mapa do Brasil ao centro, a marca da Prefeitura de Ubatuba e a do Sebrae." />
+          </figure>
         </div>
+      </section>
 
-        <!-- A constelação de um clique: um toque (os anéis) que viaja por pontos de uma rede até um
-             planeta, a nuvem. Decorativa; o conteúdo equivalente está nas seções seguintes. -->
-        <div class="m-hero__arte">
-          <svg viewBox="0 0 560 560" aria-hidden="true" focusable="false">
-            <defs>
-              <linearGradient id="cons-grad" gradientUnits="userSpaceOnUse" x1="92" y1="470" x2="468" y2="92">
-                <stop offset="0" stop-color="#ffbd49"/>
-                <stop offset=".55" stop-color="#e59ad6"/>
-                <stop offset="1" stop-color="#b9a0f2"/>
-              </linearGradient>
-            </defs>
+      <!-- ===== Slide 2 · A plataforma ===== -->
+      <section class="slide" data-slide="2" role="group" aria-roledescription="slide" aria-labelledby="t2" hidden>
+        <h2 id="t2">Duas telas, <span class="acento">uma jornada</span>.</h2>
 
-            <g transform="rotate(-24 280 290)">
-              <ellipse class="cons-orbita" cx="280" cy="290" rx="262" ry="124"/>
-              <ellipse class="cons-orbita" cx="280" cy="290" rx="206" ry="82" opacity=".7"/>
-            </g>
-
-            <image href="/assets/trilha/espaco/estrelas-3.webp" x="40" y="104" width="84" height="84" opacity=".55"/>
-            <image href="/assets/trilha/espaco/estrelas-1.webp" x="360" y="372" width="48" height="48" opacity=".6"/>
-            <image href="/assets/trilha/espaco/estrelas-2.webp" x="436" y="296" width="62" height="62" opacity=".5"/>
-
-            <path class="cons-linha" d="M92 470 C106.3 457 156.3 421 178 392 C199.7 363 196.7 319.3 222 296 C247.3 272.7 300 273 330 252 C360 231 379 196.7 402 170 C425 143.3 457 105 468 92"/>
-            <path class="cons-fluxo" d="M92 470 C106.3 457 156.3 421 178 392 C199.7 363 196.7 319.3 222 296 C247.3 272.7 300 273 330 252 C360 231 379 196.7 402 170 C425 143.3 457 105 468 92"/>
-
-            <g transform="translate(92 470)">
-              <circle class="cons-ping" r="24" style="--i:0;opacity:.5"/>
-              <circle class="cons-ping" r="36" style="--i:1;opacity:.3"/>
-              <circle class="cons-ping" r="48" style="--i:2;opacity:.18"/>
-              <circle r="20" fill="rgba(255,189,73,.16)"/>
-              <circle r="7" fill="#ffbd49"/>
-            </g>
-
-            <circle class="cons-halo" cx="178" cy="392" r="14"/><circle class="cons-no" cx="178" cy="392" r="6"/>
-            <circle class="cons-halo" cx="222" cy="296" r="14"/><circle class="cons-no" cx="222" cy="296" r="6"/>
-            <circle class="cons-halo" cx="330" cy="252" r="14"/><circle class="cons-no" cx="330" cy="252" r="6"/>
-            <circle class="cons-halo" cx="402" cy="170" r="14"/><circle class="cons-no" cx="402" cy="170" r="6"/>
-
-            <image href="/assets/trilha/espaco/orbita.webp" x="404" y="28" width="128" height="128" opacity=".6"/>
-            <image href="/assets/trilha/espaco/planeta-roxo.webp" x="430" y="54" width="76" height="76"/>
-
-            <g class="cons-rotulo">
-              <rect x="150" y="486" width="64" height="24" rx="12"/><text x="182" y="498">clique</text>
-              <rect x="94" y="380" width="52" height="24" rx="12"/><text x="120" y="392">DNS</text>
-              <rect x="140" y="284" width="52" height="24" rx="12"/><text x="166" y="296">TCP</text>
-              <rect x="304" y="288" width="68" height="24" rx="12"/><text x="338" y="300">HTTPS</text>
-              <rect x="430" y="166" width="48" height="24" rx="12"/><text x="454" y="178">API</text>
-            </g>
-          </svg>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ 2. Por trás de cada conexão ============ -->
-    <section class="m-sec" id="conexao" data-secao="conexao" aria-labelledby="titulo-conexao">
-      <div class="m-wrap">
-        <div class="m-cabeca m-cabeca--centro" data-revelar>
-          <p class="m-eyebrow">Por trás de cada conexão</p>
-          <h2 id="titulo-conexao">Do toque na tela ao dado guardado.</h2>
-          <p class="m-lede">Cada clique percorre um caminho: sai do dispositivo, cruza a rede, atravessa a internet e chega à nuvem, onde a identidade é conferida e o dado é guardado. São seis passos, e o Cognita depende de todos.</p>
-        </div>
-
-        <div class="fluxo" data-slot="simulador-requisicoes">
-          <!-- Banda decorativa: a onda por onde a requisição passa. O texto de cada passo está na lista abaixo. -->
-          <div class="fluxo__banda" data-revelar aria-hidden="true">
-            <svg class="fluxo__onda" viewBox="0 0 1200 230" preserveAspectRatio="none" focusable="false">
-              <defs>
-                <linearGradient id="fluxo-grad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1200" y2="0">
-                  <stop offset="0" stop-color="#ffbd49" stop-opacity="0"/>
-                  <stop offset=".07" stop-color="#ffbd49"/>
-                  <stop offset=".32" stop-color="#ffbd49"/>
-                  <stop offset=".4" stop-color="#e59ad6"/>
-                  <stop offset=".6" stop-color="#e59ad6"/>
-                  <stop offset=".68" stop-color="#b9a0f2"/>
-                  <stop offset=".93" stop-color="#b9a0f2"/>
-                  <stop offset="1" stop-color="#b9a0f2" stop-opacity="0"/>
-                </linearGradient>
-              </defs>
-              <path class="fluxo__faixa" d="M0 58 H100 C200 58 200 172 300 172 C400 172 400 58 500 58 C600 58 600 172 700 172 C800 172 800 58 900 58 C1000 58 1000 172 1100 172 H1200"/>
-              <path class="fluxo__linha" d="M0 58 H100 C200 58 200 172 300 172 C400 172 400 58 500 58 C600 58 600 172 700 172 C800 172 800 58 900 58 C1000 58 1000 172 1100 172 H1200"/>
-              <path class="fluxo__corrente" d="M0 58 H100 C200 58 200 172 300 172 C400 172 400 58 500 58 C600 58 600 172 700 172 C800 172 800 58 900 58 C1000 58 1000 172 1100 172 H1200"/>
-            </svg>
-            <span class="ponto cor-web"   style="--x:8.333%;--y:58px;--i:0"><svg class="ico"><use href="#i-usuario"/></svg></span>
-            <span class="ponto cor-web"   style="--x:25%;--y:172px;--i:1"><svg class="ico"><use href="#i-janela"/></svg></span>
-            <span class="ponto cor-rede"  style="--x:41.667%;--y:58px;--i:2"><svg class="ico"><use href="#i-roteador"/></svg></span>
-            <span class="ponto cor-rede"  style="--x:58.333%;--y:172px;--i:3"><svg class="ico"><use href="#i-globo"/></svg></span>
-            <span class="ponto cor-nuvem" style="--x:75%;--y:58px;--i:4"><svg class="ico"><use href="#i-nuvem"/></svg></span>
-            <span class="ponto cor-nuvem" style="--x:91.667%;--y:172px;--i:5"><svg class="ico"><use href="#i-banco"/></svg></span>
+        <div class="plat">
+          <div class="plat__lado">
+            <p class="rotulo">Tutor</p>
+            <div class="painel" role="group" aria-label="Simulação do painel do tutor">
+              <div class="painel__barra" aria-hidden="true"><i></i><i></i><i></i></div>
+              <div class="painel__corpo">
+                <p class="painel__eyebrow">Módulo atual</p>
+                <h3>Contar quantidades</h3>
+                <ul class="missoes">
+                  <li class="missao">
+                    <img src="/assets/trilha/emblemas/identificar.webp" width="160" height="160" alt="" />
+                    <b>Reconhecer grupos</b>
+                    <em class="pilula pilula--ok">Concluída</em>
+                  </li>
+                  <li class="missao">
+                    <img src="/assets/trilha/emblemas/contar.webp" width="160" height="160" alt="" />
+                    <b>Contar fósseis</b>
+                    <em class="pilula pilula--estado"><span class="so-bloq">Bloqueada</span><span class="so-lib">Disponível</span></em>
+                  </li>
+                </ul>
+                <div class="painel__acoes">
+                  <button type="button" class="liberar" data-acao="liberar" aria-disabled="false">
+                    <svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>
+                    <span class="so-bloq">Liberar missão</span><span class="so-lib">Missão liberada</span>
+                  </button>
+                  <button type="button" class="refazer" data-acao="refazer">Refazer</button>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <ol class="fluxo__lista" data-revelar>
-            <li class="no cor-web" data-no="usuario">
-              <span class="no__icone" aria-hidden="true"><svg class="ico"><use href="#i-usuario"/></svg></span>
-              <span class="no__num">01</span>
-              <h3>Usuário</h3>
-              <p>Uma pessoa toca em um botão: o responsável, o tutor ou o dispositivo da criança.</p>
-              <span class="no__tags"><span class="chip">Dispositivo</span><span class="chip">Navegador</span></span>
+          <div class="elo" aria-hidden="true"><i></i></div>
+
+          <div class="plat__lado">
+            <p class="rotulo">Criança</p>
+            <div class="aparelho" data-aparelho role="group" aria-label="Simulação da tela da criança">
+              <div class="aparelho__tela">
+                <div class="ap-espera">
+                  <svg class="ico" aria-hidden="true"><use href="#i-cadeado"/></svg>
+                  <p>Aguardando o tutor</p>
+                </div>
+                <div class="ap-livre">
+                  <h4>Vamos contar?</h4>
+                  <img src="/assets/trilha/emblemas/contar.webp" width="160" height="160" alt="" />
+                  <p class="ap-livre__tag">Missão disponível</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Slide 3 · Redes ===== -->
+      <section class="slide" data-slide="3" role="group" aria-roledescription="slide" aria-labelledby="t3" hidden>
+        <h2 id="t3">Antes da nuvem, <span class="acento">a rede</span>.</h2>
+
+        <div class="rede">
+          <p class="https"><span><svg class="ico" aria-hidden="true"><use href="#i-cadeado"/></svg>HTTPS · TLS</span></p>
+
+          <ol class="trilho" style="--n:5">
+            <li class="no cor-web" style="--i:0">
+              <span class="lig" aria-hidden="true"><i></i></span>
+              <span class="no__icone"><svg class="ico" aria-hidden="true"><use href="#i-janela"/></svg></span>
+              <b>Dispositivo</b>
+              <span class="chip chip--opcional">DNS, quando necessário</span>
             </li>
-            <li class="no cor-web" data-no="aplicacao">
-              <span class="no__icone" aria-hidden="true"><svg class="ico"><use href="#i-janela"/></svg></span>
-              <span class="no__num">02</span>
-              <h3>Aplicação web</h3>
-              <p>O Cognita Hub é HTML, CSS e JavaScript empacotados com Vite. O navegador monta a tela e prepara a chamada.</p>
-              <span class="no__tags"><span class="chip">HTML</span><span class="chip">CSS</span><span class="chip">JavaScript</span><span class="chip">Vite</span></span>
+            <li class="no cor-web" style="--i:1">
+              <span class="lig" aria-hidden="true"><i></i></span>
+              <span class="no__icone"><svg class="ico" aria-hidden="true"><use href="#i-wifi"/></svg></span>
+              <b>Rede local</b>
+              <span class="chip">Wi-Fi ou Ethernet</span>
             </li>
-            <li class="no cor-rede" data-no="rede">
-              <span class="no__icone" aria-hidden="true"><svg class="ico"><use href="#i-roteador"/></svg></span>
-              <span class="no__num">03</span>
-              <h3>Rede</h3>
-              <p>A chamada sai do dispositivo pela rede local, por Wi-Fi ou cabo, até o roteador, que a envia para fora.</p>
-              <span class="no__tags"><span class="chip">Ethernet</span><span class="chip">Wi-Fi</span><span class="chip">NAT</span></span>
+            <li class="no cor-rede" style="--i:2">
+              <span class="lig" aria-hidden="true"><i></i></span>
+              <span class="no__icone"><svg class="ico" aria-hidden="true"><use href="#i-roteador"/></svg></span>
+              <b>Roteador</b>
+              <span class="chip">IP · roteamento</span>
             </li>
-            <li class="no cor-rede" data-no="internet">
-              <span class="no__icone" aria-hidden="true"><svg class="ico"><use href="#i-globo"/></svg></span>
-              <span class="no__num">04</span>
-              <h3>Internet</h3>
-              <p>O DNS descobre o endereço do servidor e os roteadores entregam os pacotes IP, salto a salto, até o destino.</p>
-              <span class="no__tags"><span class="chip">DNS</span><span class="chip">IP</span><span class="chip">Roteamento</span></span>
+            <li class="no cor-rede" style="--i:3">
+              <span class="lig" aria-hidden="true"><i></i></span>
+              <span class="no__icone"><svg class="ico" aria-hidden="true"><use href="#i-globo"/></svg></span>
+              <b>Internet</b>
             </li>
-            <li class="no cor-nuvem" data-no="supabase" data-slot="demo-supabase">
-              <span class="no__icone" aria-hidden="true"><svg class="ico"><use href="#i-nuvem"/></svg></span>
-              <span class="no__num">05</span>
-              <h3>Supabase</h3>
-              <p>A API recebe a chamada por HTTPS, confere quem está pedindo (Auth) e repassa ao banco de dados.</p>
-              <span class="no__tags"><span class="chip">HTTPS</span><span class="chip">Auth</span><span class="chip">API · RPC</span></span>
-            </li>
-            <li class="no cor-nuvem" data-no="banco">
-              <span class="no__icone" aria-hidden="true"><svg class="ico"><use href="#i-banco"/></svg></span>
-              <span class="no__num">06</span>
-              <h3>Banco de dados</h3>
-              <p>No PostgreSQL, as regras de RLS decidem o que cada pessoa pode ler ou gravar. A resposta faz o caminho de volta.</p>
-              <span class="no__tags"><span class="chip">PostgreSQL</span><span class="chip">RLS</span></span>
+            <li class="no cor-nuvem" style="--i:4">
+              <span class="no__icone"><svg class="ico" aria-hidden="true"><use href="#i-nuvem"/></svg></span>
+              <b>Serviço remoto</b>
             </li>
           </ol>
         </div>
+      </section>
 
-        <p class="fluxo__volta" data-revelar><span>E a resposta faz o caminho inverso, em geral em frações de segundo.</span></p>
-      </div>
-    </section>
+      <!-- ===== Slide 4 · Nuvem ===== -->
+      <section class="slide" data-slide="4" role="group" aria-roledescription="slide" aria-labelledby="t4" hidden>
+        <h2 id="t4">Na nuvem, a informação chega a <span class="acento">quem pode vê-la</span>.</h2>
 
-    <!-- ============ 3. Três mundos, uma solução ============ -->
-    <section class="m-sec" id="mundos" data-secao="mundos" aria-labelledby="titulo-mundos">
-      <div class="m-wrap">
-        <div class="m-cabeca m-cabeca--centro" data-revelar>
-          <p class="m-eyebrow">Um ecossistema</p>
-          <h2 id="titulo-mundos">Três mundos, uma solução.</h2>
-          <p class="m-lede">Nenhuma das três áreas funciona sozinha: a interface precisa da rede para chegar à nuvem, e a nuvem só ajuda a criança quando a interface é clara e acolhedora.</p>
-        </div>
-
-        <div class="eco" data-revelar>
-          <div class="eco__trilho" aria-hidden="true">
-            <span class="orbe cor-web"><svg class="ico"><use href="#i-codigo"/></svg></span>
-            <span class="orbe cor-rede"><svg class="ico"><use href="#i-roteador"/></svg></span>
-            <span class="orbe cor-nuvem"><svg class="ico"><use href="#i-nuvem"/></svg></span>
-            <span class="elo" style="--de:var(--web);--para:var(--rede)"><b>HTTP · DNS</b></span>
-            <span class="elo elo--2" style="--de:var(--rede);--para:var(--nuvem)"><b>HTTPS · API</b></span>
-          </div>
-
-          <div class="eco__colunas">
-            <article class="mundo-col cor-web">
-              <span class="mundo-col__orbe" aria-hidden="true"><svg class="ico"><use href="#i-codigo"/></svg></span>
-              <h3>Desenvolvimento Web</h3>
-              <p class="mundo-col__tema">As interfaces e a lógica da experiência.</p>
-              <p class="mundo-col__texto">O Cognita Hub é uma aplicação em JavaScript puro (ES Modules), HTML e CSS, empacotada com Vite. Cada tela, do painel do responsável à trilha da criança, é uma entrada própria do projeto.</p>
-              <div class="mundo-col__chips"><span class="chip">HTML5</span><span class="chip">CSS3</span><span class="chip">JavaScript</span><span class="chip">ES Modules</span><span class="chip">Vite</span></div>
-            </article>
-
-            <article class="mundo-col cor-rede">
-              <span class="mundo-col__orbe" aria-hidden="true"><svg class="ico"><use href="#i-roteador"/></svg></span>
-              <h3>Redes de Computadores</h3>
-              <p class="mundo-col__tema">Os protocolos e a infraestrutura que possibilitam a comunicação.</p>
-              <p class="mundo-col__texto">Entre o dispositivo e a nuvem existe uma cadeia de redes. O DNS encontra o servidor, o IP endereça e roteia, o TCP garante a entrega e o HTTPS protege a conversa.</p>
-              <div class="mundo-col__chips"><span class="chip">DNS</span><span class="chip">IP</span><span class="chip">TCP</span><span class="chip">HTTPS · TLS</span><span class="chip">Ethernet</span></div>
-            </article>
-
-            <article class="mundo-col cor-nuvem">
-              <span class="mundo-col__orbe" aria-hidden="true"><svg class="ico"><use href="#i-nuvem"/></svg></span>
-              <h3>Computação em Nuvem</h3>
-              <p class="mundo-col__tema">Os serviços de autenticação, APIs e persistência de dados.</p>
-              <p class="mundo-col__texto">O Supabase concentra o backend: autenticação, APIs sobre o PostgreSQL, funções (RPC) e armazenamento de arquivos. É lá que as regras de acesso vivem.</p>
-              <div class="mundo-col__chips"><span class="chip">Supabase Auth</span><span class="chip">PostgreSQL</span><span class="chip">RLS</span><span class="chip">RPC</span><span class="chip">Storage</span><span class="chip">Turnstile</span></div>
-            </article>
-          </div>
-
-          <p class="eco__base">Uma interface clara, uma rede confiável e uma nuvem que protege os dados: é a soma dos três mundos que transforma um clique em aprendizagem.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ 4. O CCNA na prática ============ -->
-    <section class="m-sec" id="ccna" data-secao="ccna" aria-labelledby="titulo-ccna">
-      <div class="m-wrap">
-        <div class="m-cabeca" data-revelar>
-          <p class="m-eyebrow">O CCNA na prática</p>
-          <h2 id="titulo-ccna">Um clique, embrulhado em camadas.</h2>
-          <p class="m-lede">Os conceitos de redes que estudamos no SENAI, no CCNA, não ficam só na teoria: cada um aparece, em algum ponto, na viagem de uma requisição do Cognita. O modelo TCP/IP é o mapa dessa viagem.</p>
-        </div>
-
-        <div class="ccna">
-          <figure class="pacote" data-revelar data-slot="camadas-tcpip" aria-label="Encapsulamento de uma requisição nas camadas do modelo TCP/IP">
-            <p class="pacote__dns"><span class="chip">DNS</span> Antes de tudo, descobre o endereço IP do servidor.</p>
-            <div class="camada camada--acesso" data-camada="acesso" style="--i:0">
-              <p class="camada__rotulo"><b>Acesso à rede</b><span>Ethernet · quadro</span></p>
-              <div class="camada camada--internet" data-camada="internet" style="--i:1">
-                <p class="camada__rotulo"><b>Internet</b><span>IP · pacote</span></p>
-                <div class="camada camada--transporte" data-camada="transporte" style="--i:2">
-                  <p class="camada__rotulo"><b>Transporte</b><span>TCP · segmento</span></p>
-                  <div class="camada camada--aplicacao" data-camada="aplicacao" style="--i:3">
-                    <p class="camada__rotulo"><b>Aplicação</b><span>TLS · HTTP</span></p>
-                    <div class="camada__miolo" style="--i:4" data-slot="inspetor-http">
-                      <strong>Seu clique</strong>
-                      <small>a requisição do Cognita</small>
-                    </div>
+        <div class="nuvem">
+          <ol class="trilho" style="--n:5">
+            <li class="no cor-nuvem" style="--i:0">
+              <span class="lig" aria-hidden="true"><i></i></span>
+              <span class="no__icone"><svg class="ico" aria-hidden="true"><use href="#i-codigo"/></svg></span>
+              <span class="no__txt"><b>API</b><small>recebe o pedido</small></span>
+            </li>
+            <li class="no cor-nuvem" style="--i:1">
+              <span class="lig" aria-hidden="true"><i></i></span>
+              <span class="no__icone"><svg class="ico" aria-hidden="true"><use href="#i-chave"/></svg></span>
+              <span class="no__txt"><b>Autenticação</b><small>quem pede?</small></span>
+            </li>
+            <li class="no cor-web" style="--i:2">
+              <span class="lig" aria-hidden="true"><i></i></span>
+              <span class="no__icone"><svg class="ico" aria-hidden="true"><use href="#i-escudo"/></svg></span>
+              <span class="no__txt"><b>RLS</b><small>pode acessar?</small></span>
+            </li>
+            <li class="no cor-nuvem" style="--i:3">
+              <span class="lig" aria-hidden="true"><i></i></span>
+              <span class="no__icone"><svg class="ico" aria-hidden="true"><use href="#i-banco"/></svg></span>
+              <span class="no__txt"><b>PostgreSQL</b><small>guarda o dado</small></span>
+            </li>
+            <li class="no no--resultado cor-web" style="--i:4">
+              <div class="aparelho" role="img" aria-label="Tela da criança mostrando a missão liberada">
+                <div class="aparelho__tela">
+                  <div class="ap-espera" aria-hidden="true">
+                    <svg class="ico"><use href="#i-cadeado"/></svg>
+                  </div>
+                  <div class="ap-livre" aria-hidden="true">
+                    <h4>Vamos contar?</h4>
+                    <img src="/assets/trilha/emblemas/contar.webp" width="160" height="160" alt="" />
+                    <p class="ap-livre__tag">Missão disponível</p>
                   </div>
                 </div>
               </div>
-            </div>
-            <figcaption>Cada camada embrulha a anterior: o clique vira dados HTTP, protegidos por TLS, entregues por TCP, endereçados por IP e levados em quadros Ethernet.</figcaption>
-          </figure>
+              <span class="no__txt"><b>Resultado</b><small>na tela infantil</small></span>
+            </li>
+          </ol>
 
-          <ul class="conceitos">
-            <li class="conceito conceito--aplicacao" data-camada="aplicacao" data-revelar style="--atraso:0">
-              <div class="conceito__topo"><h3>DNS</h3><span class="chip" style="--cor:#ffbd49;--cor-rgb:255,189,73">Aplicação</span></div>
-              <p class="conceito__quem">Traduz um nome em endereço IP.</p>
-              <p class="conceito__pratica"><b>No Cognita</b>Antes da primeira chamada, o navegador pergunta ao DNS onde está o servidor do projeto.</p>
-            </li>
-            <li class="conceito conceito--internet" data-camada="internet" data-revelar style="--atraso:1">
-              <div class="conceito__topo"><h3>IP</h3><span class="chip" style="--cor:#c78bd8;--cor-rgb:199,139,216">Internet</span></div>
-              <p class="conceito__quem">Endereça cada pacote e define a rota até o destino.</p>
-              <p class="conceito__pratica"><b>No Cognita</b>Cada pacote leva origem e destino. Os roteadores escolhem o próximo salto até chegar à nuvem.</p>
-            </li>
-            <li class="conceito conceito--transporte" data-camada="transporte" data-revelar style="--atraso:0">
-              <div class="conceito__topo"><h3>TCP</h3><span class="chip" style="--cor:#e59ad6;--cor-rgb:229,154,214">Transporte</span></div>
-              <p class="conceito__quem">Entrega confiável e ordenada, com controle de fluxo.</p>
-              <p class="conceito__pratica"><b>No Cognita</b>Normalmente, o handshake de três vias abre a conexão antes de a requisição sair.</p>
-            </li>
-            <li class="conceito conceito--aplicacao" data-camada="aplicacao" data-revelar style="--atraso:1">
-              <div class="conceito__topo"><h3>HTTPS</h3><span class="chip" style="--cor:#ffbd49;--cor-rgb:255,189,73">Aplicação</span></div>
-              <p class="conceito__quem">HTTP protegido por TLS: confidencialidade e identidade do servidor.</p>
-              <p class="conceito__pratica"><b>No Cognita</b>O login e os dados das famílias trafegam cifrados entre o navegador e a API.</p>
-            </li>
-            <li class="conceito conceito--acesso" data-camada="acesso" data-revelar style="--atraso:0">
-              <div class="conceito__topo"><h3>Ethernet</h3><span class="chip" style="--cor:#9c6fd6;--cor-rgb:156,111,214">Acesso à rede</span></div>
-              <p class="conceito__quem">Quadros e endereços MAC no enlace local.</p>
-              <p class="conceito__pratica"><b>No Cognita</b>No primeiro salto, o dado viaja em quadros até o roteador: Ethernet no cabo, 802.11 no Wi-Fi.</p>
-            </li>
-          </ul>
+          <p class="fecho"><span class="cor-web">Desenvolvimento web</span>, <span class="cor-rede">redes</span> e <span class="cor-nuvem">nuvem</span> a serviço da educação.</p>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
 
-    <!-- ============ 5. Uma tecnologia com propósito ============ -->
-    <section class="m-sec" id="proposito" data-secao="proposito" aria-labelledby="titulo-proposito">
-      <div class="m-wrap proposito">
-        <div class="m-copia" data-revelar>
-          <p class="m-eyebrow">Uma tecnologia com propósito</p>
-          <h2 id="titulo-proposito">Tecnologia que existe para aproximar pessoas.</h2>
-          <p class="m-lede">Redes, protocolos e nuvem importam porque levam um tutor, um responsável e uma criança ao mesmo lugar: uma experiência de aprendizagem mediada por pessoas. A tecnologia organiza o ciclo; quem ensina e acompanha continua sendo gente.</p>
+    <nav class="show__nav" aria-label="Slides">
+      <button type="button" class="nav-seta nav-seta--volta" data-acao="anterior" aria-label="Slide anterior"><svg class="ico" aria-hidden="true"><use href="#i-seta"/></svg></button>
+      <ol class="nav-pontos">
+        <li><button type="button" data-ir="1" aria-label="Slide 1: origem do Cognita"><i></i></button></li>
+        <li><button type="button" data-ir="2" aria-label="Slide 2: a plataforma"><i></i></button></li>
+        <li><button type="button" data-ir="3" aria-label="Slide 3: redes de computadores"><i></i></button></li>
+        <li><button type="button" data-ir="4" aria-label="Slide 4: computação em nuvem"><i></i></button></li>
+      </ol>
+      <button type="button" class="nav-seta" data-acao="proximo" aria-label="Próximo slide"><svg class="ico" aria-hidden="true"><use href="#i-seta"/></svg></button>
+    </nav>
 
-          <div class="ciclo">
-            <p class="ciclo__titulo">O ciclo que a tecnologia organiza</p>
-            <ol>
-              <li>Conhecer</li>
-              <li>Adaptar</li>
-              <li>Mediar</li>
-              <li>Observar</li>
-              <li>Aprender</li>
-            </ol>
-          </div>
-
-          <div class="m-copia__acoes">
-            <a class="m-btn m-btn--ouro" href="../index.html">Conhecer o Cognita Hub <svg class="ico" aria-hidden="true"><use href="#i-seta"/></svg></a>
-            <a class="m-link" href="como-funciona.html">Ver como funciona <span aria-hidden="true">→</span></a>
-          </div>
-        </div>
-
-        <!-- Pessoas em cima, infraestrutura embaixo: as três camadas sustentam o encontro. A caixa tem a
-             proporção do viewBox (560x520), então os rótulos HTML em % coincidem com o desenho. -->
-        <div class="pessoas" data-revelar role="img" aria-label="Tutor, responsável e criança ligados entre si, apoiados pelas camadas de aplicação, rede e nuvem.">
-          <svg class="pessoas__desenho" viewBox="0 0 560 520" aria-hidden="true" focusable="false">
-            <defs>
-              <linearGradient id="laje-web" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffbd49" stop-opacity=".34"/><stop offset="1" stop-color="#ffbd49" stop-opacity=".1"/></linearGradient>
-              <linearGradient id="laje-rede" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e59ad6" stop-opacity=".34"/><stop offset="1" stop-color="#e59ad6" stop-opacity=".1"/></linearGradient>
-              <linearGradient id="laje-nuvem" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9a0f2" stop-opacity=".34"/><stop offset="1" stop-color="#b9a0f2" stop-opacity=".1"/></linearGradient>
-            </defs>
-
-            <ellipse cx="280" cy="498" rx="244" ry="11" fill="#0a0009" fill-opacity=".45"/>
-
-            <polygon points="32,434 528,434 552,474 8,474" fill="url(#laje-nuvem)" stroke="#b9a0f2" stroke-opacity=".6"/>
-            <polygon points="56,382 504,382 528,422 32,422" fill="url(#laje-rede)" stroke="#e59ad6" stroke-opacity=".6"/>
-            <polygon points="80,330 480,330 504,370 56,370" fill="url(#laje-web)" stroke="#ffbd49" stroke-opacity=".6"/>
-
-            <g fill="none" stroke="#ffbd49" stroke-opacity=".5" stroke-width="1.5" stroke-dasharray="2 8" stroke-linecap="round">
-              <path class="pessoas__fio" d="M96 274 V330"/>
-              <path class="pessoas__fio" d="M280 120 V330"/>
-              <path class="pessoas__fio" d="M464 274 V330"/>
-            </g>
-
-            <g fill="none" stroke="#ffbd49" stroke-opacity=".75" stroke-width="2" stroke-linecap="round">
-              <path d="M136 170 Q173 113 240 102"/>
-              <path d="M320 102 Q387 113 424 170"/>
-              <path d="M130 224 Q280 360 430 224"/>
-            </g>
-          </svg>
-
-          <span class="pessoas__no cor-web" style="--x:17.143%;--y:37.692%"><svg class="ico"><use href="#i-tutor"/></svg></span>
-          <span class="pessoas__no cor-web" style="--x:50%;--y:14.615%"><svg class="ico"><use href="#i-estrela"/></svg></span>
-          <span class="pessoas__no cor-web" style="--x:82.857%;--y:37.692%"><svg class="ico"><use href="#i-coracao"/></svg></span>
-
-          <span class="pessoas__nome" style="--x:17.143%;--y:47.5%">Tutor</span>
-          <span class="pessoas__nome" style="--x:50%;--y:0.6%">Criança</span>
-          <span class="pessoas__nome" style="--x:82.857%;--y:47.5%">Responsável</span>
-
-          <span class="pessoas__elo" style="--x:32.4%;--y:24%">media</span>
-          <span class="pessoas__elo" style="--x:67.6%;--y:24%">acompanha</span>
-          <span class="pessoas__elo" style="--x:50%;--y:56.2%">devolutiva</span>
-
-          <img class="pessoas__mascote" src="/assets/trilha/mascote/planejar.webp" width="480" height="480" alt="" loading="lazy" />
-
-          <div class="pessoas__camada cor-web" style="top:63.46%"><p><b>Aplicação web</b><span>o Cognita Hub no navegador</span></p></div>
-          <div class="pessoas__camada cor-rede" style="top:73.46%"><p><b>Rede</b><span>da sua casa à internet</span></p></div>
-          <div class="pessoas__camada cor-nuvem" style="top:83.46%"><p><b>Nuvem</b><span>Supabase: Auth, API e banco</span></p></div>
-        </div>
-      </div>
-    </section>
+    <p class="so-leitor" role="status" aria-live="polite" data-anuncio></p>
   </main>
-
-  <footer class="mf">
-    <div class="mf__placa surface-night surface-night--wide">
-      <div class="mf__topo">
-        <a href="../index.html" aria-label="Cognita Hub, página inicial"><img class="mf__logo" src="/assets/brand/cognita-logo-horizontal-trim.png" width="720" height="233" alt="" loading="lazy" /></a>
-        <div class="mf__autoria">
-          <img class="mf__emblema" src="/assets/brand/cforce-emblema-trim.png" width="211" height="288" alt="" loading="lazy" />
-          <p>Desenvolvido pela<b>C-FORCE</b></p>
-        </div>
-      </div>
-      <div class="mf__regra"></div>
-      <div class="mf__base">
-        <span>Cognita Hub × Mundo SENAI 2026 · 5 e 6 de novembro</span>
-        <div class="mf__social">
-          <a href="https://www.instagram.com/cognita.hub/" aria-label="Instagram do Cognita Hub"><svg class="ico" aria-hidden="true"><use href="#i-instagram"/></svg></a>
-          <a href="https://www.youtube.com/@C-FORCE-s1d" aria-label="YouTube da C-FORCE"><svg class="ico" aria-hidden="true"><use href="#i-youtube"/></svg></a>
-        </div>
-      </div>
-    </div>
-  </footer>
-
-  <!-- ============ Modo Apresentação ============
-       Palco em tela cheia com 4 cenas, uma por integrante da equipe. Nasce escondido: o JS liga o modo
-       (body[data-modo="apresentacao"]), que esconde a página longa e mostra este palco.
-       Tudo aqui é SIMULAÇÃO LOCAL, com dados fictícios: nada fala com o Supabase, nada é gravado.
-       Os textos de cada cena podem ser editados aqui, direto no HTML. -->
-  <div class="ap surface-night" data-ap hidden tabindex="-1" role="region" aria-roledescription="apresentação" aria-label="Apresentação do Cognita Hub no Mundo SENAI 2026">
-
-    <header class="ap__topo">
-      <img class="ap__logo" src="/assets/brand/cognita-logo-horizontal-trim.png" width="720" height="233" alt="Cognita Hub" />
-      <nav class="ap__prog" aria-label="Cenas da apresentação">
-        <button type="button" class="ap__passo" data-ir="1" aria-label="Cena 1: Origem"><b>1</b><span>Origem</span></button>
-        <button type="button" class="ap__passo" data-ir="2" aria-label="Cena 2: Plataforma"><b>2</b><span>Plataforma</span></button>
-        <button type="button" class="ap__passo" data-ir="3" aria-label="Cena 3: Redes"><b>3</b><span>Redes</span></button>
-        <button type="button" class="ap__passo" data-ir="4" aria-label="Cena 4: Nuvem"><b>4</b><span>Nuvem</span></button>
-      </nav>
-      <div class="ap__ferr">
-        <button type="button" class="ap-ferr" data-acao="tela-cheia" data-tela-cheia hidden aria-label="Alternar tela cheia"><svg class="ico" aria-hidden="true"><use href="#i-tela"/></svg><span class="ap-ferr__txt">Tela cheia</span></button>
-        <button type="button" class="ap-ferr" data-acao="reiniciar" aria-label="Reiniciar a apresentação"><svg class="ico" aria-hidden="true"><use href="#i-reiniciar"/></svg><span class="ap-ferr__txt">Reiniciar</span></button>
-        <button type="button" class="ap-ferr" data-acao="sair" aria-label="Sair da apresentação"><svg class="ico" aria-hidden="true"><use href="#i-sair"/></svg><span class="ap-ferr__txt">Sair</span></button>
-      </div>
-    </header>
-
-    <div class="ap__palco">
-
-      <!-- ===== Cena 1 · O nascimento do Cognita (0–20 s) ===== -->
-      <section class="ap-cena" data-cena="1" aria-labelledby="ap-t1">
-        <div class="ap-origem">
-          <div class="ap-origem__texto">
-            <p class="ap-eyebrow">Cena 1 · O nascimento do Cognita</p>
-            <h2 id="ap-t1">A matemática ao alcance de <span class="acento">cada mente</span>.</h2>
-            <p class="ap-lead">O Cognita Hub apoia crianças com TEA, de 5 a 9 anos, que encontram barreiras na aprendizagem matemática. Ele conecta famílias e tutores voluntários, com atividades adaptadas e acompanhamento.</p>
-            <p class="ap-origem__fato">Desenvolvido pela equipe C-FORCE, em Belém (PA), para o Desafio Liga Jovem, 4ª edição.</p>
-            <div class="ap-ciclo">
-              <ol aria-label="O ciclo da mediação humana">
-                <li>Conhecer</li>
-                <li>Adaptar</li>
-                <li>Mediar</li>
-                <li>Observar</li>
-                <li>Aprender</li>
-              </ol>
-              <p>A tecnologia organiza o ciclo. Quem ensina e acompanha continua sendo gente.</p>
-            </div>
-          </div>
-
-          <div class="ap-origem__arte">
-            <div class="ap-mascote">
-              <img class="ap-mascote__estrelas" src="/assets/trilha/espaco/estrelas-3.webp" width="84" height="84" alt="" />
-              <img class="ap-mascote__planeta" src="/assets/trilha/espaco/planeta-roxo.webp" width="76" height="76" alt="" />
-              <img class="ap-mascote__img" src="/assets/trilha/mascote/guia.webp" width="480" height="480" alt="Mascote do Cognita Hub, um gato laranja com capelo de formatura, acenando." />
-            </div>
-            <div class="ap-marcas">
-              <img class="ap-marcas__cognita" src="/assets/brand/cognita-logo-horizontal-trim.png" width="720" height="233" alt="Cognita Hub" />
-              <span class="ap-marcas__cforce">
-                <img src="/assets/brand/cforce-emblema-trim.png" width="211" height="288" alt="" />
-                <span>Desenvolvido pela<b>C-FORCE</b></span>
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===== Cena 2 · Como a plataforma funciona (20–50 s) ===== -->
-      <section class="ap-cena" data-cena="2" aria-labelledby="ap-t2" hidden>
-        <header class="ap-cab">
-          <p class="ap-eyebrow">Cena 2 · Como a plataforma funciona</p>
-          <h2 id="ap-t2">Duas telas, <span class="acento">uma jornada</span>.</h2>
-          <p class="ap-lead">O tutor prepara e libera a missão. A criança a encontra no próprio dispositivo, com um adulto por perto.</p>
-        </header>
-
-        <div class="ap-plat">
-          <div class="ap-plat__lado">
-            <p class="ap-rotulo">Ambiente do tutor</p>
-            <div class="ap-janela" role="group" aria-label="Simulação do painel do tutor">
-              <div class="ap-janela__barra" aria-hidden="true"><i></i><i></i><i></i></div>
-              <div class="ap-janela__corpo">
-                <p class="ap-j-eyebrow">Planejamento do ciclo · criança exemplo</p>
-                <h3>Contar quantidades</h3>
-                <ul class="ap-missoes">
-                  <li class="ap-missao">
-                    <img src="/assets/trilha/emblemas/identificar.webp" width="160" height="160" alt="" />
-                    <div><b>Reconhecer grupos</b><span>Missão anterior</span></div>
-                    <em class="ap-pilula ap-pilula--ok">Concluída</em>
-                  </li>
-                  <li class="ap-missao">
-                    <img src="/assets/trilha/emblemas/contar.webp" width="160" height="160" alt="" />
-                    <div><b>Contar fósseis</b><span><span class="ap-so-bloq">Pronta para ser liberada</span><span class="ap-so-lib">Disponível no dispositivo</span></span></div>
-                    <em class="ap-pilula ap-pilula--estado"><span class="ap-so-bloq">Bloqueada</span><span class="ap-so-lib">Disponível</span></em>
-                  </li>
-                </ul>
-                <div class="ap-j-acoes">
-                  <button type="button" class="ap-liberar" data-acao="liberar" data-liberar>
-                    <svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>
-                    <span class="ap-so-bloq">Liberar missão</span><span class="ap-so-lib">Missão liberada</span>
-                  </button>
-                  <button type="button" class="ap-refazer" data-acao="refazer">Refazer</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="ap-elo" aria-hidden="true"><i></i></div>
-
-          <div class="ap-plat__lado ap-plat__lado--crianca">
-            <p class="ap-rotulo">Experiência infantil</p>
-            <div class="ap-aparelho" data-aparelho="plataforma" data-estado="espera" role="group" aria-label="Simulação da tela da criança">
-              <div class="ap-aparelho__tela">
-                <div class="ap-ap-espera">
-                  <svg class="ico" aria-hidden="true"><use href="#i-cadeado"/></svg>
-                  <p>Aguardando o tutor liberar a missão</p>
-                </div>
-                <div class="ap-ap-livre">
-                  <h4>Vamos contar?</h4>
-                  <img src="/assets/trilha/emblemas/contar.webp" width="160" height="160" alt="" />
-                  <p>Conte os fósseis e escolha a quantidade correta.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===== Cena 3 · Onde entram as redes de computadores? (50–90 s) ===== -->
-      <section class="ap-cena" data-cena="3" aria-labelledby="ap-t3" hidden>
-        <header class="ap-cab">
-          <p class="ap-eyebrow">Cena 3 · Onde entram as redes de computadores?</p>
-          <h2 id="ap-t3">Antes da nuvem, <span class="acento">a rede</span>.</h2>
-          <p class="ap-lead">“Liberar missão” vira um pedido HTTPS. Veja o que o leva até o serviço remoto.</p>
-        </header>
-
-        <div class="ap-rede" data-rede data-etapa="0">
-          <ol class="ap-trilho" style="--n:5">
-            <li class="ap-no cor-web" data-no="1">
-              <span class="ap-lig" aria-hidden="true"><i></i></span>
-              <button type="button" class="ap-no__btn" data-etapa="1"><span class="ap-no__icone"><svg class="ico"><use href="#i-janela"/></svg></span><b>Dispositivo</b><small>tablet ou notebook</small></button>
-            </li>
-            <li class="ap-no cor-web" data-no="2">
-              <span class="ap-lig" aria-hidden="true"><i></i></span>
-              <button type="button" class="ap-no__btn" data-etapa="2"><span class="ap-no__icone"><svg class="ico"><use href="#i-wifi"/></svg></span><b>Rede local</b><small>Wi-Fi ou cabo</small></button>
-            </li>
-            <li class="ap-no cor-rede" data-no="3">
-              <span class="ap-lig" aria-hidden="true"><i></i></span>
-              <button type="button" class="ap-no__btn" data-etapa="3"><span class="ap-no__icone"><svg class="ico"><use href="#i-roteador"/></svg></span><b>Roteador</b><small>a porta de saída</small></button>
-            </li>
-            <li class="ap-no cor-rede" data-no="4">
-              <span class="ap-lig" aria-hidden="true"><i></i></span>
-              <button type="button" class="ap-no__btn" data-etapa="4"><span class="ap-no__icone"><svg class="ico"><use href="#i-globo"/></svg></span><b>Internet</b><small>fora da rede local</small></button>
-            </li>
-            <li class="ap-no cor-nuvem" data-no="5">
-              <button type="button" class="ap-no__btn" data-etapa="5"><span class="ap-no__icone"><svg class="ico"><use href="#i-nuvem"/></svg></span><b>Serviço remoto</b><small>em nuvem</small></button>
-            </li>
-          </ol>
-
-          <div class="ap-zonas" aria-hidden="true"><span>Dentro da rede local</span><span>Fora da rede local</span></div>
-
-          <div class="ap-leg" aria-live="polite">
-            <div class="ap-leg__bloco cor-web" data-leg="1" hidden>
-              <p class="ap-leg__camada">Aplicação e transporte</p>
-              <p class="ap-leg__texto">O navegador monta o pedido. Antes de enviá-lo, descobre o endereço do serviço (DNS) e, num HTTPS comum, abre uma conexão TCP e negocia o TLS.</p>
-              <p class="ap-leg__tags"><span class="chip">DNS</span><span class="chip">TCP</span><span class="chip">TLS</span><span class="chip">HTTPS</span></p>
-              <p class="ap-leg__nota">O DNS costuma vir do cache: ele não é consultado a cada clique.</p>
-            </div>
-            <div class="ap-leg__bloco cor-web" data-leg="2" hidden>
-              <p class="ap-leg__camada">Acesso à rede</p>
-              <p class="ap-leg__texto">Por Wi-Fi ou por cabo, o pedido viaja em quadros até o roteador.</p>
-              <p class="ap-leg__tags"><span class="chip">Wi-Fi</span><span class="chip">Ethernet</span><span class="chip">Quadros</span></p>
-            </div>
-            <div class="ap-leg__bloco cor-rede" data-leg="3" hidden>
-              <p class="ap-leg__camada">Internet · IP</p>
-              <p class="ap-leg__texto">O roteador lê o endereço IP de destino, escolhe o próximo salto e envia o pacote para fora da rede local.</p>
-              <p class="ap-leg__tags"><span class="chip">IP</span><span class="chip">Roteamento</span></p>
-            </div>
-            <div class="ap-leg__bloco cor-rede" data-leg="4" hidden>
-              <p class="ap-leg__camada">Internet · IP</p>
-              <p class="ap-leg__texto">Roteadores em sequência encaminham o pacote, salto a salto, até o endereço do serviço.</p>
-              <p class="ap-leg__tags"><span class="chip">IP</span><span class="chip">Roteamento</span></p>
-            </div>
-            <div class="ap-leg__bloco cor-nuvem" data-leg="5" hidden>
-              <p class="ap-leg__camada">Chegada à nuvem</p>
-              <p class="ap-leg__texto">O pedido chega ao serviço em nuvem, que fica fora da nossa rede. A resposta volta pelo mesmo caminho.</p>
-              <p class="ap-leg__tags"><span class="chip">HTTPS</span><span class="chip">TCP</span><span class="chip">TLS</span><span class="chip">API</span></p>
-            </div>
-          </div>
-
-          <div class="ap-rede__acoes">
-            <button type="button" class="ap-passo-btn" data-acao="rede-passo"><svg class="ico" aria-hidden="true"><use href="#i-reiniciar"/></svg><span data-rotulo-passo>Próximo salto</span></button>
-          </div>
-        </div>
-
-        <p class="ap-nota">Representação didática do caminho de um pedido. A rede real tem mais saltos e muitas variações.</p>
-      </section>
-
-      <!-- ===== Cena 4 · A nuvem e o resultado (90–120 s) ===== -->
-      <section class="ap-cena" data-cena="4" aria-labelledby="ap-t4" hidden>
-        <header class="ap-cab">
-          <p class="ap-eyebrow">Cena 4 · A nuvem e o resultado</p>
-          <h2 id="ap-t4">Na nuvem, o dado só chega a <span class="acento">quem pode vê-lo</span>.</h2>
-        </header>
-
-        <div class="ap-nuvem" data-nuvem data-etapa="0" data-acesso="autorizado">
-          <div class="ap-nuvem__esq">
-          <ol class="ap-pilha">
-            <li class="ap-pp cor-nuvem" data-pp="1">
-              <span class="ap-pp__icone"><svg class="ico" aria-hidden="true"><use href="#i-codigo"/></svg></span>
-              <div><b>API</b><small>recebe o pedido “liberar missão”</small></div>
-            </li>
-            <li class="ap-pp cor-nuvem" data-pp="2">
-              <span class="ap-pp__icone"><svg class="ico" aria-hidden="true"><use href="#i-chave"/></svg></span>
-              <div><b>Autenticação</b><small>confere quem está pedindo</small></div>
-            </li>
-            <li class="ap-pp cor-nuvem" data-pp="3">
-              <span class="ap-pp__icone"><svg class="ico" aria-hidden="true"><use href="#i-escudo"/></svg></span>
-              <div><b>Autorização · RLS</b><small>as políticas decidem quem lê e quem grava</small></div>
-            </li>
-            <li class="ap-pp cor-nuvem" data-pp="4">
-              <span class="ap-pp__icone"><svg class="ico" aria-hidden="true"><use href="#i-banco"/></svg></span>
-              <div><b>PostgreSQL</b><small>guarda: missão disponível</small></div>
-            </li>
-          </ol>
-
-            <div class="ap-nuvem__ctl">
-              <div class="ap-seg" role="group" aria-label="Quem consulta">
-                <button type="button" data-acesso="autorizado" aria-pressed="true">Dispositivo pareado</button>
-                <button type="button" data-acesso="negado" aria-pressed="false">Sem pareamento</button>
-              </div>
-              <button type="button" class="ap-passo-btn" data-acao="nuvem-passo"><svg class="ico" aria-hidden="true"><use href="#i-reiniciar"/></svg><span data-rotulo-passo>Próxima etapa</span></button>
-            </div>
-          </div>
-
-          <div class="ap-nuvem__elo" aria-hidden="true"><span>a criança consulta</span></div>
-
-          <div class="ap-nuvem__res">
-            <p class="ap-rotulo">Tela da criança</p>
-            <div class="ap-aparelho ap-aparelho--p" data-aparelho="nuvem" data-estado="espera" role="group" aria-label="Simulação da tela da criança consultando a nuvem">
-              <div class="ap-aparelho__tela">
-                <div class="ap-ap-espera">
-                  <svg class="ico" aria-hidden="true"><use href="#i-cadeado"/></svg>
-                  <p data-res-espera>Aguardando a consulta</p>
-                </div>
-                <div class="ap-ap-livre">
-                  <h4>Vamos contar?</h4>
-                  <img src="/assets/trilha/emblemas/contar.webp" width="160" height="160" alt="" />
-                  <p>Missão disponível</p>
-                </div>
-                <div class="ap-ap-negada">
-                  <svg class="ico" aria-hidden="true"><use href="#i-escudo"/></svg>
-                  <p>Nenhuma missão visível</p>
-                </div>
-              </div>
-            </div>
-            <p class="ap-nuvem__txt" data-res-txt aria-live="polite"></p>
-          </div>
-        </div>
-
-        <p class="ap-fecho" data-fecho><span class="cor-web">Interface clara</span>, <span class="cor-rede">rede confiável</span> e <span class="cor-nuvem">nuvem que protege os dados</span>: tecnologia a serviço de uma criança, de uma família e de quem a acompanha.</p>
-      </section>
-    </div>
-
-    <footer class="ap__rodape">
-      <button type="button" class="ap-nav ap-nav--volta" data-acao="voltar"><svg class="ico ico--esq" aria-hidden="true"><use href="#i-seta"/></svg><span>Voltar</span></button>
-      <p class="ap__meta">
-        <span class="ap__selo-sim" data-selo-sim><i aria-hidden="true"></i>Simulação didática</span>
-        <span class="ap__info"><span data-meta>Cena 1 de 4</span><span class="ap__dica"> · use ← → no teclado</span></span>
-      </p>
-      <button type="button" class="ap-nav ap-nav--vai" data-acao="avancar"><span data-rotulo-avancar>Próxima: Plataforma</span><svg class="ico" aria-hidden="true"><use href="#i-seta"/></svg></button>
-    </footer>
-
-    <p class="ap-oculto" role="status" aria-live="polite" data-anuncio></p>
-  </div>
 
   <script type="module" src="../js/pages/mundo-senai.js"></script>
 </body>
