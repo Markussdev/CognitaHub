@@ -10,6 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../css/public-shell.css" />
+  <link rel="stylesheet" href="../css/brand-surface.css" />
+  <link rel="stylesheet" href="../css/public-noite.css" />
   <style>
     .legal-main { padding: 48px 0 96px; }
     .legal-wrap { max-width: 760px; margin-inline: auto; padding-inline: 24px; }
@@ -27,7 +29,26 @@
     .legal-table th { color: var(--brand-deep); font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
   </style>
 </head>
-<body class="public-page">
+<body class="public-page pub-noite">
+  <header class="public-header">
+    <div class="wrap public-header__row">
+      <a class="public-brand" href="../index.html" aria-label="Cognita Hub">
+        <span class="public-brand__mark"><img src="/assets/logo-icon-transparent.png" alt="" /></span>
+        <span class="public-brand__copy"><strong>Cognita Hub</strong><small>TEA + Matemática</small></span>
+      </a>
+      <nav class="public-nav" aria-label="Navegação pública">
+        <a href="como-funciona.html">Como funciona</a>
+        <a href="para-familias.html">Para famílias</a>
+        <a href="para-tutores.html">Tutores</a>
+        <a href="seguranca.html">Segurança</a>
+      </nav>
+      <div class="public-actions">
+        <a class="btn btn--outline btn--sm" href="login.html">Entrar</a>
+        <a class="btn btn--soft btn--sm" href="cadastro.html">Participar</a>
+      </div>
+    </div>
+  </header>
+
   <main class="legal-main">
     <div class="legal-wrap">
       <a class="legal-back" href="javascript:history.back()">← Voltar</a>

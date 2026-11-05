@@ -84,6 +84,28 @@
   background: rgba(255,255,255,.12);
 }
 
+/* Acesso discreto ao Mundo SENAI 2026: um ponto dourado marca o evento sem competir com os CTAs.
+   Some em larguras onde o menu ficaria apertado (o link do footer continua disponível). */
+.home .nav .nav-evento {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home .nav .nav-evento::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold-on-dark);
+}
+
+@media (max-width: 1060px) {
+  .home .nav .nav-evento {
+    display: none;
+  }
+}
+
 .home .hd-cta .btn--soft {
   color: var(--night);
   background: var(--accent);

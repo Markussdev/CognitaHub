@@ -1,0 +1,446 @@
+/* ============================================================
+   COGNITA HUB — PÁGINAS PÚBLICAS EM NOITE MARACAJÁ
+   Camada de identidade para as páginas públicas e de cadastro/login. Não é
+   um sistema novo: reaproveita as cores e o motor de superfície da homepage
+   (brand-surface.css + home-refresh.css) e só reveste o que ainda era o
+   layout claro antigo.
+
+   Como ligar: <body class="… pub-noite"> + <link brand-surface.css> + este
+   arquivo, por último. Como desligar uma página: remover essa classe e os
+   dois <link>. Tudo aqui está escopado por body.pub-noite: nada atinge o
+   painel do tutor, do responsável, o admin, o app infantil nem a homepage.
+
+   Regra de ouro: superfície clara pode ficar quando ajuda a leitura. O que
+   muda é a moldura (fundo, cabeçalho, rodapé, faixas) e o texto que ficava
+   direto sobre o creme. Cartões de formulário, telas do produto e folhas de
+   texto legal continuam claros, com as cores originais.
+
+   Índice: 0 tokens e canvas · 1 cabeçalho · 2 botões e foco · 3 conteúdo
+           (audiência e como funciona) · 4 faixas · 5 rodapé · 6 formulários
+           7 documentos legais · 8 breakpoints · 9 movimento e contraste
+   ============================================================ */
+
+/* ---------- 0. Tokens e canvas ---------- */
+body.pub-noite {
+  --night: #270322;
+  --night-mid: #4B1744;
+  --gold: #ffbd49;
+  --gold-soft: #ffd27a;
+  --focus-on-dark: #ffcf63;
+  --on-dark: #ead9e7;
+  --on-dark-soft: #e5cddd;
+  --band: linear-gradient(150deg, #6A2A5E, #4B1744);
+  --light-card-shadow: 0 24px 56px rgba(10, 0, 9, .5);
+
+  color: var(--on-dark);
+  background-color: var(--night);
+  background-image:
+    url("/assets/brand/rosetas-maracaja.svg"),
+    radial-gradient(1300px 1500px at 26% 0%, rgba(75, 23, 68, 1) 0%, rgba(75, 23, 68, .55) 38%, rgba(75, 23, 68, 0) 70%),
+    radial-gradient(1300px 1500px at 76% 58%, rgba(75, 23, 68, .9) 0%, rgba(75, 23, 68, .5) 38%, rgba(75, 23, 68, 0) 70%);
+  background-size: 400px 400px, auto, auto;
+  background-repeat: repeat, no-repeat, no-repeat;
+}
+
+/* Páginas de conteúdo: o texto que ficava direto sobre o creme passa a ser claro.
+   (As telas do produto e os cartões voltam ao escuro na seção 3.) */
+body.pub-noite:is(.audience-page, .how-page) {
+  --ink: #ffffff;
+  --ink-soft: var(--on-dark-soft);
+  --brand: var(--gold);
+  --brand-deep: #ffffff;
+  --line: rgba(255, 255, 255, .16);
+  --line-strong: rgba(255, 255, 255, .3);
+}
+
+/* ---------- 1. Cabeçalho (público e de cadastro) ----------
+   A logo horizontal entra por CSS (::before), sem mexer no HTML: o link
+   continua com o aria-label "Cognita Hub". */
+body.pub-noite .public-header,
+body.pub-noite .auth-hd {
+  border-bottom: 1px solid rgba(255, 255, 255, .12);
+  background: rgba(39, 3, 34, .86);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+body.pub-noite .public-brand__mark,
+body.pub-noite .public-brand__copy,
+body.pub-noite .brand-mark,
+body.pub-noite .brand-copy {
+  display: none;
+}
+
+body.pub-noite .public-brand::before,
+body.pub-noite .auth-hd .brand::before {
+  content: "";
+  display: block;
+  width: 155px;
+  height: 50px;
+  background: url("/assets/brand/cognita-logo-horizontal-trim.png") left center / contain no-repeat;
+}
+
+body.pub-noite .public-nav {
+  border-color: rgba(255, 255, 255, .12);
+  background: rgba(255, 255, 255, .07);
+}
+
+body.pub-noite .public-nav a {
+  color: #fff;
+}
+
+body.pub-noite .public-nav a:hover,
+body.pub-noite .public-nav a[aria-current="page"] {
+  background: rgba(255, 255, 255, .14);
+  color: #fff;
+  box-shadow: none;
+}
+
+body.pub-noite .auth-hd .back-link {
+  color: #fff;
+}
+
+/* ---------- 2. Botões e foco ---------- */
+body.pub-noite :is(.public-header, .auth-hd) .btn--soft {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--night);
+}
+
+body.pub-noite :is(.public-header, .auth-hd) .btn--soft:hover {
+  background: var(--gold-soft);
+  border-color: var(--gold-soft);
+}
+
+body.pub-noite .public-header .btn--outline,
+body.pub-noite:is(.audience-page, .how-page) main .btn--outline {
+  border-color: rgba(255, 255, 255, .5);
+  background: rgba(255, 255, 255, .06);
+  color: #fff;
+}
+
+body.pub-noite .public-header .btn--outline:hover,
+body.pub-noite:is(.audience-page, .how-page) main .btn--outline:hover {
+  border-color: #fff;
+  background: rgba(255, 255, 255, .14);
+}
+
+body.pub-noite:is(.audience-page, .how-page) .btn--primary {
+  color: var(--night);
+}
+
+/* O anel de foco padrão é azul-marinho: sobre o noite ele some. Dourado fora dos cartões. */
+body.pub-noite :focus-visible {
+  outline-color: var(--focus-on-dark);
+}
+
+body.pub-noite :is(.wizard-card, .auth-card, .path-card, .legal-wrap) :focus-visible {
+  outline-color: #141162;
+}
+
+/* ---------- 3. Conteúdo: audiência e como funciona ---------- */
+
+/* Hero: a página abre em noite, com um planeta e estrelas discretos (decoração, atrás do conteúdo) */
+body.pub-noite :is(.audience-hero, .hero-how) {
+  position: relative;
+  isolation: isolate;
+}
+
+body.pub-noite :is(.audience-hero, .hero-how)::before,
+body.pub-noite :is(.audience-hero, .hero-how)::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+body.pub-noite :is(.audience-hero, .hero-how)::before {
+  top: 18px;
+  right: max(16px, calc(50% - 720px));
+  width: 120px;
+  height: 120px;
+  background-image: url("/assets/trilha/espaco/planeta-roxo.webp");
+  opacity: .5;
+}
+
+body.pub-noite :is(.audience-hero, .hero-how)::after {
+  bottom: 26px;
+  left: max(8px, calc(50% - 760px));
+  width: 84px;
+  height: 84px;
+  background-image: url("/assets/trilha/espaco/estrelas-3.webp");
+  opacity: .5;
+}
+
+/* Capturas do produto: são PNGs opacos de fundo branco. Viram cartões claros arredondados. */
+body.pub-noite .product-shot img {
+  border-radius: 20px;
+  filter: none;
+  box-shadow: var(--light-card-shadow), 0 0 0 1px rgba(255, 255, 255, .14);
+}
+
+/* Telas e celulares desenhados em HTML (como funciona): continuam claros, com as cores originais */
+body.pub-noite :is(.screen, .phone) {
+  --ink: #26051f;
+  --ink-soft: #625363;
+  --brand: #141162;
+  --brand-deep: #540042;
+  color: var(--ink);
+}
+
+body.pub-noite .screen {
+  border-color: rgba(255, 255, 255, .16);
+  box-shadow: var(--light-card-shadow);
+}
+
+body.pub-noite .phone {
+  box-shadow: var(--light-card-shadow);
+}
+
+/* Filetes: eram azul-marinho sobre creme; agora claros sobre noite */
+body.pub-noite :is(
+  .feature-strip, .feature-item + .feature-item, .work-strip, .work-step + .work-step,
+  .pairing-flow, .pairing-step + .pairing-step, .transparency-list, .transparency-list div + div,
+  .layer-list, .layer-list details, .route-links, .route-links a + a, .access-grid,
+  .access-role:nth-child(even), .access-role:nth-child(n + 3), .audience-section--soft,
+  .flow-step + .flow-step, .flow-line, .trust-map, .trust-map__node, .access-role + .access-role
+) {
+  border-color: var(--line);
+}
+
+/* Faixas translúcidas claras do layout antigo viram véus sutis */
+body.pub-noite .audience-section--soft,
+body.pub-noite .chapter--soft {
+  background: rgba(255, 255, 255, .04);
+}
+
+body.pub-noite .audience-section--cool {
+  background: rgba(75, 23, 68, .38);
+}
+
+body.pub-noite .access-grid {
+  background: rgba(255, 255, 255, .05);
+}
+
+body.pub-noite .trust-map {
+  background: rgba(255, 255, 255, .06);
+  box-shadow: none;
+}
+
+body.pub-noite .trust-map__node {
+  background: rgba(255, 255, 255, .08);
+}
+
+body.pub-noite .trust-map__hub span {
+  background: #141162;
+}
+
+body.pub-noite .trust-map__line {
+  background: var(--line);
+}
+
+body.pub-noite .flow-line {
+  background: rgba(255, 255, 255, .06);
+  box-shadow: none;
+}
+
+body.pub-noite .flow-step::after {
+  border-top-color: rgba(255, 255, 255, .3);
+  border-right-color: rgba(255, 255, 255, .3);
+}
+
+body.pub-noite .route-links a:hover {
+  background: rgba(255, 255, 255, .06);
+}
+
+/* Números e marcadores: dourado com texto noite (branco sobre dourado não passa no contraste) */
+body.pub-noite .feature-item__number,
+body.pub-noite .flow-step b,
+body.pub-noite .pairing-step b {
+  background: var(--accent);
+  color: var(--night);
+}
+
+body.pub-noite .plain-list li::before,
+body.pub-noite .point-list li::before {
+  background: rgba(255, 189, 73, .18);
+  color: var(--gold);
+}
+
+body.pub-noite .access-role__tag {
+  color: var(--gold);
+}
+
+body.pub-noite .pairing-notes span {
+  border-color: rgba(159, 227, 191, .4);
+  background: rgba(28, 124, 84, .24);
+  color: #b4ecca;
+}
+
+/* ---------- 4. Faixas: do azul antigo para a ameixa da marca ---------- */
+body.pub-noite .audience-cta,
+body.pub-noite .responsibility-band,
+body.pub-noite .security-band {
+  background: var(--band);
+}
+
+body.pub-noite .mediation-band {
+  border: 1px solid rgba(255, 255, 255, .14);
+  background: var(--band);
+}
+
+/* ---------- 5. Rodapé ----------
+   O HTML ganha surface-night surface-night--wide (brand-surface.css), que
+   define as variáveis dos brilhos. O fundo é repetido aqui com especificidade
+   maior porque o Vite não garante a ordem entre public-shell.css (que pinta o
+   rodapé com --brand-deep) e brand-surface.css: ambas têm a mesma especificidade. */
+body.pub-noite .public-footer.surface-night {
+  border: 1px solid rgba(255, 255, 255, .1);
+  background-color: var(--night);
+  background-image:
+    url("/assets/brand/rosetas-maracaja.svg"),
+    radial-gradient(var(--warm-a-size) at var(--warm-a-pos),
+      rgba(var(--night-glow-warm), .85) 0%, rgba(var(--night-glow-warm), .50) 28%,
+      rgba(var(--night-glow-warm), .14) 55%, rgba(var(--night-glow-warm), 0) 76%),
+    radial-gradient(var(--warm-b-size) at var(--warm-b-pos),
+      rgba(var(--night-glow-warm), .80) 0%, rgba(var(--night-glow-warm), .46) 28%,
+      rgba(var(--night-glow-warm), .12) 55%, rgba(var(--night-glow-warm), 0) 76%),
+    radial-gradient(var(--cool-a-size) at var(--cool-a-pos),
+      rgba(var(--night-glow-cool), 1) 0%, rgba(var(--night-glow-cool), .55) 38%, rgba(var(--night-glow-cool), 0) 70%),
+    radial-gradient(var(--cool-b-size) at var(--cool-b-pos),
+      rgba(var(--night-glow-cool), .95) 0%, rgba(var(--night-glow-cool), .50) 38%, rgba(var(--night-glow-cool), 0) 70%);
+  background-size: var(--rosette-size) var(--rosette-size), auto, auto, auto, auto;
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+  box-shadow: none;
+}
+
+/* ---------- 6. Formulários (login, cadastro, tutor): moldura noite, cartão claro ---------- */
+body.pub-noite .step-counter,
+body.pub-noite .stepper-label {
+  color: var(--on-dark-soft);
+}
+
+body.pub-noite .stepper-item.is-active .stepper-label {
+  color: var(--gold);
+}
+
+body.pub-noite .stepper-item.is-done .stepper-label {
+  color: #b4ecca;
+}
+
+body.pub-noite .stepper-item:not(:last-child)::after {
+  background: rgba(255, 255, 255, .22);
+}
+
+body.pub-noite .stepper-item.is-done:not(:last-child)::after {
+  background: rgba(159, 227, 191, .5);
+}
+
+body.pub-noite .stepper-dot {
+  border-color: rgba(255, 255, 255, .34);
+  background: rgba(255, 255, 255, .08);
+  color: var(--on-dark-soft);
+}
+
+body.pub-noite .stepper-item.is-active .stepper-dot {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--night);
+  box-shadow: 0 0 0 4px rgba(255, 168, 0, .22);
+}
+
+body.pub-noite .stepper-item.is-done .stepper-dot {
+  border-color: rgba(159, 227, 191, .6);
+  background: rgba(28, 124, 84, .28);
+  color: #b4ecca;
+}
+
+/* Cartões e folhas claras: o texto volta a ser escuro (senão herdaria o claro do <body>) */
+body.pub-noite :is(.wizard-card, .auth-card, .path-card, .legal-wrap) {
+  color: var(--ink);
+}
+
+body.pub-noite .wizard-card,
+body.pub-noite .auth-card {
+  border-color: rgba(255, 255, 255, .14);
+  box-shadow: var(--light-card-shadow);
+}
+
+/* Tela "Por qual caminho você entra?" */
+body.pub-noite .path-intro .eyebrow {
+  color: var(--gold);
+}
+
+body.pub-noite .path-intro h1 {
+  color: #fff;
+}
+
+body.pub-noite .path-intro p:not(.eyebrow) {
+  color: var(--on-dark);
+}
+
+body.pub-noite .path-card {
+  border-color: rgba(255, 255, 255, .18);
+  background: #fffefc;
+  box-shadow: var(--light-card-shadow);
+}
+
+body.pub-noite .path-card:hover {
+  border-color: var(--gold);
+  box-shadow: 0 28px 60px rgba(10, 0, 9, .55);
+}
+
+body.pub-noite .auth-already {
+  color: var(--on-dark);
+}
+
+body.pub-noite .auth-already a {
+  color: var(--gold);
+}
+
+/* ---------- 7. Documentos legais: folha clara de leitura sobre o noite ----------
+   O texto jurídico não muda. Só a moldura: a folha continua clara, porque
+   é leitura longa. */
+body.pub-noite .legal-main {
+  padding: 40px 0 88px;
+}
+
+body.pub-noite .legal-wrap {
+  width: min(808px, calc(100% - 32px));
+  max-width: none;
+  padding: clamp(24px, 4.4vw, 52px);
+  border-radius: 24px;
+  background: #fffefc;
+  box-shadow: var(--light-card-shadow), 0 0 0 1px rgba(255, 255, 255, .14);
+}
+
+/* ---------- 8. Breakpoints ---------- */
+@media (max-width: 760px) {
+  body.pub-noite :is(.audience-hero, .hero-how)::before,
+  body.pub-noite :is(.audience-hero, .hero-how)::after {
+    display: none;
+  }
+}
+
+@media (max-width: 620px) {
+  body.pub-noite .public-brand::before,
+  body.pub-noite .auth-hd .brand::before {
+    width: 124px;
+    height: 40px;
+  }
+}
+
+/* ---------- 9. Movimento e contraste ---------- */
+@media (prefers-contrast: more) {
+  body.pub-noite {
+    background-image: none;
+  }
+
+  body.pub-noite .public-nav,
+  body.pub-noite :is(.public-header, .auth-hd) .btn--outline {
+    border-color: #fff;
+  }
+}

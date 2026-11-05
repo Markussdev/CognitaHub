@@ -71,9 +71,16 @@ cognita-hub/
 
 ### Página especial: Mundo SENAI 2026
 
-`pages/mundo-senai.html` é uma página pública e independente, feita para a apresentação do projeto no Mundo SENAI 2026 (5 e 6 de novembro). Ela não faz parte do fluxo do hub: tem CSS próprio (`css/mundo-senai.css`, que só reaproveita o motor de superfície de `css/brand-surface.css`) e JavaScript próprio e mínimo (`js/pages/mundo-senai.js`, só interações visuais). Não importa o cliente do Supabase, não faz requisições e não lê nem grava dados: o diagrama do caminho de uma requisição é ilustrativo.
+`pages/mundo-senai.html` é uma página pública e independente, feita para a apresentação do projeto no Mundo SENAI 2026 (5 e 6 de novembro). Ela não faz parte do fluxo do hub: tem CSS próprio (`css/mundo-senai.css`, que só reaproveita o motor de superfície de `css/brand-surface.css`) e JavaScript próprio (`js/pages/mundo-senai.js`). Não importa o cliente do Supabase, não faz requisições e não lê nem grava dados.
 
-Os pontos de encaixe da segunda fase (simulador de requisições, camadas TCP/IP interativas, inspeção HTTP, demonstração com Supabase e modo de apresentação) estão marcados com `data-slot` e `data-secao` no HTML e comentados no topo do JavaScript. Nenhum deles está implementado. Quando a demonstração com Supabase existir, o acesso a dados deve passar por `js/data/`, como no resto do projeto.
+A página tem dois modos, alternados pelo atributo `body[data-modo]`:
+
+- **Explorar** (`pagina`, o padrão): a página longa, com o conteúdo complementar (caminho de um clique, três mundos, CCNA, propósito).
+- **Apresentação** (`apresentacao`): um palco em tela cheia (`div.ap`, no fim do `<body>`) com 4 cenas, uma por integrante: origem do Cognita, como a plataforma funciona, redes de computadores e nuvem. A equipe controla as trocas (botões grandes, setas do teclado, indicador de progresso); nada avança por tempo. Abre pelo botão "Iniciar apresentação" ou direto por `?apresentacao=1` (e `&cena=1..4`). Sem JavaScript o palco permanece `hidden` e só o modo Explorar existe.
+
+Tudo no palco é **simulação local e didática**, com dados fictícios ("criança exemplo") e estados determinísticos: o botão "Liberar missão" apenas troca um atributo no próprio palco, o caminho do pedido (dispositivo, rede local, roteador, internet, serviço remoto) e a cena da nuvem (API, autenticação, RLS, PostgreSQL) são animações explicativas, não captura de tráfego nem chamada real. Depois do carregamento, o conteúdo essencial não depende da rede (as fontes do Google Fonts são as únicas requisições remotas e têm fallback para a fonte do sistema).
+
+Os atributos `data-secao` e `data-slot` (simulador-requisicoes, camadas-tcpip, inspetor-http, demo-supabase) seguem no HTML como âncoras antigas, sem consumidor em CSS ou JS; os slots da "fase 2" **não** foram implementados e a apresentação não os usa. Se um dia existir uma demonstração com Supabase, o acesso a dados deve passar por `js/data/`, como no resto do projeto.
 
 ## Identidades e papéis
 
