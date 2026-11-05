@@ -69,6 +69,12 @@ cognita-hub/
 - `js/lib/` reúne infraestrutura compartilhada, incluindo autenticação.
 - `apps/mobile/src/` concentra serviços, telas, atividades e assets da experiência infantil modular.
 
+### Página especial: Mundo SENAI 2026
+
+`pages/mundo-senai.html` é uma página pública e independente, feita para a apresentação do projeto no Mundo SENAI 2026 (5 e 6 de novembro). Ela não faz parte do fluxo do hub: tem CSS próprio (`css/mundo-senai.css`, que só reaproveita o motor de superfície de `css/brand-surface.css`) e JavaScript próprio e mínimo (`js/pages/mundo-senai.js`, só interações visuais). Não importa o cliente do Supabase, não faz requisições e não lê nem grava dados: o diagrama do caminho de uma requisição é ilustrativo.
+
+Os pontos de encaixe da segunda fase (simulador de requisições, camadas TCP/IP interativas, inspeção HTTP, demonstração com Supabase e modo de apresentação) estão marcados com `data-slot` e `data-secao` no HTML e comentados no topo do JavaScript. Nenhum deles está implementado. Quando a demonstração com Supabase existir, o acesso a dados deve passar por `js/data/`, como no resto do projeto.
+
 ## Identidades e papéis
 
 | Papel | Responsabilidade | Autenticação |
