@@ -828,6 +828,18 @@ const CRUMB = { resumo: 'Início', jornada: 'Jornada', sessoes: 'Sessões', cria
 
 function switchView(view) {
   if (!VIEWS[view]) return
+
+  // Os botões de navegação são ligados no boot ANTES de sabermos se existe
+  // criança. Sem ela, nenhuma view tem dado para mostrar — reexibe a
+  // mensagem do boot (erro de carga ou "sem criança") em vez de quebrar.
+  if (!D.child) {
+    renderBootMessage(...(lastBootMessage ?? [
+      'Nenhuma criança cadastrada ainda.',
+      'Precisamos concluir o cadastro da criança antes de acessar estas informações.',
+    ]))
+    return
+  }
+
   activeView = view
   const box = $('[data-guardian-state]')
   if (box) box.replaceChildren(VIEWS[view]())
@@ -841,7 +853,10 @@ function switchView(view) {
 
 // ── Estados de erro/vazio do boot ────────────────────────────────────────────
 
+let lastBootMessage = null
+
 function renderBootMessage(strongText, spanText) {
+  lastBootMessage = [strongText, spanText]
   const box = $('[data-guardian-state]')
   if (!box) return
   const page = el('div', 'fam-page')

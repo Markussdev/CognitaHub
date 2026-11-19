@@ -20,6 +20,7 @@
 
    Índice: 0 base e fundo · 1 header e footer institucionais · 2 palco e navegação · 3 slide 1
            4 slide 2 · 5 diagrama (slides 3 e 4) · 6 slide 3 · 7 slide 4
+           7.1 seção do Instagram (abaixo da apresentação)
            8 breakpoints · 9 movimento e contraste
    ============================================================ */
 
@@ -1120,6 +1121,172 @@
 .fecho span {
   color: var(--cor);
   font-weight: 700;
+}
+
+/* ---------- 7.1 Seção do Instagram ----------
+   Entre a apresentação e o footer; só aparece ao rolar a página. Sem cartão em volta: o fundo é o próprio
+   canvas noite. O QR Code fica num ladrilho branco com respiro extra (a imagem já traz ~2 módulos de
+   margem e o padding soma o resto, chegando a ≥ 4), sem filtro, sombra interna ou qualquer efeito sobre
+   o código. Usa o mesmo recurso visual da arte do slide 1: moldura dourada fina e contorno deslocado. */
+.insta {
+  position: relative;
+  padding: clamp(40px, 6.5vh, 72px) 0 clamp(28px, 5vh, 56px);
+  line-height: 1.6;
+}
+
+.insta::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: min(1112px, calc(100% - 48px));
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, rgba(255, 189, 73, 0), rgba(255, 189, 73, .4), rgba(255, 189, 73, 0));
+}
+
+.insta__grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+  gap: clamp(32px, 6vw, 96px);
+  align-items: center;
+}
+
+.insta__texto {
+  display: grid;
+  justify-items: start;
+  gap: clamp(16px, 2.4vh, 24px);
+}
+
+.insta h2 {
+  color: #fff;
+  font-family: var(--display);
+  font-size: clamp(2rem, 1.2rem + 2.8vw, 3.6rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -.012em;
+  text-wrap: balance;
+}
+
+.insta__lead {
+  max-width: 30em;
+  color: var(--texto);
+  font-size: clamp(1.05rem, .95rem + .4vw, 1.3rem);
+  line-height: 1.5;
+}
+
+.insta__perfil {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 4px;
+  padding: 8px 26px 8px 8px;
+  border: 1px solid rgba(255, 189, 73, .5);
+  border-radius: 999px;
+  background: rgba(255, 189, 73, .08);
+  color: #fff;
+  transition: background .15s ease, border-color .15s ease;
+}
+
+.insta__perfil:hover {
+  border-color: var(--ouro);
+  background: rgba(255, 189, 73, .16);
+}
+
+.insta__perfil:focus-visible {
+  border-radius: 999px;
+}
+
+.insta__icone {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--ouro-forte);
+  color: var(--night);
+}
+
+.insta__usuario {
+  font-family: var(--display);
+  font-size: clamp(1.3rem, 1.1rem + .6vw, 1.7rem);
+  font-weight: 700;
+  letter-spacing: .005em;
+}
+
+.insta__qr {
+  display: grid;
+  justify-items: center;
+  gap: 20px;
+}
+
+/* O ladrilho é desenhado por dois pseudo-elementos atrás da imagem: ::before é o contorno deslocado e
+   ::after é o branco (vem depois, então cobre o contorno). Só a imagem do QR fica por cima do branco. */
+.insta__ladrilho {
+  position: relative;
+  isolation: isolate;
+  width: min(100%, clamp(212px, 23vw, 357px));
+  padding: clamp(16px, 1.6vw, 22px);
+}
+
+.insta__ladrilho::before,
+.insta__ladrilho::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+}
+
+.insta__ladrilho::before {
+  inset: 14px -14px -14px 14px;
+  border: 1.5px solid rgba(255, 189, 73, .3);
+  border-radius: 28px;
+}
+
+.insta__ladrilho::after {
+  inset: 0;
+  border: 1px solid rgba(255, 189, 73, .55);
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 28px 60px rgba(10, 0, 9, .55);
+}
+
+.insta__ladrilho img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.insta__chamada {
+  position: relative;
+  z-index: 1;
+  color: var(--ouro);
+  font-family: var(--display);
+  font-size: clamp(1.2rem, 1rem + .5vw, 1.5rem);
+  font-weight: 700;
+  text-align: center;
+}
+
+@media (max-width: 860px) {
+  .insta {
+    padding-top: 40px;
+  }
+
+  .insta__grade {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+
+  .insta__ladrilho {
+    width: min(100%, 272px);
+  }
+
+  .insta__ladrilho {
+    padding: 18px;
+  }
+
+  .insta__ladrilho::before {
+    display: none;
+  }
 }
 
 /* ---------- 8. Breakpoints ---------- */

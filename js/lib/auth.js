@@ -11,6 +11,11 @@ const HOME_BY_ROLE = {
 // `inactive` é o único estado do perfil que bloqueia autenticação.
 const BLOCKED_STATUSES = ['inactive']
 
+// Links de e-mail (confirmação/reenvio) apontam para VITE_SITE_URL quando
+// definida — assim um cadastro feito em localhost ainda manda o link da
+// Vercel. Sem a variável, cai no endereço atual (comportamento antigo).
+const SITE_URL = import.meta.env.VITE_SITE_URL || window.location.origin
+
 export function isBlockedStatus(status) {
   return BLOCKED_STATUSES.includes(status)
 }
@@ -24,7 +29,7 @@ export async function signUp({ email, password, name, phone, role }) {
   // pro que estiver configurado como Site URL no painel) em vez de cair
   // direto na tela de login — precisa que esse endereço esteja na lista de
   // Redirect URLs do projeto (Authentication → URL Configuration).
-  const emailRedirectTo = buildEmailConfirmationRedirect(window.location.origin)
+  const emailRedirectTo = buildEmailConfirmationRedirect(SITE_URL)
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -100,7 +105,7 @@ export async function resendConfirmationEmail(email) {
     type: 'signup',
     email,
     options: {
-      emailRedirectTo: buildEmailConfirmationRedirect(window.location.origin),
+      emailRedirectTo: buildEmailConfirmationRedirect(SITE_URL),
     },
   })
 }

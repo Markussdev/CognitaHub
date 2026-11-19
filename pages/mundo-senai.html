@@ -224,6 +224,29 @@
     <p class="so-leitor" role="status" aria-live="polite" data-anuncio></p>
   </main>
 
+  <!-- Seção do Instagram: entre a apresentação e o footer. Só aparece ao rolar a página.
+       O QR Code é uma imagem estática local (public/assets/mundo-senai/qrcode.jpg) que aponta para
+       https://www.instagram.com/cognita.hub/ ; não há geração nem requisição em tempo de execução. -->
+  <section class="insta" aria-labelledby="t-insta">
+    <div class="wrap insta__grade">
+      <div class="insta__texto">
+        <h2 id="t-insta">Nossa jornada <span class="acento">continua</span>.</h2>
+        <p class="insta__lead">Acompanhe os bastidores, as conquistas e os próximos passos do Cognita Hub.</p>
+        <a class="insta__perfil" href="https://www.instagram.com/cognita.hub/" target="_blank" rel="noopener noreferrer" aria-label="Instagram @cognita.hub, abre em uma nova aba">
+          <span class="insta__icone" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></span>
+          <span class="insta__usuario">@cognita.hub</span>
+        </a>
+      </div>
+
+      <div class="insta__qr">
+        <div class="insta__ladrilho">
+          <img src="/assets/mundo-senai/qrcode.jpg" width="2048" height="2048" alt="QR Code que abre o Instagram @cognita.hub" decoding="async" />
+        </div>
+        <p class="insta__chamada">Escaneie para acompanhar</p>
+      </div>
+    </div>
+  </section>
+
   <!-- Footer institucional: o mesmo da homepage (.ft). Links "#" são os mesmos placeholders da home
        (ainda sem destino); os demais usam os caminhos a partir de pages/. -->
   <div class="ft-wrap">
